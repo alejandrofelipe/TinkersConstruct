@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -92,7 +93,7 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
             template.load(BuiltInRegistries.BLOCK.asLookup(), newStructure);
             newStructure = template.save(new CompoundTag());
           }
-          tasks.add(saveNBT(cache, new ResourceLocation(modId, task.location), newStructure));
+          tasks.add(saveNBT(cache, Objects.requireNonNull(ResourceLocation.tryBuild(modId, task.location)), newStructure));
         }
       }
       catch (IOException e) {

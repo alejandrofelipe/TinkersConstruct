@@ -26,6 +26,7 @@ public enum ModifierBookmarkIngredientRenderer implements IIngredientRenderer<Mo
   }
 
   @Override
+  @SuppressWarnings("removal")
   public List<Component> getTooltip(ModifierEntry entry, TooltipFlag flag) {
     List<Component> list = new ArrayList<>();
     // not using the main method as that applies color

@@ -15,7 +15,6 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import slimeknights.mantle.registration.deferred.PotionDeferredRegister;
@@ -68,9 +67,8 @@ public class TinkerEffects extends TinkerModule {
   public static final EnumObject<PotionType,Potion> levitationPotion = POTIONS.registerTypes("levitation", () -> MobEffects.LEVITATION, 15 * 20, 0).withStrong().withLong(40 * 20, 0).build();
   public static final EnumObject<PotionType,Potion> enderferencePotion = POTIONS.registerTypes(enderference, 90 * 20, 0).withLong().build();
 
-  @SuppressWarnings("removal")
   public TinkerEffects() {
-    POTIONS.register(FMLJavaModLoadingContext.get().getModEventBus());
+    POTIONS.register(TConstruct.modBus);
   }
 
   @SubscribeEvent

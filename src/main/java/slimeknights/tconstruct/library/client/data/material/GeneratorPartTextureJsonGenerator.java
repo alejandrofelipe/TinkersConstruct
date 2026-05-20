@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -57,7 +58,7 @@ public class GeneratorPartTextureJsonGenerator extends GenericDataProvider {
     if (!overrides.overrides.isEmpty()) {
       json.add("overrides", overrides.serialize());
     }
-    return saveJson(cache, new ResourceLocation(modId, "generator_part_textures"), json);
+    return saveJson(cache, Objects.requireNonNull(ResourceLocation.tryBuild(modId, "generator_part_textures")), json);
   }
 
   @Override

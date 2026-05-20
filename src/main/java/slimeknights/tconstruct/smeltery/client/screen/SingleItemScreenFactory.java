@@ -11,6 +11,7 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.smeltery.menu.SingleItemContainerMenu;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * Screen factory for the single item container, one container for multiple backgrounds
@@ -28,7 +29,7 @@ public class SingleItemScreenFactory implements ScreenConstructor<SingleItemCont
     if (tile != null) {
       ResourceLocation id = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(tile.getType());
       if (id != null) {
-        return new ResourceLocation(id.getNamespace(), String.format("textures/gui/%s.png", id.getPath()));
+        return Objects.requireNonNull(ResourceLocation.tryBuild(id.getNamespace(), String.format("textures/gui/%s.png", id.getPath())));
       }
     }
     return DEFAULT;

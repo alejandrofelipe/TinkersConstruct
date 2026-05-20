@@ -35,6 +35,7 @@ public record ModifierIngredientRenderer(int width, int height) implements IIngr
   }
 
   @Override
+  @SuppressWarnings("removal")
   public List<Component> getTooltip(ModifierEntry entry, TooltipFlag flag) {
     List<Component> tooltip = entry.getModifier().getDescriptionList(entry.getLevel());
     if (flag.isAdvanced()) {

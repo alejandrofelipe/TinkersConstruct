@@ -20,11 +20,11 @@ public abstract class ResourceId extends ResourceLocation {
   }
 
   public ResourceId(String namespace, String path) {
-    super(namespace, path);
+    super(namespace, path, null);
   }
 
   public ResourceId(String location) {
-    super(location);
+    this(decompose(location, ':')[0], decompose(location, ':')[1]);
   }
 
 

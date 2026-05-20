@@ -5,6 +5,7 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
+import java.util.Objects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.mantle.data.listener.ResourceValidator;
@@ -60,6 +61,6 @@ public interface ArmorTextureSupplier extends IHaveLoader {
    * Gets a texture using the named format
    */
   static ResourceLocation getTexturePath(ResourceLocation name) {
-    return new ResourceLocation(name.getNamespace(), FOLDER + '/' + name.getPath() + ".png");
+    return Objects.requireNonNull(ResourceLocation.tryBuild(name.getNamespace(), FOLDER + '/' + name.getPath() + ".png"));
   }
 }

@@ -26,6 +26,7 @@ import java.util.function.Function;
  * @deprecated use {@link slimeknights.tconstruct.library.client.modifiers.model.FluidModifierModel}
  */
 @Deprecated
+@SuppressWarnings("removal")
 public class FluidModifierModel extends NormalModifierModel {
   /** Location used for baking dynamic models, name does not matter so just using a constant */
   private static final ResourceLocation BAKE_LOCATION = TConstruct.getResource("dynamic_fluid_model");

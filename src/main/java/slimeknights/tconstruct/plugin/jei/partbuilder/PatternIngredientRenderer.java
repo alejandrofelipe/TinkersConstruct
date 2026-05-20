@@ -26,6 +26,7 @@ public class PatternIngredientRenderer implements IIngredientRenderer<Pattern> {
   }
 
   @Override
+  @SuppressWarnings("removal")
   public List<Component> getTooltip(Pattern pattern, TooltipFlag flag) {
     if (flag.isAdvanced()) {
       return Arrays.asList(pattern.getDisplayName(), Component.literal(pattern.toString()).withStyle(ChatFormatting.DARK_GRAY));

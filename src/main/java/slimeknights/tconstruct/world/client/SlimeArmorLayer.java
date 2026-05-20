@@ -38,6 +38,7 @@ import net.minecraft.world.level.block.SkullBlock.Type;
 import net.minecraftforge.client.ForgeHooksClient;
 
 import java.util.Map;
+import java.util.Objects;
 
 /** Generics do not match to use the vanilla armor layer, so this is a reimplementation of some of {@link HumanoidArmorLayer} */
 public class SlimeArmorLayer<T extends Slime, M extends HierarchicalModel<T>, A extends HumanoidModel<T>> extends RenderLayer<T,M> {
@@ -139,7 +140,7 @@ public class SlimeArmorLayer<T extends Slime, M extends HierarchicalModel<T>, A 
     path = ForgeHooksClient.getArmorTexture(entity, stack, path, EquipmentSlot.HEAD, type);
     ResourceLocation location = HumanoidArmorLayer.ARMOR_LOCATION_CACHE.get(path);
     if (location == null) {
-      location = new ResourceLocation(path);
+      location = Objects.requireNonNull(ResourceLocation.tryParse(path));
       HumanoidArmorLayer.ARMOR_LOCATION_CACHE.put(path, location);
     }
 

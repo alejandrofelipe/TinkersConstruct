@@ -23,6 +23,7 @@ import java.util.function.Function;
  * @deprecated use {@link slimeknights.tconstruct.library.client.modifiers.model.TrimModifierModel.Armor}
  */
 @Deprecated
+@SuppressWarnings("removal")
 public enum TrimModifierModel implements IBakedModifierModel {
   INSTANCE;
 

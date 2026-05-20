@@ -64,6 +64,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -271,7 +272,7 @@ public class GenerateMeltingRecipesCommand {
           builder.setDamagable(10);
         }
         ResourceLocation id = Loadables.ITEM.getKey(result);
-        builder.save(consumer, new ResourceLocation("tinkers_generated", "melting/" + id.getNamespace() + '/' + id.getPath()));
+        builder.save(consumer, Objects.requireNonNull(ResourceLocation.tryBuild("tinkers_generated", "melting/" + id.getNamespace() + '/' + id.getPath())));
       }
     }
 

@@ -6,6 +6,8 @@ import slimeknights.tconstruct.library.utils.IdParser;
 import slimeknights.tconstruct.library.utils.ResourceId;
 import slimeknights.tconstruct.library.utils.Util;
 
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
 /**
@@ -51,7 +53,7 @@ public class Pattern extends ResourceId {
    * @return  Pattern texture
    */
   public ResourceLocation getTexture() {
-    return new ResourceLocation(getNamespace(), "gui/tinker_pattern/" + getPath());
+    return Objects.requireNonNull(ResourceLocation.tryBuild(getNamespace(), "gui/tinker_pattern/" + getPath()));
   }
 
 

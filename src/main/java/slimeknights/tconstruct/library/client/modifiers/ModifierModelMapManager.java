@@ -38,6 +38,7 @@ import java.util.function.Predicate;
 /**
  * Manager for getting modifier models
  */
+@SuppressWarnings("removal")
 public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
   /** Folder for the modifier models */
   public static final String FOLDER = "tinkering/modifier_models";

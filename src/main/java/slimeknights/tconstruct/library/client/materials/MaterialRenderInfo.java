@@ -12,6 +12,7 @@ import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -88,7 +89,7 @@ public record MaterialRenderInfo(MaterialVariantId id, @Nullable ResourceLocatio
    * @return  Material instance
    */
   private static Material getMaterial(ResourceLocation texture, String suffix) {
-    return new Material(InventoryMenu.BLOCK_ATLAS, new ResourceLocation(texture.getNamespace(), texture.getPath() + "_" + suffix));
+    return new Material(InventoryMenu.BLOCK_ATLAS, Objects.requireNonNull(ResourceLocation.tryBuild(texture.getNamespace(), texture.getPath() + "_" + suffix)));
   }
 
   /**

@@ -46,8 +46,14 @@ public class EntityMeltingRecipeCategory implements IRecipeCategory<EntityMeltin
   /** Renderer instance to use in this category */
   private final EntityIngredientRenderer entityRenderer = new EntityIngredientRenderer(32);
 
-  @Getter
   private final IDrawable background;
+
+  @Override
+  @SuppressWarnings("removal")
+  public IDrawable getBackground() {
+    return background;
+  }
+
   @Getter
   private final IDrawable icon;
   private final IDrawable arrow;
@@ -95,14 +101,14 @@ public class EntityMeltingRecipeCategory implements IRecipeCategory<EntityMeltin
     // output
     builder.addSlot(RecipeIngredientRole.OUTPUT, 115, 11)
            .setFluidRenderer(FluidValues.INGOT * 2, false, 16, 32)
-           .addTooltipCallback(new FluidTooltip(recipe.getDamage())) // object is cheap, no need to cache
+           .addRichTooltipCallback(new FluidTooltip(recipe.getDamage())) // object is cheap, no need to cache
            .addIngredient(ForgeTypes.FLUID_STACK, recipe.getOutput());
 
     // show fuels that are valid for this recipe
     builder.addSlot(RecipeIngredientRole.CATALYST, 75, 43)
            .setFluidRenderer(1, false, 16, 16)
            .setOverlay(tank, 0, 0)
-           .addTooltipCallback(FluidTooltipCallback.NO_AMOUNT)
+           .addRichTooltipCallback(FluidTooltipCallback.NO_AMOUNT)
            .addIngredients(ForgeTypes.FLUID_STACK, MeltingFuelHandler.getUsableFuels(1));
   }
 

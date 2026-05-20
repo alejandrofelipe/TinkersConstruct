@@ -61,7 +61,7 @@ public class SearedDuctBlock extends InventoryBlock {
 
   @Override
   public void appendHoverText(ItemStack stack, @Nullable BlockGetter pLevel, List<Component> tooltip, TooltipFlag pFlag) {
-    RetexturedHelper.addTooltip(stack, tooltip);
+    RetexturedHelper.addTooltip(stack, tooltip, pFlag);
   }
 
   @Override

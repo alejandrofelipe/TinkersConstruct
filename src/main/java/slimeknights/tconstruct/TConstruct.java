@@ -97,9 +97,13 @@ public class TConstruct {
 
   /* Instance of this mod, used for grabbing prototype fields */
   public static TConstruct instance;
+  /** Mod event bus, used for registration */
+  public static IEventBus modBus;
 
   public TConstruct() {
     instance = this;
+    IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+    modBus = bus;
 
     Config.init();
     TinkerItemDisplays.init();
@@ -107,7 +111,6 @@ public class TConstruct {
 
     // initialize modules, done this way rather than with annotations to give us control over the order
     MinecraftForge.EVENT_BUS.addListener(TConstruct::missingMappings);
-    IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
     // base
     bus.register(new TinkerCommons());
     bus.register(new TinkerMaterials());

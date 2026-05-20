@@ -40,6 +40,7 @@ import java.util.function.Predicate;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Log4j2
 @Deprecated
+@SuppressWarnings("removal")
 public class ModifierModelManager implements IEarlySafeManagerReloadListener {
   /** Modifier file to load, has merging behavior but forge prevents multiple mods from loading the same file */
   private static final String VISIBLE_MODIFIERS = "tinkering/modifiers.json";

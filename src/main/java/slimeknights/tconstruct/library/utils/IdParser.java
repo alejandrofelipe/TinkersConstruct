@@ -92,11 +92,11 @@ public record IdParser<T extends ResourceLocation>(Function<String, T> construct
     }
     String string = reader.getString().substring(start, reader.getCursor());
     String[] parts = decompose(defaultDomain, string);
-    try {
-      return new ResourceLocation(parts[0], parts[1]);
-    } catch (ResourceLocationException ex) {
+    ResourceLocation result = ResourceLocation.tryBuild(parts[0], parts[1]);
+    if (result == null) {
       reader.setCursor(start);
       throw ResourceLocation.ERROR_INVALID.createWithContext(reader);
     }
+    return result;
   }
 }

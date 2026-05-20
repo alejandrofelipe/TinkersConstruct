@@ -16,6 +16,7 @@ import java.util.function.Function;
  * @deprecated use {@link slimeknights.tconstruct.library.client.modifiers.model.TankModifierModel}
  */
 @Deprecated
+@SuppressWarnings("removal")
 public class TankModifierModel extends FluidModifierModel {
   /** Constant unbaked model instance, as they are all the same */
   public static final IUnbakedModifierModel UNBAKED_INSTANCE = new Unbaked(ToolTankHelper.TANK_HELPER);

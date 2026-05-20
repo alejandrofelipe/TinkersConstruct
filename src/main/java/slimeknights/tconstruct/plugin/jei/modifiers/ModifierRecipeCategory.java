@@ -19,7 +19,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -58,8 +57,14 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
 
   private final ModifierIngredientRenderer modifierRenderer = new ModifierIngredientRenderer(124, 10);
 
-  @Getter
   private final IDrawable background;
+
+  @Override
+  @SuppressWarnings("removal")
+  public IDrawable getBackground() {
+    return background;
+  }
+
   @Getter
   private final IDrawable icon;
   private final IDrawable requirements, incremental;
@@ -152,6 +157,7 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
   }
 
   @Override
+  @SuppressWarnings("removal")
   public List<Component> getTooltipStrings(IDisplayModifierRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
     int checkX = (int) mouseX;
     int checkY = (int) mouseY;
@@ -167,7 +173,7 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
     }
     SlotCount slots = recipe.getSlots();
     if (slots == null && GuiUtil.isHovered(checkX, checkY, 102, 58, 24, 16)) {
-      return SlotIngredientRenderer.INPUT.getTooltip(null, TooltipFlag.NORMAL);
+      return SlotIngredientRenderer.TEXT_FREE;
     }
     
     return Collections.emptyList();

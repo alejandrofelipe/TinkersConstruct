@@ -408,6 +408,7 @@ public class Config {
   }
 
   /** Registers any relevant listeners for config */
+  @SuppressWarnings("removal")
   public static void init() {
     ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.commonSpec);
     ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.clientSpec);

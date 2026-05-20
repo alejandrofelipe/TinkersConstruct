@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -22,7 +23,7 @@ import java.util.function.Function;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MeltingFuelLookup {
   /** Dummy fuel instance sine caches don't support caching null */
-  private static final MeltingFuel EMPTY = new MeltingFuel(new ResourceLocation("missingno"), FluidIngredient.EMPTY, 0, 0, 0);
+  private static final MeltingFuel EMPTY = new MeltingFuel(Objects.requireNonNull(ResourceLocation.tryBuild("missingno", "missingno")), FluidIngredient.EMPTY, 0, 0, 0);
   /** Temperature for solid fuels in the heater */
   private static MeltingFuel SOLID = EMPTY;
   /** List of all recipes */

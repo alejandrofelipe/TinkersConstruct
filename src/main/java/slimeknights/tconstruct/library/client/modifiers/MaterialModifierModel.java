@@ -34,6 +34,7 @@ import java.util.function.Function;
 @Getter
 @Accessors(fluent = true)
 @RequiredArgsConstructor
+@SuppressWarnings("removal")
 public class MaterialModifierModel implements SimpleModifierModel {
   public static final RecordLoadable<MaterialModifierModel> LOADER = SimpleModifierModel.loader(MaterialModifierModel::new);
   /** Fetches relevant material textures after checking if the texture exists */

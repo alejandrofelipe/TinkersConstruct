@@ -2,20 +2,20 @@ package slimeknights.tconstruct.library;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegisterEvent;
 import slimeknights.tconstruct.TConstruct;
 
 import java.util.Locale;
+import java.util.Objects;
 
 /** Custom transform types used for tinkers item rendering */
 public class TinkerItemDisplays {
   private TinkerItemDisplays() {}
 
   public static void init() {
-    FMLJavaModLoadingContext.get().getModEventBus().addListener(TinkerItemDisplays::registerDisplay);
+    TConstruct.modBus.addListener(TinkerItemDisplays::registerDisplay);
   }
 
   /** Used by the melter and smeltery for display of items its melting */
@@ -55,6 +55,6 @@ public class TinkerItemDisplays {
 
   /** Registers a display type */
   private static void register(IForgeRegistry<ItemDisplayContext> registry, ItemDisplayContext context) {
-    registry.register(new ResourceLocation(context.getSerializedName()), context);
+    registry.register(Objects.requireNonNull(ResourceLocation.tryParse(context.getSerializedName())), context);
   }
 }

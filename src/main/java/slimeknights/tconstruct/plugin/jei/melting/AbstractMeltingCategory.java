@@ -50,8 +50,14 @@ public abstract class AbstractMeltingCategory implements IRecipeCategory<Melting
     }
   };
 
-  @Getter
   private final IDrawable background;
+
+  @Override
+  @SuppressWarnings("removal")
+  public IDrawable getBackground() {
+    return background;
+  }
+
   protected final IDrawableStatic tankOverlay;
   protected final IDrawableStatic plus;
   protected final LoadingCache<Integer,IDrawableAnimated> cachedArrows;
@@ -85,6 +91,7 @@ public abstract class AbstractMeltingCategory implements IRecipeCategory<Melting
   }
 
   @Override
+  @SuppressWarnings("removal")
   public List<Component> getTooltipStrings(MeltingRecipe recipe, IRecipeSlotsView slots, double mouseXD, double mouseYD) {
     int mouseX = (int)mouseXD;
     int mouseY = (int)mouseYD;

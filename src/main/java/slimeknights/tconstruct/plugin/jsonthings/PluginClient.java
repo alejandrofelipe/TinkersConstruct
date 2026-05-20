@@ -3,7 +3,7 @@ package slimeknights.tconstruct.plugin.jsonthings;
 import dev.gigaherz.jsonthings.things.client.ItemColorHandler;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.model.TinkerItemProperties;
 import slimeknights.tconstruct.library.client.model.tools.ToolModel;
@@ -12,7 +12,7 @@ import slimeknights.tconstruct.library.client.model.tools.ToolModel;
 public class PluginClient {
   public static void init() {
     ItemColorHandler.register(TConstruct.resourceString("tool"), block -> ToolModel.COLOR_HANDLER);
-    FMLJavaModLoadingContext.get().getModEventBus().addListener(PluginClient::clientSetup);
+    TConstruct.modBus.addListener(PluginClient::clientSetup);
   }
 
   private static void clientSetup(FMLClientSetupEvent event) {

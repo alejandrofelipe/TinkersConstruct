@@ -29,8 +29,14 @@ public class ModifierWorktableCategory implements IRecipeCategory<IModifierWorkt
   private static final ResourceLocation BACKGROUND_LOC = TConstruct.getResource("textures/gui/jei/tinker_station.png");
   private static final Component TITLE = TConstruct.makeTranslation("jei", "modifier_worktable.title");
 
-  @Getter
   private final IDrawable background;
+
+  @Override
+  @SuppressWarnings("removal")
+  public IDrawable getBackground() {
+    return background;
+  }
+
   @Getter
   private final IDrawable icon;
   private final IDrawable toolIcon;
@@ -70,6 +76,7 @@ public class ModifierWorktableCategory implements IRecipeCategory<IModifierWorkt
   }
 
   @Override
+  @SuppressWarnings("removal")
   public List<Component> getTooltipStrings(IModifierWorktableRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
     if (mouseY >= 2 && mouseY <= 12) {
       return List.of(recipe.getDescription(null));

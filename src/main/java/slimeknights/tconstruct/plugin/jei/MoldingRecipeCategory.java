@@ -33,8 +33,14 @@ public class MoldingRecipeCategory implements IRecipeCategory<MoldingRecipe> {
   private static final Component TITLE = TConstruct.makeTranslation("jei", "molding.title");
   private static final Component TOOLTIP_PATTERN_CONSUMED = Component.translatable(TConstruct.makeTranslationKey("jei", "molding.pattern_consumed"));
 
-  @Getter
   private final IDrawable background;
+
+  @Override
+  @SuppressWarnings("removal")
+  public IDrawable getBackground() {
+    return background;
+  }
+
   @Getter
   private final IDrawable icon;
   private final IDrawable table, basin, downArrow, upArrow;
@@ -73,6 +79,7 @@ public class MoldingRecipeCategory implements IRecipeCategory<MoldingRecipe> {
   }
 
   @Override
+  @SuppressWarnings("removal")
   public List<Component> getTooltipStrings(MoldingRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
     if (recipe.isPatternConsumed() && !recipe.getPattern().isEmpty() && GuiUtil.isHovered((int)mouseX, (int)mouseY, 50, 7, 18, 18)) {
       return Collections.singletonList(TOOLTIP_PATTERN_CONSUMED);

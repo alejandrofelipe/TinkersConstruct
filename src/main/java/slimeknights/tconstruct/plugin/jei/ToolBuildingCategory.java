@@ -38,8 +38,14 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
   private static final Component TITLE = TConstruct.makeTranslation("jei", "tinkering.tool_building");
   @Getter
   private final IDrawable icon;
-  @Getter
   private final IDrawable background;
+
+  @Override
+  @SuppressWarnings("removal")
+  public IDrawable getBackground() {
+    return background;
+  }
+
   private final IDrawable anvil, slotBg, slotBorder;
   private final IDrawable itemCover;
   private static final int WIDTH = 134;
@@ -127,6 +133,7 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
   }
 
   @Override
+  @SuppressWarnings("removal")
   public List<Component> getTooltipStrings(ToolBuildingRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
     return recipe.requiresAnvil() && GuiUtil.isHovered((int) mouseX, (int) mouseY, 76, 44, ITEM_SIZE, ITEM_SIZE) ?
       List.of(TConstruct.makeTranslation("jei", "tinkering.tool_building.anvil")) :

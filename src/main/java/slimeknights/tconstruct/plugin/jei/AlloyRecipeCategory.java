@@ -6,7 +6,7 @@ import mezz.jei.api.forge.ForgeTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableAnimated.StartDirection;
-import mezz.jei.api.gui.ingredient.IRecipeSlotTooltipCallback;
+import mezz.jei.api.gui.ingredient.IRecipeSlotRichTooltipCallback;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
@@ -58,8 +58,14 @@ public class AlloyRecipeCategory implements IRecipeCategory<AlloyRecipe> {
     }
   };
 
-  @Getter
   private final IDrawable background;
+
+  @Override
+  @SuppressWarnings("removal")
+  public IDrawable getBackground() {
+    return background;
+  }
+
   @Getter
   private final IDrawable icon;
   private final IDrawable arrow;
@@ -107,7 +113,7 @@ public class AlloyRecipeCategory implements IRecipeCategory<AlloyRecipe> {
    * @param <T> Object type
    * @return Max amount based on fluids
    */
-  public static <T> int drawVariableFluids(IRecipeLayoutBuilder builder, RecipeIngredientRole role, int x, int y, int totalWidth, int height, List<T> fluids, int minAmount, Function<T,List<FluidStack>> mapper, Function<T,IRecipeSlotTooltipCallback> tooltip) {
+  public static <T> int drawVariableFluids(IRecipeLayoutBuilder builder, RecipeIngredientRole role, int x, int y, int totalWidth, int height, List<T> fluids, int minAmount, Function<T,List<FluidStack>> mapper, Function<T,IRecipeSlotRichTooltipCallback> tooltip) {
     int count = fluids.size();
     int maxAmount = minAmount;
     if (count > 0) {
@@ -126,7 +132,7 @@ public class AlloyRecipeCategory implements IRecipeCategory<AlloyRecipe> {
         int fluidX = x + i * w;
         T ingredient = fluids.get(i);
         builder.addSlot(role, fluidX, y)
-               .addTooltipCallback(tooltip.apply(ingredient))
+               .addRichTooltipCallback(tooltip.apply(ingredient))
                .setFluidRenderer(maxAmount, false, w, height)
                .addIngredients(ForgeTypes.FLUID_STACK, mapper.apply(ingredient));
       }
@@ -134,7 +140,7 @@ public class AlloyRecipeCategory implements IRecipeCategory<AlloyRecipe> {
       int fluidX = x + max * w;
       T ingredient = fluids.get(max);
       builder.addSlot(role, fluidX, y)
-             .addTooltipCallback(tooltip.apply(ingredient))
+             .addRichTooltipCallback(tooltip.apply(ingredient))
              .setFluidRenderer(maxAmount, false, totalWidth - (w * max), height)
              .addIngredients(ForgeTypes.FLUID_STACK, mapper.apply(ingredient));
     }
@@ -150,13 +156,13 @@ public class AlloyRecipeCategory implements IRecipeCategory<AlloyRecipe> {
 
     // output
     builder.addSlot(RecipeIngredientRole.OUTPUT, 137, 11)
-           .addTooltipCallback(FluidTooltipCallback.UNITS)
+           .addRichTooltipCallback(FluidTooltipCallback.UNITS)
            .setFluidRenderer(maxAmount, false, 16, 32)
            .addIngredient(ForgeTypes.FLUID_STACK, recipe.getOutput());
 
     // fuel
     builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 94, 43)
-           .addTooltipCallback(FUEL_TOOLTIP)
+           .addRichTooltipCallback(FUEL_TOOLTIP)
            .setFluidRenderer(1, false, 16, 16)
            .setOverlay(tank, 0, 0)
            .addIngredients(ForgeTypes.FLUID_STACK, MeltingFuelHandler.getUsableFuels(recipe.getTemperature()));

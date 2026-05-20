@@ -23,6 +23,7 @@ import java.util.function.Function;
  * @deprecated use {@link ConditionalModifierModel}.
  */
 @Deprecated
+@SuppressWarnings("removal")
 public class OverslimeModifierModel extends NormalModifierModel {
   /** Constant unbaked model instance, as they are all the same */
   public static final IUnbakedModifierModel UNBAKED_INSTANCE = (smallGetter, largeGetter) -> {

@@ -30,6 +30,7 @@ import java.util.function.Function;
 @Getter
 @Accessors(fluent = true)
 @RequiredArgsConstructor
+@SuppressWarnings("removal")
 public class DyedModifierModel implements SimpleModifierModel {
   public static final RecordLoadable<DyedModifierModel> LOADER = SimpleModifierModel.loader(DyedModifierModel::new);
   /** @deprecated legacy system, use {@link #LOADER} */

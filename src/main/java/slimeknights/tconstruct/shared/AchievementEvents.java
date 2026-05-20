@@ -16,6 +16,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import slimeknights.tconstruct.TConstruct;
+import java.util.Objects;
 //import slimeknights.tconstruct.library.utils.TagUtil;
 //import slimeknights.tconstruct.tools.common.entity.EntityArrow;
 //import slimeknights.tconstruct.tools.tools.Pickaxe;
@@ -61,7 +62,7 @@ public final class AchievementEvents {
   private static void grantAdvancement(ServerPlayer playerMP, String advancementResource) {
     MinecraftServer server = playerMP.getServer();
     if (server != null) {
-      Advancement advancement = server.getAdvancements().getAdvancement(new ResourceLocation(advancementResource));
+      Advancement advancement = server.getAdvancements().getAdvancement(Objects.requireNonNull(ResourceLocation.tryParse(advancementResource)));
       if (advancement != null) {
         AdvancementProgress advancementProgress = playerMP.getAdvancements().getOrStartProgress(advancement);
         if (!advancementProgress.isDone()) {

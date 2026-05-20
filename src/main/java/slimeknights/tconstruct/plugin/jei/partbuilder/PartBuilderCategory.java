@@ -35,8 +35,14 @@ public class PartBuilderCategory implements IRecipeCategory<IDisplayPartBuilderR
   private static final Component TITLE = TConstruct.makeTranslation("jei", "part_builder.title");
   private static final String KEY_COST = TConstruct.makeTranslationKey("jei", "part_builder.cost");
 
-  @Getter
   private final IDrawable background;
+
+  @Override
+  @SuppressWarnings("removal")
+  public IDrawable getBackground() {
+    return background;
+  }
+
   @Getter
   private final IDrawable icon;
   public PartBuilderCategory(IGuiHelper helper) {

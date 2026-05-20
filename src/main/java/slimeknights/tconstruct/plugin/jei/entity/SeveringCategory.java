@@ -27,8 +27,14 @@ public class SeveringCategory implements IRecipeCategory<SeveringRecipe> {
   /** Renderer instance to use in this category */
   private final EntityIngredientRenderer entityRenderer = new EntityIngredientRenderer(32);
 
-  @Getter
   private final IDrawable background;
+
+  @Override
+  @SuppressWarnings("removal")
+  public IDrawable getBackground() {
+    return background;
+  }
+
   @Getter
   private final IDrawable icon;
   public SeveringCategory(IGuiHelper helper) {

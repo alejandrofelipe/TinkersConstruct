@@ -18,6 +18,7 @@ import slimeknights.tconstruct.library.json.loot.equipment.MobEquipment;
 import slimeknights.tconstruct.library.json.loot.equipment.MobEquipmentManager;
 
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -38,7 +39,7 @@ public abstract class AbstractMobEquipmentProvider extends GenericDataProvider {
   @Override
   public CompletableFuture<?> run(CachedOutput cache) {
     addEquipment();
-    return allOf(equipment.entrySet().stream().map(entry -> saveJson(cache, new ResourceLocation(modId, entry.getKey()), entry.getValue().serialize())));
+    return allOf(equipment.entrySet().stream().map(entry -> saveJson(cache, Objects.requireNonNull(ResourceLocation.tryBuild(modId, entry.getKey())), entry.getValue().serialize())));
   }
 
   /** Creates a builder for the given entity */

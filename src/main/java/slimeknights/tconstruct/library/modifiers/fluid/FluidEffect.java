@@ -20,6 +20,7 @@ import slimeknights.mantle.data.registry.GenericLoaderRegistry;
 import slimeknights.mantle.data.registry.GenericLoaderRegistry.IHaveLoader;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.json.LevelingInt;
+import java.util.Objects;
 import slimeknights.tconstruct.library.modifiers.fluid.entity.RandomTeleportFluidEffect;
 import slimeknights.tconstruct.library.utils.Util;
 
@@ -146,7 +147,7 @@ public interface FluidEffect<C extends FluidEffectContext> extends IHaveLoader, 
       return loaderId;
     }
     Mantle.logger.error("Failed to get default description for unregistered fluid effect loader {}", loader);
-    return new ResourceLocation("missingno");
+    return Objects.requireNonNull(ResourceLocation.tryBuild("missingno", "missingno"));
   }
 
   /** Gets the string key for the given loader */

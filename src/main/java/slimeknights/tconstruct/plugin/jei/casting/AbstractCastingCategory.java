@@ -42,8 +42,14 @@ public abstract class AbstractCastingCategory implements IRecipeCategory<IDispla
   private static final String KEY_CAST_CONSUMED = TConstruct.makeTranslationKey("jei", "casting.cast_consumed");
   protected static final ResourceLocation BACKGROUND_LOC = TConstruct.getResource("textures/gui/jei/casting.png");
 
-  @Getter
   private final IDrawable background;
+
+  @Override
+  @SuppressWarnings("removal")
+  public IDrawable getBackground() {
+    return background;
+  }
+
   @Getter
   private final IDrawable icon;
   private final IDrawable tankOverlay;
@@ -83,6 +89,7 @@ public abstract class AbstractCastingCategory implements IRecipeCategory<IDispla
   }
 
   @Override
+  @SuppressWarnings("removal")
   public List<Component> getTooltipStrings(IDisplayableCastingRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
     if (recipe.hasCast() && GuiUtil.isHovered((int)mouseX, (int)mouseY, 63, 39, 13, 11)) {
       return Collections.singletonList(Component.translatable(recipe.isConsumed() ? KEY_CAST_CONSUMED : KEY_CAST_KEPT));
@@ -109,7 +116,7 @@ public abstract class AbstractCastingCategory implements IRecipeCategory<IDispla
     int capacity = FluidValues.METAL_BLOCK;
     List<FluidStack> inputs = recipe.getFluids();
     IRecipeSlotBuilder tank = builder.addSlot(RecipeIngredientRole.INPUT, 3, 3)
-           .addTooltipCallback(FluidTooltipCallback.UNITS)
+           .addRichTooltipCallback(FluidTooltipCallback.UNITS)
            .setFluidRenderer(capacity, false, 32, 32)
            .setOverlay(tankOverlay, 0, 0)
            .addIngredients(ForgeTypes.FLUID_STACK, inputs);
@@ -119,7 +126,7 @@ public abstract class AbstractCastingCategory implements IRecipeCategory<IDispla
       h += 16;
     }
     IRecipeSlotBuilder faucet = builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 43, 8)
-           .addTooltipCallback(FluidTooltipCallback.UNITS)
+           .addRichTooltipCallback(FluidTooltipCallback.UNITS)
            .setFluidRenderer(1, false, 6, h)
            .addIngredients(ForgeTypes.FLUID_STACK, inputs);
 

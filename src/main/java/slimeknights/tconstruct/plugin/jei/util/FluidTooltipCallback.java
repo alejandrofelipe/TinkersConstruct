@@ -1,7 +1,8 @@
 package slimeknights.tconstruct.plugin.jei.util;
 
 import mezz.jei.api.forge.ForgeTypes;
-import mezz.jei.api.gui.ingredient.IRecipeSlotTooltipCallback;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
+import mezz.jei.api.gui.ingredient.IRecipeSlotRichTooltipCallback;
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
@@ -10,11 +11,10 @@ import slimeknights.mantle.fluid.tooltip.FluidTooltipHandler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 
 /** Helper for working with fluid tooltips */
 @FunctionalInterface
-public interface FluidTooltipCallback extends IRecipeSlotTooltipCallback {
+public interface FluidTooltipCallback extends IRecipeSlotRichTooltipCallback {
   String AMOUNT_KEY = "jei.tooltip.liquid.amount";
 
   /** Default instance, simply replaces mb units with our unit handler. */
@@ -24,22 +24,24 @@ public interface FluidTooltipCallback extends IRecipeSlotTooltipCallback {
   FluidTooltipCallback NO_AMOUNT = (fluid, recipeSlotView, tooltip) -> {};
 
   @Override
-  default void onTooltip(IRecipeSlotView recipeSlotView, List<Component> tooltip) {
-    ListIterator<Component> listIterator = tooltip.listIterator();
-    while (listIterator.hasNext()) {
-      Component component = listIterator.next();
+  @SuppressWarnings("removal")
+  default void onRichTooltip(IRecipeSlotView recipeSlotView, ITooltipBuilder tooltip) {
+    List<Component> current = new ArrayList<>(tooltip.toLegacyToComponents());
+    for (Component component : current) {
       if (component.getContents() instanceof TranslatableContents translatable && AMOUNT_KEY.equals(translatable.getKey())) {
-        listIterator.remove();
+        tooltip.removeAll(List.of(component));
         FluidStack fluid = recipeSlotView.getDisplayedIngredient(ForgeTypes.FLUID_STACK).orElse(FluidStack.EMPTY);
         List<Component> newTooltip = new ArrayList<>();
         onFluidTooltip(fluid, recipeSlotView, newTooltip);
-        tooltip.addAll(listIterator.nextIndex(), newTooltip);
+        tooltip.addAll(newTooltip);
         return;
       }
     }
     // failed to find the tooltip to replace, so just append our stuff at the end
     FluidStack fluid = recipeSlotView.getDisplayedIngredient(ForgeTypes.FLUID_STACK).orElse(FluidStack.EMPTY);
-    onFluidTooltip(fluid, recipeSlotView, tooltip);
+    List<Component> newTooltip = new ArrayList<>();
+    onFluidTooltip(fluid, recipeSlotView, newTooltip);
+    tooltip.addAll(newTooltip);
   }
 
   /** Adds information about the fluid to the tooltip */
