@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.library.tools.part;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -8,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.item.component.CustomData;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.materials.MaterialTooltipCache;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
@@ -47,9 +48,15 @@ public class MaterialItem extends Item implements IMaterialItem {
     return IMaterial.UNKNOWN_ID;
   }
 
+  /** Gets the material ID stored in the stack's custom-data component */
+  public static MaterialVariantId getMaterialFromData(ItemStack stack) {
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    return getMaterialId(data == null ? null : data.getUnsafe());
+  }
+
   @Override
   public MaterialVariantId getMaterial(ItemStack stack) {
-    return getMaterialId(stack.getTag());
+    return getMaterialFromData(stack);
   }
 
   @Nullable
@@ -112,7 +119,7 @@ public class MaterialItem extends Item implements IMaterialItem {
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flag) {
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
     appendHoverText(this, stack, tooltip, flag);
   }
 

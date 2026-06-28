@@ -3,17 +3,27 @@ package slimeknights.tconstruct.tools.network;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.network.NetworkEvent.Context;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import slimeknights.mantle.network.packet.IThreadsafePacket;
+import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.modifiers.fluid.block.MoveBlocksFluidEffect;
 
 /** Packet handling {@link MoveBlocksFluidEffect} syncing to the client */
 public record PushBlockRowPacket(BlockPos pos, Direction direction, boolean push, int moving) implements IThreadsafePacket {
-  public PushBlockRowPacket(FriendlyByteBuf buffer) {
-    this(buffer.readBlockPos(), buffer.readEnum(Direction.class), buffer.readBoolean(), buffer.readVarInt());
-  }
+  public static final CustomPacketPayload.Type<PushBlockRowPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(TConstruct.MOD_ID, "push_block_row"));
+  public static final StreamCodec<RegistryFriendlyByteBuf, PushBlockRowPacket> STREAM_CODEC = StreamCodec.composite(
+    BlockPos.STREAM_CODEC, PushBlockRowPacket::pos,
+    NeoForgeStreamCodecs.enumCodec(Direction.class), PushBlockRowPacket::direction,
+    ByteBufCodecs.BOOL, PushBlockRowPacket::push,
+    ByteBufCodecs.VAR_INT, PushBlockRowPacket::moving,
+    PushBlockRowPacket::new);
 
   /** Gets the facing value for this packet */
   private Direction facing() {
@@ -21,15 +31,12 @@ public record PushBlockRowPacket(BlockPos pos, Direction direction, boolean push
   }
 
   @Override
-  public void encode(FriendlyByteBuf buffer) {
-    buffer.writeBlockPos(pos);
-    buffer.writeEnum(direction);
-    buffer.writeBoolean(push);
-    buffer.writeVarInt(moving);
+  public CustomPacketPayload.Type<PushBlockRowPacket> type() {
+    return TYPE;
   }
 
   @Override
-  public void handleThreadsafe(Context context) {
+  public void handleThreadsafe(IPayloadContext context) {
     HandleClient.handle(this);
   }
 

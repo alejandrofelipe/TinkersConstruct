@@ -34,7 +34,6 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.LivingEntity;
@@ -52,7 +51,6 @@ import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
 import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
 import net.neoforged.neoforge.client.model.geometry.StandaloneGeometryBakingContext;
 import net.neoforged.neoforge.client.model.geometry.UnbakedGeometryHelper;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.FluidUtil;
@@ -81,21 +79,20 @@ public record FluidContainerModel(FluidStack fluid, boolean flipGas) implements 
   /** Deserializes this model from JSON */
   public static FluidContainerModel deserialize(JsonObject json, JsonDeserializationContext context) {
     FluidStack fluidStack = FluidStack.EMPTY;
-    // parse the fluid with an optional tag
+    // parse the fluid with an optional component patch
     if (json.has("fluid")) {
       JsonElement fluidElement = json.get("fluid");
       Fluid fluid;
-      CompoundTag tag = null;
       if (fluidElement.isJsonObject()) {
         JsonObject fluidObject = fluidElement.getAsJsonObject();
         fluid = Loadables.FLUID.getIfPresent(fluidObject, "name");
-        if (fluidObject.has("nbt")) {
-          tag = CraftingHelper.getNBT(fluidObject.get("nbt"));
-        }
+        // PORT M3: 1.20.1 parsed a raw "nbt" CompoundTag here via CraftingHelper.getNBT and attached it to the
+        //  FluidStack. With data components there is no generic NBT->component bridge for model JSON; if a model needs
+        //  per-fluid components, parse a DataComponentPatch from a "components" key and apply it via stack.applyComponents.
       } else {
         fluid = Loadables.FLUID.convert(fluidElement, "fluid");
       }
-      fluidStack = new FluidStack(fluid, FluidType.BUCKET_VOLUME, tag);
+      fluidStack = new FluidStack(fluid, FluidType.BUCKET_VOLUME);
     }
     boolean flipGas = GsonHelper.getAsBoolean(json, "flip_gas", true);
     return new FluidContainerModel(fluidStack, flipGas);
@@ -168,15 +165,18 @@ public record FluidContainerModel(FluidStack fluid, boolean flipGas) implements 
     return modelBuilder.build();
   }
 
+  /** Location used for baking the model elements */
+  private static final ResourceLocation BAKE_LOCATION = TConstruct.getResource("fluid_container");
+
   @Override
-  public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material,TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
+  public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material,TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides) {
     // We need to disable GUI 3D and block lighting for this to render properly
-    context = StandaloneGeometryBakingContext.builder(context).withGui3d(false).withUseBlockLight(false).build(modelLocation);
+    context = StandaloneGeometryBakingContext.builder(context).withGui3d(false).withUseBlockLight(false).build(BAKE_LOCATION);
     // only do contained fluid if we did not set the fluid in the model properties
     if (fluid.isEmpty()) {
       overrides = new ContainedFluidOverrideHandler(context, overrides, modelState, flipGas);
     }
-    return bakeInternal(context, spriteGetter, modelState, overrides, modelLocation, fluid, flipGas);
+    return bakeInternal(context, spriteGetter, modelState, overrides, BAKE_LOCATION, fluid, flipGas);
   }
 
   /** Handles swapping the model based on the contained fluid */

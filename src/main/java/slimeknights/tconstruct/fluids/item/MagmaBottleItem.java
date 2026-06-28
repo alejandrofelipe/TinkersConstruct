@@ -1,6 +1,5 @@
 package slimeknights.tconstruct.fluids.item;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.InteractionHand;
@@ -14,13 +13,12 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.fluids.util.ConstantFluidContainerWrapper;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /** Magma bottle instance, which lights the drinker on fire */
@@ -32,8 +30,8 @@ public class MagmaBottleItem extends Item {
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
-    super.appendHoverText(stack, worldIn, tooltip, flagIn);
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flagIn) {
+    super.appendHoverText(stack, context, tooltip, flagIn);
     tooltip.add(Component.translatable(
       "potion.withDuration",
       Blocks.FIRE.getName(),
@@ -59,7 +57,7 @@ public class MagmaBottleItem extends Item {
 
   @Override
   public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity living) {
-    living.setSecondsOnFire(fireTime);
+    living.igniteForSeconds(fireTime);
     ItemStack container = stack.getCraftingRemainingItem();
     Player player = living instanceof Player p ? p : null;
     if (player == null || !player.getAbilities().instabuild) {
@@ -77,9 +75,8 @@ public class MagmaBottleItem extends Item {
     return stack;
   }
 
-  @Nullable
-  @Override
-  public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
+  /** Creates the fluid handler for the given stack; registered centrally on {@code RegisterCapabilitiesEvent}. */
+  public IFluidHandlerItem getFluidHandler(ItemStack stack) {
     return new ConstantFluidContainerWrapper(new FluidStack(TinkerFluids.magma.get(), FluidValues.BOTTLE), stack);
   }
 }

@@ -8,9 +8,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import slimeknights.mantle.registration.object.FenceBuildingBlockObject;
 import slimeknights.mantle.registration.object.ItemObject;
 import slimeknights.mantle.registration.object.MetalItemObject;
@@ -76,9 +75,9 @@ public final class TinkerMaterials extends TinkerModule {
   @SubscribeEvent
   void registerSerializers(RegisterEvent event) {
     if (event.getRegistryKey() == Registries.RECIPE_SERIALIZER) {
-      CraftingHelper.register(MaterialIngredient.Serializer.ID, MaterialIngredient.Serializer.INSTANCE);
-      CraftingHelper.register(MaterialValueIngredient.Serializer.ID, MaterialValueIngredient.Serializer.INSTANCE);
-
+      // PORT M3: MaterialIngredient / MaterialValueIngredient now register a NeoForge IngredientType via a
+      //  DeferredRegister<IngredientType<?>> (NeoForgeRegistries.Keys.INGREDIENT_TYPES) owned by those classes,
+      //  mirroring Mantle's MantleIngredients. The Forge CraftingHelper.register(...) calls are dropped here.
       MaterialPredicate.LOADER.register(getResource("variant"), MaterialVariantPredicate.LOADER);
       MaterialPredicate.LOADER.register(getResource("id"), MaterialIdPredicate.LOADER);
       MaterialPredicate.LOADER.register(getResource("has_part"), MaterialHasPartPredicate.LOADER);

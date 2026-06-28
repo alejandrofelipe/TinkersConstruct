@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.library.recipe.modifiers.adding;
 
 import com.google.common.collect.Streams;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -39,7 +39,7 @@ public class MultilevelIncrementalModifierRecipe extends IncrementalModifierReci
   }
 
   @Override
-  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, RegistryAccess access) {
+  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, HolderLookup.Provider access) {
     ToolStack tool = inv.getTinkerable();
 
     // fetch the amount from the modifier, will be 0 if we have a full level
@@ -104,7 +104,7 @@ public class MultilevelIncrementalModifierRecipe extends IncrementalModifierReci
   private List<IDisplayModifierRecipe> displayRecipes = null;
 
   @Override
-  public List<IDisplayModifierRecipe> getRecipes(RegistryAccess access) {
+  public List<IDisplayModifierRecipe> getRecipes(HolderLookup.Provider access) {
     if (displayRecipes == null) {
       // this instance is a proper display recipe for the first level entry, for the rest build display instances with unique requirements keys
       DisplayModifierRecipe.Builder builder = DisplayModifierRecipe.builder()

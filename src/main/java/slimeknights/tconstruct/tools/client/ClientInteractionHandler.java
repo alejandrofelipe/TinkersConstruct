@@ -12,8 +12,8 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickEmpty;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod.EventBusSubscriber;
-import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
@@ -26,7 +26,7 @@ import slimeknights.tconstruct.tools.network.InteractWithAirPacket;
 /**
  * Client side interaction hooks
  */
-@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.FORGE, value = Dist.CLIENT)
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME, value = Dist.CLIENT)
 public class ClientInteractionHandler {
   /** If true, next offhand interaction should be canceled, used since we cannot tell Forge to break the hand loop from the main hand */
   private static boolean cancelNextOffhand = false;

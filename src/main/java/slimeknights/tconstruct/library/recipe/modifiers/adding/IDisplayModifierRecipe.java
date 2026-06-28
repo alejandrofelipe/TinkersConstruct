@@ -143,7 +143,9 @@ public interface IDisplayModifierRecipe extends IModifierRecipe {
   /* Gets a copy of the stack with the given modifiers */
   static ItemStack withModifiers(ItemStack stack, int maxSize, List<ModifierEntry> modifierList, Consumer<ModDataNBT> persistentDataConsumer) {
     ItemStack output = stack.copyWithCount(Math.min(stack.getMaxStackSize(), maxSize));
-    CompoundTag nbt = output.getOrCreateTag();
+
+    // build the tool NBT directly; in 1.21 this lives in the CUSTOM_DATA component, which ToolStack serializes for us
+    CompoundTag nbt = new CompoundTag();
 
     // build modifiers list
     // go through the builder to ensure they are merged properly
@@ -165,6 +167,7 @@ public interface IDisplayModifierRecipe extends IModifierRecipe {
     nbt.put(ToolStack.TAG_VOLATILE_MOD_DATA, volatileNBT);
     nbt.put(ToolStack.TAG_PERSISTENT_MOD_DATA, persistentNBT);
 
-    return output;
+    // write the assembled tag onto the output stack through ToolStack's component seam
+    return ToolStack.from(output.getItem(), ToolDefinition.EMPTY, nbt).updateStack(output);
   }
 }

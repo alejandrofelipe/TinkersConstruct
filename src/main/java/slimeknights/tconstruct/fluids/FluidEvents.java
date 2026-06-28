@@ -1,23 +1,21 @@
 package slimeknights.tconstruct.fluids;
 
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.event.AttachCapabilitiesEvent;
 import net.neoforged.neoforge.event.furnace.FurnaceFuelBurnTimeEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.fml.common.Mod.EventBusSubscriber;
-import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.fluids.util.ConstantFluidContainerWrapper;
 
 /**
- * Event subscriber for modifier events
- * Note the way the subscribers are set up, technically works on anything that has the tic_modifiers tag
+ * Event subscriber for fluid game events.
  */
 @SuppressWarnings("unused")
-@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.FORGE)
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
 public class FluidEvents {
   @SubscribeEvent
   static void onFurnaceFuel(FurnaceFuelBurnTimeEvent event) {
@@ -27,13 +25,12 @@ public class FluidEvents {
     }
   }
 
-  @SubscribeEvent
-  static void attachCapabilities(AttachCapabilitiesEvent<ItemStack> event) {
-    ItemStack stack = event.getObject();
-    if (event.getObject().is(Items.POWDER_SNOW_BUCKET)) {
-      event.addCapability(
-        TConstruct.getResource("powdered_snow"),
-        new ConstantFluidContainerWrapper(new FluidStack(TinkerFluids.powderedSnow.get(), FluidType.BUCKET_VOLUME), stack, Items.BUCKET.getDefaultInstance()));
-    }
+  /**
+   * Creates the fluid handler for the vanilla powder snow bucket.
+   * PORT M3: register this on RegisterCapabilitiesEvent via
+   * {@code event.registerItem(Capabilities.FluidHandler.ITEM, FluidEvents::powderSnowHandler, Items.POWDER_SNOW_BUCKET)}.
+   */
+  public static IFluidHandlerItem powderSnowHandler(net.minecraft.world.item.ItemStack stack, Void ctx) {
+    return new ConstantFluidContainerWrapper(new FluidStack(TinkerFluids.powderedSnow.get(), FluidType.BUCKET_VOLUME), stack, Items.BUCKET.getDefaultInstance());
   }
 }

@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.library.recipe.casting.material;
 
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -150,12 +150,12 @@ public class PartSwapCastingRecipe extends AbstractMaterialCastingRecipe impleme
   }
 
   @Override
-  public ItemStack getResultItem(RegistryAccess registryAccess) {
+  public ItemStack getResultItem(HolderLookup.Provider registryAccess) {
     return getCast().getItems()[0].copy();
   }
 
   @Override
-  public ItemStack assemble(ICastingContainer inv, RegistryAccess access) {
+  public ItemStack assemble(ICastingContainer inv, HolderLookup.Provider access) {
     MaterialFluidRecipe fluidRecipe = getFluidRecipe(inv);
     MaterialVariant material = fluidRecipe.getOutput();
     ItemStack cast = inv.getStack();
@@ -218,7 +218,7 @@ public class PartSwapCastingRecipe extends AbstractMaterialCastingRecipe impleme
   }
 
   @Override
-  public List<IDisplayableCastingRecipe> getRecipes(RegistryAccess access) {
+  public List<IDisplayableCastingRecipe> getRecipes(HolderLookup.Provider access) {
     if (multiRecipes == null) {
       List<ItemStack> casts = List.of(getCast().getItems());
       Predicate<MaterialFluidRecipe> validRecipe = recipe -> recipe.isVisible() && materials.matches(recipe.getOutput().getVariant());
@@ -239,7 +239,7 @@ public class PartSwapCastingRecipe extends AbstractMaterialCastingRecipe impleme
                   results.add(withMaterial(tool, output).copy());
                   // mark input as display so tooltip does not show useless stats
                   ItemStack input = withMaterial(tool, MaterialVariant.of(ToolBuildHandler.getRenderMaterial(0)));
-                  input.getOrCreateTag().putBoolean(TooltipUtil.KEY_DISPLAY, true);
+                  TooltipUtil.setDisplay(input);
                   inputs.add(input);
                 }
               }

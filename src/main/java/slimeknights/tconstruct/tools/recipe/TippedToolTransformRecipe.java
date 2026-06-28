@@ -1,11 +1,11 @@
 package slimeknights.tconstruct.tools.recipe;
 
+import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import slimeknights.mantle.data.loadable.common.IngredientLoadable;
@@ -64,11 +64,13 @@ public class TippedToolTransformRecipe extends ToolBuildingRecipe {
             break;
           }
         }
-        // if we found one, set its NBT into the result tool
+        // if we found one, set its potion into the result tool
         if (!stack.isEmpty()) {
-          CompoundTag tag = stack.getTag();
-          if (tag != null && tag.contains(PotionUtils.TAG_POTION, Tag.TAG_STRING)) {
-            tool.getPersistentData().putString(modifier, tag.getString(PotionUtils.TAG_POTION));
+          PotionContents contents = stack.get(DataComponents.POTION_CONTENTS);
+          if (contents != null) {
+            contents.potion()
+              .map(holder -> holder.unwrapKey().map(key -> key.location().toString()).orElse(null))
+              .ifPresent(id -> tool.getPersistentData().putString(modifier, id));
           }
         }
       }
@@ -82,11 +84,17 @@ public class TippedToolTransformRecipe extends ToolBuildingRecipe {
       ItemStack result = super.getDisplayOutput().get(0);
       displayOutput = Arrays.stream(ingredients.get(0).getItems())
         .map(stack -> {
-          CompoundTag tag = stack.getTag();
-          if (tag != null) {
-            ItemStack copy = result.copy();
-            ToolStack.from(copy).getPersistentData().putString(modifier, tag.getString(PotionUtils.TAG_POTION));
-            return copy;
+          PotionContents contents = stack.get(DataComponents.POTION_CONTENTS);
+          if (contents != null) {
+            String id = contents.potion()
+              .flatMap(Holder::unwrapKey)
+              .map(key -> key.location().toString())
+              .orElse(null);
+            if (id != null) {
+              ItemStack copy = result.copy();
+              ToolStack.from(copy).getPersistentData().putString(modifier, id);
+              return copy;
+            }
           }
           return result;
         }).toList();

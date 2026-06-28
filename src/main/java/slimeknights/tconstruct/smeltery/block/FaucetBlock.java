@@ -97,9 +97,8 @@ public class FaucetBlock extends Block implements EntityBlock {
     return BlockEntityHelper.serverTicker(pLevel, type, TinkerSmeltery.faucet.get(), FaucetBlockEntity.SERVER_TICKER);
   }
 
-  @SuppressWarnings("deprecation")
   @Override
-  public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit) {
+  protected InteractionResult useWithoutItem(BlockState state, Level worldIn, BlockPos pos, Player player, BlockHitResult hit) {
     if (player.isShiftKeyDown()) {
       return InteractionResult.PASS;
     }

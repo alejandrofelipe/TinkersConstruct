@@ -36,7 +36,10 @@ public class ScopeModifier extends Modifier {
   @Deprecated(forRemoval = true)
   public static void stopScoping(LivingEntity entity) {
     if (entity.level().isClientSide) {
-      entity.getCapability(TinkerDataCapability.CAPABILITY).ifPresent(data -> data.computeIfAbsent(TinkerDataKeys.FOV_MODIFIER).remove(SCOPE));
+      TinkerDataCapability.Holder data = entity.getCapability(TinkerDataCapability.CAPABILITY);
+      if (data != null) {
+        data.computeIfAbsent(TinkerDataKeys.FOV_MODIFIER).remove(SCOPE);
+      }
     }
   }
 }

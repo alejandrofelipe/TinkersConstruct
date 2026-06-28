@@ -13,6 +13,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.extensions.common.IClientMobEffectExtensions;
+import net.neoforged.neoforge.common.EffectCure;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.modifiers.hook.interaction.GeneralInteractionModifierHook;
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
@@ -30,8 +31,8 @@ public class HelmetChargingEffect extends MobEffect {
   }
 
   @Override
-  public List<ItemStack> getCurativeItems() {
-    return new ArrayList<>();
+  public void fillEffectCures(java.util.Set<EffectCure> cures, MobEffectInstance effectInstance) {
+    // intentionally add no cures so this effect cannot be cured
   }
 
   @Override

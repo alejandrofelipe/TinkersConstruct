@@ -27,7 +27,8 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -362,7 +363,7 @@ public class ToolModel implements IUnbakedGeometry<ToolModel> {
   }
 
   /**
-   * Same as {@link #bake(IGeometryBakingContext, ModelBaker, Function, ModelState, ItemOverrides, ResourceLocation)}, but uses fewer arguments and does not require an instance
+   * Same as {@link #bake(IGeometryBakingContext, ModelBaker, Function, ModelState, ItemOverrides)}, but uses fewer arguments and does not require an instance
    * @param owner           Model configuration
    * @param spriteGetter    Sprite getter function
    * @param largeTransforms Transform to apply to the large parts. If null, only generates small parts
@@ -505,8 +506,12 @@ public class ToolModel implements IUnbakedGeometry<ToolModel> {
     return new BakedToolModel(right, left, small, gui);
   }
 
+  /** Location used for baking and modifier model lookup, since the bake method no longer receives the model location */
+  private static final ResourceLocation BAKE_LOCATION = TConstruct.getResource("dynamic_tool");
+
   @Override
-  public BakedModel bake(IGeometryBakingContext owner, ModelBaker baker, Function<Material,TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation) {
+  public BakedModel bake(IGeometryBakingContext owner, ModelBaker baker, Function<Material,TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides) {
+    ResourceLocation modelLocation = BAKE_LOCATION;
     // warn on deprecated keys
     if (showTraits) {
       TConstruct.LOG.warn("Using deprecated key 'show_traits' in tool model {}, use 'constant' in modifier model maps with TraitModel instead", modelLocation);
@@ -823,11 +828,14 @@ public class ToolModel implements IUnbakedGeometry<ToolModel> {
       ItemStack ammo;
       ModDataNBT persistentData = tool.getPersistentData();
       if (ammoKey != null && persistentData.contains(ammoKey, Tag.TAG_COMPOUND)) {
-        ammo = ItemStack.of(persistentData.getCompound(ammoKey));
+        HolderLookup.Provider registries = Minecraft.getInstance().level != null
+                                           ? Minecraft.getInstance().level.registryAccess()
+                                           : RegistryAccess.EMPTY;
+        ammo = ItemStack.parseOptional(registries, persistentData.getCompound(ammoKey));
         builder.add(ammo.getItem());
-        CompoundTag tag = ammo.getTag();
-        if (tag != null) {
-          builder.add(tag);
+        // component-aware: differentiate ammo with different components in the cache key
+        if (!ammo.isComponentsPatchEmpty()) {
+          builder.add(ammo.getComponentsPatch());
         }
       } else {
         ammo = ItemStack.EMPTY;

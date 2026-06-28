@@ -19,7 +19,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.event.EventHooks;
 import slimeknights.tconstruct.library.tools.helper.ToolAttackUtil;
 
 import javax.annotation.Nullable;
@@ -142,7 +142,7 @@ public class CustomExplosion extends Explosion {
                Math.floor(this.y + diameter + 1),
                Math.floor(this.z + diameter + 1)),
       entityPredicate);
-    ForgeEventFactory.onExplosionDetonate(this.level, this, list, diameter);
+    EventHooks.onExplosionDetonate(this.level, this, list, diameter);
 
     // start pushing entities
     // this logic is for the most part identical to vanilla, except taking better advantage of vec3
@@ -193,7 +193,7 @@ public class CustomExplosion extends Explosion {
   public void handleServer() {
     // based on ServerLevel#explode
     if (!level.isClientSide) {
-      if (!ForgeEventFactory.onExplosionStart(level, this)) {
+      if (!EventHooks.onExplosionStart(level, this)) {
         explode();
         finalizeExplosion(false);
         syncToClient();
@@ -203,7 +203,7 @@ public class CustomExplosion extends Explosion {
 
   /** Runs the logic on both sides */
   public void doDualSide(Level level, boolean spawnParticles) {
-    if (!ForgeEventFactory.onExplosionStart(level, this)) {
+    if (!EventHooks.onExplosionStart(level, this)) {
       explode();
       finalizeExplosion(spawnParticles);
     }

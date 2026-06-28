@@ -19,8 +19,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStack.TooltipPart;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.ToolActions;
+import net.minecraft.core.component.DataComponents;
+import net.neoforged.neoforge.common.ItemAbilities;
 import slimeknights.mantle.client.SafeClientAccess;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.TConstruct;
@@ -80,6 +82,16 @@ public class TooltipUtil {
 
   private TooltipUtil() {}
 
+  /**
+   * Reads the tool's NBT from the stack's custom-data component (1.21 stacks no longer carry a free-form tag).
+   * @return  Live tool tag, or null if the component is absent
+   */
+  @Nullable
+  private static CompoundTag getStackTag(ItemStack stack) {
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    return data == null ? null : data.getUnsafe();
+  }
+
   /** Tooltip telling the player to hold shift for more info */
   public static final Component TOOLTIP_HOLD_SHIFT = TConstruct.makeTranslation("tooltip", "hold_shift", TConstruct.makeTranslation("key", "shift").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC));
   /** Tooltip telling the player to hold control for part info */
@@ -97,26 +109,26 @@ public class TooltipUtil {
    * @return  True if marked display
    */
   public static boolean isDisplay(ItemStack stack) {
-    CompoundTag nbt = stack.getTag();
+    CompoundTag nbt = getStackTag(stack);
     return nbt != null && nbt.getBoolean(KEY_DISPLAY);
   }
 
   /** Sets the tool name in a way that will not be italic */
   public static void setDisplayName(ItemStack tool, String name) {
     if (name.isEmpty()) {
-      CompoundTag tag = tool.getTag();
-      if (tag != null) {
-        tag.remove(KEY_NAME);
+      CompoundTag tag = getStackTag(tool);
+      if (tag != null && tag.contains(KEY_NAME)) {
+        CustomData.update(DataComponents.CUSTOM_DATA, tool, t -> t.remove(KEY_NAME));
       }
     } else {
-      tool.getOrCreateTag().putString(KEY_NAME, name);
+      CustomData.update(DataComponents.CUSTOM_DATA, tool, t -> t.putString(KEY_NAME, name));
       tool.resetHoverName();
     }
   }
 
   /** Gets the display name from the given tool */
   public static String getDisplayName(ItemStack tool) {
-    CompoundTag tag = tool.getTag();
+    CompoundTag tag = getStackTag(tool);
     if (tag != null) {
       return tag.getString(KEY_NAME);
     }
@@ -170,7 +182,7 @@ public class TooltipUtil {
     } else if (!ToolStack.isInitialized(stack)) {
       tooltip.add(UNINITIALIZED);
       if (definition.hasMaterials()) {
-        CompoundTag nbt = stack.getTag();
+        CompoundTag nbt = getStackTag(stack);
         if (nbt == null || !nbt.contains(ToolStack.TAG_MATERIALS, Tag.TAG_LIST)) {
           tooltip.add(RANDOM_MATERIALS);
         }
@@ -215,18 +227,10 @@ public class TooltipUtil {
         }
       }
     }
-    if (!stack.isEmpty()) {
-      CompoundTag tag = stack.getTag();
-      if (tag != null && tag.contains("Enchantments", Tag.TAG_LIST)) {
-        ListTag enchantments = tag.getList("Enchantments", Tag.TAG_COMPOUND);
-        for (int i = 0; i < enchantments.size(); ++i) {
-          CompoundTag enchantmentTag = enchantments.getCompound(i);
-          // TODO: is this the best place for this, or should we let vanilla run?
-          BuiltInRegistries.ENCHANTMENT.getOptional(ResourceLocation.tryParse(enchantmentTag.getString("id")))
-                                       .ifPresent(enchantment -> tooltips.add(enchantment.getFullname(enchantmentTag.getInt("lvl"))));
-        }
-      }
-    }
+    // PORT M3: 1.21 stores enchantments in the DataComponents.ENCHANTMENTS component (ItemEnchantments) keyed by
+    // Holder<Enchantment> rather than the legacy "Enchantments" NBT list, and Enchantment#getFullName moved to a
+    // static Enchantment.getFullname(Holder, level). Reading enchantment names for the tooltip needs that rewrite,
+    // which depends on the module-wide enchantment-component migration; left as a marker.
   }
 
   /**
@@ -293,7 +297,7 @@ public class TooltipUtil {
       builder.addOptional(ToolStats.ARMOR_TOUGHNESS);
       builder.addOptional(ToolStats.KNOCKBACK_RESISTANCE, 10f);
     }
-    if (ModifierUtil.canPerformAction(tool, ToolActions.SHIELD_BLOCK)) {
+    if (ModifierUtil.canPerformAction(tool, ItemAbilities.SHIELD_BLOCK)) {
       builder.add(ToolStats.BLOCK_AMOUNT);
       builder.add(ToolStats.BLOCK_ANGLE);
     }
@@ -409,6 +413,12 @@ public class TooltipUtil {
     }
   }
 
+  // PORT M3 (attributes): the attribute helpers below still use the 1.20 attribute API (raw Attribute, AttributeModifier
+  // #getOperation/#getAmount/#getId, Operation.ADDITION/MULTIPLY_BASE, UUID ids, raw Attributes.* constants, and the
+  // ItemStack.TooltipPart masks above). 1.21 keys attributes by Holder<Attribute>, identifies modifiers by ResourceLocation,
+  // renamed Operation.ADDITION->ADD_VALUE / MULTIPLY_BASE->ADD_MULTIPLIED_BASE, and moved hidden-tooltip control to data
+  // components. This is part of the module-wide attribute redesign (shared with IModifiable/ITinkerStationDisplay
+  // #getAttributeModifiers and TooltipBuilder) and is left for that coordinated pass.
   /**
    * Adds attributes to the tooltip
    * @param item           Modifiable item instance

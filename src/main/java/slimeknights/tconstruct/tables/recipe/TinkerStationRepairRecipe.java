@@ -1,9 +1,6 @@
 package slimeknights.tconstruct.tables.recipe;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -30,14 +27,10 @@ import slimeknights.tconstruct.tables.TinkerTables;
 import java.util.function.IntConsumer;
 
 /** Recipe for repairing tools */
-@RequiredArgsConstructor
 public class TinkerStationRepairRecipe implements ITinkerStationRecipe {
   protected static final RecipeResult<LazyToolStack> FULLY_REPAIRED = RecipeResult.failure(TConstruct.makeTranslationKey("recipe", "tool_repair.fully_repaired"));
   /** No action int consumer for recipe result */
   private static final IntConsumer NO_ACTION = i -> {};
-
-  @Getter
-  private final ResourceLocation id;
 
   /**
    * Gets the material for the given slot

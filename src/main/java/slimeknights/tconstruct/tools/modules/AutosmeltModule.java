@@ -104,8 +104,8 @@ public class AutosmeltModule implements ModifierModule, ProcessLootModifierHook 
    */
   @Nullable
   private AbstractCookingRecipe findCachedRecipe(ItemStack stack, Level world) {
-    // don't use the cache if there is a tag, prevent breaking NBT sensitive recipes
-    if (stack.hasTag()) {
+    // don't use the cache if there are components, prevent breaking component-sensitive recipes
+    if (!stack.getComponentsPatch().isEmpty()) {
       return findRecipe(stack, world).orElse(null);
     }
     try {

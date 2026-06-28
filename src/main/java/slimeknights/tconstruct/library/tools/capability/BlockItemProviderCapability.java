@@ -1,26 +1,19 @@
 package slimeknights.tconstruct.library.tools.capability;
 
-import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.CapabilityManager;
-import net.neoforged.neoforge.common.capabilities.CapabilityToken;
-import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
-import net.neoforged.neoforge.common.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.common.util.LazyOptional;
-import net.neoforged.neoforge.event.AttachCapabilitiesEvent;
-import net.neoforged.bus.api.EventPriority;
-import org.jetbrains.annotations.ApiStatus;
-import slimeknights.mantle.util.LogicHelper;
+import net.neoforged.neoforge.capabilities.ItemCapability;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import slimeknights.tconstruct.TConstruct;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A capability that provides block items to things that place blocks, such as the Exchanging modifier or some place block fluid effects like Ichor.
@@ -30,26 +23,25 @@ public interface BlockItemProviderCapability {
 
   /** Capability ID */
   ResourceLocation ID = TConstruct.getResource("block_provider");
-  /** Capability type */
-  Capability<BlockItemProviderCapability> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
+  /**
+   * Capability instance. Under NeoForge this is an {@link ItemCapability} resolved via
+   * {@code stack.getCapability(CAPABILITY)} and registered on {@link RegisterCapabilitiesEvent}.
+   */
+  ItemCapability<BlockItemProviderCapability,Void> CAPABILITY = ItemCapability.createVoid(ID, BlockItemProviderCapability.class);
 
-  /** Registers this capability */
-  @ApiStatus.Internal
-  static void register() {
-    TConstruct.modBus.addListener(EventPriority.NORMAL, false, RegisterCapabilitiesEvent.class, BlockItemProviderCapability::register);
-    // receive the attach event on low priority, so that our default implementations do not override other mods.
-    MinecraftForge.EVENT_BUS.addGenericListener(ItemStack.class, EventPriority.LOW, BlockItemProviderCapability::attachCapability);
-  }
-
-  /** Registers the capability with the event bus */
-  private static void register(RegisterCapabilitiesEvent event) {
-    event.register(BlockItemProviderCapability.class);
-  }
-
-  /** Event listener to attach default implementation(s) of the capability */
-  private static void attachCapability(AttachCapabilitiesEvent<ItemStack> event) {
-    if (event.getObject().getItem() instanceof BlockItem) {
-      event.addCapability(SimpleBlockItem.ID, SimpleBlockItem.INSTANCE);
+  /**
+   * Registers the default {@link SimpleBlockItem} implementation for all block items. Wire onto
+   * {@link RegisterCapabilitiesEvent} centrally (M3). Mods may override per-item by registering at a higher priority.
+   */
+  static void register(RegisterCapabilitiesEvent event) {
+    List<Item> blockItems = new ArrayList<>();
+    for (Item item : BuiltInRegistries.ITEM) {
+      if (item instanceof BlockItem) {
+        blockItems.add(item);
+      }
+    }
+    if (!blockItems.isEmpty()) {
+      event.registerItem(CAPABILITY, (stack, ctx) -> SimpleBlockItem.INSTANCE, blockItems.toArray(new Item[0]));
     }
   }
 
@@ -59,7 +51,7 @@ public interface BlockItemProviderCapability {
    */
   @Nullable
   static BlockItemProviderCapability getBlockProvider(ItemStack stack) {
-    return LogicHelper.orElseNull(stack.getCapability(CAPABILITY));
+    return stack.getCapability(CAPABILITY);
   }
 
   /**
@@ -101,11 +93,8 @@ public interface BlockItemProviderCapability {
   /**
    * A simple implementation of {@link BlockItemProviderCapability} that provides from an ItemStack holding a BlockItem
    */
-  final class SimpleBlockItem implements BlockItemProviderCapability, ICapabilityProvider {
+  final class SimpleBlockItem implements BlockItemProviderCapability {
     public static final SimpleBlockItem INSTANCE = new SimpleBlockItem();
-    private static final ResourceLocation ID = TConstruct.getResource("block_item_provider");
-
-    private final LazyOptional<BlockItemProviderCapability> lazy = LazyOptional.of(() -> this);
 
     @Override
     public ItemStack getBlockItemStack(ItemStack capStack, @Nullable LivingEntity entity) {
@@ -115,12 +104,6 @@ public interface BlockItemProviderCapability {
     @Override
     public void consume(ItemStack capStack, ItemStack backingStack, @Nullable LivingEntity entity) {
       capStack.shrink(1);
-    }
-
-    // Because this is an incredibly simple capability it acts as provider and as the actual capability implementation.
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction dir) {
-      return CAPABILITY.orEmpty(cap, lazy);
     }
   }
 }

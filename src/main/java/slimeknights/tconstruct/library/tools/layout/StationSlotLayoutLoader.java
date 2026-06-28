@@ -17,10 +17,11 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.conditions.ICondition;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
@@ -92,7 +93,7 @@ public class StationSlotLayoutLoader extends SimpleJsonResourceReloadListener {
       try {
         // skip empty objects, allows disabling a slot at a lower datapack
         JsonObject object = GsonHelper.convertToJsonObject(value, "station_layout");
-        if (!object.entrySet().isEmpty() && CraftingHelper.processConditions(object, "conditions", conditionContext)) {
+        if (!object.entrySet().isEmpty() && conditionsMatch(object)) {
           // just need a valid slot information
           StationSlotLayout layout = GSON.fromJson(object, StationSlotLayout.class);
           int size = layout.getInputSlots().size() + (layout.getToolSlot().isHidden() ? 0 : 1);
@@ -139,6 +140,24 @@ public class StationSlotLayoutLoader extends SimpleJsonResourceReloadListener {
     conditionContext = event.getConditionContext();
   }
 
+  /**
+   * Evaluates the NeoForge conditions on the given object, replacing the removed {@code CraftingHelper.processConditions}.
+   * Conditions live under the {@code neoforge:conditions} key and are decoded via {@link ICondition#LIST_CODEC}.
+   * @return  True if there are no conditions or all conditions pass
+   */
+  private boolean conditionsMatch(JsonObject object) {
+    if (!object.has("conditions")) {
+      return true;
+    }
+    List<ICondition> conditions = ICondition.LIST_CODEC.parse(JsonOps.INSTANCE, object.get("conditions")).getOrThrow(JsonParseException::new);
+    for (ICondition condition : conditions) {
+      if (!condition.test(conditionContext)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
 
   /* Static */
 
@@ -149,8 +168,8 @@ public class StationSlotLayoutLoader extends SimpleJsonResourceReloadListener {
 
   /** Initializes the tool definition loader */
   public static void init() {
-    MinecraftForge.EVENT_BUS.addListener(INSTANCE::addDataPackListeners);
-    MinecraftForge.EVENT_BUS.addListener(INSTANCE::onDatapackSync);
+    NeoForge.EVENT_BUS.addListener(INSTANCE::addDataPackListeners);
+    NeoForge.EVENT_BUS.addListener(INSTANCE::onDatapackSync);
   }
 
   /** GSON serializer for ingredients */

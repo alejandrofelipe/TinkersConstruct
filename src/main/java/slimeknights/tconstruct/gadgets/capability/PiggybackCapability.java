@@ -1,39 +1,38 @@
 package slimeknights.tconstruct.gadgets.capability;
 
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.CapabilityManager;
-import net.neoforged.neoforge.common.capabilities.CapabilityToken;
-import net.neoforged.neoforge.common.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.event.AttachCapabilitiesEvent;
-import net.neoforged.bus.api.EventPriority;
+import net.neoforged.neoforge.capabilities.EntityCapability;
 import slimeknights.tconstruct.TConstruct;
 
-/** Capability logic */
+import javax.annotation.Nullable;
+
+/**
+ * Capability logic for the piggyback handler.
+ * <p>
+ * The capability lookup object is defined here; registration against players happens centrally in the
+ * mod's {@code RegisterCapabilitiesEvent} handler (see {@link #provider(Entity, Direction)}).
+ */
 public class PiggybackCapability {
   private static final ResourceLocation ID = TConstruct.getResource("piggyback");
-  public static final Capability<PiggybackHandler> PIGGYBACK = CapabilityManager.get(new CapabilityToken<>() {});
+
+  /** Entity capability lookup replacing the old Forge {@code Capability} token */
+  public static final EntityCapability<PiggybackHandler, Direction> PIGGYBACK =
+    EntityCapability.createSided(ID, PiggybackHandler.class);
 
   private PiggybackCapability() {}
 
-  /** Registers this capability */
-  public static void register() {
-    TConstruct.modBus.addListener(EventPriority.NORMAL, false, RegisterCapabilitiesEvent.class, PiggybackCapability::register);
-    MinecraftForge.EVENT_BUS.addGenericListener(Entity.class, PiggybackCapability::attachCapability);
-  }
-
-  /** Registers the capability with the event bus */
-  private static void register(RegisterCapabilitiesEvent event) {
-    event.register(PiggybackHandler.class);
-  }
-
-  /** Event listener to attach the capability */
-  private static void attachCapability(AttachCapabilitiesEvent<Entity> event) {
-    if (event.getObject() instanceof Player) {
-      event.addCapability(ID, new PiggybackHandler((Player) event.getObject()));
+  /**
+   * Provider invoked by the central {@code RegisterCapabilitiesEvent} registration to build a handler for an entity.
+   * Returns a handler only for players, matching the old attach behavior.
+   */
+  @Nullable
+  public static PiggybackHandler provider(Entity entity, @Nullable Direction side) {
+    if (entity instanceof Player player) {
+      return new PiggybackHandler(player);
     }
+    return null;
   }
 }

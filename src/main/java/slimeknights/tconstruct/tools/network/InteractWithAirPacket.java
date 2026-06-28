@@ -1,14 +1,19 @@
 package slimeknights.tconstruct.tools.network;
 
 import lombok.RequiredArgsConstructor;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.NetworkEvent.Context;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import slimeknights.mantle.network.packet.IThreadsafePacket;
+import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.tools.logic.InteractionHandler;
 
@@ -24,25 +29,22 @@ public enum InteractWithAirPacket implements IThreadsafePacket {
 
   private final InteractionHand hand;
 
+  public static final CustomPacketPayload.Type<InteractWithAirPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(TConstruct.MOD_ID, "interact_with_air"));
+  public static final StreamCodec<RegistryFriendlyByteBuf, InteractWithAirPacket> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(InteractWithAirPacket.class);
+
   /** Gets the packet for the given hand */
   public static InteractWithAirPacket fromChestplate(InteractionHand hand) {
     return hand == InteractionHand.OFF_HAND ? OFFHAND : MAINHAND;
   }
 
-  /** Gets the packet from the packet buffer */
-  public static InteractWithAirPacket read(FriendlyByteBuf buffer) {
-    return buffer.readEnum(InteractWithAirPacket.class);
+  @Override
+  public CustomPacketPayload.Type<InteractWithAirPacket> type() {
+    return TYPE;
   }
 
   @Override
-  public void encode(FriendlyByteBuf buffer) {
-    buffer.writeEnum(this);
-  }
-
-  @Override
-  public void handleThreadsafe(Context context) {
-    ServerPlayer player = context.getSender();
-    if (player != null && !player.isSpectator()) {
+  public void handleThreadsafe(IPayloadContext context) {
+    if (context.player() instanceof ServerPlayer player && !player.isSpectator()) {
       if (this == LEFT_CLICK) {
         ItemStack held = player.getItemInHand(hand);
         if (held.is(TinkerTags.Items.INTERACTABLE_LEFT)) {

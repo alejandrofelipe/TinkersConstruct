@@ -12,7 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
 import slimeknights.tconstruct.common.Sounds;
 
@@ -52,7 +52,7 @@ public class TeleportHelper {
 
       level.gameEvent(GameEvent.TELEPORT, living.position(), GameEvent.Context.of(living));
       EntityTeleportEvent event = factory.create(living, x, y, z);
-      MinecraftForge.EVENT_BUS.post(event);
+      NeoForge.EVENT_BUS.post(event);
       if (!event.isCanceled() && living.randomTeleport(event.getTargetX(), event.getTargetY(), event.getTargetZ(), true)) {
         SoundEvent soundevent = Sounds.SLIME_TELEPORT.getSound();
         // sound where we left
@@ -77,7 +77,7 @@ public class TeleportHelper {
 
   /** Fires the teleport event, then teleports the player if it works */
   public static boolean tryTeleport(EntityTeleportEvent event) {
-    MinecraftForge.EVENT_BUS.post(event);
+    NeoForge.EVENT_BUS.post(event);
     if (!event.isCanceled()) {
       // spawn particles at old location
       Entity entity = event.getEntity();

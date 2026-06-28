@@ -145,7 +145,7 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
       ItemStack result = lazyToolStack.getStack();
       tinkerInfo.setCaption(result.getHoverName());
       List<Component> list = new ArrayList<>();
-      result.getItem().appendHoverText(result, Minecraft.getInstance().level, list, Default.NORMAL);
+      result.getItem().appendHoverText(result, Item.TooltipContext.of(Minecraft.getInstance().level), list, Default.NORMAL);
       tinkerInfo.setText(list);
     }
   }

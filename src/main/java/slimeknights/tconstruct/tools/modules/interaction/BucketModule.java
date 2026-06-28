@@ -164,7 +164,7 @@ public record BucketModule(IJsonPredicate<Fluid> fluids) implements ModifierModu
     // need at least a bucket worth of empty space in a fluid we can pickup, and cannot have NBT on the stored fluid
     FluidStack fluidStack = TANK_HELPER.getFluid(tool);
     Fluid currentFluid = fluidStack.getFluid();
-    if (fluidStack.hasTag() || TANK_HELPER.getCapacity(tool) - fluidStack.getAmount() < FluidType.BUCKET_VOLUME || !fluidStack.isEmpty() && !fluids.matches(currentFluid)) {
+    if (!fluidStack.getComponentsPatch().isEmpty() || TANK_HELPER.getCapacity(tool) - fluidStack.getAmount() < FluidType.BUCKET_VOLUME || !fluidStack.isEmpty() && !fluids.matches(currentFluid)) {
       return InteractionResult.PASS;
     }
     // have to trace to find the fluid, ensure we can edit the position

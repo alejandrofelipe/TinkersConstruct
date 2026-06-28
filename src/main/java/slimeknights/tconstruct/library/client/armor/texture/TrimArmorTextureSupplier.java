@@ -14,6 +14,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.armortrim.TrimMaterial;
@@ -121,7 +122,8 @@ public record TrimArmorTextureSupplier(ModifierId modifier, ResourceLocation pat
     public void renderTexture(Model model, PoseStack matrices, MultiBufferSource bufferSource, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean hasGlint) {
       // ignoring glint as odds are very low trim texture is the first one
       VertexConsumer buffer = trimSprite.wrap(bufferSource.getBuffer(Sheets.armorTrimsSheet()));
-      model.renderToBuffer(matrices, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+      // 1.21 renderToBuffer takes a single packed ARGB int rather than four floats
+      model.renderToBuffer(matrices, buffer, packedLight, packedOverlay, FastColor.ARGB32.colorFromFloat(alpha, red, green, blue));
     }
   }
 }

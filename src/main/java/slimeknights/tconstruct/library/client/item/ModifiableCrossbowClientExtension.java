@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.library.client.item;
 
 import net.minecraft.client.model.HumanoidModel.ArmPose;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -19,10 +19,9 @@ public class ModifiableCrossbowClientExtension extends ModifiableItemClientExten
   @Nullable
   @Override
   public ArmPose getArmPose(LivingEntity living, InteractionHand hand, ItemStack stack) {
-    if (!living.swinging) {
-      CompoundTag tag = stack.getTag();
+    if (!living.swinging && !stack.isComponentsPatchEmpty()) {
       // must have ammo in persistent data
-      if (tag != null && tag.getCompound(ToolStack.TAG_PERSISTENT_MOD_DATA).contains(ModifiableCrossbowItem.KEY_CROSSBOW_AMMO.toString(), CompoundTag.TAG_COMPOUND)) {
+      if (ToolStack.from(stack).getPersistentData().contains(ModifiableCrossbowItem.KEY_CROSSBOW_AMMO, Tag.TAG_COMPOUND)) {
         return ArmPose.CROSSBOW_HOLD;
       }
     }

@@ -3,8 +3,6 @@ package slimeknights.tconstruct.library.client.armor.texture;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.Util;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.mantle.data.loadable.Loadables;
@@ -13,9 +11,10 @@ import slimeknights.mantle.data.loadable.primitive.IntLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.tconstruct.library.client.materials.MaterialRenderInfo;
 import slimeknights.tconstruct.library.client.materials.MaterialRenderInfoLoader;
+import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
-import slimeknights.tconstruct.library.tools.nbt.ToolStack;
+import slimeknights.tconstruct.library.tools.nbt.MaterialIdNBT;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -147,9 +146,11 @@ public abstract class MaterialArmorTextureSupplier implements ArmorTextureSuppli
 
     @Override
     protected String getMaterial(ItemStack stack) {
-      CompoundTag tag = stack.getTag();
-      if (tag != null && tag.contains(ToolStack.TAG_MATERIALS, Tag.TAG_LIST)) {
-        return tag.getList(ToolStack.TAG_MATERIALS, Tag.TAG_STRING).getString(index);
+      if (!stack.isComponentsPatchEmpty()) {
+        MaterialVariantId material = MaterialIdNBT.from(stack).getMaterial(index);
+        if (!IMaterial.UNKNOWN_ID.equals(material)) {
+          return material.toString();
+        }
       }
       return "";
     }

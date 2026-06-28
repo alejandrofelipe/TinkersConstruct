@@ -80,10 +80,14 @@ public class FluidTextureModel implements IUnbakedGeometry<FluidTextureModel> {
     return name;
   }
 
+  /** Location used for logging since the bake method no longer receives the model location */
+  private static final ResourceLocation BAKE_LOCATION = TConstruct.getResource("fluid_texture");
+
   @Override
-  public BakedModel bake(IGeometryBakingContext owner, ModelBaker baker, Function<Material,TextureAtlasSprite> spriteGetter, ModelState transform, ItemOverrides overrides, ResourceLocation modelLocation) {
+  public BakedModel bake(IGeometryBakingContext owner, ModelBaker baker, Function<Material,TextureAtlasSprite> spriteGetter, ModelState transform, ItemOverrides overrides) {
+    ResourceLocation modelLocation = BAKE_LOCATION;
     // start by baking the model, handing UV lock
-    BakedModel baked = model.bake(owner, baker, spriteGetter, transform, overrides, modelLocation);
+    BakedModel baked = model.bake(owner, baker, spriteGetter, transform, overrides);
 
     // determine which block parts are fluids
     Set<String> fluidTextures = this.fluids.isEmpty() ? Collections.emptySet() : RetexturedModel.getAllRetextured(owner, model, this.fluids);
@@ -212,7 +216,7 @@ public class FluidTextureModel implements IUnbakedGeometry<FluidTextureModel> {
       @Nullable
       @Override
       public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel world, @Nullable LivingEntity entity, int pSeed) {
-        if (stack.isEmpty() || !stack.hasTag()) {
+        if (stack.isEmpty() || stack.isComponentsPatchEmpty()) {
           return originalModel;
         }
 

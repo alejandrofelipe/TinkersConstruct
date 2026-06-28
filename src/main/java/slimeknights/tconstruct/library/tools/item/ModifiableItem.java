@@ -32,8 +32,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-import net.neoforged.neoforge.common.ToolAction;
-import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
+import net.neoforged.neoforge.common.ItemAbility;
 import slimeknights.mantle.client.SafeClientAccess;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.client.item.ModifiableItemClientExtension;
@@ -50,7 +49,6 @@ import slimeknights.tconstruct.library.modifiers.hook.interaction.SlotStackModif
 import slimeknights.tconstruct.library.modifiers.hook.interaction.UsingToolModifierHook;
 import slimeknights.tconstruct.library.modifiers.modules.build.RarityModule;
 import slimeknights.tconstruct.library.tools.IndestructibleItemEntity;
-import slimeknights.tconstruct.library.tools.capability.ToolCapabilityProvider;
 import slimeknights.tconstruct.library.tools.definition.ToolDefinition;
 import slimeknights.tconstruct.library.tools.definition.module.display.ToolNameHook;
 import slimeknights.tconstruct.library.tools.definition.module.mining.IsEffectiveToolHook;
@@ -147,11 +145,9 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
 
   /* Loading */
 
-  @Nullable
-  @Override
-  public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
-    return new ToolCapabilityProvider(stack);
-  }
+  // PORT M3: item capabilities (energy/fluid/item-handler/block-item provider) are now registered centrally on
+  // RegisterCapabilitiesEvent, delegating to ToolCapabilityProvider.getCapability(stack, cap). The old
+  // initCapabilities/ICapabilityProvider override is removed.
 
   @Override
   public void verifyTagAfterLoad(CompoundTag nbt) {
@@ -268,10 +264,13 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
     return AttributesModifierHook.getHeldAttributeModifiers(tool, slot);
   }
 
+  // PORT M3: 1.21 replaced Forge's getAttributeModifiers(EquipmentSlot, ItemStack) override and the
+  // Attribute/AttributeModifier multimap with vanilla's ItemAttributeModifiers data component (built via
+  // getDefaultAttributeModifiers / DataComponents.ATTRIBUTE_MODIFIERS, keyed by Holder<Attribute>). The tconstruct
+  // AttributesModifierHook abstraction needs the matching module-wide redesign; this override is left for that pass.
   @Override
   public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
-    CompoundTag nbt = stack.getTag();
-    if (nbt == null || slot.getType() != Type.HAND) {
+    if (!ToolStack.isInitialized(stack) || slot.getType() != Type.HAND) {
       return ImmutableMultimap.of();
     }
     return getAttributeModifiers(ToolStack.from(stack), slot);
@@ -485,8 +484,8 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
   }
 
   @Override
-  public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
-    return stack.getCount() == 1 && ModifierUtil.canPerformAction(ToolStack.from(stack), toolAction);
+  public boolean canPerformAction(ItemStack stack, ItemAbility itemAbility) {
+    return stack.getCount() == 1 && ModifierUtil.canPerformAction(ToolStack.from(stack), itemAbility);
   }
 
 
@@ -498,8 +497,8 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-    TooltipUtil.addInformation(this, stack, level, tooltip, SafeClientAccess.getTooltipKey(), flag);
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    TooltipUtil.addInformation(this, stack, context.level(), tooltip, SafeClientAccess.getTooltipKey(), flag);
   }
 
   @Override
@@ -554,6 +553,9 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
       return true;
     }
 
+    // PORT M3 (attributes): ItemStack.getAttributeModifiers(EquipmentSlot) (a Forge extension) was removed in 1.21;
+    // attribute data is now the ItemAttributeModifiers component (Holder<Attribute> keyed). This reequip comparison is
+    // part of the module-wide attribute redesign shared with IModifiable#getAttributeModifiers and is left for that pass.
     // if the attributes changed, reequip
     Multimap<Attribute,AttributeModifier> attributesNew = newStack.getAttributeModifiers(EquipmentSlot.MAINHAND);
     Multimap<Attribute, AttributeModifier> attributesOld = oldStack.getAttributeModifiers(EquipmentSlot.MAINHAND);

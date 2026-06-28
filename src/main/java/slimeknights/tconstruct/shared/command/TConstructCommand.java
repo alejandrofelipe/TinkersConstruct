@@ -6,7 +6,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 import slimeknights.mantle.command.argument.TagSourceArgument;
@@ -53,7 +53,7 @@ public class TConstructCommand {
     TagSourceArgument.registerCustom(MaterialRegistry.getTagSource());
 
     // add command listener
-    MinecraftForge.EVENT_BUS.addListener(TConstructCommand::registerCommand);
+    NeoForge.EVENT_BUS.addListener(TConstructCommand::registerCommand);
   }
 
   /** Registers a sub command for the root Mantle command */

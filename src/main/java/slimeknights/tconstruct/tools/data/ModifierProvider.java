@@ -28,8 +28,8 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.LiquidBlock;
-import net.neoforged.neoforge.common.ForgeMod;
-import net.neoforged.neoforge.common.ToolActions;
+import net.neoforged.neoforge.common.NeoForgeMod;
+import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.crafting.conditions.IConditionBuilder;
 import net.neoforged.neoforge.fluids.FluidType;
 import slimeknights.mantle.client.TooltipKey;
@@ -373,8 +373,8 @@ public class ModifierProvider extends AbstractModifierProvider implements ICondi
 
     // general abilities
     buildModifier(ModifierIds.reach)
-      .addModule(AttributeModule.builder(ForgeMod.BLOCK_REACH.get(), Operation.ADDITION).eachLevel(1))
-      .addModule(AttributeModule.builder(ForgeMod.ENTITY_REACH.get(), Operation.ADDITION).eachLevel(1));
+      .addModule(AttributeModule.builder(Attributes.BLOCK_INTERACTION_RANGE, Operation.ADDITION).eachLevel(1))
+      .addModule(AttributeModule.builder(Attributes.ENTITY_INTERACTION_RANGE, Operation.ADDITION).eachLevel(1));
     buildModifier(ModifierIds.expanded).addModule(new VolatileIntModule(IModifiable.EXPANDED, LevelingInt.eachLevel(1)));
     // fire primer is just expanded now, isn't that neat? this might have a hidden application
     buildModifier(ModifierIds.fireprimer).addModule(new VolatileIntModule(IModifiable.EXPANDED, LevelingInt.flat(1))).levelDisplay(ModifierLevelDisplay.NO_LEVELS);
@@ -731,7 +731,7 @@ public class ModifierProvider extends AbstractModifierProvider implements ICondi
       .addModule(MaxArmorAttributeModule.builder(TinkerAttributes.BAD_EFFECT_DURATION, Operation.MULTIPLY_BASE).heldTag(TinkerTags.Items.HELD).eachLevel(-0.05f))
       .addModule(ProtectionModule.builder().sources(DamageSourcePredicate.CAN_PROTECT, DamageSourcePredicate.tag(TinkerTags.DamageTypes.MAGIC_PROTECTION)).eachLevel(2.5f));
     buildModifier(ModifierIds.turtleShell)
-      .addModule(MaxArmorAttributeModule.builder(ForgeMod.SWIM_SPEED.get(), Operation.MULTIPLY_TOTAL).heldTag(TinkerTags.Items.HELD).eachLevel(0.1f))
+      .addModule(MaxArmorAttributeModule.builder(NeoForgeMod.SWIM_SPEED, Operation.MULTIPLY_TOTAL).heldTag(TinkerTags.Items.HELD).eachLevel(0.1f))
       .addModule(ProtectionModule.builder()
                                  .toolItem(ItemPredicate.or(ItemPredicate.tag(TinkerTags.Items.HELMETS), ItemPredicate.tag(TinkerTags.Items.CHESTPLATES)))
                                  .entity(LivingEntityPredicate.EYES_IN_WATER).eachLevel(2.5f))
@@ -739,7 +739,7 @@ public class ModifierProvider extends AbstractModifierProvider implements ICondi
                                  .toolItem(ItemPredicate.or(ItemPredicate.tag(TinkerTags.Items.LEGGINGS), ItemPredicate.tag(TinkerTags.Items.BOOTS)))
                                  .entity(LivingEntityPredicate.FEET_IN_WATER).eachLevel(2.5f));
     buildModifier(ModifierIds.turtlesGrace).levelDisplay(ModifierLevelDisplay.SINGLE_LEVEL)
-      .addModule(AttributeModule.builder(ForgeMod.SWIM_SPEED.get(), Operation.MULTIPLY_TOTAL).eachLevel(0.1f))
+      .addModule(AttributeModule.builder(NeoForgeMod.SWIM_SPEED, Operation.MULTIPLY_TOTAL).eachLevel(0.1f))
       .addModule(EnchantmentModule.builder(Enchantments.RESPIRATION).constant());
     buildModifier(ModifierIds.shulking)
       .addModule(MaxArmorAttributeModule.builder(TinkerAttributes.CROUCH_DAMAGE_MULTIPLIER, Operation.MULTIPLY_BASE).heldTag(TinkerTags.Items.HELD).eachLevel(-0.1f))
@@ -784,7 +784,7 @@ public class ModifierProvider extends AbstractModifierProvider implements ICondi
       .addModule(new ShieldStrapModule(TooltipKey.NORMAL))
       .addModule(InventoryMenuModule.SHIFT)
       .addModule(new VolatileFlagModule(ToolInventoryCapability.INCLUDE_OFFHAND));
-    buildModifier(ModifierIds.stepUp).addModule(AttributeModule.builder(ForgeMod.STEP_HEIGHT_ADDITION.get(), Operation.ADDITION).slots(armorSlots).eachLevel(0.5f));
+    buildModifier(ModifierIds.stepUp).addModule(AttributeModule.builder(Attributes.STEP_HEIGHT, Operation.ADDITION).slots(armorSlots).eachLevel(0.5f));
     buildModifier(ModifierIds.speedy).addModule(AttributeModule.builder(Attributes.MOVEMENT_SPEED, Operation.MULTIPLY_TOTAL).slots(armorMainHand).eachLevel(0.1f));
     buildModifier(ModifierIds.leaping)
       .addModule(AttributeModule.builder(TinkerAttributes.JUMP_BOOST, Operation.ADDITION).eachLevel(1))
@@ -839,19 +839,19 @@ public class ModifierProvider extends AbstractModifierProvider implements ICondi
     buildModifier(ModifierIds.pathing)
       .levelDisplay(ModifierLevelDisplay.NO_LEVELS)
       .addModule(ExtinguishCampfireModule.INSTANCE)
-      .addModule(ToolActionTransformModule.builder(ToolActions.SHOVEL_FLATTEN, SoundEvents.SHOVEL_FLATTEN).requireGround().build())
-      .addModule(ToolActionWalkerTransformModule.builder(ToolActions.SHOVEL_FLATTEN, SoundEvents.SHOVEL_FLATTEN).amount(0.5f, 1))
+      .addModule(ToolActionTransformModule.builder(ItemAbilities.SHOVEL_FLATTEN, SoundEvents.SHOVEL_FLATTEN).requireGround().build())
+      .addModule(ToolActionWalkerTransformModule.builder(ItemAbilities.SHOVEL_FLATTEN, SoundEvents.SHOVEL_FLATTEN).amount(0.5f, 1))
       .addModule(ShowOffhandModule.DISALLOW_BROKEN).addModule(ShowInteractionSourceModule.INSTANCE);
     buildModifier(ModifierIds.stripping)
       .levelDisplay(ModifierLevelDisplay.NO_LEVELS)
-      .addModule(ToolActionTransformModule.builder(ToolActions.AXE_STRIP, SoundEvents.AXE_STRIP).build())
-      .addModule(ToolActionTransformModule.builder(ToolActions.AXE_SCRAPE, SoundEvents.AXE_SCRAPE).eventId(LevelEvent.PARTICLES_SCRAPE).build())
-      .addModule(ToolActionTransformModule.builder(ToolActions.AXE_WAX_OFF, SoundEvents.AXE_WAX_OFF).eventId(LevelEvent.PARTICLES_WAX_OFF).build())
+      .addModule(ToolActionTransformModule.builder(ItemAbilities.AXE_STRIP, SoundEvents.AXE_STRIP).build())
+      .addModule(ToolActionTransformModule.builder(ItemAbilities.AXE_SCRAPE, SoundEvents.AXE_SCRAPE).eventId(LevelEvent.PARTICLES_SCRAPE).build())
+      .addModule(ToolActionTransformModule.builder(ItemAbilities.AXE_WAX_OFF, SoundEvents.AXE_WAX_OFF).eventId(LevelEvent.PARTICLES_WAX_OFF).build())
       .addModule(ShowOffhandModule.DISALLOW_BROKEN).addModule(ShowInteractionSourceModule.INSTANCE);
     buildModifier(ModifierIds.tilling)
       .levelDisplay(ModifierLevelDisplay.NO_LEVELS)
-      .addModule(ToolActionTransformModule.builder(ToolActions.HOE_TILL, SoundEvents.HOE_TILL).build())
-      .addModule(ToolActionWalkerTransformModule.builder(ToolActions.HOE_TILL, SoundEvents.HOE_TILL).amount(0.5f, 1))
+      .addModule(ToolActionTransformModule.builder(ItemAbilities.HOE_TILL, SoundEvents.HOE_TILL).build())
+      .addModule(ToolActionWalkerTransformModule.builder(ItemAbilities.HOE_TILL, SoundEvents.HOE_TILL).amount(0.5f, 1))
       .addModule(ShowOffhandModule.DISALLOW_BROKEN).addModule(ShowInteractionSourceModule.INSTANCE);
     buildModifier(ModifierIds.brushing).levelDisplay(ModifierLevelDisplay.NO_LEVELS).addModule(BrushModule.INSTANCE);
     buildModifier(ModifierIds.harvest).levelDisplay(ModifierLevelDisplay.NO_LEVELS)
@@ -1057,7 +1057,7 @@ public class ModifierProvider extends AbstractModifierProvider implements ICondi
     buildModifier(ModifierIds.skyfall)
       .levelDisplay(ModifierLevelDisplay.SINGLE_LEVEL)
       // goes from -15% to -25%
-      .addModule(AttributeModule.builder(ForgeMod.ENTITY_GRAVITY.get(), Operation.MULTIPLY_TOTAL).tooltipStyle(TooltipStyle.PERCENT).amount(-0.05f, -0.1f))
+      .addModule(AttributeModule.builder(Attributes.GRAVITY, Operation.MULTIPLY_TOTAL).tooltipStyle(TooltipStyle.PERCENT).amount(-0.05f, -0.1f))
       .addModule(AttributeModule.builder(TinkerAttributes.SAFE_FALL_DISTANCE.get(), Operation.ADDITION).eachLevel(1));
     buildModifier(ModifierIds.godspeed)
       .levelDisplay(ModifierLevelDisplay.SINGLE_LEVEL)
@@ -1198,7 +1198,7 @@ public class ModifierProvider extends AbstractModifierProvider implements ICondi
       .addModule(StatBoostModule.add(ToolStats.KNOCKBACK_RESISTANCE).eachLevel(0.15f))
       .addModule(AttributeModule.builder(Attributes.KNOCKBACK_RESISTANCE, Operation.MULTIPLY_BASE).toolItem(ItemPredicate.tag(ARMOR).inverted()).eachLevel(0.1f))
       .addModule(AttributeModule.builder(Attributes.MOVEMENT_SPEED, Operation.MULTIPLY_BASE).eachLevel(-0.1f))
-      .addModule(AttributeModule.builder(ForgeMod.ENTITY_GRAVITY, Operation.MULTIPLY_TOTAL).tooltipStyle(TooltipStyle.PERCENT).eachLevel(0.05f));
+      .addModule(AttributeModule.builder(Attributes.GRAVITY, Operation.MULTIPLY_TOTAL).tooltipStyle(TooltipStyle.PERCENT).eachLevel(0.05f));
     buildModifier(ModifierIds.featherweight)
       .addModule(StatBoostModule.add(ToolStats.DRAW_SPEED).eachLevel(0.05f))
       .addModule(StatBoostModule.add(ToolStats.ACCURACY).eachLevel(0.05f))
@@ -1445,7 +1445,7 @@ public class ModifierProvider extends AbstractModifierProvider implements ICondi
       .addModule(StatBoostModule.add(ToolStats.PROJECTILE_DAMAGE).eachLevel(0.75f))
       .addModule(ProtectionModule.builder().toolTag(ARMOR).eachLevel(1.25f))
       .addModule(AttributeModule.builder(Attributes.MOVEMENT_SPEED, Operation.MULTIPLY_BASE).eachLevel(-0.1f))
-      .addModule(AttributeModule.builder(ForgeMod.ENTITY_GRAVITY, Operation.MULTIPLY_TOTAL).tooltipStyle(TooltipStyle.PERCENT).eachLevel(0.05f));
+      .addModule(AttributeModule.builder(Attributes.GRAVITY, Operation.MULTIPLY_TOTAL).tooltipStyle(TooltipStyle.PERCENT).eachLevel(0.05f));
     buildModifier(ModifierIds.shock)
       .addModule(ConditionalMeleeDamageModule.builder()
         .formula()
@@ -1498,7 +1498,7 @@ public class ModifierProvider extends AbstractModifierProvider implements ICondi
       // for defensive builds, offhand debuffs main hand attack speed
       .addModule(AttributeModule.builder(Attributes.ATTACK_SPEED, Operation.MULTIPLY_TOTAL).slots(EquipmentSlot.OFFHAND).toolItem(ItemPredicate.tag(TinkerTags.Items.HELD_ARMOR)).eachLevel(-0.1f))
       .addModule(AttributeModule.builder(Attributes.MOVEMENT_SPEED, Operation.MULTIPLY_TOTAL).slots(ARMOR_SLOTS).eachLevel(-0.1f))
-      .addModule(AttributeModule.builder(ForgeMod.ENTITY_GRAVITY, Operation.MULTIPLY_TOTAL).tooltipStyle(TooltipStyle.PERCENT).eachLevel(0.1f));
+      .addModule(AttributeModule.builder(Attributes.GRAVITY, Operation.MULTIPLY_TOTAL).tooltipStyle(TooltipStyle.PERCENT).eachLevel(0.1f));
     // multiply valiant bonus by 4 for entities with fewer armor slots (slimes basically)
     buildModifier(ModifierIds.valiant)
       .addModule(ConditionalMeleeDamageModule.builder()

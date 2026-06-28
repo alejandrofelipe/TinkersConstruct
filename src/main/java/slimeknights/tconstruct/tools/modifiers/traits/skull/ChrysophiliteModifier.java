@@ -9,7 +9,7 @@ import net.minecraft.world.entity.EquipmentSlot.Type;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.bus.api.EventPriority;
 import slimeknights.tconstruct.TConstruct;
@@ -31,7 +31,7 @@ import java.util.Optional;
 public class ChrysophiliteModifier extends NoLevelsModifier implements EquipmentChangeModifierHook {
   public static final ComputableDataKey<TotalGold> TOTAL_GOLD = TConstruct.createKey("chrysophilite", TotalGold::new);
   public ChrysophiliteModifier() {
-    MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, LivingDropsEvent.class, ChrysophiliteModifier::onLivingDrops);
+    NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, LivingDropsEvent.class, ChrysophiliteModifier::onLivingDrops);
   }
 
   @Override
@@ -89,11 +89,16 @@ public class ChrysophiliteModifier extends NoLevelsModifier implements Equipment
 
   /** Gets the level of the modifier on an entity */
   public static int getTotalGold(@Nullable Entity entity) {
-    return Optional.ofNullable(entity)
-                   .flatMap(e -> e.getCapability(TinkerDataCapability.CAPABILITY).resolve())
-                   .map(data -> data.get(ChrysophiliteModifier.TOTAL_GOLD))
-                   .map(TotalGold::getTotalGold)
-                   .orElse(0);
+    if (entity != null) {
+      TinkerDataCapability.Holder data = entity.getCapability(TinkerDataCapability.CAPABILITY);
+      if (data != null) {
+        TotalGold totalGold = data.get(ChrysophiliteModifier.TOTAL_GOLD);
+        if (totalGold != null) {
+          return totalGold.getTotalGold();
+        }
+      }
+    }
+    return 0;
   }
 
   /** Causes more gold armor to drop */

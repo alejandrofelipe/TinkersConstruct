@@ -11,7 +11,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import slimeknights.mantle.data.loadable.field.ContextKey;
 import slimeknights.mantle.data.loadable.primitive.BooleanLoadable;
 import slimeknights.mantle.data.loadable.primitive.StringLoadable;
@@ -213,15 +213,21 @@ public class EnchantmentConvertingRecipe extends AbstractWorktableRecipe {
       ItemStack unenchanted;
       if (matchBook && enchantments.isEmpty()) {
         unenchanted = new ItemStack(Items.BOOK);
-        if (current.hasCustomHoverName()) {
-          unenchanted.setHoverName(current.getHoverName());
+        net.minecraft.network.chat.Component customName = current.get(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
+        if (customName != null) {
+          unenchanted.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, customName);
         }
       } else {
         unenchanted = current.copy();
         if (matchBook) {
           // for some dumb reason setEnchantments for a book just adds them instead of setting them
-          unenchanted.removeTagKey("StoredEnchantments");
+          // PORT M3: 1.21 stores enchantments in DataComponents.STORED_ENCHANTMENTS / ENCHANTMENTS (ItemEnchantments),
+          // not the legacy "StoredEnchantments" NBT list. Clear via the component instead of removeTagKey.
+          unenchanted.remove(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS);
         }
+        // PORT M3: EnchantmentHelper.setEnchantments(Map, stack) was removed in 1.21. Enchantments are now Holder-keyed
+        // (ItemEnchantments). This whole recipe needs to migrate to the library's ported ModifierManager enchantment
+        // API (Holder<Enchantment>) and EnchantmentHelper.setEnchantments(stack, ItemEnchantments) once that lands.
         EnchantmentHelper.setEnchantments(enchantments, unenchanted);
       }
       inv.giveItem(unenchanted);
@@ -278,7 +284,7 @@ public class EnchantmentConvertingRecipe extends AbstractWorktableRecipe {
   /** Gets a list of all enchantable tools. This is expensive, but only needs to be done once fortunately. */
   private static List<ItemStack> getAllEnchantableTools() {
     if (ALL_ENCHANTABLE_TOOLS == null) {
-      ALL_ENCHANTABLE_TOOLS = ForgeRegistries.ITEMS.getValues().stream().map(item -> {
+      ALL_ENCHANTABLE_TOOLS = BuiltInRegistries.ITEM.stream().map(item -> {
         if (item != Items.BOOK) {
           ItemStack stack = new ItemStack(item);
           if (stack.isEnchantable()) {

@@ -5,12 +5,15 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.SlotAccess;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
@@ -145,7 +148,7 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
       for (int i = 0; i < list.size(); i++) {
         CompoundTag compound = list.getCompound(i);
         if (compound.getInt(TAG_SLOT) == slot) {
-          return ItemStack.of(compound);
+          return parseStack(compound);
         }
       }
     }
@@ -266,9 +269,26 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
    * @return Tag written to, same as {@code compound}.
    */
   public static CompoundTag writeStack(ItemStack stack, int slot, CompoundTag compound) {
-    stack.save(compound);
+    // 1.21: ItemStack (de)serialization needs a HolderLookup.Provider; this modifier inventory runs server-side
+    stack.save(registries(), compound);
     compound.putInt(TAG_SLOT, slot);
     return compound;
+  }
+
+  /**
+   * Gets the registry provider for (de)serializing stacks stored in tool NBT.
+   * PORT M3: 1.21 requires a HolderLookup.Provider to (de)serialize ItemStacks, but the modifier inventory hooks below
+   * are not handed one. This pulls it from the running server (these hooks execute server-side). For a fully correct
+   * port, thread a HolderLookup.Provider through the InventoryModifierHook signatures instead of relying on the server.
+   */
+  private static HolderLookup.Provider registries() {
+    var server = ServerLifecycleHooks.getCurrentServer();
+    return server != null ? server.registryAccess() : RegistryAccess.EMPTY;
+  }
+
+  /** Parses a stack stored in tool NBT, supplying the registry provider 1.21 now requires. */
+  private static ItemStack parseStack(CompoundTag compound) {
+    return ItemStack.parseOptional(registries(), compound);
   }
 
   @Override
@@ -286,7 +306,7 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
           // slot must be valid
           int slot = compound.getInt(TAG_SLOT);
           if (slot < max) {
-            ItemStack stack = ItemStack.of(compound);
+            ItemStack stack = parseStack(compound);
             if (!stack.isEmpty() && predicate.test(stack)) {
               return new StackMatch(stack, slot);
             }
@@ -314,7 +334,7 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
           // slot must be valid
           int slot = compound.getInt(TAG_SLOT);
           if (slot < max) {
-            parsed[slot] = ItemStack.of(compound);
+            parsed[slot] = parseStack(compound);
           }
         }
         // add stacks into the list

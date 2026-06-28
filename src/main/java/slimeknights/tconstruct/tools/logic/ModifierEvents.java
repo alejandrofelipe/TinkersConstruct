@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,6 +26,7 @@ import net.minecraft.world.entity.projectile.AbstractArrow.Pickup;
 import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
@@ -33,7 +35,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.HitResult.Type;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.ForgeMod;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
@@ -51,8 +53,8 @@ import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
 import net.neoforged.bus.api.Event.Result;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod.EventBusSubscriber;
-import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import slimeknights.mantle.MantleEvents;
 import slimeknights.mantle.util.CombatHelper;
 import slimeknights.mantle.util.RegistryHelper;
@@ -95,7 +97,7 @@ import java.util.List;
 import java.util.Optional;
 
 /** Events to implement modifier specific behaviors, such as those defined by {@link TinkerDataKeys}. General hooks will typically be in {@link ToolEvents} */
-@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.FORGE)
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
 public class ModifierEvents {
   /** Multiplier for experience drops from events */
   private static final TinkerDataKey<Float> PROJECTILE_EXPERIENCE = TConstruct.createKey("projectile_experience");
@@ -111,20 +113,20 @@ public class ModifierEvents {
   @SubscribeEvent
   static void onKnockback(LivingKnockBackEvent event) {
     LivingEntity entity = event.getEntity();
-    Optional<TinkerDataCapability.Holder> dataCap = entity.getCapability(TinkerDataCapability.CAPABILITY).resolve();
+    TinkerDataCapability.Holder dataCap = entity.getCapability(TinkerDataCapability.CAPABILITY);
     double knockback = entity.getAttributeValue(TinkerAttributes.KNOCKBACK_MULTIPLIER.get())
-                     + dataCap.map(data -> data.get(TinkerDataKeys.KNOCKBACK)).orElse(0f);
+                     + (dataCap != null ? dataCap.get(TinkerDataKeys.KNOCKBACK) : 0f);
     if (knockback != 1) {
       event.setStrength((float) (event.getStrength() * knockback));
     }
     // handle crystalstrike
-    dataCap.ifPresent(data -> {
+    if (dataCap != null) {
       // apply crystalbound bonus
-      int crystalbound = data.get(TinkerDataKeys.CRYSTALSTRIKE, 0);
+      int crystalbound = dataCap.get(TinkerDataKeys.CRYSTALSTRIKE, 0);
       if (crystalbound > 0) {
         RestrictAngleModule.onKnockback(event, crystalbound);
       }
-    });
+    }
   }
 
   /** Reduce fall distance for fall damage */
@@ -190,7 +192,7 @@ public class ModifierEvents {
       for (int i = 0; i < hotbarSize; i++) {
         ItemStack stack = inventory.getItem(i);
         if (!stack.isEmpty() && (soulBelt || ModifierUtil.checkVolatileFlag(stack, SOULBOUND))) {
-          stack.getOrCreateTag().putInt(MantleEvents.SOULBOUND_SLOT, i);
+          CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt(MantleEvents.SOULBOUND_SLOT, i));
         }
       }
       // rest of the inventory, only check soulbound (no modifier that moves non-soulbound currently)
@@ -199,7 +201,7 @@ public class ModifierEvents {
       for (int i = hotbarSize; i < totalSize; i++) {
         ItemStack stack = inventory.getItem(i);
         if (!stack.isEmpty() && ModifierUtil.checkVolatileFlag(stack, SOULBOUND)) {
-          stack.getOrCreateTag().putInt(MantleEvents.SOULBOUND_SLOT, i);
+          CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt(MantleEvents.SOULBOUND_SLOT, i));
         }
       }
     }
@@ -281,7 +283,7 @@ public class ModifierEvents {
   @SubscribeEvent
   static void onPotionStart(MobEffectEvent.Added event) {
     MobEffectInstance newEffect = event.getEffectInstance();
-    if (!newEffect.isInfiniteDuration() && !newEffect.getCurativeItems().isEmpty()) {
+    if (!newEffect.isInfiniteDuration() && !newEffect.getCures().isEmpty()) {
       // use two different stats based on whether the effect is beneficial
       boolean beneficial = newEffect.getEffect().isBeneficial();
       LivingEntity entity = event.getEntity();
@@ -319,7 +321,7 @@ public class ModifierEvents {
     Vec3 motion = living.getDeltaMovement();
     if (living instanceof ServerPlayer) {
       // velocity is lost on server players, but we dont have to defer the bounce
-      double gravity = living.getAttributeValue(ForgeMod.ENTITY_GRAVITY.get());
+      double gravity = living.getAttributeValue(Attributes.GRAVITY);
       double time = Math.sqrt(living.fallDistance / gravity);
       double velocity = gravity * time;
       living.setDeltaMovement(motion.x / 0.975f, velocity, motion.z / 0.975f);
@@ -479,7 +481,7 @@ public class ModifierEvents {
         // handle fire
         int remainingFire = target.getRemainingFireTicks();
         if (arrow.isOnFire()) {
-          target.setSecondsOnFire(5);
+          target.igniteForSeconds(5);
         }
 
         // hurt the enderman

@@ -113,7 +113,7 @@ public class MaterialModel implements IUnbakedGeometry<MaterialModel> {
   }
 
   /**
-   * Same as {@link #bake(IGeometryBakingContext, ModelBaker, Function, ModelState, ItemOverrides, ResourceLocation)} , but uses fewer arguments and does not require an instance
+   * Same as {@link #bake(IGeometryBakingContext, ModelBaker, Function, ModelState, ItemOverrides)} , but uses fewer arguments and does not require an instance
    * @param owner          Model configuration
    * @param spriteGetter   Sprite getter function
    * @param transform      Transform to apply to the quad fetching. Should not include rotation or it will look wrong in UIs
@@ -131,7 +131,7 @@ public class MaterialModel implements IUnbakedGeometry<MaterialModel> {
   }
 
   @Override
-  public BakedModel bake(IGeometryBakingContext owner, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides vanillaOverrides, ResourceLocation modelLocation) {
+  public BakedModel bake(IGeometryBakingContext owner, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides vanillaOverrides) {
     if (Config.CLIENT.logMissingMaterialTextures.get()) {
       validateMaterialTextures(owner, spriteGetter, "texture", material);
     }

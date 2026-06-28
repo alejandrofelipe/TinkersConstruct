@@ -1,13 +1,14 @@
 package slimeknights.tconstruct.library.materials.stats;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import net.minecraft.network.FriendlyByteBuf;
-import net.neoforged.neoforge.network.NetworkEvent.Context;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.apache.logging.log4j.Logger;
 import slimeknights.mantle.data.loadable.Loadable;
 import slimeknights.mantle.network.packet.IThreadsafePacket;
 import slimeknights.mantle.util.typed.TypedMapBuilder;
+import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.utils.Util;
@@ -18,20 +19,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Getter
-@AllArgsConstructor
-public class UpdateMaterialStatsPacket implements IThreadsafePacket {
+public record UpdateMaterialStatsPacket(Map<MaterialId,Collection<IMaterialStats>> materialToStats) implements IThreadsafePacket {
   private static final Logger log = Util.getLogger("NetworkSync");
 
-  protected final Map<MaterialId, Collection<IMaterialStats>> materialToStats;
+  public static final CustomPacketPayload.Type<UpdateMaterialStatsPacket> TYPE = new CustomPacketPayload.Type<>(TConstruct.getResource("update_material_stats"));
+  public static final StreamCodec<RegistryFriendlyByteBuf,UpdateMaterialStatsPacket> STREAM_CODEC = StreamCodec.of(UpdateMaterialStatsPacket::encode, UpdateMaterialStatsPacket::decode);
 
-  public UpdateMaterialStatsPacket(FriendlyByteBuf buffer) {
-    this(buffer, MaterialRegistry.getInstance().getStatTypeLoader());
+  private static UpdateMaterialStatsPacket decode(RegistryFriendlyByteBuf buffer) {
+    return decode(buffer, MaterialRegistry.getInstance().getStatTypeLoader());
   }
 
-  public UpdateMaterialStatsPacket(FriendlyByteBuf buffer, Loadable<MaterialStatType<?>> statTypeLoader) {
+  /** Decodes the packet, exposed for testing with a custom stat type loader */
+  public static UpdateMaterialStatsPacket decode(RegistryFriendlyByteBuf buffer, Loadable<MaterialStatType<?>> statTypeLoader) {
     int materialCount = buffer.readInt();
-    materialToStats = new HashMap<>(materialCount);
+    Map<MaterialId,Collection<IMaterialStats>> materialToStats = new HashMap<>(materialCount);
     for (int i = 0; i < materialCount; i++) {
       MaterialId id = new MaterialId(buffer.readResourceLocation());
       int statCount = buffer.readInt();
@@ -46,12 +47,12 @@ public class UpdateMaterialStatsPacket implements IThreadsafePacket {
       }
       materialToStats.put(id, statList);
     }
+    return new UpdateMaterialStatsPacket(materialToStats);
   }
 
-  @Override
-  public void encode(FriendlyByteBuf buffer) {
-    buffer.writeInt(materialToStats.size());
-    materialToStats.forEach((materialId, stats) -> {
+  private static void encode(RegistryFriendlyByteBuf buffer, UpdateMaterialStatsPacket packet) {
+    buffer.writeInt(packet.materialToStats.size());
+    packet.materialToStats.forEach((materialId, stats) -> {
       buffer.writeResourceLocation(materialId);
       buffer.writeInt(stats.size());
       stats.forEach(stat -> encodeStat(buffer, stat, stat.getType()));
@@ -64,13 +65,18 @@ public class UpdateMaterialStatsPacket implements IThreadsafePacket {
    * @param stat    Stat to encode
    */
   @SuppressWarnings("unchecked")
-  private <T extends IMaterialStats> void encodeStat(FriendlyByteBuf buffer, IMaterialStats stat, MaterialStatType<T> type) {
+  private static <T extends IMaterialStats> void encodeStat(RegistryFriendlyByteBuf buffer, IMaterialStats stat, MaterialStatType<T> type) {
     MaterialStatsId.PARSER.encode(buffer, type.getId());
     type.getLoadable().encode(buffer, (T) stat);
   }
 
   @Override
-  public void handleThreadsafe(Context context) {
+  public CustomPacketPayload.Type<UpdateMaterialStatsPacket> type() {
+    return TYPE;
+  }
+
+  @Override
+  public void handleThreadsafe(IPayloadContext context) {
     MaterialRegistry.updateMaterialStatsFromServer(this);
   }
 }

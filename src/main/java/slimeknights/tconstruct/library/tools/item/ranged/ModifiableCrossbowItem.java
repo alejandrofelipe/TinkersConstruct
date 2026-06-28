@@ -22,6 +22,7 @@ import net.minecraft.world.entity.projectile.AbstractArrow.Pickup;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ArrowItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
@@ -29,7 +30,7 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-import net.neoforged.neoforge.common.ToolActions;
+import net.neoforged.neoforge.common.ItemAbilities;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import slimeknights.mantle.client.TooltipKey;
@@ -154,7 +155,7 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
         GeneralInteractionModifierHook.startDrawing(tool, player, 1);
         if (!ammo.isEmpty()) {
           if (storeDrawingItem) {
-            persistentData.put(KEY_DRAWBACK_AMMO, ammo.save(new CompoundTag()));
+            persistentData.put(KEY_DRAWBACK_AMMO, ammo.save(player.level().registryAccess(), new CompoundTag()));
           } else {
             // boolean is enough to get detected by the property override, but won't bother the model
             persistentData.putBoolean(KEY_DRAWBACK_AMMO, true);
@@ -183,7 +184,7 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
         return InteractionResultHolder.pass(bow);
       }
       // can block while filled with ammo
-      if (ModifierUtil.canPerformAction(tool, ToolActions.SHIELD_BLOCK)) {
+      if (ModifierUtil.canPerformAction(tool, ItemAbilities.SHIELD_BLOCK)) {
         player.startUsingItem(hand);
         return InteractionResultHolder.consume(bow);
       }
@@ -226,7 +227,7 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
 
       // the ammo has a stack size that may be greater than 1 (meaning multishot)
       // when creating the ammo stacks, we use split, so its getting smaller each time
-      ItemStack ammo = ItemStack.of(heldAmmo);
+      ItemStack ammo = ItemStack.parseOptional(level.registryAccess(), heldAmmo);
       float startAngle = getAngleStart(ammo.getCount());
       int primaryIndex = ammo.getCount() / 2;
       for (int arrowIndex = 0; arrowIndex < ammo.getCount(); arrowIndex++) {
@@ -319,7 +320,7 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
     if (!ammo.isEmpty()) {
       level.playSound(null, living.getX(), living.getY(), living.getZ(), SoundEvents.CROSSBOW_LOADING_END, SoundSource.PLAYERS, 1.0F, 1.0F / (level.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F);
       if (!level.isClientSide) {
-        CompoundTag ammoNBT = ammo.save(new CompoundTag());
+        CompoundTag ammoNBT = (CompoundTag) ammo.save(level.registryAccess(), new CompoundTag());
         persistentData.put(KEY_CROSSBOW_AMMO, ammoNBT);
         // if the crossbow broke during loading, fire immediately
         if (tool.isBroken()) {
@@ -335,8 +336,9 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
 
     // if we have ammo, render that in the tooltip
     CompoundTag heldAmmo = tool.getPersistentData().getCompound(KEY_CROSSBOW_AMMO);
-    if (!heldAmmo.isEmpty()) {
-      ItemStack heldStack = ItemStack.of(heldAmmo);
+    // 1.21: parsing a stack from NBT needs registry access; only available here via the (client) player
+    if (!heldAmmo.isEmpty() && player != null) {
+      ItemStack heldStack = ItemStack.parseOptional(player.level().registryAccess(), heldAmmo);
       if (!heldStack.isEmpty()) {
         // basic info: item and count
         MutableComponent component = Component.translatable(PROJECTILE_KEY);
@@ -351,7 +353,7 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
         // copy the stack's tooltip if advanced
         if (tooltipFlag.isAdvanced() && player != null) {
           List<Component> nestedTooltip = new ArrayList<>();
-          heldStack.getItem().appendHoverText(heldStack, player.level(), nestedTooltip, tooltipFlag);
+          heldStack.getItem().appendHoverText(heldStack, Item.TooltipContext.of(player.level()), nestedTooltip, tooltipFlag);
           for (Component nested : nestedTooltip) {
             tooltips.add(Component.literal("  ").append(nested).withStyle(ChatFormatting.GRAY));
           }

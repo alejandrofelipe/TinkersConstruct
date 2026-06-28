@@ -8,18 +8,18 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemFrameRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.RenderItemInFrameEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.bus.api.Event.Result;
+import net.neoforged.neoforge.common.NeoForge;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.gadgets.entity.FancyItemFrameEntity;
 import slimeknights.tconstruct.gadgets.entity.FrameType;
@@ -28,13 +28,13 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends ItemFrameRenderer<T> {
-  public static final Map<FrameType, ResourceLocation> LOCATIONS_MODEL = new EnumMap<>(FrameType.class);
-  public static final Map<FrameType, ResourceLocation> LOCATIONS_MODEL_MAP = new EnumMap<>(FrameType.class);
+  public static final Map<FrameType, ModelResourceLocation> LOCATIONS_MODEL = new EnumMap<>(FrameType.class);
+  public static final Map<FrameType, ModelResourceLocation> LOCATIONS_MODEL_MAP = new EnumMap<>(FrameType.class);
   static {
     for (FrameType type : FrameType.values()) {
       String name = type == FrameType.REVERSED_GOLD ? FrameType.GOLD.getSerializedName() : type.getSerializedName();
-      LOCATIONS_MODEL.put(type, TConstruct.getResource("block/frame/" + name));
-      LOCATIONS_MODEL_MAP.put(type, TConstruct.getResource("block/frame/" + name + "_map"));
+      LOCATIONS_MODEL.put(type, ModelResourceLocation.standalone(TConstruct.getResource("block/frame/" + name)));
+      LOCATIONS_MODEL_MAP.put(type, ModelResourceLocation.standalone(TConstruct.getResource("block/frame/" + name + "_map")));
     }
   }
 
@@ -56,8 +56,8 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
 
     // base entity rendering logic, since calling super gives us the item frame renderer that we are replacing
     RenderNameTagEvent renderNameplate = new RenderNameTagEvent(frame, frame.getDisplayName(), this, matrices, bufferIn, packedLight, partialTicks);
-    MinecraftForge.EVENT_BUS.post(renderNameplate);
-    if (renderNameplate.getResult() == Result.ALLOW || (renderNameplate.getResult() != Result.DENY && this.shouldShowName(frame))) {
+    NeoForge.EVENT_BUS.post(renderNameplate);
+    if (renderNameplate.canRender().isTrue() || (!renderNameplate.canRender().isFalse() && this.shouldShowName(frame))) {
       this.renderNameTag(frame, renderNameplate.getContent(), matrices, bufferIn, packedLight);
     }
 
@@ -75,6 +75,7 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
     // clear does not render the frame if filled
     boolean frameVisible = !frame.isInvisible() && (frameType != FrameType.CLEAR || stack.isEmpty());
     if (frameVisible) {
+      net.minecraft.client.renderer.block.BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
       matrices.pushPose();
       matrices.translate(-0.5D, -0.5D, -0.5D);
       blockRenderer.getModelRenderer().renderModel(
@@ -103,19 +104,19 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
         int rotation = mapdata != null ? (frameRotation + 2) % 4 * 2 : frameRotation;
         matrices.mulPose(Axis.ZP.rotationDegrees(rotation * 360f / 8f));
       }
-      if (!MinecraftForge.EVENT_BUS.post(new RenderItemInFrameEvent(frame, this, matrices, bufferIn, packedLight))) {
+      if (!NeoForge.EVENT_BUS.post(new RenderItemInFrameEvent(frame, this, matrices, bufferIn, packedLight)).isCanceled()) {
         if (mapdata != null) {
           matrices.scale(0.0078125F, 0.0078125F, 0.0078125F);
           matrices.translate(-64.0D, -64.0D, -1.0D);
           int light = frameType == FrameType.MANYULLYN ? 0x00F000F0 : packedLight;
-          Integer mapId = MapItem.getMapId(stack);
+          MapId mapId = MapItem.getMapId(stack);
           assert mapId != null;
-          Minecraft.getInstance().gameRenderer.getMapRenderer().render(matrices, bufferIn, mapId, mapdata, true, light);
+          Minecraft.getInstance().getMapRenderer().render(matrices, bufferIn, mapId, mapdata, true, light);
         } else {
           float scale = frameType == FrameType.CLEAR ? 0.75f : 0.5f;
           matrices.scale(scale, scale, scale);
           int light = frameType == FrameType.MANYULLYN ? 0x00F000F0 : packedLight;
-          this.itemRenderer.renderStatic(stack, ItemDisplayContext.FIXED, light, OverlayTexture.NO_OVERLAY, matrices, bufferIn, frame.level(), frame.getId());
+          Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, light, OverlayTexture.NO_OVERLAY, matrices, bufferIn, frame.level(), frame.getId());
         }
       }
     }

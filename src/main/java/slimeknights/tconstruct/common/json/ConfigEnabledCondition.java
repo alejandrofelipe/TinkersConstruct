@@ -1,20 +1,17 @@
 package slimeknights.tconstruct.common.json;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSyntaxException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.Serializer;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
-import net.neoforged.neoforge.common.ForgeConfigSpec.BooleanValue;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition;
-import net.neoforged.neoforge.common.crafting.conditions.IConditionSerializer;
+import net.neoforged.neoforge.common.ModConfigSpec.BooleanValue;
+import net.neoforged.neoforge.common.conditions.ICondition;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.shared.TinkerCommons;
@@ -27,16 +24,38 @@ import java.util.function.BooleanSupplier;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ConfigEnabledCondition implements ICondition, LootItemCondition {
   public static final ResourceLocation ID = TConstruct.getResource("config");
-  public static final ConfigSerializer SERIALIZER = new ConfigSerializer();
   /* Map of config names to condition cache */
   private static final Map<String,ConfigEnabledCondition> PROPS = new HashMap<>();
+
+  /**
+   * Codec serving as both the NeoForge data-load condition codec and the loot condition codec. The condition stores only
+   * its config name; the matching {@link ConfigEnabledCondition} (with its bound {@link BooleanSupplier}) is resolved from
+   * the static {@link #PROPS} registry, mirroring the old JSON {@code prop} field.
+   */
+  public static final MapCodec<ConfigEnabledCondition> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
+    Codec.STRING.comapFlatMap(ConfigEnabledCondition::byName, ConfigEnabledCondition::getConfigName).fieldOf("prop").forGetter(c -> c)
+  ).apply(inst, c -> c));
 
   private final String configName;
   private final BooleanSupplier supplier;
 
+  /** Gets the config name for serialization */
+  private String getConfigName() {
+    return configName;
+  }
+
+  /** Looks up a registered condition by its property name */
+  private static DataResult<ConfigEnabledCondition> byName(String prop) {
+    ConfigEnabledCondition config = PROPS.get(prop.toLowerCase(Locale.ROOT));
+    if (config == null) {
+      return DataResult.error(() -> "Invalid property name '" + prop + "'");
+    }
+    return DataResult.success(config);
+  }
+
   @Override
-  public ResourceLocation getID() {
-    return ID;
+  public MapCodec<? extends ICondition> codec() {
+    return CODEC;
   }
 
   @Override
@@ -52,38 +71,6 @@ public class ConfigEnabledCondition implements ICondition, LootItemCondition {
   @Override
   public LootItemConditionType getType() {
     return TinkerCommons.lootConfig.get();
-  }
-
-  private static class ConfigSerializer implements Serializer<ConfigEnabledCondition>, IConditionSerializer<ConfigEnabledCondition> {
-    @Override
-    public ResourceLocation getID() {
-      return ID;
-    }
-
-    @Override
-    public void write(JsonObject json, ConfigEnabledCondition value) {
-      json.addProperty("prop", value.configName);
-    }
-
-    @Override
-    public ConfigEnabledCondition read(JsonObject json) {
-      String prop = GsonHelper.getAsString(json, "prop");
-      ConfigEnabledCondition config = PROPS.get(prop.toLowerCase(Locale.ROOT));
-      if (config == null) {
-        throw new JsonSyntaxException("Invalid property name '" + prop + "'");
-      }
-      return config;
-    }
-
-    @Override
-    public void serialize(JsonObject json, ConfigEnabledCondition condition, JsonSerializationContext context) {
-      write(json, condition);
-    }
-
-    @Override
-    public ConfigEnabledCondition deserialize(JsonObject json, JsonDeserializationContext context) {
-      return read(json);
-    }
   }
 
   /**

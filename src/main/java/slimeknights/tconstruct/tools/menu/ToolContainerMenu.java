@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.tools.menu;
 
 import lombok.Getter;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -14,7 +14,7 @@ import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
@@ -90,13 +90,13 @@ public class ToolContainerMenu extends AbstractContainerMenu {
   }
 
   /** Creates a new instance of this container on the client side */
-  public static ToolContainerMenu forClient(int id, Inventory inventory, FriendlyByteBuf buffer) {
+  public static ToolContainerMenu forClient(int id, Inventory inventory, RegistryFriendlyByteBuf buffer) {
     int slotIndex = buffer.readVarInt();
     ToolSyncType syncType = buffer.readEnum(ToolSyncType.class);
     // when syncing the full stack, overwrite the spot in the inventory
     ItemStack stack;
     if (syncType == ToolSyncType.FULL_STACK) {
-      stack = buffer.readItem();
+      stack = ItemStack.STREAM_CODEC.decode(buffer);
       inventory.setItem(slotIndex, stack);
     } else {
       stack = inventory.getItem(slotIndex);
@@ -117,8 +117,9 @@ public class ToolContainerMenu extends AbstractContainerMenu {
     }
     // if the stack looks like it could be our tool, fetch the handler from it
     IItemHandler handler;
-    if (stack.hasTag() && stack.is(TinkerTags.Items.MODIFIABLE)) {
-      handler = stack.getCapability(ForgeCapabilities.ITEM_HANDLER).filter(cap -> cap instanceof IItemHandlerModifiable).orElse(EmptyItemHandler.INSTANCE);
+    if (!stack.getComponentsPatch().isEmpty() && stack.is(TinkerTags.Items.MODIFIABLE)) {
+      IItemHandler cap = stack.getCapability(Capabilities.ItemHandler.ITEM);
+      handler = cap instanceof IItemHandlerModifiable ? cap : EmptyItemHandler.INSTANCE;
       // wrong number of slots means something went wrong, use a dummy
       if (handler.getSlots() != size) {
         handler = new ItemStackHandler(size);

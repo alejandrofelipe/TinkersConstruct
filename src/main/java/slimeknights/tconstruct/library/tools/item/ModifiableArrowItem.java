@@ -18,8 +18,8 @@ import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
 import slimeknights.mantle.client.SafeClientAccess;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.common.Sounds;
@@ -29,7 +29,6 @@ import slimeknights.tconstruct.library.modifiers.hook.interaction.InventoryTickM
 import slimeknights.tconstruct.library.modifiers.hook.interaction.SlotStackModifierHook;
 import slimeknights.tconstruct.library.modifiers.modules.build.RarityModule;
 import slimeknights.tconstruct.library.tools.IndestructibleItemEntity;
-import slimeknights.tconstruct.library.tools.capability.ToolCapabilityProvider;
 import slimeknights.tconstruct.library.tools.definition.ToolDefinition;
 import slimeknights.tconstruct.library.tools.definition.module.display.ToolNameHook;
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
@@ -102,11 +101,8 @@ public class ModifiableArrowItem extends ArrowItem implements IModifiableDisplay
 
   /* Loading */
 
-  @Nullable
-  @Override
-  public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
-    return new ToolCapabilityProvider(stack);
-  }
+  // PORT M3: item capabilities now registered centrally on RegisterCapabilitiesEvent via
+  // ToolCapabilityProvider.getCapability(stack, cap); the initCapabilities/ICapabilityProvider override is removed.
 
   @Override
   public void verifyTagAfterLoad(CompoundTag nbt) {
@@ -174,8 +170,8 @@ public class ModifiableArrowItem extends ArrowItem implements IModifiableDisplay
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-    TooltipUtil.addInformation(this, stack, level, tooltip, SafeClientAccess.getTooltipKey(), flag);
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    TooltipUtil.addInformation(this, stack, context.level(), tooltip, SafeClientAccess.getTooltipKey(), flag);
   }
 
   @Override

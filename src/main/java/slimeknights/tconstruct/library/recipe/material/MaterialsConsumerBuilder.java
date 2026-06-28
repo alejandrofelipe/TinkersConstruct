@@ -1,33 +1,47 @@
 package slimeknights.tconstruct.library.recipe.material;
 
-import com.google.gson.JsonObject;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.neoforged.neoforge.common.conditions.ICondition;
 import slimeknights.mantle.recipe.data.ConsumerWrapperBuilder;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
-import slimeknights.tconstruct.tables.TinkerTables;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
-/** Special variant of {@link ConsumerWrapperBuilder} for {@link ShapedMaterialsRecipe} and {@link ShapelessMaterialsRecipe} */
+/**
+ * Special variant of {@link ConsumerWrapperBuilder} for {@link ShapedMaterialsRecipe} and {@link ShapelessMaterialsRecipe}.
+ * <p>
+ * In 1.20 the shaped parts referenced symbols in the shaped recipe key map; in 1.21 the {@link net.minecraft.world.item.crafting.ShapedRecipePattern}
+ * is opaque, so the shaped variant takes the part ingredients directly.
+ */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class MaterialsConsumerBuilder {
-  private final String parts;
+  /** Part ingredients for a shaped recipe, empty for shapeless */
+  private final List<Ingredient> parts;
+  /** Number of parts to consume from the front of a shapeless recipe, 0 for shaped */
   private final int partCount;
   private final List<MaterialVariantId> materials = new ArrayList<>();
 
   /** Creates a new shaped recipe with the given ingredients as parts */
-  public static MaterialsConsumerBuilder shaped(String parts) {
+  public static MaterialsConsumerBuilder shaped(List<Ingredient> parts) {
     if (parts.isEmpty()) {
       throw new IllegalArgumentException("Parts may not be empty");
     }
-    return new MaterialsConsumerBuilder(parts, 0);
+    return new MaterialsConsumerBuilder(List.copyOf(parts), 0);
+  }
+
+  /** Creates a new shaped recipe with the given ingredients as parts */
+  public static MaterialsConsumerBuilder shaped(Ingredient... parts) {
+    return shaped(List.of(parts));
   }
 
   /** Creates a new shapeless recipe with the first ingredients as parts */
@@ -35,7 +49,7 @@ public class MaterialsConsumerBuilder {
     if (parts <= 0) {
       throw new IllegalArgumentException("Parts must be greater than 0");
     }
-    return new MaterialsConsumerBuilder("", parts);
+    return new MaterialsConsumerBuilder(List.of(), parts);
   }
 
   /** Adds a material to the builder */
@@ -44,45 +58,29 @@ public class MaterialsConsumerBuilder {
     return this;
   }
 
-  /** Builds the wrapped consumer */
-  public Consumer<FinishedRecipe> build(Consumer<FinishedRecipe> consumer) {
-    return (recipe) -> consumer.accept(new Wrapped(recipe, materials, parts, partCount));
+  /** Builds the wrapped recipe output */
+  public RecipeOutput build(RecipeOutput consumer) {
+    return new Wrapped(consumer, parts, partCount, List.copyOf(materials));
   }
 
-  private record Wrapped(FinishedRecipe original, List<MaterialVariantId> materials, String parts, int partCount) implements FinishedRecipe {
+  /** Recipe output that wraps a vanilla crafting recipe into a material variant before forwarding */
+  private record Wrapped(RecipeOutput delegate, List<Ingredient> parts, int partCount, List<MaterialVariantId> materials) implements RecipeOutput {
     @Override
-    public ResourceLocation getId() {
-      return original.getId();
-    }
-
-    @Override
-    public RecipeSerializer<?> getType() {
-      return partCount > 0 ? TinkerTables.shapelessMaterialsRecipeSerializer.get() : TinkerTables.shapedMaterialsRecipeSerializer.get();
-    }
-
-    @Override
-    public void serializeRecipeData(JsonObject json) {
-      original.serializeRecipeData(json);
-      if (!materials.isEmpty()) {
-        json.add(ShapedMaterialsRecipe.Serializer.MATERIAL_FIELD.key(), ShapedMaterialsRecipe.Serializer.EXTRA_MATERIALS.serialize(materials));
-      }
-      if (!parts.isEmpty()) {
-        json.addProperty("parts", parts);
+    public void accept(ResourceLocation id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions) {
+      Recipe<?> wrapped;
+      if (partCount > 0 && recipe instanceof ShapelessRecipe shapeless) {
+        wrapped = new ShapelessMaterialsRecipe(shapeless, partCount, materials);
+      } else if (recipe instanceof ShapedRecipe shaped) {
+        wrapped = new ShapedMaterialsRecipe(shaped, parts, materials);
       } else {
-        json.addProperty("parts", partCount);
+        wrapped = recipe;
       }
+      delegate.accept(id, wrapped, advancement, conditions);
     }
 
-    @Nullable
     @Override
-    public JsonObject serializeAdvancement() {
-      return original.serializeAdvancement();
-    }
-
-    @Nullable
-    @Override
-    public ResourceLocation getAdvancementId() {
-      return original.getAdvancementId();
+    public net.minecraft.advancements.Advancement.Builder advancement() {
+      return delegate.advancement();
     }
   }
 }

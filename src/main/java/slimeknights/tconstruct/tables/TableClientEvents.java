@@ -2,20 +2,20 @@ package slimeknights.tconstruct.tables;
 
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod.EventBusSubscriber;
-import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import slimeknights.mantle.client.render.InventoryBlockEntityRenderer;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.ClientEventBase;
 import slimeknights.tconstruct.shared.block.entity.TableBlockEntity;
 import slimeknights.tconstruct.tables.block.entity.chest.TinkersChestBlockEntity;
+import slimeknights.tconstruct.tables.item.TinkersChestBlockItem;
 import slimeknights.tconstruct.tables.client.inventory.CraftingStationScreen;
 import slimeknights.tconstruct.tables.client.inventory.ModifierWorktableScreen;
 import slimeknights.tconstruct.tables.client.inventory.PartBuilderScreen;
@@ -58,6 +58,11 @@ public class TableClientEvents extends ClientEventBase {
 
   @SubscribeEvent
   static void registerItemColors(final RegisterColorHandlersEvent.Item event) {
-    event.register((stack, index) -> ((DyeableLeatherItem)stack.getItem()).getColor(stack), TinkerTables.tinkersChest.asItem());
+    event.register((stack, index) -> {
+      if (stack.getItem() instanceof TinkersChestBlockItem chestItem) {
+        return chestItem.getColor(stack);
+      }
+      return -1;
+    }, TinkerTables.tinkersChest.asItem());
   }
 }

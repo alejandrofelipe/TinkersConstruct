@@ -34,7 +34,7 @@ public interface IMoldingContainer extends IRecipeContainer {
   }
 
   @Override
-  default int getContainerSize() {
+  default int size() {
     return 2;
   }
 

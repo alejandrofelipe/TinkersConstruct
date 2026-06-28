@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.library.recipe.modifiers.adding;
 
 import lombok.Getter;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -71,7 +71,7 @@ public class SwappableModifierRecipe extends ModifierRecipe {
   }
 
   @Override
-  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, RegistryAccess access) {
+  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, HolderLookup.Provider access) {
     ToolStack tool = inv.getTinkerable();
 
     // if the tool has the modifier already, can skip most requirements

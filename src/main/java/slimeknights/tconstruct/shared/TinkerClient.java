@@ -19,10 +19,10 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.RecipesUpdatedEvent;
 import net.neoforged.neoforge.client.event.RenderBlockScreenEffectEvent;
-import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod.EventBusSubscriber;
-import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import org.joml.Matrix4f;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -65,7 +65,7 @@ import static slimeknights.tconstruct.TConstruct.getResource;
 /**
  * This class should only be referenced on the client side
  */
-@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.FORGE)
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
 public class TinkerClient {
   /**
    * Called by TConstruct to handle any client side logic that needs to run during the constructor
@@ -78,7 +78,7 @@ public class TinkerClient {
 
     // add the recipe cache invalidator to the client
     Consumer<RecipesUpdatedEvent> recipesUpdated = event -> RecipeCacheInvalidator.reload(true);
-    MinecraftForge.EVENT_BUS.addListener(recipesUpdated);
+    NeoForge.EVENT_BUS.addListener(recipesUpdated);
 
     // register datagen serializers
     ISpriteTransformer.SERIALIZER.registerDeserializer(RecolorSpriteTransformer.NAME, RecolorSpriteTransformer.DESERIALIZER);

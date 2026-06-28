@@ -1,8 +1,10 @@
 package slimeknights.tconstruct.tools.item;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
@@ -173,7 +175,7 @@ public class ModifierCrystalItem extends Item {
   /** Creates a stack with the given modifier */
   public static ItemStack withModifier(ModifierId modifier, int count) {
     ItemStack stack = new ItemStack(TinkerModifiers.modifierCrystal.get(), count);
-    stack.getOrCreateTag().putString(TAG_MODIFIER, modifier.toString());
+    CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putString(TAG_MODIFIER, modifier.toString()));
     return stack;
   }
 
@@ -185,9 +187,9 @@ public class ModifierCrystalItem extends Item {
   /** Gets the modifier stored on this stack */
   @Nullable
   public static ModifierId getModifier(ItemStack stack) {
-    CompoundTag tag = stack.getTag();
-    if (tag != null) {
-      return ModifierId.tryParse(tag.getString(TAG_MODIFIER));
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    if (data != null) {
+      return ModifierId.tryParse(data.getUnsafe().getString(TAG_MODIFIER));
     }
     return null;
   }

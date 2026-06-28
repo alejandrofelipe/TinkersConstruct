@@ -10,11 +10,12 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
-import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.bus.api.EventPriority;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.ArmorTexture;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.TextureType;
@@ -64,7 +65,8 @@ public abstract class AbstractArmorModel extends Model {
       green *= (float)(color >> 8 & 255) / 255.0F;
       blue *= (float)(color & 255) / 255.0F;
     }
-    model.renderToBuffer(matrices, buffer, packedLightIn, packedOverlayIn, red, green, blue, alpha);
+    // 1.21 renderToBuffer takes a single packed ARGB int rather than four floats
+    model.renderToBuffer(matrices, buffer, packedLightIn, packedOverlayIn, FastColor.ARGB32.colorFromFloat(alpha, red, green, blue));
   }
 
   /** Renders the wings layer */
@@ -86,8 +88,8 @@ public abstract class AbstractArmorModel extends Model {
   /** Initializes the wrapper */
   public static void init() {
     // register listeners to set and clear the buffer
-    MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, RenderLivingEvent.Pre.class, event -> buffer = event.getMultiBufferSource());
-    MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, RenderLivingEvent.Post.class, event -> buffer = null);
+    NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, RenderLivingEvent.Pre.class, event -> buffer = event.getMultiBufferSource());
+    NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, RenderLivingEvent.Post.class, event -> buffer = null);
   }
 
   /** Wings model to render */

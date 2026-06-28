@@ -5,10 +5,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
-import net.minecraft.core.Direction;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
-import net.neoforged.neoforge.common.util.LazyOptional;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
 
 import javax.annotation.Nullable;
@@ -20,23 +16,13 @@ import java.util.List;
  * Does not serialize as the world saves the entities already, they just dismounted on logout
  */
 @RequiredArgsConstructor
-public class PiggybackHandler implements ICapabilityProvider {
+public class PiggybackHandler {
 
   /** Player holding this capability */
   @Nullable
   private final Player riddenPlayer;
-  /** Capability instance for the provider method */
-  private final LazyOptional<PiggybackHandler> capability = LazyOptional.of(() -> this);
   /** Last found list of passengers, used in serialization and syncing */
   private List<Entity> lastPassengers;
-
-  @Override
-  public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-    if (cap == PiggybackCapability.PIGGYBACK) {
-      return capability.cast();
-    }
-    return LazyOptional.empty();
-  }
 
   /**
    * Updates the passengers on the back

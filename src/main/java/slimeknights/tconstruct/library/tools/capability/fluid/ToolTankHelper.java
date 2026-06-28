@@ -1,8 +1,13 @@
 package slimeknights.tconstruct.library.tools.capability.fluid;
 
+import com.mojang.serialization.Codec;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.Mantle;
@@ -23,8 +28,14 @@ import java.util.function.BiFunction;
 @Getter
 @RequiredArgsConstructor
 public class ToolTankHelper {
+  /** Registry ops for (de)serializing fluid stacks to NBT. Fluids are a static registry, so {@link RegistryAccess#EMPTY} suffices for the tank use-case. */
+  private static final RegistryOps<Tag> NBT_OPS = RegistryOps.create(NbtOps.INSTANCE, RegistryAccess.EMPTY);
+  /** Codec for an optional fluid stack stored in tool data */
+  private static final Codec<FluidStack> FLUID_CODEC = FluidStack.OPTIONAL_CODEC;
+
   /** Helper function to parse a fluid from NBT */
-  public static final BiFunction<CompoundTag, String, FluidStack> PARSE_FLUID = (nbt, key) -> FluidStack.loadFluidStackFromNBT(nbt.getCompound(key));
+  public static final BiFunction<CompoundTag, String, FluidStack> PARSE_FLUID = (nbt, key) ->
+    FLUID_CODEC.parse(NBT_OPS, nbt.getCompound(key)).result().orElse(FluidStack.EMPTY);
 
   /** Format key for the stat */
   public static final String MB_FORMAT = Mantle.makeDescriptionId("gui", "fluid.millibucket");
@@ -63,12 +74,12 @@ public class ToolTankHelper {
       return FluidStack.EMPTY;
     }
     int capacity = getCapacity(tool);
-    // we always copy before saving to ensure the NBT on the fluid gets copied, since those being the same compound is possible
+    // we always copy before saving to ensure the components on the fluid get copied, since those being the same is possible
     fluid = fluid.copy();
     if (fluid.getAmount() > capacity) {
       fluid.setAmount(capacity);
     }
-    tool.getPersistentData().put(fluidKey, fluid.writeToNBT(new CompoundTag()));
+    tool.getPersistentData().put(fluidKey, FLUID_CODEC.encodeStart(NBT_OPS, fluid).result().orElse(new CompoundTag()));
     return fluid;
   }
 }

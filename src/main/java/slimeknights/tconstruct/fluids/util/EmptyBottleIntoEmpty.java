@@ -10,8 +10,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemUtils;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -23,7 +24,7 @@ import java.util.function.Supplier;
 public record EmptyBottleIntoEmpty(Supplier<Item> empty, CauldronInteraction fallback) implements CauldronInteraction {
   @Override
   public InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
-    if (PotionUtils.getPotion(stack) != Potions.WATER) {
+    if (!stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).is(Potions.WATER)) {
       return fallback.interact(state, level, pos, player, hand, stack);
     }
     if (!level.isClientSide) {

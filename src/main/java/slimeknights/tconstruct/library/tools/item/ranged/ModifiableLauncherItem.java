@@ -27,9 +27,9 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-import net.neoforged.neoforge.common.ToolAction;
-import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
+import net.neoforged.neoforge.common.ItemAbility;
 import slimeknights.mantle.client.SafeClientAccess;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.item.ModifiableItemClientExtension;
@@ -44,7 +44,6 @@ import slimeknights.tconstruct.library.modifiers.hook.interaction.SlotStackModif
 import slimeknights.tconstruct.library.modifiers.hook.interaction.UsingToolModifierHook;
 import slimeknights.tconstruct.library.modifiers.modules.build.RarityModule;
 import slimeknights.tconstruct.library.tools.IndestructibleItemEntity;
-import slimeknights.tconstruct.library.tools.capability.ToolCapabilityProvider;
 import slimeknights.tconstruct.library.tools.definition.ToolDefinition;
 import slimeknights.tconstruct.library.tools.definition.module.display.ToolNameHook;
 import slimeknights.tconstruct.library.tools.definition.module.mining.IsEffectiveToolHook;
@@ -134,11 +133,8 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
 
   /* Loading */
 
-  @Nullable
-  @Override
-  public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
-    return new ToolCapabilityProvider(stack);
-  }
+  // PORT M3: item capabilities now registered centrally on RegisterCapabilitiesEvent via
+  // ToolCapabilityProvider.getCapability(stack, cap); the initCapabilities/ICapabilityProvider override is removed.
 
   @Override
   public void verifyTagAfterLoad(CompoundTag nbt) {
@@ -264,8 +260,8 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
   }
 
   @Override
-  public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
-    return ModifierUtil.canPerformAction(ToolStack.from(stack), toolAction);
+  public boolean canPerformAction(ItemStack stack, ItemAbility itemAbility) {
+    return ModifierUtil.canPerformAction(ToolStack.from(stack), itemAbility);
   }
 
   @Override
@@ -273,10 +269,11 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
     return AttributesModifierHook.getHeldAttributeModifiers(tool, slot);
   }
 
+  // PORT M3 (attributes): see ModifiableItem; replace with the 1.21 ItemAttributeModifiers data component
+  // (Holder<Attribute> keyed) during the module-wide attribute redesign.
   @Override
   public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
-    CompoundTag nbt = stack.getTag();
-    if (nbt == null || slot.getType() != Type.HAND) {
+    if (!ToolStack.isInitialized(stack) || slot.getType() != Type.HAND) {
       return ImmutableMultimap.of();
     }
     return getAttributeModifiers(ToolStack.from(stack), slot);
@@ -345,8 +342,8 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-    TooltipUtil.addInformation(this, stack, level, tooltip, SafeClientAccess.getTooltipKey(), flag);
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    TooltipUtil.addInformation(this, stack, context.level(), tooltip, SafeClientAccess.getTooltipKey(), flag);
   }
 
   @Override

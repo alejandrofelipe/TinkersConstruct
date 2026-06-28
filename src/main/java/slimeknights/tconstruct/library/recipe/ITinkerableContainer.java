@@ -67,7 +67,7 @@ public interface ITinkerableContainer extends IRecipeContainer {
   /** @deprecated use {@link #getInputCount()} */
   @Deprecated
   @Override
-  default int getContainerSize() {
+  default int size() {
     return getInputCount() + 1;
   }
 

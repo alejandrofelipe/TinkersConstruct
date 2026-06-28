@@ -11,10 +11,10 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.event.entity.living.LivingHurtEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import slimeknights.tconstruct.TConstruct;
 import java.util.Objects;
 //import slimeknights.tconstruct.library.utils.TagUtil;
@@ -22,7 +22,7 @@ import java.util.Objects;
 //import slimeknights.tconstruct.tools.tools.Pickaxe;
 
 // TODO: reevaluate
-@Mod.EventBusSubscriber(modid = TConstruct.MOD_ID)
+@EventBusSubscriber(modid = TConstruct.MOD_ID)
 public final class AchievementEvents {
 
   private static final String ADVANCEMENT_STORY_ROOT = "minecraft:story/root";
@@ -52,7 +52,7 @@ public final class AchievementEvents {
   }
 
   @SubscribeEvent
-  public static void onDamageEntity(LivingHurtEvent event) {
+  public static void onDamageEntity(LivingIncomingDamageEvent event) {
     DamageSource source = event.getSource();
     if (source.is(DamageTypeTags.IS_PROJECTILE) && source.getEntity() instanceof ServerPlayer player && !(source.getEntity() instanceof FakePlayer)) {// && source.getImmediateSource() instanceof EntityArrow) {
       grantAdvancement(player, ADVANCEMENT_SHOOT_ARROW);

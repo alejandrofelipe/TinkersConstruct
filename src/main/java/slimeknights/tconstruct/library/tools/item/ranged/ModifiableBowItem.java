@@ -19,7 +19,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.event.EventHooks;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.Sounds;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -113,7 +113,7 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
     boolean isBallista = isBallista(tool);
     ItemStack ammo = BowAmmoModifierHook.getAmmo(tool, bow, player, isBallista ? getSupportedBallistaAmmo() : getSupportedHeldProjectiles());
     // ask forge if it has any different opinions
-    InteractionResultHolder<ItemStack> override = ForgeEventFactory.onArrowNock(bow, level, player, hand, !ammo.isEmpty());
+    InteractionResultHolder<ItemStack> override = EventHooks.onArrowNock(bow, level, player, hand, !ammo.isEmpty());
     if (override != null) {
       return override;
     }
@@ -131,7 +131,7 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
     // store either ammo or boolean as requested
     if (!ammo.isEmpty()) {
       if (storeDrawingItem) {
-        tool.getPersistentData().put(KEY_DRAWBACK_AMMO, ammo.save(new CompoundTag()));
+        tool.getPersistentData().put(KEY_DRAWBACK_AMMO, ammo.save(level.registryAccess(), new CompoundTag()));
       } else {
         // boolean is enough to get detected by the property override, but won't bother the model
         tool.getPersistentData().putBoolean(KEY_DRAWBACK_AMMO, true);
@@ -185,7 +185,7 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
     // ask forge its thoughts on shooting
     int chargeTime = duration - timeLeft;
     if (player != null) {
-      chargeTime = ForgeEventFactory.onArrowLoose(bow, level, player, chargeTime, hasAmmo);
+      chargeTime = EventHooks.onArrowLoose(bow, level, player, chargeTime, hasAmmo);
     }
 
     // no ammo? no charge? nothing to do

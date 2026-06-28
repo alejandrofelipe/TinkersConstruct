@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.library.recipe.partbuilder;
 
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.mantle.client.SafeClientAccess;
@@ -33,7 +33,7 @@ public interface IDisplayPartBuilderRecipe extends IPartBuilderRecipe {
 
   /** Gets a list of results. Should either be size 1, or size matching {@link #getMaterialItems()} */
   default List<ItemStack> getResultItems() {
-    RegistryAccess access = SafeClientAccess.getRegistryAccess();
+    HolderLookup.Provider access = SafeClientAccess.getHolderLookup.Provider();
     return access == null ? List.of() : List.of(getResultItem(access));
   }
 

@@ -1,24 +1,24 @@
 package slimeknights.tconstruct.library.tools.definition;
 
 import com.google.common.collect.ImmutableMap;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.NetworkEvent.Context;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import slimeknights.mantle.network.packet.IThreadsafePacket;
+import slimeknights.tconstruct.TConstruct;
 
 import java.util.Map;
 import java.util.Map.Entry;
 
 /** Packet to sync tool definitions to the client */
-@RequiredArgsConstructor
-public class UpdateToolDefinitionDataPacket implements IThreadsafePacket {
-  @Getter(AccessLevel.PROTECTED)
-  private final Map<ResourceLocation, ToolDefinitionData> dataMap;
+public record UpdateToolDefinitionDataPacket(Map<ResourceLocation, ToolDefinitionData> dataMap) implements IThreadsafePacket {
+  public static final CustomPacketPayload.Type<UpdateToolDefinitionDataPacket> TYPE = new CustomPacketPayload.Type<>(TConstruct.getResource("update_tool_definition_data"));
+  public static final StreamCodec<RegistryFriendlyByteBuf, UpdateToolDefinitionDataPacket> STREAM_CODEC = StreamCodec.ofMember(UpdateToolDefinitionDataPacket::encode, UpdateToolDefinitionDataPacket::decode);
 
-  public UpdateToolDefinitionDataPacket(FriendlyByteBuf buffer) {
+  /** Decodes the packet from the buffer */
+  private static UpdateToolDefinitionDataPacket decode(RegistryFriendlyByteBuf buffer) {
     int size = buffer.readVarInt();
     ImmutableMap.Builder<ResourceLocation, ToolDefinitionData> builder = ImmutableMap.builder();
     for (int i = 0; i < size; i++) {
@@ -26,11 +26,11 @@ public class UpdateToolDefinitionDataPacket implements IThreadsafePacket {
       ToolDefinitionData data = ToolDefinitionData.LOADABLE.decode(buffer, ToolDefinitionLoader.contextBuilder(name).build());
       builder.put(name, data);
     }
-    dataMap = builder.build();
+    return new UpdateToolDefinitionDataPacket(builder.build());
   }
 
-  @Override
-  public void encode(FriendlyByteBuf buffer) {
+  /** Encodes the packet to the buffer */
+  private void encode(RegistryFriendlyByteBuf buffer) {
     buffer.writeVarInt(dataMap.size());
     for (Entry<ResourceLocation, ToolDefinitionData> entry : dataMap.entrySet()) {
       buffer.writeResourceLocation(entry.getKey());
@@ -39,7 +39,12 @@ public class UpdateToolDefinitionDataPacket implements IThreadsafePacket {
   }
 
   @Override
-  public void handleThreadsafe(Context context) {
+  public CustomPacketPayload.Type<UpdateToolDefinitionDataPacket> type() {
+    return TYPE;
+  }
+
+  @Override
+  public void handleThreadsafe(IPayloadContext context) {
     ToolDefinitionLoader.getInstance().updateDataFromServer(dataMap);
   }
 }

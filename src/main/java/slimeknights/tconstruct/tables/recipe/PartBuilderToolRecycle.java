@@ -1,24 +1,21 @@
 package slimeknights.tconstruct.tables.recipe;
 
-import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.mantle.data.loadable.common.IngredientLoadable;
-import slimeknights.mantle.data.loadable.field.ContextKey;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.recipe.IMultiRecipe;
 import slimeknights.mantle.recipe.ingredient.SizedIngredient;
@@ -71,22 +68,17 @@ public class PartBuilderToolRecycle implements IPartBuilderRecipe, IMultiRecipe<
 
   /** Loader instance */
   public static final RecordLoadable<PartBuilderToolRecycle> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
     SizedIngredient.LOADABLE.defaultField("tools", DEFAULT_TOOLS, true, r -> r.toolRequirement),
     IngredientLoadable.DISALLOW_EMPTY.requiredField("pattern", r -> r.pattern),
     TinkerLoadables.MATERIAL_ITEM.list(0).defaultField("parts", List.of(), r -> r.parts),
     PartBuilderToolRecycle::new);
 
-  @Getter
-  private final ResourceLocation id;
   private final SizedIngredient toolRequirement;
   private final Ingredient pattern;
   private final List<IMaterialItem> parts;
 
-  /** @deprecated use {@link FinishedRecipe} */
-  @Deprecated(forRemoval = true)
-  public PartBuilderToolRecycle(ResourceLocation id, SizedIngredient toolRequirement, Ingredient pattern) {
-    this(id, toolRequirement, pattern, List.of());
+  public PartBuilderToolRecycle(SizedIngredient toolRequirement, Ingredient pattern) {
+    this(toolRequirement, pattern, List.of());
   }
 
   @Override
@@ -236,8 +228,8 @@ public class PartBuilderToolRecycle implements IPartBuilderRecipe, IMultiRecipe<
     Collection<PartIndex> displayParts = IntStream.range(0, parts.size()).mapToObj(i -> new PartIndex(parts.get(i), i)).collect(Collectors.toMap(PartIndex::part, Function.identity(), (a, b) -> a)).values();
     return displayParts.stream().map(pi -> {
       ItemStack part = pi.part.withMaterialForDisplay(ToolBuildHandler.getRenderMaterial(pi.index));
-      part.getOrCreateTag().putBoolean(TooltipUtil.KEY_DISPLAY, true);
-      return new DisplayPartRecipe(id, MaterialVariant.UNKNOWN, new Pattern(Loadables.ITEM.getKey(pi.part.asItem())), patternItems, 0, tool, List.of(part));
+      CustomData.update(DataComponents.CUSTOM_DATA, part, tag -> tag.putBoolean(TooltipUtil.KEY_DISPLAY, true));
+      return new DisplayPartRecipe(MaterialVariant.UNKNOWN, new Pattern(Loadables.ITEM.getKey(pi.part.asItem())), patternItems, 0, tool, List.of(part));
     });
   }
 
@@ -260,32 +252,5 @@ public class PartBuilderToolRecycle implements IPartBuilderRecipe, IMultiRecipe<
       }
     }
     return displayRecipes;
-  }
-
-  /** @deprecated use {@link slimeknights.tconstruct.library.recipe.partbuilder.recycle.PartBuilderToolRecycleBuilder} */
-  @Deprecated(forRemoval = true)
-  public record Finished(ResourceLocation getId, SizedIngredient tools, Ingredient pattern) implements FinishedRecipe {
-    @Override
-    public void serializeRecipeData(JsonObject json) {
-      json.add("tools", SizedIngredient.LOADABLE.serialize(tools));
-      json.add("pattern", pattern.toJson());
-    }
-
-    @Override
-    public RecipeSerializer<?> getType() {
-      return TinkerTables.partBuilderToolRecycling.get();
-    }
-
-    @Nullable
-    @Override
-    public JsonObject serializeAdvancement() {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public ResourceLocation getAdvancementId() {
-      return null;
-    }
   }
 }

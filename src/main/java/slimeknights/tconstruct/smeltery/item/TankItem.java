@@ -1,9 +1,8 @@
 package slimeknights.tconstruct.smeltery.item;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.SlotAccess;
@@ -11,15 +10,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
-import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.SimpleFluidContent;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.mantle.fluid.FluidTransferHelper;
@@ -32,12 +31,10 @@ import slimeknights.mantle.registration.object.EnumObject;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.recipe.FluidValues;
-import slimeknights.tconstruct.library.utils.NBTTags;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
 import slimeknights.tconstruct.smeltery.block.entity.component.TankBlockEntity;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -53,9 +50,9 @@ public class TankItem extends BlockTooltipItem {
 
   /** Checks if the tank item is filled */
   private static boolean isFilled(ItemStack stack) {
-    // has a container if not empty
-    CompoundTag nbt = stack.getTag();
-    return nbt != null && nbt.contains(NBTTags.TANK, Tag.TAG_COMPOUND);
+    // PORT M3: TinkerSmeltery.TANK_FLUID is a DataComponentType<SimpleFluidContent> registered centrally
+    SimpleFluidContent content = stack.get(TinkerSmeltery.TANK_FLUID.get());
+    return content != null && !content.isEmpty();
   }
 
   @Override
@@ -77,12 +74,12 @@ public class TankItem extends BlockTooltipItem {
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flag) {
-    if (stack.hasTag()) {
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    if (isFilled(stack)) {
       FluidTank tank = getTank(stack, 1);
       if (tank.getFluidAmount() > 0) {
         FluidStack fluid = tank.getFluid();
-        tooltip.add(fluid.getDisplayName().plainCopy().withStyle(ChatFormatting.GRAY));
+        tooltip.add(fluid.getHoverName().plainCopy().withStyle(ChatFormatting.GRAY));
         if (flag.isAdvanced()) {
           tooltip.add(Component.translatable(FLUID_ID, Loadables.FLUID.getKey(fluid.getFluid())).withStyle(ChatFormatting.DARK_GRAY));
         }
@@ -90,19 +87,13 @@ public class TankItem extends BlockTooltipItem {
       }
     }
     else {
-      super.appendHoverText(stack, worldIn, tooltip, flag);
+      super.appendHoverText(stack, context, tooltip, flag);
     }
-  }
-
-  @Nullable
-  @Override
-  public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
-    return new TankItemFluidHandler(this, stack);
   }
 
   /** Checks if the given stack has fluid transfer */
   public static boolean mayHaveFluid(ItemStack stack) {
-    return FluidContainerTransferManager.INSTANCE.mayHaveTransfer(stack) || stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).isPresent();
+    return FluidContainerTransferManager.INSTANCE.mayHaveTransfer(stack) || stack.getCapability(Capabilities.FluidHandler.ITEM) != null;
   }
 
   @Override
@@ -182,7 +173,7 @@ public class TankItem extends BlockTooltipItem {
         // transfer the fluid
         FluidTank tank = getTank(stack);
         // if both tanks are empty, just do standard stack operations; makes it nice and easy to move just 1 item at a time
-        if (tank.isEmpty() && ItemStack.isSameItemSameTags(stack, held)) {
+        if (tank.isEmpty() && ItemStack.isSameItemSameComponents(stack, held)) {
           return false;
         }
         TransferResult result = FluidTransferHelper.interactWithStack(tank, held, TransferDirection.AUTO);
@@ -204,13 +195,7 @@ public class TankItem extends BlockTooltipItem {
 
   /** Removes the tank from the given stack */
   private static void removeTank(ItemStack stack) {
-    CompoundTag nbt = stack.getTag();
-    if (nbt != null) {
-      nbt.remove(NBTTags.TANK);
-      if (nbt.isEmpty()) {
-        stack.setTag(null);
-      }
-    }
+    stack.remove(TinkerSmeltery.TANK_FLUID.get());
   }
 
   /**
@@ -220,12 +205,7 @@ public class TankItem extends BlockTooltipItem {
    * @return  Stack with tank
    */
   public static ItemStack setTank(ItemStack stack, FluidTank tank) {
-    if (tank.isEmpty()) {
-      removeTank(stack);
-    } else {
-      stack.getOrCreateTag().put(NBTTags.TANK, tank.writeToNBT(new CompoundTag()));
-    }
-    return stack;
+    return setTank(stack, tank.getFluid());
   }
 
   /**
@@ -238,19 +218,17 @@ public class TankItem extends BlockTooltipItem {
     if (fluid.isEmpty()) {
       removeTank(stack);
     } else {
-      stack.getOrCreateTag().put(NBTTags.TANK, fluid.writeToNBT(new CompoundTag()));
+      // PORT M3: TinkerSmeltery.TANK_FLUID is a DataComponentType<SimpleFluidContent> registered centrally
+      stack.set(TinkerSmeltery.TANK_FLUID.get(), SimpleFluidContent.copyOf(fluid));
     }
     return stack;
   }
 
   /** Creates a stack with the given fluid and amount, not validated. */
   private static ItemStack setTank(ItemLike item, ResourceLocation fluid, int amount) {
-    CompoundTag tag = new CompoundTag();
-    tag.putString("FluidName", fluid.toString());
-    tag.putInt("Amount", amount);
+    Fluid fluidValue = BuiltInRegistries.FLUID.get(fluid);
     ItemStack stack = new ItemStack(item);
-    stack.getOrCreateTag().put(NBTTags.TANK, tag);
-    return stack;
+    return setTank(stack, new FluidStack(fluidValue, amount));
   }
 
   /**
@@ -276,9 +254,13 @@ public class TankItem extends BlockTooltipItem {
    */
   public static FluidTank getTank(ItemStack stack, int scale) {
     FluidTank tank = ScaledFluidTank.create(TankBlockEntity.getCapacity(stack.getItem()), scale);
-    if (stack.hasTag()) {
-      assert stack.getTag() != null;
-      tank.readFromNBT(stack.getTag().getCompound(NBTTags.TANK));
+    // PORT M3: TinkerSmeltery.TANK_FLUID is a DataComponentType<SimpleFluidContent> registered centrally
+    SimpleFluidContent content = stack.get(TinkerSmeltery.TANK_FLUID.get());
+    if (content != null && !content.isEmpty()) {
+      // the stored fluid represents stack size 1; scale it up to match the requested stack scale
+      FluidStack fluid = content.copy();
+      fluid.setAmount(fluid.getAmount() * scale);
+      tank.setFluid(fluid);
     }
     return tank;
   }
@@ -289,9 +271,10 @@ public class TankItem extends BlockTooltipItem {
    * @return  String variant name
    */
   public static String getSubtype(ItemStack stack) {
-    CompoundTag nbt = stack.getTag();
-    if (nbt != null && nbt.contains(NBTTags.TANK, Tag.TAG_COMPOUND)) {
-      return nbt.getCompound(NBTTags.TANK).getString("FluidName");
+    // PORT M3: TinkerSmeltery.TANK_FLUID is a DataComponentType<SimpleFluidContent> registered centrally
+    SimpleFluidContent content = stack.get(TinkerSmeltery.TANK_FLUID.get());
+    if (content != null && !content.isEmpty()) {
+      return BuiltInRegistries.FLUID.getKey(content.getFluid()).toString();
     }
     return "";
   }

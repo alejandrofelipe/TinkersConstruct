@@ -26,8 +26,8 @@ public class ModifiableItemClientExtension implements IClientItemExtensions {
   }
 
   @Override
-  public boolean applyForgeHandTransform(PoseStack poseStack, LocalPlayer player, HumanoidArm arm, ItemStack stack, float partialTicks, float equipProgress, float swingProgress) {
-    // forge: why don't you give me the arm that is used on the next line???
+  public boolean applyHandTransform(PoseStack poseStack, LocalPlayer player, HumanoidArm arm, ItemStack stack, float partialTicks, float equipProgress, float swingProgress) {
+    // why don't you give me the arm that is used on the next line???
     InteractionHand hand = arm == player.getMainArm() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
     // this code is copied from ItemInHandRenderer#renderArmWithItem with changes made for Tinker tools
     // to avoid redundant operations, we copied even methods that are unmodified, changes are noted below

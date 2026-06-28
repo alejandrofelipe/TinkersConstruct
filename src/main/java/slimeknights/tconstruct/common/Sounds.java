@@ -6,9 +6,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.block.SoundType;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.registration.GeodeItemObject.BudSize;
 
@@ -17,7 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /** All sounds registered by Tinkers, should be used instead of vanilla events when subtitles need to be distinguished */
-@Mod.EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public enum Sounds {
   // blocks
   SAW("little_saw"),
@@ -90,11 +89,11 @@ public enum Sounds {
 
   @SubscribeEvent
   public static void registerSounds(RegisterEvent event) {
-    if (event.getRegistryKey() == Registries.SOUND_EVENT) {
+    event.register(Registries.SOUND_EVENT, helper -> {
       for (Sounds sound : values()) {
-        ForgeRegistries.SOUND_EVENTS.register(sound.sound.getLocation(), sound.getSound());
+        helper.register(sound.sound.getLocation(), sound.getSound());
       }
-    }
+    });
   }
 
   /** Makes sound type for crystals */

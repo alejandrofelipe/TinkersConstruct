@@ -20,8 +20,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.ForgeHooks;
-import net.neoforged.neoforge.common.ToolActions;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -67,7 +68,7 @@ public class ToolHarvestLogic {
   public static int getDamage(IToolStackView tool, Level world, BlockPos pos, BlockState state) {
     if (state.getDestroySpeed(world, pos) == 0 || !tool.hasTag(TinkerTags.Items.HARVEST)) {
       // tools that can shear take damage from instant break for non-fire
-      return (!state.is(BlockTags.FIRE) && ModifierUtil.canPerformAction(tool, ToolActions.SHEARS_DIG)) ? 1 : 0;
+      return (!state.is(BlockTags.FIRE) && ModifierUtil.canPerformAction(tool, ItemAbilities.SHEARS_DIG)) ? 1 : 0;
     }
     // if it lacks the harvest tag, it takes double damage (swords for instance)
     return tool.hasTag(TinkerTags.Items.HARVEST_PRIMARY) ? 1 : 2;
@@ -129,12 +130,19 @@ public class ToolHarvestLogic {
     ServerLevel world = context.getWorld();
     BlockPos pos = context.getPos();
     GameType type = player.gameMode.getGameModeForPlayer();
-    int exp = useLastXP ? BlockSideHitListener.getLastXP(player) : ForgeHooks.onBlockBreakEvent(world, type, player, pos);
-    if (exp == -1) {
-      return false;
+    int exp;
+    if (useLastXP) {
+      exp = BlockSideHitListener.getLastXP(player);
+    } else {
+      // NeoForge: ForgeHooks.onBlockBreakEvent -> CommonHooks.fireBlockBreak, which returns the event rather than an int
+      BlockEvent.BreakEvent breakEvent = CommonHooks.fireBlockBreak(world, type, player, pos, world.getBlockState(pos));
+      if (breakEvent.isCanceled()) {
+        return false;
+      }
+      exp = breakEvent.getExpToDrop();
     }
-    // checked after the Forge hook, so we have to recheck
-    // TODO: is this needed? Seems its called inside ForgeHooks.onBlockBreakEvent
+    // checked after the NeoForge hook, so we have to recheck
+    // TODO: is this needed? Seems its called inside CommonHooks.fireBlockBreak
     if (player.blockActionRestricted(world, pos, type)) {
       return false;
     }

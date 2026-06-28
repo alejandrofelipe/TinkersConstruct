@@ -1,19 +1,22 @@
 package slimeknights.tconstruct.library.recipe.casting;
 
 import lombok.Getter;
+import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.alchemy.PotionUtils;
-import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.minecraftforge.registries.ForgeRegistries;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.mantle.data.loadable.common.IngredientLoadable;
 import slimeknights.mantle.data.loadable.field.ContextKey;
@@ -98,10 +101,44 @@ public class PotionCastingRecipe implements ICastingRecipe, IMultiRecipe<Display
   }
 
   @Override
-  public ItemStack assemble(ICastingContainer inv, RegistryAccess access) {
+  public ItemStack assemble(ICastingContainer inv, HolderLookup.Provider access) {
     ItemStack result = new ItemStack(this.result);
-    result.setTag(inv.getFluidTag());
+    // copy the potion contents from the fluid onto the result item
+    result.applyComponents(inv.getFluidComponents());
     return result;
+  }
+
+
+  /* Potion component helpers (1.21: potion data lives in DataComponents.POTION_CONTENTS) */
+
+  /**
+   * Reads the potion contents stored in a fluid's data component patch.
+   * @param components  Fluid data component patch
+   * @return  Potion contents, or null if the fluid carries no potion
+   */
+  @Nullable
+  protected static PotionContents getPotionContents(DataComponentPatch components) {
+    var optional = components.get(DataComponents.POTION_CONTENTS);
+    if (optional != null && optional.isPresent()) {
+      return optional.get();
+    }
+    return null;
+  }
+
+  /**
+   * Gets the registry ID string of the potion stored in a fluid's data component patch.
+   * @param components  Fluid data component patch
+   * @return  Potion ID string, or empty string if absent
+   */
+  protected static String getPotionId(DataComponentPatch components) {
+    PotionContents contents = getPotionContents(components);
+    if (contents != null) {
+      return contents.potion()
+        .flatMap(Holder::unwrapKey)
+        .map(key -> key.location().toString())
+        .orElse("");
+    }
+    return "";
   }
 
 
@@ -109,16 +146,24 @@ public class PotionCastingRecipe implements ICastingRecipe, IMultiRecipe<Display
   protected List<DisplayCastingRecipe> displayRecipes = null;
 
   @Override
-  public List<DisplayCastingRecipe> getRecipes(RegistryAccess access) {
+  public List<DisplayCastingRecipe> getRecipes(HolderLookup.Provider access) {
     if (displayRecipes == null) {
       // create a subrecipe for every potion variant
       List<ItemStack> bottles = List.of(bottle.getItems());
-      displayRecipes = ForgeRegistries.POTIONS.getValues().stream()
-        .filter(potion -> potion != Potions.EMPTY)
-        .map(potion -> {
-          ItemStack result = PotionUtils.setPotion(new ItemStack(this.result), potion);
+      displayRecipes = BuiltInRegistries.POTION.holders()
+        .map(holder -> {
+          // build the result item carrying the potion contents
+          ItemStack result = new ItemStack(this.result);
+          result.set(DataComponents.POTION_CONTENTS, new PotionContents(holder));
+          // the display fluid carries the same potion contents in its data component patch
+          DataComponentPatch potionPatch = DataComponentPatch.builder()
+            .set(DataComponents.POTION_CONTENTS, new PotionContents(holder)).build();
           return new DisplayCastingRecipe(getId(), getType(), bottles, fluid.getFluids().stream()
-                                                              .map(fluid -> new FluidStack(fluid.getFluid(), fluid.getAmount(), result.getTag()))
+                                                              .map(fluid -> {
+                                                                FluidStack stack = fluid.copyWithAmount(fluid.getAmount());
+                                                                stack.applyComponents(potionPatch);
+                                                                return stack;
+                                                              })
                                                               .toList(),
                                           result, coolingTime, true);
         }).toList();
@@ -134,10 +179,10 @@ public class PotionCastingRecipe implements ICastingRecipe, IMultiRecipe<Display
     return NonNullList.of(Ingredient.EMPTY, bottle);
   }
 
-  /** @deprecated use {@link #assemble(Container, RegistryAccess)} */
+  /** @deprecated use {@link #assemble(Container, HolderLookup.Provider)} */
   @Deprecated
   @Override
-  public ItemStack getResultItem(RegistryAccess access) {
+  public ItemStack getResultItem(HolderLookup.Provider access) {
     return new ItemStack(this.result);
   }
 }

@@ -20,7 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.living.ShieldBlockEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
@@ -30,8 +30,8 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickB
 import net.neoforged.bus.api.Event.Result;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod.EventBusSubscriber;
-import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -61,7 +61,7 @@ import java.util.function.Function;
 /**
  * This class handles interaction based event hooks
  */
-@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.FORGE)
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
 public class InteractionHandler {
   public static final EquipmentSlot[] HAND_SLOTS = {EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND};
 
@@ -404,7 +404,8 @@ public class InteractionHandler {
     }
     // ensure we have not fired this tick
     Player player = event.getEntity();
-    if (player.getCapability(TinkerDataCapability.CAPABILITY).filter(data -> data.computeIfAbsent(LAST_TICK).update(player)).isEmpty()) {
+    TinkerDataCapability.Holder data = player.getCapability(TinkerDataCapability.CAPABILITY);
+    if (data == null || !data.computeIfAbsent(LAST_TICK).update(player)) {
       return;
     }
     // must support interaction
@@ -502,7 +503,7 @@ public class InteractionHandler {
           if (damage >= 3) {
             InteractionHand usingHand = entity.getUsedItemHand();
             if (ToolDamageUtil.damageAnimated(tool, 1 + Mth.floor(damage), entity, usingHand)) {
-              ForgeEventFactory.onPlayerDestroyItem(player, activeStack, usingHand);
+              EventHooks.onPlayerDestroyItem(player, activeStack, usingHand);
               entity.stopUsingItem();
               entity.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + entity.level().random.nextFloat() * 0.4F);
             }

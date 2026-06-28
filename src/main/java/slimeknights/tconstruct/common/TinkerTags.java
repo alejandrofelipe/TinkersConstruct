@@ -18,7 +18,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.neoforged.bus.api.EventPriority;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
@@ -49,7 +49,7 @@ public class TinkerTags {
     DamageTypes.init();
     MenuTypes.init();
     Potions.init();
-    MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, TagsUpdatedEvent.class, event -> tagsLoaded = true);
+    NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, TagsUpdatedEvent.class, event -> tagsLoaded = true);
   }
 
   /** Resource location of the hidden from recipe tags used in JEI. */

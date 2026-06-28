@@ -7,7 +7,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
+// PORT M3 (looting): NeoForge 1.21 removed LootingLevelEvent; looting/loot-bonus is now driven by the
+// minecraft:looting enchantment value effect (EnchantmentHelper.getMobLooting / EnchantmentValueEffect) rather than a
+// per-attack event. The onLooting handler below needs to be re-expressed against that system (or a NeoForge
+// enchantment-level hook) during the M3 convergence; the import and handler are left as a marker.
 import net.neoforged.neoforge.event.entity.living.LootingLevelEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent;
 import net.neoforged.bus.api.EventPriority;
@@ -46,8 +50,8 @@ public class ModifierLootingHandler {
     }
     init = true;
     // we overwrite looting values from vanilla in a couple cases, but mod effects that globally boost looting should still boost us
-    MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, ModifierLootingHandler::onLooting);
-    MinecraftForge.EVENT_BUS.addListener(ModifierLootingHandler::onLeaveServer);
+    NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, ModifierLootingHandler::onLooting);
+    NeoForge.EVENT_BUS.addListener(ModifierLootingHandler::onLeaveServer);
   }
 
   /**
@@ -99,7 +103,11 @@ public class ModifierLootingHandler {
         // no modifiers means its not a projectile we fired, so just defer to dumb vanilla behavior of whatever looting
         // since we don't set the enchantment on our tools, our looting modifiers won't set anything here anyways
         if (!modifiers.isEmpty()) {
-          ModDataNBT persistentData = direct.getCapability(PersistentDataCapability.CAPABILITY).orElseGet(ModDataNBT::new);
+          // NeoForge entity capability returns a plain @Nullable value instead of a LazyOptional
+          ModDataNBT persistentData = direct.getCapability(PersistentDataCapability.CAPABILITY);
+          if (persistentData == null) {
+            persistentData = new ModDataNBT();
+          }
           level = LootingModifierHook.getLooting(new DummyToolStack(Items.AIR, modifiers, persistentData), context, 0);
         }
       } else {

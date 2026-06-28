@@ -6,7 +6,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
@@ -30,7 +30,7 @@ public class StrongBonesModifier extends NoLevelsModifier {
 
   public StrongBonesModifier() {
     // TODO: move this out of constructor to generalized logic
-    MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, LivingEntityUseItemEvent.Finish.class, StrongBonesModifier::onItemFinishUse);
+    NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, LivingEntityUseItemEvent.Finish.class, StrongBonesModifier::onItemFinishUse);
   }
 
   @Override
@@ -46,8 +46,9 @@ public class StrongBonesModifier extends NoLevelsModifier {
     boolean didSomething = false;
     if (ModifierUtil.getModifierLevel(helmet, TinkerModifiers.strongBones.getId()) > 0) {
       MobEffectInstance effect = new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, duration);
-      effect.getCurativeItems().clear();
-      effect.getCurativeItems().add(new ItemStack(helmet.getItem()));
+      // PORT M3: Forge per-ItemStack curative items became NeoForge EffectCure tokens; clear default cures so the
+      // applied resistance is not milk-curable. The CureOnRemovalModule handles removal when the helmet changes.
+      effect.getCures().clear();
       // on simulate, don't apply the effect, just ask if we can apply
       didSomething = action.execute() ? living.addEffect(effect) : living.canBeAffected(effect);
       // quick exit on simulate: no more information needed

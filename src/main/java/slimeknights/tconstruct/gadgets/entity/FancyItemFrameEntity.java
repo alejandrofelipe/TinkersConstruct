@@ -3,10 +3,8 @@ package slimeknights.tconstruct.gadgets.entity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -20,9 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.entity.IEntityAdditionalSpawnData;
-import net.neoforged.neoforge.network.NetworkHooks;
 import slimeknights.tconstruct.common.Sounds;
 import slimeknights.tconstruct.gadgets.TinkerGadgets;
 import slimeknights.tconstruct.library.utils.Util;
@@ -62,7 +58,7 @@ public class FancyItemFrameEntity extends ItemFrame implements IEntityAdditional
       Level level = level();
       BlockState state = level.getBlockState(behind);
       if (!state.isAir()) {
-        InteractionResult result = state.use(level, player, hand, Util.createTraceResult(behind, direction, false));
+        InteractionResult result = state.useWithoutItem(level, player, Util.createTraceResult(behind, direction, false));
         if (result.consumesAction()) {
           return result;
         }
@@ -155,9 +151,9 @@ public class FancyItemFrameEntity extends ItemFrame implements IEntityAdditional
   }
 
   @Override
-  protected void defineSynchedData() {
-    super.defineSynchedData();
-    this.entityData.define(VARIANT, 0);
+  protected void defineSynchedData(SynchedEntityData.Builder builder) {
+    super.defineSynchedData(builder);
+    builder.define(VARIANT, 0);
   }
 
   /** Gets the frame type */
@@ -181,7 +177,7 @@ public class FancyItemFrameEntity extends ItemFrame implements IEntityAdditional
   }
 
   @Override
-  public ItemStack getPickedResult(HitResult target) {
+  public ItemStack getPickResult() {
     ItemStack held = this.getItem();
     if (held.isEmpty()) {
       return new ItemStack(getFrameItem());
@@ -196,8 +192,8 @@ public class FancyItemFrameEntity extends ItemFrame implements IEntityAdditional
   }
 
   @Override
-  public boolean ignoreExplosion() {
-    return super.ignoreExplosion() || getFrameId() == FrameType.NETHERITE.getId();
+  public boolean ignoreExplosion(net.minecraft.world.level.Explosion explosion) {
+    return super.ignoreExplosion(explosion) || getFrameId() == FrameType.NETHERITE.getId();
   }
 
   @Override
@@ -235,19 +231,14 @@ public class FancyItemFrameEntity extends ItemFrame implements IEntityAdditional
   }
 
   @Override
-  public Packet<ClientGamePacketListener> getAddEntityPacket() {
-    return NetworkHooks.getEntitySpawningPacket(this);
-  }
-
-  @Override
-  public void writeSpawnData(FriendlyByteBuf buffer) {
+  public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
     buffer.writeVarInt(this.getFrameId());
     buffer.writeBlockPos(this.pos);
     buffer.writeVarInt(this.direction.get3DDataValue());
   }
 
   @Override
-  public void readSpawnData(FriendlyByteBuf buffer) {
+  public void readSpawnData(RegistryFriendlyByteBuf buffer) {
     this.entityData.set(VARIANT, buffer.readVarInt());
     this.pos = buffer.readBlockPos();
     this.setDirection(Direction.from3DDataValue(buffer.readVarInt()));

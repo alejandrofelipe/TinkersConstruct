@@ -116,8 +116,8 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
   }
 
   @Override
-  public BakedModel bake(IGeometryBakingContext owner, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState transform, ItemOverrides overrides, ResourceLocation location) {
-    BakedModel baked = model.bake(owner, baker, spriteGetter, transform, overrides, location);
+  public BakedModel bake(IGeometryBakingContext owner, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState transform, ItemOverrides overrides) {
+    BakedModel baked = model.bake(owner, baker, spriteGetter, transform, overrides);
     List<Set<String>> parts = this.parts.stream().map(part -> RetexturedModel.getAllRetextured(owner, model, part)).toList();
 
     // part model - fetches material from NBT field
@@ -279,7 +279,7 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
       if (resolved != originalModel) {
         return resolved;
       }
-      if (stack.isEmpty() || !stack.hasTag()) {
+      if (stack.isEmpty() || stack.isComponentsPatchEmpty()) {
         return originalModel;
       }
       return baked.getCachedModel(MaterialIdNBT.from(stack));
@@ -388,7 +388,7 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
         if (resolved != originalModel) {
           return resolved;
         }
-        if (stack.isEmpty() || !stack.hasTag()) {
+        if (stack.isEmpty() || stack.isComponentsPatchEmpty()) {
           return originalModel;
         }
         return getCachedModel(IMaterialItem.getMaterialFromStack(stack));
@@ -444,7 +444,7 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
       @Nullable
       @Override
       public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel world, @Nullable LivingEntity entity, int seed) {
-        if (stack.isEmpty() || !stack.hasTag()) {
+        if (stack.isEmpty() || stack.isComponentsPatchEmpty()) {
           return originalModel;
         }
         Block block = RetexturedHelper.getTexture(stack);

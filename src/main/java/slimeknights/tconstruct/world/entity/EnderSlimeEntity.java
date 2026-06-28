@@ -2,9 +2,7 @@ package slimeknights.tconstruct.world.entity;
 
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import slimeknights.tconstruct.library.events.teleport.EnderSlimeTeleportEvent;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
@@ -26,13 +24,9 @@ public class EnderSlimeEntity extends TravelersPlateSlimeEntity {
     return TinkerWorld.enderSlimeParticle.get();
   }
 
-  @Override
-  public void doEnchantDamageEffects(LivingEntity slime, Entity target) {
-    super.doEnchantDamageEffects(slime, target);
-    if (target instanceof LivingEntity) {
-      TeleportHelper.randomNearbyTeleport((LivingEntity) target, teleportPredicate);
-    }
-  }
+  // PORT M3: 1.21 removed LivingEntity#doEnchantDamageEffects (post-attack effects moved to
+  // EnchantmentHelper#doPostAttackEffects). The "teleport the target when this slime hits it" effect needs
+  // re-wiring onto the new attack hook; the teleport-on-damage path below still works.
 
   @Override
   protected void actuallyHurt(DamageSource damageSrc, float damageAmount) {

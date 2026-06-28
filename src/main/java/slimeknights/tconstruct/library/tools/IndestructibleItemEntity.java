@@ -2,7 +2,9 @@ package slimeknights.tconstruct.library.tools;
 
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -10,7 +12,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.network.NetworkHooks;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
 import slimeknights.tconstruct.tools.TinkerTools;
@@ -38,8 +39,8 @@ public class IndestructibleItemEntity extends ItemEntity {
   }
 
   @Override
-  public Packet<ClientGamePacketListener> getAddEntityPacket() {
-    return NetworkHooks.getEntitySpawningPacket(this);
+  public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity entity) {
+    return new ClientboundAddEntityPacket(this, entity);
   }
 
   /** Copies the pickup delay from another entity */

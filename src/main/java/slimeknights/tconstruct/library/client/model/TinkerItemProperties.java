@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.common.ToolActions;
+import net.neoforged.neoforge.common.ItemAbilities;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.modifiers.hook.interaction.GeneralInteractionModifierHook;
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
@@ -33,15 +33,11 @@ public class TinkerItemProperties {
   private static final ResourceLocation AMMO_ID = TConstruct.getResource("ammo");
   /** Int declaring ammo type */
   private static final ItemPropertyFunction AMMO = (stack, level, entity, seed) -> {
-    CompoundTag nbt = stack.getTag();
-    if (nbt != null) {
-      CompoundTag persistentData = nbt.getCompound(ToolStack.TAG_PERSISTENT_MOD_DATA);
-      if (!persistentData.isEmpty()) {
-        CompoundTag ammo = persistentData.getCompound(ModifiableCrossbowItem.KEY_CROSSBOW_AMMO.toString());
-        if (!ammo.isEmpty()) {
-          // no sense having two keys for ammo, just set 1 for arrow, 2 for fireworks
-          return ammo.getString("id").equals(BuiltInRegistries.ITEM.getKey(Items.FIREWORK_ROCKET).toString()) ? 2 : 1;
-        }
+    if (!stack.isComponentsPatchEmpty()) {
+      CompoundTag ammo = ToolStack.from(stack).getPersistentData().getCompound(ModifiableCrossbowItem.KEY_CROSSBOW_AMMO);
+      if (!ammo.isEmpty()) {
+        // no sense having two keys for ammo, just set 1 for arrow, 2 for fireworks
+        return ammo.getString("id").equals(BuiltInRegistries.ITEM.getKey(Items.FIREWORK_ROCKET).toString()) ? 2 : 1;
       }
     }
     return 0;
@@ -83,10 +79,10 @@ public class TinkerItemProperties {
   private static final ItemPropertyFunction CAST = (stack, level, holder, seed) -> {
     // must be a fishing rod, and the player must be fishing
     // does player check first since its the fastest, avoids NBT parsing
-    if (holder instanceof Player player && player.fishing != null && stack.canPerformAction(ToolActions.FISHING_ROD_CAST)) {
+    if (holder instanceof Player player && player.fishing != null && stack.canPerformAction(ItemAbilities.FISHING_ROD_CAST)) {
       // must be in a hand, but if both hands have fishing rods, must be the one in the main hand
       ItemStack mainhand = holder.getMainHandItem();
-      if (mainhand == stack || holder.getOffhandItem() == stack && !mainhand.canPerformAction(ToolActions.FISHING_ROD_CAST)) {
+      if (mainhand == stack || holder.getOffhandItem() == stack && !mainhand.canPerformAction(ItemAbilities.FISHING_ROD_CAST)) {
         return 1;
       }
     }

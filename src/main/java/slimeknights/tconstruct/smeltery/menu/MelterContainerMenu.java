@@ -10,9 +10,9 @@ import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.items.IItemHandler;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferDirection;
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferResult;
@@ -51,12 +51,10 @@ public class MelterContainerMenu extends TriggeringBaseContainerMenu<MelterBlock
       Level world = melter.getLevel();
       BlockPos down = melter.getBlockPos().below();
       if (world != null && world.getBlockState(down).is(TinkerTags.Blocks.FUEL_TANKS)) {
-        BlockEntity te = world.getBlockEntity(down);
-        if (te != null) {
-          hasFuelSlot = te.getCapability(ForgeCapabilities.ITEM_HANDLER).filter(handler -> {
-            this.addSlot(new SmartItemHandlerSlot(handler, 0, 151, 32));
-            return true;
-          }).isPresent();
+        IItemHandler handler = world.getCapability(Capabilities.ItemHandler.BLOCK, down, null);
+        if (handler != null) {
+          this.addSlot(new SmartItemHandlerSlot(handler, 0, 151, 32));
+          hasFuelSlot = true;
         }
       }
 

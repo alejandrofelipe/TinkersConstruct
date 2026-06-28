@@ -32,8 +32,10 @@ public class RevengeModifier extends NoLevelsModifier implements EquipmentChange
     LivingEntity living = context.getEntity();
     if (trueSource != null && trueSource != living) { // no making yourself mad with slurping or self-destruct or alike
       MobEffectInstance effect = new MobEffectInstance(MobEffects.DAMAGE_BOOST, 300);
-      effect.getCurativeItems().clear();
-      effect.getCurativeItems().add(new ItemStack(living.getItemBySlot(slotType).getItem()));
+      // PORT M3: Forge's per-ItemStack curative items were replaced by NeoForge EffectCure tokens, which cannot encode
+      // "cured by removing this specific helmet". Clear default cures (so it is not milk-curable); the modifier's
+      // onUnequip already removes the effect when the helmet changes.
+      effect.getCures().clear();
       living.addEffect(effect);
     }
   }
@@ -43,8 +45,9 @@ public class RevengeModifier extends NoLevelsModifier implements EquipmentChange
     if (context.getChangedSlot() == EquipmentSlot.HEAD) {
       IToolStackView replacement = context.getReplacementTool();
       if (replacement == null || replacement.getModifierLevel(this) == 0) {
-        // cure effects using the helmet
-        context.getEntity().curePotionEffects(new ItemStack(tool.getItem()));
+        // PORT M3: Forge's curePotionEffects(ItemStack) (matched our per-helmet curative marker) was removed in 1.21.
+        // Since the effect applied by this modifier is strength, remove it directly when the helmet is unequipped.
+        context.getEntity().removeEffect(MobEffects.DAMAGE_BOOST);
       }
     }
   }

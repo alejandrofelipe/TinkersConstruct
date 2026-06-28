@@ -1,12 +1,17 @@
 package slimeknights.tconstruct.tools.network;
 
 import lombok.RequiredArgsConstructor;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.neoforged.neoforge.network.NetworkEvent.Context;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.mantle.network.packet.IThreadsafePacket;
+import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.shared.TinkerEffects;
 import slimeknights.tconstruct.tools.logic.DoubleJumpHandler;
 import slimeknights.tconstruct.tools.logic.InteractionHandler;
@@ -33,6 +38,9 @@ public enum TinkerControlPacket implements IThreadsafePacket {
 
   private final TooltipKey modifier;
 
+  public static final CustomPacketPayload.Type<TinkerControlPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(TConstruct.MOD_ID, "control"));
+  public static final StreamCodec<RegistryFriendlyByteBuf, TinkerControlPacket> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(TinkerControlPacket.class);
+
   TinkerControlPacket() {
     this(TooltipKey.UNKNOWN);
   }
@@ -57,19 +65,14 @@ public enum TinkerControlPacket implements IThreadsafePacket {
     };
   }
 
-  public static TinkerControlPacket read(FriendlyByteBuf buffer) {
-    return buffer.readEnum(TinkerControlPacket.class);
+  @Override
+  public CustomPacketPayload.Type<TinkerControlPacket> type() {
+    return TYPE;
   }
 
   @Override
-  public void encode(FriendlyByteBuf packetBuffer) {
-    packetBuffer.writeEnum(this);
-  }
-
-  @Override
-  public void handleThreadsafe(Context context) {
-    ServerPlayer player = context.getSender();
-    if (player != null) {
+  public void handleThreadsafe(IPayloadContext context) {
+    if (context.player() instanceof ServerPlayer player) {
       switch (this) {
         case DOUBLE_JUMP -> DoubleJumpHandler.extraJump(player);
         case ANTIGRAVITY_JUMP -> TinkerEffects.antigravity.get().antigravityJump(player);

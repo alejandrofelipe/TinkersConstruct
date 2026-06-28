@@ -2,6 +2,7 @@ package slimeknights.tconstruct.library.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -11,8 +12,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.MinecraftForge;
 import net.neoforged.bus.api.Event;
+import net.neoforged.neoforge.common.NeoForge;
 import slimeknights.tconstruct.library.modifiers.hook.interaction.InteractionSource;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
@@ -30,9 +31,21 @@ public abstract class TinkerToolEvent extends Event {
   }
 
   /**
+   * Result of an event allowing a handler to override default behavior.
+   * Replaces NeoForge's removed {@code Event.Result} / {@code @HasResult} mechanism.
+   */
+  public enum Result {
+    /** Use the default behavior */
+    DEFAULT,
+    /** Force the action to succeed */
+    ALLOW,
+    /** Force the action to fail */
+    DENY
+  }
+
+  /**
    * Event fired when a kama tries to harvest a crop. Set result to {@link Result#ALLOW} if you handled the harvest yourself. Set the result to {@link Result#DENY} if the block cannot be harvested.
    */
-  @HasResult
   @Getter
   public static class ToolHarvestEvent extends TinkerToolEvent {
     /** Item context, note this is the original context, so some information (such as position) may not be accurate */
@@ -41,6 +54,9 @@ public abstract class TinkerToolEvent extends Event {
     private final BlockState state;
     private final BlockPos pos;
     private final InteractionSource source;
+    /** Result of the event, controls whether the harvest happens */
+    @Setter
+    private Result result = Result.DEFAULT;
 
     public ToolHarvestEvent(IToolStackView tool, UseOnContext context, ServerLevel world, BlockState state, BlockPos pos, InteractionSource source) {
       super(getItem(context, source), tool);
@@ -76,7 +92,7 @@ public abstract class TinkerToolEvent extends Event {
 
     /** Fires this event and posts the result */
     public Result fire() {
-      MinecraftForge.EVENT_BUS.post(this);
+      NeoForge.EVENT_BUS.post(this);
       return this.getResult();
     }
   }
@@ -84,13 +100,16 @@ public abstract class TinkerToolEvent extends Event {
   /**
    * Event fired when a kama or scythe tries to shear an entity
    */
-  @HasResult
   @Getter
   public static class ToolShearEvent extends TinkerToolEvent {
     private final Level world;
     private final Player player;
     private final Entity target;
     private final int fortune;
+    /** Result of the event, controls whether the shear happens */
+    @Setter
+    private Result result = Result.DEFAULT;
+
     public ToolShearEvent(ItemStack stack, IToolStackView tool, Level world, Player player, Entity target, int fortune) {
       super(stack, tool);
       this.world = world;
@@ -101,7 +120,7 @@ public abstract class TinkerToolEvent extends Event {
 
     /** Fires this event and posts the result */
     public Result fire() {
-      MinecraftForge.EVENT_BUS.post(this);
+      NeoForge.EVENT_BUS.post(this);
       return this.getResult();
     }
   }

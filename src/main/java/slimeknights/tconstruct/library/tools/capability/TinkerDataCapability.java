@@ -2,26 +2,19 @@ package slimeknights.tconstruct.library.tools.capability;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.common.MinecraftForge;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.CapabilityManager;
-import net.neoforged.neoforge.common.capabilities.CapabilityToken;
-import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
-import net.neoforged.neoforge.common.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.common.util.LazyOptional;
-import net.neoforged.neoforge.event.AttachCapabilitiesEvent;
-import net.neoforged.bus.api.EventPriority;
+import net.neoforged.neoforge.capabilities.EntityCapability;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import slimeknights.mantle.registration.object.IdAwareObject;
 import slimeknights.tconstruct.TConstruct;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -34,60 +27,39 @@ public class TinkerDataCapability {
 
   /** Capability ID */
   private static final ResourceLocation ID = TConstruct.getResource("modifier_data");
-  /** Capability type */
-  public static final Capability<Holder> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
+  /**
+   * Capability instance. Under NeoForge, Forge's attached capability providers and {@code AttachCapabilitiesEvent}
+   * no longer exist; this is exposed as an {@link EntityCapability} registered for all living entity types on
+   * {@link RegisterCapabilitiesEvent}. The data is not serialized, matching the old behavior.
+   */
+  public static final EntityCapability<Holder,Void> CAPABILITY = EntityCapability.createVoid(ID, Holder.class);
 
-  /** Registers this capability */
-  public static void register() {
-    TConstruct.modBus.addListener(EventPriority.NORMAL, false, RegisterCapabilitiesEvent.class, TinkerDataCapability::register);
-    MinecraftForge.EVENT_BUS.addGenericListener(Entity.class, TinkerDataCapability::attachCapability);
+  /**
+   * Per-entity holder storage. NeoForge entity capability providers are stateless, so the mutable per-entity holder
+   * lives here. Weak keys let entries be collected with their entities. Not serialized, reset on relog (matches the
+   * Forge behavior where this data was never written to NBT).
+   */
+  private static final Map<LivingEntity,Holder> HOLDERS = new WeakHashMap<>();
+
+  /** Gets (creating if needed) the holder for the given entity */
+  private static Holder getOrCreate(LivingEntity entity) {
+    return HOLDERS.computeIfAbsent(entity, e -> new Holder());
   }
 
-  /** Registers the capability with the event bus */
-  private static void register(RegisterCapabilitiesEvent event) {
-    event.register(Holder.class);
-  }
-
-  /** Event listener to attach the capability */
-  private static void attachCapability(AttachCapabilitiesEvent<Entity> event) {
-    if (event.getObject() instanceof LivingEntity) {
-      Provider provider = new Provider();
-      event.addCapability(ID, provider);
-      event.addListener(provider);
+  /**
+   * Registers the data capability for all living entity types. Wire onto {@link RegisterCapabilitiesEvent} centrally
+   * (M3). Registers for every entity type whose instances may be living entities.
+   */
+  public static void register(RegisterCapabilitiesEvent event) {
+    for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
+      event.registerEntity(CAPABILITY, type, (entity, ctx) -> entity instanceof LivingEntity living ? getOrCreate(living) : null);
     }
   }
 
   /** Gets the data capability from an entity, or null if missing */
-  @SuppressWarnings("DataFlowIssue")
   @Nullable
   public static TinkerDataCapability.Holder getData(LivingEntity entity) {
-    return entity.getCapability(CAPABILITY).orElse(null);
-  }
-
-
-  /* Required methods */
-
-  /** Capability provider instance */
-  private static class Provider implements ICapabilityProvider, Runnable {
-    private LazyOptional<Holder> data;
-    private Provider() {
-      this.data = LazyOptional.of(Holder::new);
-    }
-
-    @Nonnull
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-      return CAPABILITY.orEmpty(cap, data);
-    }
-
-    @Override
-    public void run() {
-      // called when capabilities invalidate, just invalidate but preserve the old data
-      // (as if they revive the equipment change event does not fire again, see dimension change)
-      Holder oldData = data.orElse(new Holder());
-      data.invalidate();
-      data = LazyOptional.of(() -> oldData);
-    }
+    return entity.getCapability(CAPABILITY);
   }
 
   /** Class for generic keys */

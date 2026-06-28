@@ -5,8 +5,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.util.LazyOptional;
+import net.neoforged.neoforge.capabilities.ItemCapability;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
@@ -65,19 +64,24 @@ public interface BlockItemProviderModifierHook {
                     return;
                 }
             }
-            TConstruct.LOG.warn("Could not find a modifier to consume {} from after providing it from ToolBlockItemProviderHook. This is likely causing a duplication glitch! Stack nbt: {}", BuiltInRegistries.ITEM.getKey(backingStack.getItem()), backingStack.getTag());
+            TConstruct.LOG.warn("Could not find a modifier to consume {} from after providing it from ToolBlockItemProviderHook. This is likely causing a duplication glitch! Stack components: {}", BuiltInRegistries.ITEM.getKey(backingStack.getItem()), backingStack.getComponentsPatch());
         }
     }
 
     class Provider implements ToolCapabilityProvider.IToolCapabilityProvider {
-        private final LazyOptional<BlockItemProviderCapability> lazy;
+        private final BlockItemProviderCapability capability;
         public Provider(Supplier<? extends IToolStackView> tool) {
-            lazy = LazyOptional.of(() -> new CapabilityImpl(tool.get()));
+            this.capability = new CapabilityImpl(tool.get());
         }
 
+        @Nullable
         @Override
-        public <T> LazyOptional<T> getCapability(IToolStackView tool, Capability<T> cap) {
-            return BlockItemProviderCapability.CAPABILITY.orEmpty(cap, lazy);
+        @SuppressWarnings("unchecked")
+        public <T> T getCapability(IToolStackView tool, ItemCapability<T, ?> cap) {
+            if (cap == BlockItemProviderCapability.CAPABILITY) {
+                return (T) capability;
+            }
+            return null;
         }
     }
 }

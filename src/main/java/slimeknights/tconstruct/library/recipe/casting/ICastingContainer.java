@@ -1,10 +1,8 @@
 package slimeknights.tconstruct.library.recipe.casting;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.level.material.Fluid;
 import slimeknights.mantle.recipe.container.ISingleStackContainer;
-
-import javax.annotation.Nullable;
 
 /**
  * Inventory containing a single item and a fluid
@@ -17,11 +15,10 @@ public interface ICastingContainer extends ISingleStackContainer {
   Fluid getFluid();
 
   /**
-   * Gets the NBT for the contained fluid
-   * @return  Fluid's NBT
+   * Gets the data components for the contained fluid.
+   * @return  Fluid's data component patch, {@link DataComponentPatch#EMPTY} if none
    */
-  @Nullable
-  default CompoundTag getFluidTag() {
-    return null;
+  default DataComponentPatch getFluidComponents() {
+    return DataComponentPatch.EMPTY;
   }
 }
