@@ -18,9 +18,9 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TagsUpdatedEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
+import net.neoforged.neoforge.common.MinecraftForge;
+import net.neoforged.neoforge.event.TagsUpdatedEvent;
+import net.neoforged.bus.api.EventPriority;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialManager;
 import slimeknights.tconstruct.library.modifiers.Modifier;
@@ -320,7 +320,7 @@ public class TinkerTags {
     public static final TagKey<Item> SCORCHED_TANKS = local("scorched_tanks");
     public static final TagKey<Item> TANKS = local("tanks");
 
-    /** Bones that drop from normal skeletons or some equivalent. Intentionally does not use {@link net.minecraftforge.common.Tags.Items#BONES} as that includes many weird bones. */
+    /** Bones that drop from normal skeletons or some equivalent. Intentionally does not use {@link net.neoforged.neoforge.common.Tags.Items#BONES} as that includes many weird bones. */
     public static final TagKey<Item> BONES = local("bones");
     /** Bones that drop from wither skeletons */
     public static final TagKey<Item> WITHER_BONES = common("wither_bones");
@@ -358,7 +358,7 @@ public class TinkerTags {
     public static final TagKey<Item> TOOL_INVENTORY_BLACKLIST = local("inventory_blacklist");
     /** List of blocks that should produce bonus gold nugget drops from the chrysophilite modifier. Will only drop bonus if the block does not drop itself */
     public static final TagKey<Item> CHRYSOPHILITE_ORES = local("chrysophilite_ores");
-    /** All ore rates that are not {@link net.minecraftforge.common.Tags.Items#ORE_RATES_SINGULAR}. Used for recipe conditioning. */
+    /** All ore rates that are not {@link net.neoforged.neoforge.common.Tags.Items#ORE_RATES_SINGULAR}. Used for recipe conditioning. */
     public static final TagKey<Item> NON_SINGULAR_ORE_RATES = local("non_singular_ore_rates");
     /** Items that cannot be autosmelted */
     public static final TagKey<Item> AUTOSMELT_BLACKLIST = local("autosmelt_blacklist");

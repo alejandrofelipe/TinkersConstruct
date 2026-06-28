@@ -18,9 +18,9 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.ForgeI18n;
-import net.minecraftforge.common.crafting.conditions.ICondition;
-import net.minecraftforge.fml.ModList;
+import net.neoforged.neoforge.common.ForgeI18n;
+import net.neoforged.neoforge.common.crafting.conditions.ICondition;
+import net.neoforged.fml.ModList;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -65,7 +65,7 @@ public class Util {
    */
   @SuppressWarnings("removal")
   public static Optional<String> getCurrentlyActiveExternalMod() {
-    return Optional.ofNullable(net.minecraftforge.fml.ModLoadingContext.get().getActiveContainer().getModId())
+    return Optional.ofNullable(net.neoforged.fml.ModLoadingContext.get().getActiveContainer().getModId())
       .filter(activeModId -> !TConstruct.MOD_ID.equals(activeModId));
   }
 
