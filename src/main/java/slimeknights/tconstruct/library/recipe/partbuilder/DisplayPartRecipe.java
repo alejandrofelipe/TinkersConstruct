@@ -48,7 +48,7 @@ public class DisplayPartRecipe implements IDisplayPartBuilderRecipe {
   }
 
   @Override
-  public ItemStack getResultItem(HolderLookup.Provider pHolderLookup.Provider) {
+  public ItemStack getResultItem(HolderLookup.Provider pRegistryAccess) {
     throw new UnsupportedOperationException();
   }
 

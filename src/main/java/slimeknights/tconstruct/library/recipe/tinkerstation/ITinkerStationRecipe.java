@@ -65,7 +65,7 @@ public interface ITinkerStationRecipe extends ICommonRecipe<ITinkerStationContai
   /** @deprecated use {@link #getValidatedResult(ITinkerStationContainer, HolderLookup.Provider)}*/
   @Deprecated
   @Override
-  default ItemStack getResultItem(HolderLookup.Provider pHolderLookup.Provider) {
+  default ItemStack getResultItem(HolderLookup.Provider pRegistryAccess) {
     return ItemStack.EMPTY;
   }
 
