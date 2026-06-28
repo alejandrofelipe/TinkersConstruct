@@ -90,7 +90,7 @@ public class TinkerBlockStateProvider extends BlockStateProvider {
     glassBlock(TinkerSmeltery.scorchedSoulGlass.get(), TinkerSmeltery.scorchedSoulGlassPane.get(), "foundry/soul_glass/",
                getResource("block/foundry/soul_glass"), getResource("block/foundry/glass_top"), -1, true, translucent);
     // obsidian pane
-    ResourceLocation obsidian = new ResourceLocation("block/obsidian");
+    ResourceLocation obsidian = ResourceLocation.parse("block/obsidian");
     paneBlock(TinkerCommons.obsidianPane.get(), "obsidian_pane/", obsidian, obsidian, false, -1, false, RenderType.solid());
 
     // shards
@@ -109,7 +109,7 @@ public class TinkerBlockStateProvider extends BlockStateProvider {
     basicBlock(TinkerSmeltery.scorchedLamp.get(), "block/foundry/scorched/lamp", blockTexture("foundry/scorched/lamp"));
 
     // heads
-    ModelFile skull = models().getExistingFile(new ResourceLocation("block/skull"));
+    ModelFile skull = models().getExistingFile(ResourceLocation.parse("block/skull"));
     TinkerWorld.heads.forEach(head -> simpleBlock(head, skull));
     TinkerWorld.wallHeads.forEach(head -> simpleBlock(head, skull));
   }

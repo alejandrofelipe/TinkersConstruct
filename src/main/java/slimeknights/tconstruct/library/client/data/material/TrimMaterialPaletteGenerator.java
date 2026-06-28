@@ -51,9 +51,9 @@ public class TrimMaterialPaletteGenerator extends GenericTextureGenerator {
       }
       trimmedJson.add("pairs", values);
 
-      NativeImage original = spriteReader.read(new ResourceLocation("trim_palette"));
+      NativeImage original = spriteReader.read(ResourceLocation.parse("trim_palette"));
       return allOf(Stream.concat(
-        Stream.of(saveJson(cache, new ResourceLocation("trimmed", "maps/unchecked/custom_trim_material_permutations"), trimmedJson)),
+        Stream.of(saveJson(cache, ResourceLocation.fromNamespaceAndPath("trimmed", "maps/unchecked/custom_trim_material_permutations"), trimmedJson)),
         Arrays.stream(materials).map(
         material -> saveImage(cache, material.withPrefix(PALETTE_TEXTURES + '/'), getTransformer(material).transformCopy(original, false)))))
         .thenRunAsync(spriteReader::closeAll);

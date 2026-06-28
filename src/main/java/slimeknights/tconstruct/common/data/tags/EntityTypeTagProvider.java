@@ -65,7 +65,7 @@ public class EntityTypeTagProvider extends EntityTypeTagsProvider {
     this.tag(TinkerTags.EntityTypes.ENDERFERENCE_ARROW_BLACKLIST).addTag(TRIDENTS);
     // prevent dummy from healing you with necrotic
     this.tag(NECROTIC_BLACKLIST)
-      .addOptional(new ResourceLocation("dummmmmmy", "target_dummy"))
+      .addOptional(ResourceLocation.fromNamespaceAndPath("dummmmmmy", "target_dummy"))
       .addOptionalTag(commonResource(NECROTIC_BLACKLIST.location().getPath()));
 
     // melting

@@ -294,7 +294,7 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
   /** Creates a resource location under this mod */
   @SuppressWarnings("removal")
   protected ResourceLocation resource(String name) {
-    return new ResourceLocation(modId, name);
+    return ResourceLocation.fromNamespaceAndPath(modId, name);
   }
 
   /** Creates a model with display from the given target */

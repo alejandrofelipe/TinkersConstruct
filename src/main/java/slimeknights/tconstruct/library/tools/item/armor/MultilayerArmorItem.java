@@ -29,7 +29,7 @@ public class MultilayerArmorItem extends ModifiableArmorItem {
 
   @SuppressWarnings("removal")
   public MultilayerArmorItem(ArmorMaterial material, ArmorItem.Type slot, Properties properties, ToolDefinition toolDefinition) {
-    this(material, slot, properties, toolDefinition, new ResourceLocation(material.getName()));
+    this(material, slot, properties, toolDefinition, ResourceLocation.parse(material.getName()));
   }
 
   public MultilayerArmorItem(ArmorMaterial material, ArmorItem.Type slot, Properties properties, ToolDefinition toolDefinition, ResourceLocation name) {

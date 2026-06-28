@@ -54,7 +54,7 @@ public class TinkerTags {
 
   /** Resource location of the hidden from recipe tags used in JEI. */
   @SuppressWarnings("removal")
-  public static final ResourceLocation HIDDEN_FROM_RECIPE_VIEWERS = new ResourceLocation("c", "hidden_from_recipe_viewers");
+  public static final ResourceLocation HIDDEN_FROM_RECIPE_VIEWERS = ResourceLocation.fromNamespaceAndPath("c", "hidden_from_recipe_viewers");
 
   /** Creates a tag that hides things from JEI */
   @SuppressWarnings("SameParameterValue") // there really is no benefit to migrating to new constructors early; just lose Neo compat
@@ -209,7 +209,7 @@ public class TinkerTags {
     public static final TagKey<Block> BUDDING = common("budding");
     // ceramics compat
     @SuppressWarnings("removal")
-    public static final TagKey<Block> CISTERN_CONNECTIONS = TagKey.create(Registries.BLOCK, new ResourceLocation("ceramics", "cistern_connections"));
+    public static final TagKey<Block> CISTERN_CONNECTIONS = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("ceramics", "cistern_connections"));
 
     /** Makes a tag in the tinkers domain */
     private static TagKey<Block> local(String name) {

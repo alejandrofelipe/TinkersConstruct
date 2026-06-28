@@ -60,7 +60,7 @@ public class MobEquipmentProvider extends AbstractMobEquipmentProvider {
       .material(random, random, random);
     // twilight forest compat
     String tf = "twilightforest";
-    equip(FakeRegistryEntry.entity(new ResourceLocation(tf, "minotaur")), new ModLoadedCondition(tf))
+    equip(FakeRegistryEntry.entity(ResourceLocation.fromNamespaceAndPath(tf, "minotaur")), new ModLoadedCondition(tf))
       .slot(EquipmentSlot.MAINHAND)
       .tool(ItemNameOutput.fromName(TinkerTools.minotaurAxe.getId()))
       .material(random, random, random);
