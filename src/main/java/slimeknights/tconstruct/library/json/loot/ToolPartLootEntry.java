@@ -1,8 +1,7 @@
 package slimeknights.tconstruct.library.json.loot;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
@@ -26,10 +25,16 @@ import java.util.stream.Stream;
 
 /** Entry for a random tool part from a list with a random material */
 public class ToolPartLootEntry extends LootPoolSingletonContainer {
+  /** Codec for the entry, serializing the item tag, the random material, and the standard singleton fields. */
+  public static final MapCodec<ToolPartLootEntry> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
+    Loadables.ITEM_TAG.codec().fieldOf("tag").forGetter(e -> e.tag),
+    RandomMaterial.LOADER.codec().fieldOf("material").forGetter(e -> e.material)
+  ).and(singletonFields(inst)).apply(inst, ToolPartLootEntry::new));
+
   private final TagKey<Item> tag;
   private final RandomMaterial material;
 
-  protected ToolPartLootEntry(TagKey<Item> tag, RandomMaterial material, int weight, int quality, LootItemCondition[] conditions, LootItemFunction[] functions) {
+  protected ToolPartLootEntry(TagKey<Item> tag, RandomMaterial material, int weight, int quality, List<LootItemCondition> conditions, List<LootItemFunction> functions) {
     super(weight, quality, conditions, functions);
     this.tag = tag;
     this.material = material;
@@ -65,22 +70,5 @@ public class ToolPartLootEntry extends LootPoolSingletonContainer {
   /** Creates a builder for a fixed material */
   public static LootPoolSingletonContainer.Builder<?> fixed(TagKey<Item> tag, MaterialVariantId material) {
     return entry(tag, RandomMaterial.fixed(material));
-  }
-
-  /** Serializer logic */
-  public static class Serializer extends LootPoolSingletonContainer.Serializer<ToolPartLootEntry> {
-    @Override
-    public void serializeCustom(JsonObject json, ToolPartLootEntry object, JsonSerializationContext conditions) {
-      super.serializeCustom(json, object, conditions);
-      json.addProperty("tag", object.tag.location().toString());
-      json.add("material", RandomMaterial.LOADER.serialize(object.material));
-    }
-
-    @Override
-    protected ToolPartLootEntry deserialize(JsonObject json, JsonDeserializationContext context, int weight, int quality, LootItemCondition[] conditions, LootItemFunction[] functions) {
-      TagKey<Item> tag = Loadables.ITEM_TAG.getIfPresent(json, "tag");
-      RandomMaterial material = RandomMaterial.LOADER.getIfPresent(json, "material");
-      return new ToolPartLootEntry(tag, material, weight, quality, conditions, functions);
-    }
   }
 }

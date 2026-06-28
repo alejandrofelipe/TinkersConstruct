@@ -2,7 +2,6 @@ package slimeknights.tconstruct.library.json.predicate;
 
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.TierSortingRegistry;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.mantle.data.predicate.block.BlockPredicate;
@@ -14,7 +13,9 @@ public record HarvestTierPredicate(Tier tier) implements BlockPredicate {
 
   @Override
   public boolean matches(BlockState state) {
-    return TierSortingRegistry.isCorrectTierForDrops(tier, state);
+    // TierSortingRegistry.isCorrectTierForDrops was removed in 1.20.5+; 1.21 expresses harvestability via the
+    // tier's incorrect-blocks-for-drops tag. A block is harvestable by this tier when it is not in that tag.
+    return !state.is(tier.getIncorrectBlocksForDrops());
   }
 
   @Override

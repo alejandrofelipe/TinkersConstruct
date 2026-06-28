@@ -11,15 +11,16 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntries;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
-import net.neoforged.neoforge.common.TierSortingRegistry;
-import net.neoforged.neoforge.common.loot.LootModifierManager;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.mantle.data.loadable.Loadable;
 import slimeknights.mantle.data.loadable.Loadables;
+import slimeknights.mantle.data.loadable.common.CodecLoadable;
 import slimeknights.mantle.data.loadable.common.RegistryLoadable;
 import slimeknights.mantle.data.loadable.primitive.EnumLoadable;
 import slimeknights.mantle.data.loadable.primitive.StringLoadable;
+import slimeknights.tconstruct.library.utils.HarvestTiers;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialManager;
 import slimeknights.tconstruct.library.modifiers.Modifier;
@@ -60,15 +61,21 @@ public class TinkerLoadables {
   public static final StringLoadable<SimpleParticleType> SIMPLE_PARTICLE = instance(Loadables.PARTICLE_TYPE, SimpleParticleType.class, "Expected particle type to be instance of SimpleParticleType");
   public static final StringLoadable<BlockItem> BLOCK_ITEM = instance(Loadables.ITEM, BlockItem.class, "Expected item to be instance of BlockItem");
 
-  /** Tier loadable from the forge tier sorting registry */
+  /**
+   * Tier loadable resolving harvest tiers by name.
+   * PORT M3: {@code TierSortingRegistry} (and {@code forge:item_tier_ordering.json}) were removed in 1.20.5+.
+   * The replacement tier-name lookup is rebuilt centrally on {@link HarvestTiers} as {@code byName(ResourceLocation)}
+   * and {@code tierName(Tier)}; this is the same dependency shared by {@code ToolTierStat} and {@code MaxTierModule}.
+   * (Mantle harvest-tier dependency.)
+   */
   public static final StringLoadable<Tier> TIER = Loadables.RESOURCE_LOCATION.xmap((id, error) -> {
-    Tier tier = TierSortingRegistry.byName(id);
+    Tier tier = HarvestTiers.byName(id);
     if (tier != null) {
       return tier;
     }
     throw error.create("Unknown harvest tier " + id);
   }, (tier, error) -> {
-    ResourceLocation id = TierSortingRegistry.getName(tier);
+    ResourceLocation id = HarvestTiers.tierName(tier);
     if (id != null) {
       return id;
     }
@@ -76,8 +83,8 @@ public class TinkerLoadables {
   });
 
   /* Loot tables */
-  /** Loadable for a loot entry instance */
-  public static final Loadable<LootPoolEntryContainer> LOOT_ENTRY = new GsonLoadable<>(LootModifierManager.GSON_INSTANCE, LootPoolEntryContainer.class);
+  /** Loadable for a loot entry instance, backed by the vanilla loot pool entry codec. */
+  public static final Loadable<LootPoolEntryContainer> LOOT_ENTRY = new CodecLoadable<>(LootPoolEntries.CODEC);
 
   /** Loadble requiring the argument to be an instance of the passed class */
   @SuppressWarnings("unchecked")  // The type works when deserializing, so it works when serializing
