@@ -45,7 +45,8 @@ import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.client.armor.AbstractArmorModel;
 import slimeknights.tconstruct.library.client.armor.ArmorModelManager;
 import slimeknights.tconstruct.library.client.armor.texture.TrimArmorTextureSupplier;
-import slimeknights.tconstruct.library.client.book.content.AbstractMaterialContent;
+// PORT book: AbstractMaterialContent (book content) deferred until Mantle's book system is ported (M5+).
+//import slimeknights.tconstruct.library.client.book.content.AbstractMaterialContent;
 import slimeknights.tconstruct.library.client.materials.MaterialTooltipCache;
 import slimeknights.tconstruct.library.client.model.DynamicTextureLoader;
 import slimeknights.tconstruct.library.client.model.TinkerItemProperties;
@@ -169,9 +170,8 @@ public class ToolClientEvents extends ClientEventBase {
 
     // keybinds
     event.enqueueWork(() -> {
-      // fake ingot showing in the book is a little nicer than the repair kits
-      AbstractMaterialContent.registerFallbackPart(TinkerToolParts.fakeIngot);
-      AbstractMaterialContent.registerFallbackPart(TinkerToolParts.fakeStorageBlockItem);
+      // PORT book: registering fake ingot/storage-block fallback parts for the book is deferred until
+      // Mantle's book system is ported (M5+). Was: AbstractMaterialContent.registerFallbackPart(...).
       // screens
       MenuScreens.register(TinkerTools.toolContainer.get(), ToolContainerScreen::new);
 

@@ -13,7 +13,8 @@ import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.ClientEventBase;
-import slimeknights.tconstruct.library.client.book.TinkerBook;
+// PORT book: TinkerBook deferred until Mantle's book system is ported (M5+).
+//import slimeknights.tconstruct.library.client.book.TinkerBook;
 import slimeknights.tconstruct.library.client.model.UniqueGuiModel;
 import slimeknights.tconstruct.library.utils.DomainDisplayName;
 import slimeknights.tconstruct.shared.client.FluidParticle;
@@ -32,13 +33,8 @@ public class CommonsClientEvents extends ClientEventBase {
 
   @SubscribeEvent
   static void clientSetup(final FMLClientSetupEvent event) {
-    Font unicode = unicodeFontRender();
-    TinkerBook.MATERIALS_AND_YOU.fontRenderer = unicode;
-    TinkerBook.TINKERS_GADGETRY.fontRenderer = unicode;
-    TinkerBook.PUNY_SMELTING.fontRenderer = unicode;
-    TinkerBook.MIGHTY_SMELTING.fontRenderer = unicode;
-    TinkerBook.FANTASTIC_FOUNDRY.fontRenderer = unicode;
-    TinkerBook.ENCYCLOPEDIA.fontRenderer = unicode;
+    // PORT book: assigning the unicode font renderer to each TinkerBook is deferred until Mantle's
+    // book system is ported (M5+). Was: TinkerBook.<BOOK>.fontRenderer = unicodeFontRender();
   }
 
   @SubscribeEvent

@@ -1,22 +1,24 @@
 package slimeknights.tconstruct.library;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.RegisterEvent;
 import slimeknights.tconstruct.TConstruct;
 
 import java.util.Locale;
-import java.util.Objects;
 
 /** Custom transform types used for tinkers item rendering */
 public class TinkerItemDisplays {
   private TinkerItemDisplays() {}
 
-  public static void init() {
-    TConstruct.modBus.addListener(TinkerItemDisplays::registerDisplay);
-  }
+  /**
+   * Touches this class so the static {@link #create(String, ItemDisplayContext)} calls below run, which
+   * is what registers the custom display contexts.
+   *
+   * <p>PORT 1.21.1: {@code ItemDisplayContext} is now a {@link net.minecraft.util.StringRepresentable}
+   * enum rather than a Forge registry, and {@code ItemDisplayContext.create(...)} (a NeoForge extension)
+   * both creates and registers the context at class-init time. The old {@code RegisterEvent} listener over
+   * {@code ForgeRegistries.DISPLAY_CONTEXTS} is gone — classloading this type is the registration.
+   */
+  public static void init() {}
 
   /** Used by the melter and smeltery for display of items its melting */
   public static ItemDisplayContext MELTER = create("melter", ItemDisplayContext.NONE);
@@ -38,23 +40,5 @@ public class TinkerItemDisplays {
       return ItemDisplayContext.create(key, TConstruct.getResource(name), null);
     }
     return ItemDisplayContext.create(key, TConstruct.getResource(name), fallback);
-  }
-
-  /** Registers all item display types */
-  private static void registerDisplay(RegisterEvent event) {
-    if (event.getRegistryKey() == ForgeRegistries.Keys.DISPLAY_CONTEXTS) {
-      IForgeRegistry<ItemDisplayContext> registry = ForgeRegistries.DISPLAY_CONTEXTS.get();
-      register(registry, MELTER);
-      register(registry, TABLE);
-      register(registry, CASTING_TABLE);
-      register(registry, CASTING_BASIN);
-      register(registry, FLUID_CANNON);
-      register(registry, THROWN);
-    }
-  }
-
-  /** Registers a display type */
-  private static void register(IForgeRegistry<ItemDisplayContext> registry, ItemDisplayContext context) {
-    registry.register(Objects.requireNonNull(ResourceLocation.tryParse(context.getSerializedName())), context);
   }
 }
