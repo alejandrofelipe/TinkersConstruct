@@ -343,7 +343,6 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
   }
 
   @Nullable
-  @Nullable
   private RecipeHolder<ICastingRecipe> findCastingRecipe() {
     if (level == null) return null;
     if (this.lastCastingRecipe != null && this.lastCastingRecipe.matches(castingInventory, level)) {
