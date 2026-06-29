@@ -14,6 +14,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.Tags.Fluids;
+import net.neoforged.neoforge.common.conditions.ModLoadedCondition;
 import net.neoforged.neoforge.common.crafting.CompoundIngredient;
 import net.neoforged.neoforge.common.crafting.DifferenceIngredient;
 import net.neoforged.neoforge.common.crafting.IntersectionIngredient;
@@ -1797,11 +1798,11 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
     IJsonPredicate<ModifierId> blacklist = ModifierPredicate.tag(TinkerTags.Modifiers.INVISIBLE_INK_BLACKLIST).inverted();
     ModifierSetWorktableRecipeBuilder.setAdding(hiddenModifiers)
                                      .modifierPredicate(blacklist)
-                                     .addInput(FluidContainerIngredient.fromIngredient(TinkerFluids.skySlime.ingredient(FluidValues.BOTTLE), Ingredient.of(TinkerFluids.slimeBottle.get(SlimeType.SKY))))
+                                     .addInput(FluidContainerIngredient.fromIngredient(TinkerFluids.skySlime.ingredient(FluidValues.BOTTLE), Ingredient.of(TinkerFluids.slimeBottle.get(SlimeType.SKY))).toVanilla())
                                      .save(consumer, location(worktableFolder + "invisible_ink_adding"));
     ModifierSetWorktableRecipeBuilder.setRemoving(hiddenModifiers)
                                      .modifierPredicate(blacklist)
-                                     .addInput(FluidContainerIngredient.fromIngredient(FluidIngredient.of(Fluids.MILK, FluidType.BUCKET_VOLUME), Ingredient.of(Items.MILK_BUCKET)))
+                                     .addInput(FluidContainerIngredient.fromIngredient(FluidIngredient.of(Fluids.MILK, FluidType.BUCKET_VOLUME), Ingredient.of(Items.MILK_BUCKET)).toVanilla())
                                      .save(consumer, location(worktableFolder + "invisible_ink_removing"));
 
     // swapping hands
@@ -1844,7 +1845,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
     // compatability
     String theOneProbe = "theoneprobe";
     ResourceLocation probe = ResourceLocation.fromNamespaceAndPath(theOneProbe, "probe");
-    RecipeOutput topConsumer = withCondition(consumer, modLoaded(theOneProbe));
+    RecipeOutput topConsumer = withCondition(consumer, new ModLoadedCondition(theOneProbe));
     ModifierRecipeBuilder.modifier(ModifierIds.theOneProbe)
                          .setTools(ingredientFromTags(TinkerTags.Items.HELMETS, TinkerTags.Items.HELD))
                          .addInput(ItemNameIngredient.from(probe).toVanilla())
@@ -1852,7 +1853,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                          .setMaxLevel(1).checkTraitLevel()
                          .saveSalvage(topConsumer, prefix(ModifierIds.theOneProbe.getLocation(), compatSalvage))
                          .save(topConsumer, prefix(ModifierIds.theOneProbe.getLocation(), compatFolder));
-    RecipeOutput headlightConsumer = withCondition(consumer, modLoaded("headlight"));
+    RecipeOutput headlightConsumer = withCondition(consumer, new ModLoadedCondition("headlight"));
     BiConsumer<Ingredient,String> headlight = (ingredient, light) -> {
       SwappableModifierRecipeBuilder builder = SwappableModifierRecipeBuilder.modifier(ModifierIds.headlight, light);
       builder.variantFormatter(VariantFormatter.PARAMETER)
@@ -2083,12 +2084,12 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
 
   /** Prefixes the modifier ID with the given prefix */
   public ResourceLocation prefix(LazyModifier modifier, String prefix) {
-    return prefix(modifier.getId(), prefix);
+    return prefix(modifier.getId().getLocation(), prefix);
   }
 
   /** Prefixes the modifier ID with the given prefix and suffix */
   public ResourceLocation wrap(LazyModifier modifier, String prefix, String suffix) {
-    return wrap(modifier.getId(), prefix, suffix);
+    return wrap(modifier.getId().getLocation(), prefix, suffix);
   }
 
   /**

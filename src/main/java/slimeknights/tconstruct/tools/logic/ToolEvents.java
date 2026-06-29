@@ -272,7 +272,7 @@ public class ToolEvents {
     // determine if there is any modifiable armor, if not nothing to do
     DamageSource source = event.getSource();
     EquipmentContext context = new EquipmentContext(entity);
-    int vanillaModifier = 0;
+    float vanillaModifier = 0;
     float modifierValue = 0;
     float originalDamage = event.getAmount();
 

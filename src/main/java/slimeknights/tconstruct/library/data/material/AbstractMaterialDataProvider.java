@@ -180,7 +180,7 @@ public abstract class AbstractMaterialDataProvider extends GenericDataProvider {
 
   /** Makes a conditional redirect to the given ID */
   protected JsonRedirect conditionalRedirect(MaterialId id, @Nullable ICondition condition) {
-    return new JsonRedirect(id, condition);
+    return new JsonRedirect(id.getLocation(), condition);
   }
 
   /** Makes an unconditional redirect to the given ID */

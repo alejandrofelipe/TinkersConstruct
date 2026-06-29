@@ -1,8 +1,8 @@
 package slimeknights.tconstruct.library.modifiers.modules.technical;
 
 import lombok.RequiredArgsConstructor;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
 import slimeknights.tconstruct.library.modifiers.hook.armor.EquipmentChangeModifierHook;
@@ -35,8 +35,10 @@ public enum CureOnRemovalModule implements HookProvider, EquipmentChangeModifier
     if (context.getChangedSlot() == slot) {
       IToolStackView replacement = context.getReplacementTool();
       if (replacement == null || replacement.getModifierLevel(modifier.getModifier()) == 0 || replacement.getItem() != tool.getItem()) {
-        // cure effects using the helmet
-        context.getEntity().curePotionEffects(new ItemStack(tool.getItem()));
+        // PORT M3: Forge's curePotionEffects(ItemStack) (matched our per-helmet curative marker) was removed in 1.21,
+        // and NeoForge replaced per-ItemStack curatives with EffectCure tokens. The only consumer of this module is
+        // StrongBonesModifier, which applies milk-immune DAMAGE_RESISTANCE; remove that effect directly on unequip.
+        context.getEntity().removeEffect(MobEffects.DAMAGE_RESISTANCE);
       }
     }
   }

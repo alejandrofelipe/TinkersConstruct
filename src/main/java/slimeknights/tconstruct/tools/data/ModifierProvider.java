@@ -769,7 +769,7 @@ public class ModifierProvider extends AbstractModifierProvider {
     // leggings
     // pocket is an internal modifier to keep the NBT structure for inventory modifiers the smae
     buildModifier(ModifierIds.pocket).tooltipDisplay(TooltipDisplay.NEVER)
-      .addModule(InventoryModule.builder().key(ModifierIds.pockets).slotsPerLevel(3))
+      .addModule(InventoryModule.builder().key(ModifierIds.pockets.getLocation()).slotsPerLevel(3))
       .addModule(InventoryMenuModule.ANY);
     // 18 slots per level
     buildModifier(ModifierIds.pockets).addModule(new ModifierTraitModule(ModifierIds.pocket, 6, false));
