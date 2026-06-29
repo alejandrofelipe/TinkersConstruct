@@ -53,7 +53,7 @@
       "type": "tconstruct:tool_actions",
       "tool_actions": [
         "axe_dig",
-        "shield_disable"
+        "tconstruct:shield_disable"
       ]
     },
     {
