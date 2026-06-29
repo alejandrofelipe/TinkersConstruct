@@ -103,15 +103,31 @@ public class TConstruct {
    * (Forge silently ignored it). Constructing the module already triggers its static deferred-register
    * initializers, so pure-registration modules (e.g. TinkerToolParts) need no bus listener.
    */
-  private static void registerModule(IEventBus bus, Object module) {
+  private static void registerModule(IEventBus modBus, Object module) {
     for (Class<?> c = module.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
       for (java.lang.reflect.Method m : c.getDeclaredMethods()) {
-        if (m.isAnnotationPresent(SubscribeEvent.class)) {
-          bus.register(module);
-          return;
+        SubscribeEvent ann = m.getAnnotation(SubscribeEvent.class);
+        if (ann != null && m.getParameterCount() == 1) {
+          Class<?> eventType = m.getParameterTypes()[0];
+          // mod-bus events implement IModBusEvent; everything else (gameplay, RegisterBrewingRecipesEvent, ...) is the game bus
+          IEventBus target = net.neoforged.fml.event.IModBusEvent.class.isAssignableFrom(eventType)
+                             ? modBus : net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
+          addReflectiveListener(target, ann, eventType, module, m);
         }
       }
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static void addReflectiveListener(IEventBus bus, SubscribeEvent ann, Class<?> eventType, Object module, java.lang.reflect.Method m) {
+    m.setAccessible(true);
+    bus.addListener(ann.priority(), ann.receiveCancelled(), (Class<net.neoforged.bus.api.Event>) eventType, event -> {
+      try {
+        m.invoke(module, event);
+      } catch (ReflectiveOperationException e) {
+        throw new RuntimeException("Failed to dispatch " + event + " to " + m, e);
+      }
+    });
   }
 
   public TConstruct(IEventBus modBus, ModContainer container) {

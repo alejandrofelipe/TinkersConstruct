@@ -2,35 +2,35 @@ To honour the JVM settings for this build a single-use Daemon process will be fo
 Daemon will be stopped at the end of the build 
 
 > Configure project :
-Java: 21.0.11, Version: 1.21.1-3.11.3.DEV.ab78743ed8
+Java: 21.0.11, Version: 1.21.1-3.11.3.DEV.596e610e93
 
 > Configure project :repo
-Java: 21.0.11, JVM: 21.0.11+10-LTS (Eclipse Adoptium), Arch: amd64, Version: 1.21.1-1.12.DEV.ab78743ed8
+Java: 21.0.11, JVM: 21.0.11+10-LTS (Eclipse Adoptium), Arch: amd64, Version: 1.21.1-1.12.DEV.596e610e93
 
-> Task :generateEffectiveLombokConfig UP-TO-DATE
 > Task :repo:generateEffectiveLombokConfig UP-TO-DATE
-> Task :repo:neoFormListLibraries UP-TO-DATE
+> Task :generateEffectiveLombokConfig UP-TO-DATE
 > Task :neoFormListLibraries UP-TO-DATE
-> Task :repo:cacheVersionManifest1.21.1 UP-TO-DATE
+> Task :repo:neoFormListLibraries UP-TO-DATE
 > Task :cacheVersionManifest1.21.1 UP-TO-DATE
+> Task :repo:cacheVersionManifest1.21.1 UP-TO-DATE
 > Task :cacheVersionExecutableClient1.21.1 UP-TO-DATE
 > Task :repo:cacheVersionExecutableClient1.21.1 UP-TO-DATE
-> Task :repo:cacheVersionExecutableServer1.21.1 UP-TO-DATE
 > Task :cacheVersionExecutableServer1.21.1 UP-TO-DATE
-> Task :repo:cacheVersionExtractedServer1.21.1 UP-TO-DATE
+> Task :repo:cacheVersionExecutableServer1.21.1 UP-TO-DATE
 > Task :cacheVersionExtractedServer1.21.1 UP-TO-DATE
-> Task :cacheVersionMappingsClient1.21.1 UP-TO-DATE
+> Task :repo:cacheVersionExtractedServer1.21.1 UP-TO-DATE
 > Task :repo:cacheVersionMappingsClient1.21.1 UP-TO-DATE
+> Task :cacheVersionMappingsClient1.21.1 UP-TO-DATE
 > Task :repo:create1.21.1ClientExtraJar UP-TO-DATE
 > Task :create1.21.1ClientExtraJar UP-TO-DATE
-> Task :selectRawArtifactNg_dummy_ng.net.minecraft_client_1.21.1_client-extra UP-TO-DATE
 > Task :repo:selectRawArtifactNg_dummy_ng.net.minecraft_client_1.21.1_client-extra UP-TO-DATE
+> Task :selectRawArtifactNg_dummy_ng.net.minecraft_client_1.21.1_client-extra UP-TO-DATE
 > Task :repo:neoFormListTransformLibraries UP-TO-DATE
 > Task :neoFormListTransformLibraries UP-TO-DATE
 > Task :neoFormStripClient UP-TO-DATE
 > Task :repo:neoFormStripClient UP-TO-DATE
-> Task :repo:neoFormStripServer UP-TO-DATE
 > Task :neoFormStripServer UP-TO-DATE
+> Task :repo:neoFormStripServer UP-TO-DATE
 > Task :neoFormMerge UP-TO-DATE
 > Task :repo:neoFormMerge UP-TO-DATE
 > Task :repo:neoFormMergeMappings UP-TO-DATE
@@ -39,180 +39,801 @@ Java: 21.0.11, JVM: 21.0.11+10-LTS (Eclipse Adoptium), Arch: amd64, Version: 1.2
 > Task :neoFormRename UP-TO-DATE
 > Task :neoFormDecompile UP-TO-DATE
 > Task :repo:neoFormDecompile UP-TO-DATE
-> Task :neoFormInject UP-TO-DATE
 > Task :repo:neoFormInject UP-TO-DATE
+> Task :neoFormInject UP-TO-DATE
 > Task :neoFormPatch UP-TO-DATE
 > Task :repo:neoFormPatch UP-TO-DATE
 > Task :neoFormPatchUserDev UP-TO-DATE
 > Task :repo:neoFormPatchUserDev UP-TO-DATE
 > Task :neoFormTransformSource UP-TO-DATE
 > Task :repo:neoFormTransformSource UP-TO-DATE
+> Task :repo:neoFormRecompile UP-TO-DATE
 > Task :neoFormRecompile UP-TO-DATE
 > Task :supplyRawJarForneoFormJoined1.21.1-20240808.144430 UP-TO-DATE
-> Task :selectRawArtifactNg_dummy_ng.net.neoforged_neoforge_21.1.234 UP-TO-DATE
-> Task :repo:neoFormRecompile UP-TO-DATE
 > Task :repo:supplyRawJarForneoFormJoined1.21.1-20240808.144430 UP-TO-DATE
+> Task :selectRawArtifactNg_dummy_ng.net.neoforged_neoforge_21.1.234 UP-TO-DATE
 > Task :repo:selectRawArtifactNg_dummy_ng.net.neoforged_neoforge_21.1.234 UP-TO-DATE
 > Task :repo:compileJava UP-TO-DATE
-> Task :repo:processResources UP-TO-DATE
-> Task :repo:classes UP-TO-DATE
+> Task :repo:processResources
+> Task :repo:classes
 > Task :repo:jar
 > Task :processResources
-> Task :compileJava UP-TO-DATE
+
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\TConstruct.java:88: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.MOD)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\TConstruct.java:88: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.MOD)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\TConstruct.java:88: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.MOD)
+                                               ^
+> Task :compileJava
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\TConstruct.java:88: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.MOD)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\TConstruct.java:88: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.MOD)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\TConstruct.java:88: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.MOD)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\TConstruct.java:88: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.MOD)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\TConstruct.java:88: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.MOD)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\TConstruct.java:88: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.MOD)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\TConstruct.java:88: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.MOD)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\common\Sounds.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\common\Sounds.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\common\Sounds.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\common\Sounds.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\common\Sounds.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\common\Sounds.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\common\Sounds.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\common\Sounds.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\common\Sounds.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\common\Sounds.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidClientEvents.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidClientEvents.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidClientEvents.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidClientEvents.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidClientEvents.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidClientEvents.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidClientEvents.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidClientEvents.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidClientEvents.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidClientEvents.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidEvents.java:18: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidEvents.java:18: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidEvents.java:18: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidEvents.java:18: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidEvents.java:18: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidEvents.java:18: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidEvents.java:18: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidEvents.java:18: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidEvents.java:18: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\FluidEvents.java:18: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\fluids\fluids\PotionFluidType.java:50: warning: [removal] initializeClient(Consumer<IClientFluidTypeExtensions>) in FluidType has been deprecated and marked for removal
+  public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
+              ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\gadgets\GadgetClientEvents.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\gadgets\GadgetClientEvents.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\gadgets\GadgetClientEvents.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\gadgets\GadgetClientEvents.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\gadgets\GadgetClientEvents.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\gadgets\GadgetClientEvents.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\gadgets\GadgetClientEvents.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\gadgets\GadgetClientEvents.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\gadgets\GadgetClientEvents.java:19: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\gadgets\GadgetClientEvents.java:19: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\library\modifiers\hook\armor\ProtectionModifierHook.java:43: warning: [removal] PROTECTION_CAP in TinkerDataKeys has been deprecated and marked for removal
+    return Math.min(20 + (capability != null ? capability.get(TinkerDataKeys.PROTECTION_CAP) : 0f), 25 * 0.95f);
+                                                                            ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\library\modifiers\hook\armor\ProtectionModifierHook.java:48: warning: [removal] PROTECTION_CAP in TinkerDataKeys has been deprecated and marked for removal
+    return Math.min(living.getAttributeValue(TinkerAttributes.PROTECTION_CAP) * 25f + (capability != null ? capability.get(TinkerDataKeys.PROTECTION_CAP) : 0f), 25 * 0.95f);
+                                                                                                                                         ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\library\tools\item\armor\MultilayerArmorItem.java:48: warning: [removal] initializeClient(Consumer<IClientItemExtensions>) in Item has been deprecated and marked for removal
+  public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+              ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\library\tools\item\ModifiableItem.java:521: warning: [removal] initializeClient(Consumer<IClientItemExtensions>) in Item has been deprecated and marked for removal
+  public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+              ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\library\tools\item\ranged\ModifiableLauncherItem.java:370: warning: [removal] initializeClient(Consumer<IClientItemExtensions>) in Item has been deprecated and marked for removal
+  public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+              ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\command\subcommand\GenerateMeltingRecipesCommand.java:363: warning: [removal] isFluidEqual(FluidStack) in FluidStack has been deprecated and marked for removal
+      return first.fluid.isFluidEqual(second.fluid);
+                        ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\CommonsClientEvents.java:22: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\CommonsClientEvents.java:22: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\CommonsClientEvents.java:22: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\CommonsClientEvents.java:22: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\CommonsClientEvents.java:22: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\CommonsClientEvents.java:22: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\CommonsClientEvents.java:22: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\CommonsClientEvents.java:22: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\CommonsClientEvents.java:22: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\CommonsClientEvents.java:22: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\TinkerClient.java:69: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\TinkerClient.java:69: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\TinkerClient.java:69: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\TinkerClient.java:69: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\TinkerClient.java:69: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\TinkerClient.java:69: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\TinkerClient.java:69: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\TinkerClient.java:69: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\TinkerClient.java:69: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\TinkerClient.java:69: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\TinkerCommons.java:199: warning: [removal] TagIntersectionPresentCondition in slimeknights.tconstruct.library.json.condition has been deprecated and marked for removal
+    CONDITION_SERIALIZERS.register("tag_intersection_present", () -> TagIntersectionPresentCondition.CODEC);
+                                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\TinkerCommons.java:200: warning: [removal] TagDifferencePresentCondition in slimeknights.tconstruct.library.json.condition has been deprecated and marked for removal
+    CONDITION_SERIALIZERS.register("tag_difference_present", () -> TagDifferencePresentCondition.CODEC);
+                                                                   ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\shared\TinkerCommons.java:201: warning: [removal] TagNotEmptyCondition in slimeknights.tconstruct.library.json.condition has been deprecated and marked for removal
+    CONDITION_SERIALIZERS.register("tag_not_empty", () -> TagNotEmptyCondition.CODEC);
+                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\smeltery\SmelteryClientEvents.java:35: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid= TConstruct.MOD_ID, value= Dist.CLIENT, bus= Bus.MOD)
+                                                                  ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\smeltery\SmelteryClientEvents.java:35: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid= TConstruct.MOD_ID, value= Dist.CLIENT, bus= Bus.MOD)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\smeltery\SmelteryClientEvents.java:35: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid= TConstruct.MOD_ID, value= Dist.CLIENT, bus= Bus.MOD)
+                                                                  ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\smeltery\SmelteryClientEvents.java:35: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid= TConstruct.MOD_ID, value= Dist.CLIENT, bus= Bus.MOD)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\smeltery\SmelteryClientEvents.java:35: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid= TConstruct.MOD_ID, value= Dist.CLIENT, bus= Bus.MOD)
+                                                                  ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\smeltery\SmelteryClientEvents.java:35: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid= TConstruct.MOD_ID, value= Dist.CLIENT, bus= Bus.MOD)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\smeltery\SmelteryClientEvents.java:35: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid= TConstruct.MOD_ID, value= Dist.CLIENT, bus= Bus.MOD)
+                                                                  ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\smeltery\SmelteryClientEvents.java:35: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid= TConstruct.MOD_ID, value= Dist.CLIENT, bus= Bus.MOD)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\smeltery\SmelteryClientEvents.java:35: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid= TConstruct.MOD_ID, value= Dist.CLIENT, bus= Bus.MOD)
+                                                                  ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\smeltery\SmelteryClientEvents.java:35: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid= TConstruct.MOD_ID, value= Dist.CLIENT, bus= Bus.MOD)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\smeltery\TinkerSmeltery.java:154: warning: [removal] createDataComponents(String) in DeferredRegister has been deprecated and marked for removal
+  private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(TConstruct.MOD_ID);
+                                                                                         ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tables\TableClientEvents.java:25: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tables\TableClientEvents.java:25: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tables\TableClientEvents.java:25: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tables\TableClientEvents.java:25: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tables\TableClientEvents.java:25: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tables\TableClientEvents.java:25: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tables\TableClientEvents.java:25: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tables\TableClientEvents.java:25: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tables\TableClientEvents.java:25: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tables\TableClientEvents.java:25: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ClientInteractionHandler.java:29: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME, value = Dist.CLIENT)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ClientInteractionHandler.java:29: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME, value = Dist.CLIENT)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ClientInteractionHandler.java:29: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME, value = Dist.CLIENT)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ClientInteractionHandler.java:29: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME, value = Dist.CLIENT)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ClientInteractionHandler.java:29: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME, value = Dist.CLIENT)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ClientInteractionHandler.java:29: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME, value = Dist.CLIENT)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ClientInteractionHandler.java:29: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME, value = Dist.CLIENT)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ClientInteractionHandler.java:29: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME, value = Dist.CLIENT)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ClientInteractionHandler.java:29: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME, value = Dist.CLIENT)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ClientInteractionHandler.java:29: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME, value = Dist.CLIENT)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ModifierClientEvents.java:66: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ModifierClientEvents.java:66: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ModifierClientEvents.java:66: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ModifierClientEvents.java:66: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ModifierClientEvents.java:66: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ModifierClientEvents.java:66: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ModifierClientEvents.java:66: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ModifierClientEvents.java:66: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ModifierClientEvents.java:66: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ModifierClientEvents.java:66: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ToolRenderEvents.java:46: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ToolRenderEvents.java:46: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ToolRenderEvents.java:46: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ToolRenderEvents.java:46: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ToolRenderEvents.java:46: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ToolRenderEvents.java:46: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ToolRenderEvents.java:46: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ToolRenderEvents.java:46: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ToolRenderEvents.java:46: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\client\ToolRenderEvents.java:46: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\item\SlimeskullItem.java:48: warning: [removal] initializeClient(Consumer<IClientItemExtensions>) in Item has been deprecated and marked for removal
+  public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+              ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\DoubleJumpHandler.java:22: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\DoubleJumpHandler.java:22: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\DoubleJumpHandler.java:22: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\DoubleJumpHandler.java:22: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\DoubleJumpHandler.java:22: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\DoubleJumpHandler.java:22: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\DoubleJumpHandler.java:22: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\DoubleJumpHandler.java:22: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\DoubleJumpHandler.java:22: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\DoubleJumpHandler.java:22: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\InteractionHandler.java:63: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\InteractionHandler.java:63: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\InteractionHandler.java:63: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\InteractionHandler.java:63: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\InteractionHandler.java:63: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\InteractionHandler.java:63: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\InteractionHandler.java:63: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\InteractionHandler.java:63: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\InteractionHandler.java:63: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\InteractionHandler.java:63: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ModifierEvents.java:99: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ModifierEvents.java:99: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ModifierEvents.java:99: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ModifierEvents.java:99: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ModifierEvents.java:99: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ModifierEvents.java:99: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ModifierEvents.java:99: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ModifierEvents.java:99: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ModifierEvents.java:99: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ModifierEvents.java:99: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ModifierEvents.java:266: warning: [removal] CRITICAL_DAMAGE in TinkerDataKeys has been deprecated and marked for removal
+    double criticalBoost = living.getAttributeValue(attribute) - attribute.value().getDefaultValue() + ArmorStatModule.getStat(living, TinkerDataKeys.CRITICAL_DAMAGE);
+                                                                                                                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ToolEvents.java:95: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ToolEvents.java:95: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ToolEvents.java:95: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ToolEvents.java:95: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ToolEvents.java:95: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ToolEvents.java:95: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ToolEvents.java:95: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ToolEvents.java:95: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ToolEvents.java:95: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ToolEvents.java:95: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+                                                     ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\logic\ToolEvents.java:299: warning: [removal] CROUCH_DAMAGE in TinkerDataKeys has been deprecated and marked for removal
+        crouchMultiplier += ArmorStatModule.getStat(attacker, TinkerDataKeys.CROUCH_DAMAGE);
+                                                                            ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\modifiers\effect\HelmetChargingEffect.java:39: warning: [removal] initializeClient(Consumer<IClientMobEffectExtensions>) in MobEffect has been deprecated and marked for removal
+  public void initializeClient(Consumer<IClientMobEffectExtensions> consumer) {
+              ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\ToolClientEvents.java:96: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\ToolClientEvents.java:96: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\ToolClientEvents.java:96: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\ToolClientEvents.java:96: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\ToolClientEvents.java:96: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\ToolClientEvents.java:96: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\ToolClientEvents.java:96: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\ToolClientEvents.java:96: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\ToolClientEvents.java:96: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\tools\ToolClientEvents.java:96: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
+                                                                          ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldClientEvents.java:44: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldClientEvents.java:44: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldClientEvents.java:44: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldClientEvents.java:44: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldClientEvents.java:44: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldClientEvents.java:44: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldClientEvents.java:44: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldClientEvents.java:44: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldClientEvents.java:44: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldClientEvents.java:44: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
+                                                                    ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldEvents.java:25: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldEvents.java:25: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldEvents.java:25: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldEvents.java:25: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldEvents.java:25: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldEvents.java:25: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldEvents.java:25: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldEvents.java:25: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+                                                                       ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldEvents.java:25: warning: [removal] bus() in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+                                               ^
+C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\java\slimeknights\tconstruct\world\WorldEvents.java:25: warning: [removal] Bus in EventBusSubscriber has been deprecated and marked for removal
+@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+                                                                       ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+205 warnings
+
 > Task :classes
-> Task :neoFormJoined1.21.1-20240808.144430DownloadAssets
 > Task :neoFormJoined1.21.1-20240808.144430DownloadAssets UP-TO-DATE
 > Task :neoFormJoined1.21.1-20240808.144430ExtractNatives UP-TO-DATE
-> Task :writeMinecraftClasspathData
+> Task :writeMinecraftClasspathData UP-TO-DATE
 
 > Task :runData
-[12:14:37.671] [main/INFO] [Launcher/MODLAUNCHER]: ModLauncher running: args [--mod, tconstruct, --all, --output, C:\Users\aleja\DEV\New Tinkers\tinkers\src\generated\resources, --existing, C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\resources, --existing-mod, mantle, --launchTarget, forgedatadev, --assetIndex, asset-index, --assetsDir, C:\Users\aleja\scoop\apps\gradle\current\.gradle\caches\minecraft\assets, --gameDir, ., --fml.fmlVersion, 4.0.42, --fml.mcVersion, 1.21.1, --fml.neoForgeVersion, 21.1.234, --fml.neoFormVersion, 20240808.144430] 
-[12:14:37.674] [main/INFO] [Launcher/MODLAUNCHER]: JVM identified as Eclipse Adoptium OpenJDK 64-Bit Server VM 21.0.11+10-LTS 
-[12:14:37.675] [main/INFO] [Launcher/MODLAUNCHER]: ModLauncher 11.0.5+main.901c6ea8 starting: java version 21.0.11 by Eclipse Adoptium; OS Windows 10 arch amd64 version 10.0 
-[12:14:37.781] [main/INFO] [loading.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgedatadev 
-[12:14:37.823] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=union:/C:/Users/aleja/scoop/apps/gradle/current/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.2+mixin.0.8.7/2af2f021d8e02a0220dc27a7a72b4666d66d44ca/sponge-mixin-0.15.2+mixin.0.8.7.jar%23143!/ Service=ModLauncher Env=CLIENT 
-[12:14:37.945] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "neoforge-21.1.234.jar" [locator: neoforge devenv provider ([C:\Users\aleja\DEV\New Tinkers\tinkers\.gradle\repositories\ng_dummy_ng\net\neoforged\neoforge\21.1.234\neoforge-21.1.234.jar])] 
-[12:14:37.969] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "neoforge-21.1.234.jar" [locator: neoforge devenv provider ([C:\Users\aleja\DEV\New Tinkers\tinkers\.gradle\repositories\ng_dummy_ng\net\neoforged\neoforge\21.1.234\neoforge-21.1.234.jar])] 
-[12:14:37.980] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "main" [locator: userdev mods and services, reader: mod manifest] 
-[12:14:37.990] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "neoforge-21.1.234.jar" [locator: userdev mods and services, reader: mod manifest] 
-[12:14:37.994] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "Mantle-1.21.1-1.12.DEV.ab78743ed8.jar" [locator: userdev mods and services, reader: mod manifest] 
-[12:14:38.003] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "jei-1.21.1-neoforge-19.21.0.247.jar" [locator: userdev mods and services, reader: mod manifest] 
-[12:14:38.135] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found gamelibrary file "mixinextras-neoforge-0.5.3.jar" [locator: userdev mods and services, reader: mod manifest] 
-[12:14:38.222] [main/WARN] [selection.JarSelector/]: Attempted to select a dependency jar for JarJar which was passed in as source: library:mixinextras.neoforge. Using Mod File: C:\Users\aleja\scoop\apps\gradle\current\.gradle\caches\modules-2\files-2.1\io.github.llamalad7\mixinextras-neoforge\0.5.3\a0919957808de97707c5fb4ce073e66aeef3e187\mixinextras-neoforge-0.5.3.jar 
-[12:14:38.222] [main/INFO] [loading.moddiscovery.locators.JarInJarDependencyLocator/]: Found 1 dependencies adding them to mods collection 
-[12:14:38.222] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found library file "net.neoforged.neoforge-coremods-21.1.234.jar" [parent: neoforge-21.1.234.jar, locator: jarinjar, reader: mod manifest] 
-[12:14:38.224] [main/INFO] [loading.moddiscovery.ModDiscoverer/]: 
+[12:20:27.685] [main/INFO] [Launcher/MODLAUNCHER]: ModLauncher running: args [--mod, tconstruct, --all, --output, C:\Users\aleja\DEV\New Tinkers\tinkers\src\generated\resources, --existing, C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\resources, --existing-mod, mantle, --launchTarget, forgedatadev, --assetIndex, asset-index, --assetsDir, C:\Users\aleja\scoop\apps\gradle\current\.gradle\caches\minecraft\assets, --gameDir, ., --fml.fmlVersion, 4.0.42, --fml.mcVersion, 1.21.1, --fml.neoForgeVersion, 21.1.234, --fml.neoFormVersion, 20240808.144430] 
+[12:20:27.688] [main/INFO] [Launcher/MODLAUNCHER]: JVM identified as Eclipse Adoptium OpenJDK 64-Bit Server VM 21.0.11+10-LTS 
+[12:20:27.690] [main/INFO] [Launcher/MODLAUNCHER]: ModLauncher 11.0.5+main.901c6ea8 starting: java version 21.0.11 by Eclipse Adoptium; OS Windows 10 arch amd64 version 10.0 
+[12:20:27.804] [main/INFO] [loading.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgedatadev 
+[12:20:27.852] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=union:/C:/Users/aleja/scoop/apps/gradle/current/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.2+mixin.0.8.7/2af2f021d8e02a0220dc27a7a72b4666d66d44ca/sponge-mixin-0.15.2+mixin.0.8.7.jar%23143!/ Service=ModLauncher Env=CLIENT 
+[12:20:27.947] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "neoforge-21.1.234.jar" [locator: neoforge devenv provider ([C:\Users\aleja\DEV\New Tinkers\tinkers\.gradle\repositories\ng_dummy_ng\net\neoforged\neoforge\21.1.234\neoforge-21.1.234.jar])] 
+[12:20:27.970] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "neoforge-21.1.234.jar" [locator: neoforge devenv provider ([C:\Users\aleja\DEV\New Tinkers\tinkers\.gradle\repositories\ng_dummy_ng\net\neoforged\neoforge\21.1.234\neoforge-21.1.234.jar])] 
+[12:20:27.982] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "main" [locator: userdev mods and services, reader: mod manifest] 
+[12:20:27.994] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "neoforge-21.1.234.jar" [locator: userdev mods and services, reader: mod manifest] 
+[12:20:28.000] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "Mantle-1.21.1-1.12.DEV.596e610e93.jar" [locator: userdev mods and services, reader: mod manifest] 
+[12:20:28.011] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "jei-1.21.1-neoforge-19.21.0.247.jar" [locator: userdev mods and services, reader: mod manifest] 
+[12:20:28.150] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found gamelibrary file "mixinextras-neoforge-0.5.3.jar" [locator: userdev mods and services, reader: mod manifest] 
+[12:20:28.248] [main/WARN] [selection.JarSelector/]: Attempted to select a dependency jar for JarJar which was passed in as source: library:mixinextras.neoforge. Using Mod File: C:\Users\aleja\scoop\apps\gradle\current\.gradle\caches\modules-2\files-2.1\io.github.llamalad7\mixinextras-neoforge\0.5.3\a0919957808de97707c5fb4ce073e66aeef3e187\mixinextras-neoforge-0.5.3.jar 
+[12:20:28.248] [main/INFO] [loading.moddiscovery.locators.JarInJarDependencyLocator/]: Found 1 dependencies adding them to mods collection 
+[12:20:28.248] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found library file "net.neoforged.neoforge-coremods-21.1.234.jar" [parent: neoforge-21.1.234.jar, locator: jarinjar, reader: mod manifest] 
+[12:20:28.250] [main/INFO] [loading.moddiscovery.ModDiscoverer/]: 
      Mod List:
 		Name Version (Mod Id)
 
 		Just Enough Items 19.21.0.247 (jei)
-		Mantle 1.12.DEV.ab78743ed8 (mantle)
+		Mantle 1.12.DEV.596e610e93 (mantle)
 		Minecraft 1.21.1 (minecraft)
 		NeoForge 21.1.234 (neoforge)
-		Tinkers' Construct 3.11.3.DEV.ab78743ed8 (tconstruct) 
-[12:14:38.857] [main/INFO] [LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgedatadev' with arguments [--gameDir, ., --assetsDir, C:\Users\aleja\scoop\apps\gradle\current\.gradle\caches\minecraft\assets, --mod, tconstruct, --all, --output, C:\Users\aleja\DEV\New Tinkers\tinkers\src\generated\resources, --existing, C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\resources, --existing-mod, mantle, --assetIndex, asset-index] 
+		Tinkers' Construct 3.11.3.DEV.596e610e93 (tconstruct) 
+[12:20:29.044] [main/INFO] [LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgedatadev' with arguments [--gameDir, ., --assetsDir, C:\Users\aleja\scoop\apps\gradle\current\.gradle\caches\minecraft\assets, --mod, tconstruct, --all, --output, C:\Users\aleja\DEV\New Tinkers\tinkers\src\generated\resources, --existing, C:\Users\aleja\DEV\New Tinkers\tinkers\src\main\resources, --existing-mod, mantle, --assetIndex, asset-index] 
 WARN StatusConsoleListener Advanced terminal features are not available in this environment
-[12:14:39] [main/DEBUG] [io.ne.ut.in.lo.InternalLoggerFactory/]: Using SLF4J as the default logging framework
-[12:14:39] [main/DEBUG] [io.ne.ut.ResourceLeakDetector/]: -Dio.netty.leakDetection.level: simple
-[12:14:39] [main/DEBUG] [io.ne.ut.ResourceLeakDetector/]: -Dio.netty.leakDetection.targetRecords: 4
-[12:14:39] [main/INFO] [ne.ne.ne.da.lo.DatagenModLoader/]: Initializing Data Gatherer for mods [tconstruct]
-[12:14:39] [main/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.3).
-[12:14:39] [main/DEBUG] [mixin/]: Registering new injector for @SugarWrapper with com.llamalad7.mixinextras.sugar.impl.SugarWrapperInjectionInfo
-[12:14:39] [main/DEBUG] [mixin/]: Registering new injector for @FactoryRedirectWrapper with com.llamalad7.mixinextras.wrapper.factory.FactoryRedirectWrapperInjectionInfo
-[12:14:39] [main/DEBUG] [mixin/]: Registering new injector for @ExpressionInjectorWrapper with com.llamalad7.mixinextras.expression.impl.wrapper.ExpressionInjectorWrapperInjectionInfo
-[12:14:39] [main/DEBUG] [mixin/]: Mixing MappedRegistryAccessor from neoforge.mixins.json into net.minecraft.core.MappedRegistry
-[12:14:39] [main/DEBUG] [mixin/]: neoforge.mixins.json:MappedRegistryAccessor from mod neoforge: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)
-[12:14:40] [main/DEBUG] [mixin/]: Mixing BlockEntityTypeAccessor from neoforge.mixins.json into net.minecraft.world.level.block.entity.BlockEntityType
-[12:14:40] [main/DEBUG] [mixin/]: neoforge.mixins.json:BlockEntityTypeAccessor from mod neoforge: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: -Dio.netty.noUnsafe: false
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: Java version: 21
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: sun.misc.Unsafe.theUnsafe: available
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: sun.misc.Unsafe.copyMemory: available
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: sun.misc.Unsafe.storeFence: available
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: java.nio.Buffer.address: available
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: java.nio.Bits.unaligned: available, true
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: java.nio.DirectByteBuffer.<init>(long, {int,long}): unavailable
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: sun.misc.Unsafe: available
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: maxDirectMemory: 3730833408 bytes (maybe)
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.tmpdir: C:\Users\aleja\AppData\Local\Temp (java.io.tmpdir)
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.bitMode: 64 (sun.arch.data.model)
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: Platform: Windows
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.maxDirectMemory: -1 bytes
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.uninitializedArrayAllocationThreshold: -1
-[12:14:41] [main/DEBUG] [io.ne.ut.in.CleanerJava9/]: java.nio.ByteBuffer.cleaner(): available
-[12:14:41] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.noPreferDirect: false
-[12:14:43] [main/DEBUG] [ne.ne.ne.re.GameData/REGISTRIES]: Creating vanilla freeze snapshot
-[12:14:43] [main/DEBUG] [ne.ne.ne.re.GameData/REGISTRIES]: Vanilla freeze snapshot created
-[12:14:43] [main/DEBUG] [ne.ne.fm.ModWorkManager/LOADING]: Using 12 threads for parallel mod-loading
-[12:14:43] [main/DEBUG] [ne.ne.fm.ja.FMLModContainer/LOADING]: Creating FMLModContainer instance for [net.neoforged.neoforge.common.NeoForgeMod, net.neoforged.neoforge.client.ClientNeoForgeMod]
-[12:14:43] [main/DEBUG] [ne.ne.fm.ja.FMLModContainer/LOADING]: Creating FMLModContainer instance for [mezz.jei.neoforge.JustEnoughItems]
-[12:14:43] [main/DEBUG] [ne.ne.fm.ja.FMLModContainer/LOADING]: Creating FMLModContainer instance for [slimeknights.mantle.Mantle]
-[12:14:43] [main/DEBUG] [ne.ne.fm.ja.FMLModContainer/LOADING]: Creating FMLModContainer instance for [slimeknights.tconstruct.TConstruct]
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.ne.in.ve.ne.NeoForgeVersion/CORE]: Found NeoForge version 21.1.234
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.ne.in.ve.ne.NeoForgeVersion/CORE]: Found FML version 4.0.42
-[12:14:43] [modloading-worker-0/INFO] [ne.ne.ne.co.NeoForgeMod/NEOFORGE-MOD]: NeoForge mod loading, version 21.1.234, for MC 1.21.1
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file jei-server.toml for jei tracking
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file neoforge-client.toml for neoforge tracking
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file neoforge-server.toml for neoforge tracking
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file neoforge-common.toml for neoforge tracking
-[12:14:43] [modloading-worker-0/DEBUG] [me.je.co.pl.Services/]: Loaded mezz.jei.neoforge.platform.PlatformHelper@554d52ce for service interface mezz.jei.common.platform.IPlatformHelper
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Attempting to inject @EventBusSubscriber classes into the eventbus for neoforge
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.server.command.ConfigCommand for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/server/command/ConfigCommand; to the game event bus
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.network.NetworkInitialization for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/network/NetworkInitialization; to the mod event bus of mod neoforge
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.network.filters.GenericPacketSplitter for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.AbstractByteBuf/]: -Dio.netty.buffer.checkAccessible: true
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.AbstractByteBuf/]: -Dio.netty.buffer.checkBounds: true
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.ut.ResourceLeakDetectorFactory/]: Loaded default ResourceLeakDetector: io.netty.util.ResourceLeakDetector@205f18de
-[12:14:43] [modloading-worker-0/DEBUG] [me.je.co.co.fi.ConfigSchema/]: Localization has not loaded yet, waiting to save the config file until JEI starts.
-[12:14:43] [modloading-worker-0/DEBUG] [me.je.co.co.fi.ConfigSchema/]: Localization has not loaded yet, waiting to save the config file until JEI starts.
-[12:14:43] [modloading-worker-0/DEBUG] [me.je.co.co.fi.ConfigSchema/]: Localization has not loaded yet, waiting to save the config file until JEI starts.
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.ut.in.InternalThreadLocalMap/]: -Dio.netty.threadLocalMap.stringBuilder.initialSize: 1024
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.ut.in.InternalThreadLocalMap/]: -Dio.netty.threadLocalMap.stringBuilder.maxSize: 4096
-[12:14:43] [modloading-worker-0/DEBUG] [me.je.co.co.fi.ConfigSchema/]: Localization has not loaded yet, waiting to save the config file until JEI starts.
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.numHeapArenas: 24
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.numDirectArenas: 24
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.pageSize: 8192
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxOrder: 9
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.chunkSize: 4194304
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.smallCacheSize: 256
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.normalCacheSize: 64
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedBufferCapacity: 32768
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimInterval: 8192
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimIntervalMillis: 0
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.useCacheForAllThreads: false
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedByteBuffersPerChunk: 1023
-[12:14:43] [modloading-worker-0/INFO] [me.je.li.lo.PluginCaller/]: Sending ConfigManager...
-[12:14:43] [modloading-worker-0/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending ConfigManager: jei:minecraft...
-[12:14:43] [modloading-worker-0/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending ConfigManager: jei:neoforge_gui...
-[12:14:43] [modloading-worker-0/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending ConfigManager: jei:debug...
-[12:14:43] [modloading-worker-0/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending ConfigManager: jei:gui...
-[12:14:43] [modloading-worker-0/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending ConfigManager: mantle:jei...
-[12:14:43] [modloading-worker-0/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending ConfigManager: jei:internal...
-[12:14:43] [modloading-worker-0/INFO] [me.je.li.lo.PluginCaller/]: Sending ConfigManager took 5.879 ms
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.allocator.type: pooled
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.threadLocalDirectBufferSize: 0
-[12:14:43] [modloading-worker-0/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.maxThreadLocalCharBufferSize: 16384
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Attempting to inject @EventBusSubscriber classes into the eventbus for jei
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file mantle-client.toml for mantle tracking
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file mantle-server.toml for mantle tracking
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/network/filters/GenericPacketSplitter; to the mod event bus of mod neoforge
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.network.ConfigurationInitialization for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/network/ConfigurationInitialization; to the mod event bus of mod neoforge
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.common.MonsterRoomHooks for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/common/MonsterRoomHooks; to the game event bus
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.common.DeferredSpawnEggItem$CommonHandler for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/common/DeferredSpawnEggItem$CommonHandler; to the mod event bus of mod neoforge
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.common.DeferredSpawnEggItem$ColorRegisterHandler for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/common/DeferredSpawnEggItem$ColorRegisterHandler; to the mod event bus of mod neoforge
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.client.ParticleBoundsDebugRenderer for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/client/ParticleBoundsDebugRenderer; to the game event bus
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.client.model.data.ModelDataManager for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/client/model/data/ModelDataManager; to the game event bus
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.client.ClientHooks$ClientEvents for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/client/ClientHooks$ClientEvents; to the mod event bus of mod neoforge
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.client.BlockEntityRenderBoundsDebugRenderer for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/client/BlockEntityRenderBoundsDebugRenderer; to the game event bus
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.attachment.AttachmentSync for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/attachment/AttachmentSync; to the game event bus
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.attachment.AttachmentInternals for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/attachment/AttachmentInternals; to the game event bus
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Attempting to inject @EventBusSubscriber classes into the eventbus for mantle
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class slimeknights.mantle.client.render.MantleShaders for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lslimeknights/mantle/client/render/MantleShaders; to the mod event bus of mod mantle
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class slimeknights.mantle.client.ClientEvents for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lslimeknights/mantle/client/ClientEvents; to the mod event bus of mod mantle
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class slimeknights.mantle.MantleEvents for @SubscribeEvent-annotated methods
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lslimeknights/mantle/MantleEvents; to the game event bus
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file tconstruct-common.toml for tconstruct tracking
-[12:14:43] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file tconstruct-client.toml for tconstruct tracking
-[12:14:44] [modloading-worker-0/ERROR] [ne.ne.fm.ja.FMLModContainer/LOADING]: Failed to create mod instance. ModID: tconstruct, class slimeknights.tconstruct.TConstruct
-java.lang.IllegalArgumentException: class slimeknights.tconstruct.tools.TinkerToolParts has no @SubscribeEvent methods, but register was called anyway.
-The event bus only recognizes listener methods that have the @SubscribeEvent annotation.
-
-	at MC-BOOTSTRAP/net.neoforged.bus/net.neoforged.bus.EventBus.register(EventBus.java:135) ~[bus-8.0.5.jar%23155!/:?] {}
-	at TRANSFORMER/tconstruct@3.11.3.DEV.ab78743ed8/slimeknights.tconstruct.TConstruct.<init>(TConstruct.java:125) ~[%23197!/:?] {re:classloading}
+[12:20:29] [main/DEBUG] [io.ne.ut.in.lo.InternalLoggerFactory/]: Using SLF4J as the default logging framework
+[12:20:29] [main/DEBUG] [io.ne.ut.ResourceLeakDetector/]: -Dio.netty.leakDetection.level: simple
+[12:20:29] [main/DEBUG] [io.ne.ut.ResourceLeakDetector/]: -Dio.netty.leakDetection.targetRecords: 4
+[12:20:29] [main/INFO] [ne.ne.ne.da.lo.DatagenModLoader/]: Initializing Data Gatherer for mods [tconstruct]
+[12:20:29] [main/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.3).
+[12:20:29] [main/DEBUG] [mixin/]: Registering new injector for @SugarWrapper with com.llamalad7.mixinextras.sugar.impl.SugarWrapperInjectionInfo
+[12:20:29] [main/DEBUG] [mixin/]: Registering new injector for @FactoryRedirectWrapper with com.llamalad7.mixinextras.wrapper.factory.FactoryRedirectWrapperInjectionInfo
+[12:20:29] [main/DEBUG] [mixin/]: Registering new injector for @ExpressionInjectorWrapper with com.llamalad7.mixinextras.expression.impl.wrapper.ExpressionInjectorWrapperInjectionInfo
+[12:20:29] [main/DEBUG] [mixin/]: Mixing MappedRegistryAccessor from neoforge.mixins.json into net.minecraft.core.MappedRegistry
+[12:20:29] [main/DEBUG] [mixin/]: neoforge.mixins.json:MappedRegistryAccessor from mod neoforge: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)
+[12:20:30] [main/DEBUG] [mixin/]: Mixing BlockEntityTypeAccessor from neoforge.mixins.json into net.minecraft.world.level.block.entity.BlockEntityType
+[12:20:30] [main/DEBUG] [mixin/]: neoforge.mixins.json:BlockEntityTypeAccessor from mod neoforge: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: -Dio.netty.noUnsafe: false
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: Java version: 21
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: sun.misc.Unsafe.theUnsafe: available
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: sun.misc.Unsafe.copyMemory: available
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: sun.misc.Unsafe.storeFence: available
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: java.nio.Buffer.address: available
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: java.nio.Bits.unaligned: available, true
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent0/]: java.nio.DirectByteBuffer.<init>(long, {int,long}): unavailable
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: sun.misc.Unsafe: available
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: maxDirectMemory: 3730833408 bytes (maybe)
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.tmpdir: C:\Users\aleja\AppData\Local\Temp (java.io.tmpdir)
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.bitMode: 64 (sun.arch.data.model)
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: Platform: Windows
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.maxDirectMemory: -1 bytes
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.uninitializedArrayAllocationThreshold: -1
+[12:20:31] [main/DEBUG] [io.ne.ut.in.CleanerJava9/]: java.nio.ByteBuffer.cleaner(): available
+[12:20:31] [main/DEBUG] [io.ne.ut.in.PlatformDependent/]: -Dio.netty.noPreferDirect: false
+[12:20:33] [main/DEBUG] [ne.ne.ne.re.GameData/REGISTRIES]: Creating vanilla freeze snapshot
+[12:20:33] [main/DEBUG] [ne.ne.ne.re.GameData/REGISTRIES]: Vanilla freeze snapshot created
+[12:20:33] [main/DEBUG] [ne.ne.fm.ModWorkManager/LOADING]: Using 12 threads for parallel mod-loading
+[12:20:33] [main/DEBUG] [ne.ne.fm.ja.FMLModContainer/LOADING]: Creating FMLModContainer instance for [net.neoforged.neoforge.common.NeoForgeMod, net.neoforged.neoforge.client.ClientNeoForgeMod]
+[12:20:33] [main/DEBUG] [ne.ne.fm.ja.FMLModContainer/LOADING]: Creating FMLModContainer instance for [mezz.jei.neoforge.JustEnoughItems]
+[12:20:33] [main/DEBUG] [ne.ne.fm.ja.FMLModContainer/LOADING]: Creating FMLModContainer instance for [slimeknights.mantle.Mantle]
+[12:20:33] [main/DEBUG] [ne.ne.fm.ja.FMLModContainer/LOADING]: Creating FMLModContainer instance for [slimeknights.tconstruct.TConstruct]
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.ne.in.ve.ne.NeoForgeVersion/CORE]: Found NeoForge version 21.1.234
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file jei-server.toml for jei tracking
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.ne.in.ve.ne.NeoForgeVersion/CORE]: Found FML version 4.0.42
+[12:20:33] [modloading-worker-0/INFO] [ne.ne.ne.co.NeoForgeMod/NEOFORGE-MOD]: NeoForge mod loading, version 21.1.234, for MC 1.21.1
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file neoforge-client.toml for neoforge tracking
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file neoforge-server.toml for neoforge tracking
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file neoforge-common.toml for neoforge tracking
+[12:20:33] [modloading-worker-0/DEBUG] [me.je.co.pl.Services/]: Loaded mezz.jei.neoforge.platform.PlatformHelper@50b9f53d for service interface mezz.jei.common.platform.IPlatformHelper
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Attempting to inject @EventBusSubscriber classes into the eventbus for neoforge
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.server.command.ConfigCommand for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/server/command/ConfigCommand; to the game event bus
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.network.NetworkInitialization for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/network/NetworkInitialization; to the mod event bus of mod neoforge
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.network.filters.GenericPacketSplitter for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [me.je.co.co.fi.ConfigSchema/]: Localization has not loaded yet, waiting to save the config file until JEI starts.
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.AbstractByteBuf/]: -Dio.netty.buffer.checkAccessible: true
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.AbstractByteBuf/]: -Dio.netty.buffer.checkBounds: true
+[12:20:33] [modloading-worker-0/DEBUG] [me.je.co.co.fi.ConfigSchema/]: Localization has not loaded yet, waiting to save the config file until JEI starts.
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.ut.ResourceLeakDetectorFactory/]: Loaded default ResourceLeakDetector: io.netty.util.ResourceLeakDetector@3bee0fa2
+[12:20:33] [modloading-worker-0/DEBUG] [me.je.co.co.fi.ConfigSchema/]: Localization has not loaded yet, waiting to save the config file until JEI starts.
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.ut.in.InternalThreadLocalMap/]: -Dio.netty.threadLocalMap.stringBuilder.initialSize: 1024
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.ut.in.InternalThreadLocalMap/]: -Dio.netty.threadLocalMap.stringBuilder.maxSize: 4096
+[12:20:33] [modloading-worker-0/DEBUG] [me.je.co.co.fi.ConfigSchema/]: Localization has not loaded yet, waiting to save the config file until JEI starts.
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.numHeapArenas: 24
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.numDirectArenas: 24
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.pageSize: 8192
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxOrder: 9
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.chunkSize: 4194304
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.smallCacheSize: 256
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.normalCacheSize: 64
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedBufferCapacity: 32768
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimInterval: 8192
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimIntervalMillis: 0
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.useCacheForAllThreads: false
+[12:20:33] [modloading-worker-0/INFO] [me.je.li.lo.PluginCaller/]: Sending ConfigManager...
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedByteBuffersPerChunk: 1023
+[12:20:33] [modloading-worker-0/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending ConfigManager: jei:minecraft...
+[12:20:33] [modloading-worker-0/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending ConfigManager: jei:neoforge_gui...
+[12:20:33] [modloading-worker-0/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending ConfigManager: jei:debug...
+[12:20:33] [modloading-worker-0/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending ConfigManager: jei:gui...
+[12:20:33] [modloading-worker-0/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending ConfigManager: mantle:jei...
+[12:20:33] [modloading-worker-0/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending ConfigManager: jei:internal...
+[12:20:33] [modloading-worker-0/INFO] [me.je.li.lo.PluginCaller/]: Sending ConfigManager took 5.536 ms
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.allocator.type: pooled
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.threadLocalDirectBufferSize: 0
+[12:20:33] [modloading-worker-0/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.maxThreadLocalCharBufferSize: 16384
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Attempting to inject @EventBusSubscriber classes into the eventbus for jei
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/network/filters/GenericPacketSplitter; to the mod event bus of mod neoforge
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file mantle-client.toml for mantle tracking
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file mantle-server.toml for mantle tracking
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.network.ConfigurationInitialization for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/network/ConfigurationInitialization; to the mod event bus of mod neoforge
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.common.MonsterRoomHooks for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/common/MonsterRoomHooks; to the game event bus
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.common.DeferredSpawnEggItem$CommonHandler for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/common/DeferredSpawnEggItem$CommonHandler; to the mod event bus of mod neoforge
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.common.DeferredSpawnEggItem$ColorRegisterHandler for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/common/DeferredSpawnEggItem$ColorRegisterHandler; to the mod event bus of mod neoforge
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.client.ParticleBoundsDebugRenderer for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/client/ParticleBoundsDebugRenderer; to the game event bus
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.client.model.data.ModelDataManager for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/client/model/data/ModelDataManager; to the game event bus
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.client.ClientHooks$ClientEvents for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/client/ClientHooks$ClientEvents; to the mod event bus of mod neoforge
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.client.BlockEntityRenderBoundsDebugRenderer for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/client/BlockEntityRenderBoundsDebugRenderer; to the game event bus
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.attachment.AttachmentSync for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/attachment/AttachmentSync; to the game event bus
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class net.neoforged.neoforge.attachment.AttachmentInternals for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lnet/neoforged/neoforge/attachment/AttachmentInternals; to the game event bus
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Attempting to inject @EventBusSubscriber classes into the eventbus for mantle
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class slimeknights.mantle.client.render.MantleShaders for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lslimeknights/mantle/client/render/MantleShaders; to the mod event bus of mod mantle
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class slimeknights.mantle.client.ClientEvents for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lslimeknights/mantle/client/ClientEvents; to the mod event bus of mod mantle
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/LOADING]: Scanning class slimeknights.mantle.MantleEvents for @SubscribeEvent-annotated methods
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.ja.AutomaticEventSubscriber/]: Subscribing @EventBusSubscriber class Lslimeknights/mantle/MantleEvents; to the game event bus
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file tconstruct-common.toml for tconstruct tracking
+[12:20:33] [modloading-worker-0/DEBUG] [ne.ne.fm.co.ConfigTracker/CONFIG]: Config file tconstruct-client.toml for tconstruct tracking
+[12:20:34] [modloading-worker-0/ERROR] [ne.ne.fm.ja.FMLModContainer/LOADING]: Failed to create mod instance. ModID: tconstruct, class slimeknights.tconstruct.TConstruct
+java.lang.IllegalArgumentException: Method void slimeknights.tconstruct.fluids.TinkerFluids.registerBrewingRecipes(net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent) has @SubscribeEvent annotation, but takes an argument that is not valid for this busclass net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent
+	at MC-BOOTSTRAP/net.neoforged.bus/net.neoforged.bus.EventBus.registerListener(EventBus.java:180) ~[bus-8.0.5.jar%23155!/:?] {}
+	at MC-BOOTSTRAP/net.neoforged.bus/net.neoforged.bus.EventBus.register(EventBus.java:111) ~[bus-8.0.5.jar%23155!/:?] {}
+	at TRANSFORMER/tconstruct@3.11.3.DEV.596e610e93/slimeknights.tconstruct.TConstruct.registerModule(TConstruct.java:110) ~[%23197!/:?] {re:classloading}
+	at TRANSFORMER/tconstruct@3.11.3.DEV.596e610e93/slimeknights.tconstruct.TConstruct.<init>(TConstruct.java:146) ~[%23197!/:?] {re:classloading}
 	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62) ~[?:?] {}
 	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502) ~[?:?] {}
 	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486) ~[?:?] {}
@@ -227,7 +848,11 @@ The event bus only recognizes listener methods that have the @SubscribeEvent ann
 	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843) [?:?] {}
 	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808) [?:?] {}
 	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188) [?:?] {}
-[12:14:44] [main/FATAL] [ne.ne.fm.ModLoader/LOADING]: Failed to wait for future Mod Construction, 1 errors found
+Caused by: java.lang.IllegalArgumentException: This bus only accepts subclasses of interface net.neoforged.fml.event.IModBusEvent, which class net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent is not.
+	at MC-BOOTSTRAP/net.neoforged.bus/net.neoforged.bus.api.BusBuilder.lambda$markerType$0(BusBuilder.java:55) ~[bus-8.0.5.jar%23155!/:?] {}
+	at MC-BOOTSTRAP/net.neoforged.bus/net.neoforged.bus.EventBus.registerListener(EventBus.java:178) ~[bus-8.0.5.jar%23155!/:?] {}
+	... 17 more
+[12:20:34] [main/FATAL] [ne.ne.fm.ModLoader/LOADING]: Failed to wait for future Mod Construction, 1 errors found
 Exception in thread "main" java.lang.RuntimeException: java.lang.reflect.InvocationTargetException
 	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:32)
 	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53)
@@ -249,9 +874,7 @@ Caused by: java.lang.reflect.InvocationTargetException
 	... 8 more
 Caused by: net.neoforged.fml.ModLoadingException: Loading errors encountered:
 	- Tinkers' Construct (tconstruct) has failed to load correctly
-	  java.lang.IllegalArgumentException: class slimeknights.tconstruct.tools.TinkerToolParts has no @SubscribeEvent methods, but register was called anyway.
-	  The event bus only recognizes listener methods that have the @SubscribeEvent annotation.
-	  
+	  java.lang.IllegalArgumentException: Method void slimeknights.tconstruct.fluids.TinkerFluids.registerBrewingRecipes(net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent) has @SubscribeEvent annotation, but takes an argument that is not valid for this busclass net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent
 
 	at MC-BOOTSTRAP/fml_loader@4.0.42/net.neoforged.fml.ModLoader.waitForFuture(ModLoader.java:281)
 	at MC-BOOTSTRAP/fml_loader@4.0.42/net.neoforged.fml.ModLoader.dispatchParallelTask(ModLoader.java:244)
@@ -285,5 +908,5 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD FAILED in 2m 59s
-55 actionable tasks: 4 executed, 51 up-to-date
+BUILD FAILED in 2m 43s
+55 actionable tasks: 5 executed, 50 up-to-date
