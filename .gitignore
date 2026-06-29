@@ -60,3 +60,8 @@ src/generated/resources/.cache/*
 # port build/sync logs
 *-sync.log
 *-build.log
+
+# port iteration logs
+m3-clean.log
+*-rundata.log
+m*.log
