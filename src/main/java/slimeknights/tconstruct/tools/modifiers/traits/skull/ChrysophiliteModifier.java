@@ -168,7 +168,7 @@ public class ChrysophiliteModifier extends NoLevelsModifier implements Equipment
     /** Initializes the gold data */
     public void initialize(EquipmentChangeContext context) {
       totalGold = 1;
-      for (EquipmentSlot slotType : ModifiableArmorMaterial.ARMOR_SLOTS) {
+      for (EquipmentSlot slotType : ModifiableArmorMaterial.EQUIPMENT_SLOTS) {
         boolean gold = hasGold(context, slotType);
         hasGold[slotType.getIndex()] = gold;
         if (gold) {

@@ -74,7 +74,7 @@ public record ShareDurabilityModule(LazyModifier shield, LevelingInt grant, Leve
       List<ItemStack> options = new ArrayList<>(10);
       // if the stack is armor, consider all armor slots
       if (tool.hasTag(TinkerTags.Items.WORN_ARMOR)) {
-        for (EquipmentSlot slot : ModifiableArmorMaterial.ARMOR_SLOTS) {
+        for (EquipmentSlot slot : ModifiableArmorMaterial.EQUIPMENT_SLOTS) {
           ItemStack check = holder.getItemBySlot(slot);
           // with armor, we can check the items as a heuristic to work around the potential of null stack
           if (canTarget(check) && check.getItem() != tool.getItem()) {

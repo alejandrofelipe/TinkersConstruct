@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.tables.menu;
 
+import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
 import lombok.Getter;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
@@ -63,7 +64,7 @@ public class TinkerStationContainerMenu extends TabbedContainerMenu<TinkerStatio
     }
 
     // add armor and offhand slots, for convenience
-    for (ArmorItem.Type slotType : ArmorItem.Type.values()) {
+    for (ArmorItem.Type slotType : ModifiableArmorMaterial.ARMOR_SLOTS) {
       this.addSlot(new ArmorSlot(inv, slotType.getSlot(), 152, 20 + slotType.ordinal() * 18));
     }
     this.addSlot(new Slot(inv, 40, 132, 74).setBackground(InventoryMenu.BLOCK_ATLAS, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD));

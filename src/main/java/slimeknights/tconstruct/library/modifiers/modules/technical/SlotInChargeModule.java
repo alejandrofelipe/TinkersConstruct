@@ -113,7 +113,7 @@ public record SlotInChargeModule(TinkerDataKey<SlotInCharge> key, @Nullable TagK
       totalLevel -= levels[index];
       levels[index] = 0;
       // prioritize armor slots
-      for (EquipmentSlot armorSlot : ModifiableArmorMaterial.ARMOR_SLOTS) {
+      for (EquipmentSlot armorSlot : ModifiableArmorMaterial.EQUIPMENT_SLOTS) {
         if (levels[armorSlot.getFilterFlag()] > 0) {
           inCharge = armorSlot;
           return;

@@ -274,7 +274,7 @@ import static slimeknights.tconstruct.library.json.math.ModifierFormula.LEVEL;
 import static slimeknights.tconstruct.library.json.math.ModifierFormula.MULTIPLIER;
 import static slimeknights.tconstruct.library.json.math.ModifierFormula.VALUE;
 import static slimeknights.tconstruct.library.modifiers.modules.behavior.RepairModule.FACTOR;
-import static slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial.ARMOR_SLOTS;
+import static slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial.EQUIPMENT_SLOTS;
 
 public class ModifierProvider extends AbstractModifierProvider {
   public ModifierProvider(PackOutput packOutput) {
@@ -290,7 +290,7 @@ public class ModifierProvider extends AbstractModifierProvider {
   @Override
   protected void addModifiers() {
     EquipmentSlot[] handSlots = {EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND};
-    EquipmentSlot[] armorSlots = ARMOR_SLOTS;
+    EquipmentSlot[] armorSlots = EQUIPMENT_SLOTS;
     EquipmentSlot[] armorMainHand = {EquipmentSlot.MAINHAND, EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD};
 
     // extra modifier slots
@@ -499,7 +499,7 @@ public class ModifierProvider extends AbstractModifierProvider {
     IJsonPredicate<Item> armor = ItemPredicate.tag(WORN_ARMOR);
     buildModifier(ModifierIds.silky).levelDisplay(ModifierLevelDisplay.NO_LEVELS)
       .addModule(EnchantmentModule.builder(Enchantments.SILK_TOUCH).toolItem(harvest).constant())
-      .addModule(EnchantmentModule.builder(Enchantments.SILK_TOUCH).toolItem(armor).armorHarvest(ARMOR_SLOTS));
+      .addModule(EnchantmentModule.builder(Enchantments.SILK_TOUCH).toolItem(armor).armorHarvest(EQUIPMENT_SLOTS));
     buildModifier(TinkerModifiers.severing.getId()).addModule(SeveringModule.INSTANCE);
     buildModifier(ModifierIds.experienced)
       .addModule(new VolatileFloatModule(ModifierEvents.EXPERIENCE, LevelingValue.eachLevel(0.5f)), ModifierHooks.VOLATILE_DATA, ModifierHooks.PROJECTILE_LAUNCH)
@@ -508,23 +508,23 @@ public class ModifierProvider extends AbstractModifierProvider {
     EnchantmentModule CONSTANT_FORTUNE = EnchantmentModule.builder(Enchantments.FORTUNE).toolItem(harvest).constant();
     StatBoostModule SEA_LUCK = StatBoostModule.add(ToolStats.SEA_LUCK).eachLevel(1);
     AttributeModule ARMOR_LUCK = AttributeModule.builder(Attributes.LUCK.value(), Operation.ADD_VALUE).toolTag(TinkerTags.Items.ARMOR).eachLevel(1);
-    EnchantmentModule ARMOR_FORTUNE = EnchantmentModule.builder(Enchantments.FORTUNE).toolItem(armor).armorHarvest(ARMOR_SLOTS);
+    EnchantmentModule ARMOR_FORTUNE = EnchantmentModule.builder(Enchantments.FORTUNE).toolItem(armor).armorHarvest(EQUIPMENT_SLOTS);
     // note chestplates will have both modules, but will get ignored due to setting the looting slot
     // the air check on weapon looting is for projectiles which use an item of air in their tool context
     LootingModule WEAPON_LOOTING = LootingModule.builder().toolItem(ItemPredicate.or(ItemPredicate.set(Items.AIR), ItemPredicate.tag(MELEE))).weapon();
-    LootingModule ARMOR_LOOTING = LootingModule.builder().toolItem(armor).armor(ARMOR_SLOTS);
+    LootingModule ARMOR_LOOTING = LootingModule.builder().toolItem(armor).armor(EQUIPMENT_SLOTS);
     buildModifier(ModifierIds.luck).levelDisplay(new UniqueForLevels(3)).addModules(CONSTANT_FORTUNE, ARMOR_FORTUNE, WEAPON_LOOTING, ARMOR_LOOTING, SEA_LUCK, ARMOR_LUCK);
     buildModifier(ModifierIds.fortune).addModules(CONSTANT_FORTUNE, ARMOR_FORTUNE, SEA_LUCK, ARMOR_LUCK);
     buildModifier(ModifierIds.looting).addModules(WEAPON_LOOTING, ARMOR_LOOTING);
     // boot traits
     UniqueForLevels twoLevels = new UniqueForLevels(2, false);
     buildModifier(ModifierIds.looter).levelDisplay(twoLevels)
-      .addModule(LootingModule.builder().lootingLevel(LevelingInt.ONE).armor(ARMOR_SLOTS))
+      .addModule(LootingModule.builder().lootingLevel(LevelingInt.ONE).armor(EQUIPMENT_SLOTS))
       .addModule(AttributeModule.builder(TinkerAttributes.EXPERIENCE_MULTIPLIER, Operation.ADD_MULTIPLIED_BASE).minLevel(2).flat(0.25f));
     buildModifier(ModifierIds.fortunate).levelDisplay(twoLevels)
       .addModule(EnchantmentModule.builder(Enchantments.FORTUNE).lootingLevel(LevelingInt.ONE).toolItem(harvest).constant())
       .addModule(AttributeModule.builder(Attributes.LUCK.value(), Operation.ADD_VALUE).toolTag(TinkerTags.Items.ARMOR).flat(1))
-      .addModule(LootingModule.builder().minLevel(2).lootingLevel(LevelingInt.ONE).armor(ARMOR_SLOTS));
+      .addModule(LootingModule.builder().minLevel(2).lootingLevel(LevelingInt.ONE).armor(EQUIPMENT_SLOTS));
 
 
     /// attack
@@ -825,7 +825,7 @@ public class ModifierProvider extends AbstractModifierProvider {
     buildModifier(ModifierIds.snowdrift).priority(90).levelDisplay(ModifierLevelDisplay.NO_LEVELS).addModule(CoverGroundWalkerModule.block(Blocks.SNOW).amount(0.5f, 1));
     buildModifier(ModifierIds.bouncy).levelDisplay(ModifierLevelDisplay.NO_LEVELS).addModule(AttributeModule.builder(TinkerAttributes.BOUNCY.get(), Operation.ADD_VALUE).tooltipStyle(TooltipStyle.NONE).flat(1));
     buildModifier(ModifierIds.bounce).addModule(new ProjectileBounceModule(new LevelingInt(-1, 2)));
-    buildModifier(ModifierIds.doubleJump).levelDisplay(new UniqueForLevels(4, false)).addModule(AttributeModule.builder(TinkerAttributes.JUMP_COUNT.get(), Operation.ADD_VALUE).slots(ARMOR_SLOTS).tooltipStyle(TooltipStyle.NONE).eachLevel(1));
+    buildModifier(ModifierIds.doubleJump).levelDisplay(new UniqueForLevels(4, false)).addModule(AttributeModule.builder(TinkerAttributes.JUMP_COUNT.get(), Operation.ADD_VALUE).slots(EQUIPMENT_SLOTS).tooltipStyle(TooltipStyle.NONE).eachLevel(1));
     // shield
     buildModifier(ModifierIds.blocking).levelDisplay(ModifierLevelDisplay.NO_LEVELS).addModule(BlockingModule.INSTANCE);
     buildModifier(ModifierIds.blockade)
@@ -950,7 +950,7 @@ public class ModifierProvider extends AbstractModifierProvider {
       .addModule(StatBoostModule.add(ToolStats.VELOCITY).toolTag(TinkerTags.Items.THROWN_AMMO).eachLevel(0.25f));
     buildModifier(ModifierIds.unburdened)
       .addModule(StatBoostModule.add(ToolStats.USE_ITEM_SPEED).eachLevel(0.1f))
-      .addModule(AttributeModule.builder(TinkerAttributes.USE_ITEM_SPEED, Operation.ADD_VALUE).slots(ARMOR_SLOTS).tooltipStyle(TooltipStyle.PERCENT).toolItem(ItemPredicate.tag(WORN_ARMOR)).eachLevel(0.05f));
+      .addModule(AttributeModule.builder(TinkerAttributes.USE_ITEM_SPEED, Operation.ADD_VALUE).slots(EQUIPMENT_SLOTS).tooltipStyle(TooltipStyle.PERCENT).toolItem(ItemPredicate.tag(WORN_ARMOR)).eachLevel(0.05f));
     buildModifier(ModifierIds.spiny)
       .addModule(StatBoostModule.add(ToolStats.VELOCITY).eachLevel(0.1f))
       .addModule(StatBoostModule.add(ToolStats.PROJECTILE_DAMAGE).toolTag(TinkerTags.Items.THROWN_AMMO).eachLevel(0.5f))
@@ -1503,7 +1503,7 @@ public class ModifierProvider extends AbstractModifierProvider {
       .addModule(StatBoostModule.multiplyAll(ToolStats.DRAW_SPEED).eachLevel(-0.1f))
       // for defensive builds, offhand debuffs main hand attack speed
       .addModule(AttributeModule.builder(Attributes.ATTACK_SPEED.value(), Operation.ADD_MULTIPLIED_TOTAL).slots(EquipmentSlot.OFFHAND).toolItem(ItemPredicate.tag(TinkerTags.Items.HELD_ARMOR)).eachLevel(-0.1f))
-      .addModule(AttributeModule.builder(Attributes.MOVEMENT_SPEED.value(), Operation.ADD_MULTIPLIED_TOTAL).slots(ARMOR_SLOTS).eachLevel(-0.1f))
+      .addModule(AttributeModule.builder(Attributes.MOVEMENT_SPEED.value(), Operation.ADD_MULTIPLIED_TOTAL).slots(EQUIPMENT_SLOTS).eachLevel(-0.1f))
       .addModule(AttributeModule.builder(Attributes.GRAVITY.value(), Operation.ADD_MULTIPLIED_TOTAL).tooltipStyle(TooltipStyle.PERCENT).eachLevel(0.1f));
     // multiply valiant bonus by 4 for entities with fewer armor slots (slimes basically)
     buildModifier(ModifierIds.valiant)

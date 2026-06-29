@@ -237,7 +237,7 @@ public class ToolEvents {
     if (attacker instanceof LivingEntity livingAttacker) {
       context = new EquipmentContext(livingAttacker);
       if (context.hasModifiableArmor()) {
-        for (EquipmentSlot slotType : ModifiableArmorMaterial.ARMOR_SLOTS) {
+        for (EquipmentSlot slotType : ModifiableArmorMaterial.EQUIPMENT_SLOTS) {
           IToolStackView toolStack = context.getToolInSlot(slotType);
           if (toolStack != null && !toolStack.isBroken()) {
             for (ModifierEntry entry : toolStack.getModifierList()) {
@@ -379,7 +379,7 @@ public class ToolEvents {
         int damageMissed = getArmorDamage(originalDamage) - getArmorDamage(finalDamage);
         // TODO: is this check sufficient for whether the armor should be damaged? I partly wonder if I need to use reflection to call damageArmor
         if (damageMissed > 0 && entity instanceof Player) {
-          for (EquipmentSlot slotType : ModifiableArmorMaterial.ARMOR_SLOTS) {
+          for (EquipmentSlot slotType : ModifiableArmorMaterial.EQUIPMENT_SLOTS) {
             // for our own armor, saves effort to damage directly with our utility
             IToolStackView tool = context.getToolInSlot(slotType);
             if (tool != null && (!source.is(DamageTypeTags.IS_FIRE) || !tool.getItem().components().has(DataComponents.FIRE_RESISTANT))) {

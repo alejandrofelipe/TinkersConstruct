@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.plugin.jei.transfer;
 
+import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
 import lombok.Getter;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
@@ -85,7 +86,7 @@ public class TinkerStationTransferInfo<T> implements IRecipeTransferInfo<TinkerS
   public List<Slot> getInventorySlots(TinkerStationContainerMenu container, T recipe) {
     List<Slot> slots = new ArrayList<>();
     // skip over inputs, output slot, tool slot, armor, and offhand
-    int start = container.getInputSlots().size() + 3 + ArmorItem.Type.values().length;
+    int start = container.getInputSlots().size() + 3 + ModifiableArmorMaterial.ARMOR_SLOTS.length;
     for(int i = start; i < start + 36; i++) {
       Slot slot = container.getSlot(i);
       slots.add(slot);

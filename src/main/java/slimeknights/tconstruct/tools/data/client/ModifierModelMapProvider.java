@@ -2,6 +2,7 @@ package slimeknights.tconstruct.tools.data.client;
 
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.ArmorItem;
+import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.modifiers.DyedModifierModel;
 import slimeknights.tconstruct.library.client.modifiers.model.MaterialHasFallbackModifierModel;
@@ -230,7 +231,7 @@ public class ModifierModelMapProvider extends AbstractModifierModelMapProvider {
 
     // plate armor
     ModifierId dyed = TinkerModifiers.dyed.getId();
-    for (ArmorItem.Type type : ArmorItem.Type.values()) {
+    for (ArmorItem.Type type : ModifiableArmorMaterial.ARMOR_SLOTS) {
       String root = "armor/plate/" + type.getName() + "/maille";
       String item = "plate/" + type.getName();
       tool(item).modifier(dyed, new MaterialHasFallbackModifierModel(1,
@@ -256,7 +257,7 @@ public class ModifierModelMapProvider extends AbstractModifierModelMapProvider {
     tool("travelers/goggles").customTrim("armor/travelers/goggles", null);
 
     // slimesuit
-    for (ArmorItem.Type type : ArmorItem.Type.values()) {
+    for (ArmorItem.Type type : ModifiableArmorMaterial.ARMOR_SLOTS) {
       tool("slime/" + type.getName()).trim(type);
     }
     tool("slime/wings").modifier(TinkerModifiers.trim.getId(), new TrimModifierModel.Custom(toolMaterial("armor/slime/wings/trim").texture(), null));

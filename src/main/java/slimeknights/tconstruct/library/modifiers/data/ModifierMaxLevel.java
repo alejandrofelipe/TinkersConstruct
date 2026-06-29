@@ -32,7 +32,7 @@ public class ModifierMaxLevel {
       } else if (slot == maxSlot) {
         // if the old level was max, find new max
         max = 0;
-        for (EquipmentSlot armorSlot : ModifiableArmorMaterial.ARMOR_SLOTS) {
+        for (EquipmentSlot armorSlot : ModifiableArmorMaterial.EQUIPMENT_SLOTS) {
           float value = levels[armorSlot.getFilterFlag()];
           if (value > max) {
             max = value;

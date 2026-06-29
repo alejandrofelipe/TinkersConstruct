@@ -10,8 +10,11 @@ import javax.annotation.Nullable;
 
 /** Armor material that doubles as a container for tool definitions for each armor slot */
 public class ModifiableArmorMaterial extends DummyArmorMaterial {
-  /** Array of all four armor slot types */
-  public static final EquipmentSlot[] ARMOR_SLOTS = {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD};
+  /** Array of all four armor equipment slots */
+  public static final EquipmentSlot[] EQUIPMENT_SLOTS = {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD};
+
+  /** The four humanoid armor slots; excludes ArmorItem.Type.BODY (1.21 animal-armor slot, unused by Tinkers). */
+  public static final ArmorItem.Type[] ARMOR_SLOTS = { ArmorItem.Type.HELMET, ArmorItem.Type.CHESTPLATE, ArmorItem.Type.LEGGINGS, ArmorItem.Type.BOOTS };
 
   /** Array of slot index to tool definition for the slot */
   private final ToolDefinition[] armorDefinitions;
@@ -35,8 +38,8 @@ public class ModifiableArmorMaterial extends DummyArmorMaterial {
 
   /** Creates a modifiable armor material, creates tool definition for all four armor slots */
   public static ModifiableArmorMaterial create(ResourceLocation id, SoundEvent equipSound) {
-    // Tinkers armor is humanoid-only; exclude ArmorItem.Type.BODY (added in 1.21 for wolf/animal armor)
-    return create(id, equipSound, ArmorItem.Type.HELMET, ArmorItem.Type.CHESTPLATE, ArmorItem.Type.LEGGINGS, ArmorItem.Type.BOOTS);
+    // Tinkers armor is humanoid-only; ARMOR_SLOTS excludes ArmorItem.Type.BODY (added in 1.21 for wolf/animal armor)
+    return create(id, equipSound, ARMOR_SLOTS);
   }
 
   /**
