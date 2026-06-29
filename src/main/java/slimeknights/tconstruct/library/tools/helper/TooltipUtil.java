@@ -17,7 +17,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemStack.TooltipPart;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
@@ -75,10 +74,13 @@ public class TooltipUtil {
   /** Function to show all attributes in the tooltip */
   public static final BiPredicate<Attribute, Operation> SHOW_ARMOR_ATTRIBUTES = (att, op) -> op != Operation.ADDITION || (att != Attributes.ARMOR && att != Attributes.ARMOR_TOUGHNESS && att != Attributes.KNOCKBACK_RESISTANCE);
 
+  // PORT M3 (attributes): ItemStack.TooltipPart was removed in 1.21 (hidden-tooltip control moved to data components).
+  // Preserve the historical bit masks (ENCHANTMENTS = 1<<1, MODIFIERS = 1<<5) so getModifierHideFlags keeps compiling
+  // until the data-component-based tooltip-hiding rework lands with the attribute redesign below.
   /** Flags used when not holding control or shift */
-  private static final int DEFAULT_HIDE_FLAGS = TooltipPart.ENCHANTMENTS.getMask();
+  private static final int DEFAULT_HIDE_FLAGS = 1 << 1;
   /** Flags used when holding control or shift */
-  private static final int MODIFIER_HIDE_FLAGS = TooltipPart.ENCHANTMENTS.getMask() | TooltipPart.MODIFIERS.getMask();
+  private static final int MODIFIER_HIDE_FLAGS = (1 << 1) | (1 << 5);
 
   private TooltipUtil() {}
 

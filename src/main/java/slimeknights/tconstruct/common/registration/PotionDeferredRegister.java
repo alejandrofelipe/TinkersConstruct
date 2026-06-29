@@ -31,7 +31,7 @@ public class PotionDeferredRegister extends DeferredRegisterWrapper<Potion> {
 
   /** Registers a group of potions with the same effect */
   public Builder registerTypes(DeferredHolder<MobEffect,? extends MobEffect> effect, int duration, int amplifier) {
-    return new Builder(effect.getId().getPath(), effect, duration, amplifier);
+    return new Builder(effect.getId().getPath(), () -> effect, duration, amplifier);
   }
 
   /** Registers a group of potions with the same effect starting at level 1 and a duration of 3 minutes */

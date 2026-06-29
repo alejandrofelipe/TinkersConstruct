@@ -2,34 +2,34 @@ package slimeknights.tconstruct.smeltery.network;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.network.NetworkEvent.Context;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import slimeknights.mantle.network.packet.IThreadsafePacket;
+import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.smeltery.block.entity.FaucetBlockEntity;
 
 /** Sent to clients to activate the faucet animation clientside **/
-public class FaucetActivationPacket extends FluidUpdatePacket {
+public record FaucetActivationPacket(BlockPos pos, FluidStack fluid, boolean isPouring) implements IThreadsafePacket {
+  public static final CustomPacketPayload.Type<FaucetActivationPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(TConstruct.MOD_ID, "faucet_activation"));
+  public static final StreamCodec<RegistryFriendlyByteBuf, FaucetActivationPacket> STREAM_CODEC = StreamCodec.composite(
+    BlockPos.STREAM_CODEC, FaucetActivationPacket::pos,
+    FluidStack.OPTIONAL_STREAM_CODEC, FaucetActivationPacket::fluid,
+    ByteBufCodecs.BOOL, FaucetActivationPacket::isPouring,
+    FaucetActivationPacket::new);
 
-  private final boolean isPouring;
-  public FaucetActivationPacket(BlockPos pos, FluidStack fluid, boolean isPouring) {
-    super(pos, fluid);
-    this.isPouring = isPouring;
-  }
-
-  public FaucetActivationPacket(FriendlyByteBuf buffer) {
-    super(buffer);
-    this.isPouring = buffer.readBoolean();
+  @Override
+  public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+    return TYPE;
   }
 
   @Override
-  public void encode(FriendlyByteBuf packetBuffer) {
-    super.encode(packetBuffer);
-    packetBuffer.writeBoolean(isPouring);
-  }
-
-  @Override
-  public void handleThreadsafe(Context context) {
+  public void handleThreadsafe(IPayloadContext context) {
     HandleClient.handle(this);
   }
 
@@ -37,9 +37,9 @@ public class FaucetActivationPacket extends FluidUpdatePacket {
   private static class HandleClient {
     private static void handle(FaucetActivationPacket packet) {
       assert Minecraft.getInstance().level != null;
-      BlockEntity te = Minecraft.getInstance().level.getBlockEntity(packet.pos);
+      BlockEntity te = Minecraft.getInstance().level.getBlockEntity(packet.pos());
       if (te instanceof FaucetBlockEntity) {
-        ((FaucetBlockEntity) te).onActivationPacket(packet.fluid, packet.isPouring);
+        ((FaucetBlockEntity) te).onActivationPacket(packet.fluid(), packet.isPouring());
       }
     }
   }

@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import lombok.Getter;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.StackedItemContents;
+import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 
@@ -76,7 +76,7 @@ public class CraftingContainerWrapper implements CraftingContainer {
   }
 
   @Override
-  public void fillStackedContents(StackedItemContents helper) {
+  public void fillStackedContents(StackedContents helper) {
     for (int i = 0; i < crafter.getContainerSize(); i++) {
       helper.accountSimpleStack(crafter.getItem(i));
     }

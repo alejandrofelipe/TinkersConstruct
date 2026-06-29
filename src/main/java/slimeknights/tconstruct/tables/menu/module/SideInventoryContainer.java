@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.wrapper.EmptyHandler;
+import net.neoforged.neoforge.items.wrapper.EmptyItemHandler;
 import slimeknights.mantle.inventory.BaseContainerMenu;
 import slimeknights.mantle.inventory.SmartItemHandlerSlot;
 
@@ -39,7 +39,7 @@ public class SideInventoryContainer<TILE extends BlockEntity> extends BaseContai
       }
     }
     if (handler == null) {
-      handler = EmptyHandler.INSTANCE;
+      handler = EmptyItemHandler.INSTANCE;
     }
     this.itemHandler = handler;
 

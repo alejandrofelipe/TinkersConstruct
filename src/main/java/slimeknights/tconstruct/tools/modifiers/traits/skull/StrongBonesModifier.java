@@ -57,7 +57,7 @@ public class StrongBonesModifier extends NoLevelsModifier {
       }
     }
     if (ArmorLevelModule.getLevel(living, CALCIFIABLE) > 0) {
-      MobEffectInstance effect = new MobEffectInstance(TinkerModifiers.calcifiedEffect.get(), duration, 0);
+      MobEffectInstance effect = new MobEffectInstance(TinkerModifiers.calcifiedEffect, duration, 0);
       didSomething |= action.execute() ? living.addEffect(effect) : living.canBeAffected(effect);
     }
     return didSomething;
