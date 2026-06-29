@@ -6,7 +6,6 @@
       9.0
     ],
     "size": 7.5,
-    "transform": "tconstruct:table",
     "x": 270
   },
   {
@@ -15,8 +14,7 @@
       17.5,
       10.5
     ],
-    "size": 3.0,
-    "transform": "tconstruct:table"
+    "size": 3.0
   },
   {
     "center": [
@@ -24,8 +22,7 @@
       17.5,
       5.5
     ],
-    "size": 3.0,
-    "transform": "tconstruct:table"
+    "size": 3.0
   },
   {
     "center": [
@@ -33,8 +30,7 @@
       17.5,
       4.5
     ],
-    "size": 3.0,
-    "transform": "tconstruct:table"
+    "size": 3.0
   },
   {
     "center": [
@@ -42,8 +38,7 @@
       17.5,
       5.5
     ],
-    "size": 3.0,
-    "transform": "tconstruct:table"
+    "size": 3.0
   },
   {
     "center": [
@@ -51,7 +46,6 @@
       17.5,
       10.5
     ],
-    "size": 3.0,
-    "transform": "tconstruct:table"
+    "size": 3.0
   }
 ]

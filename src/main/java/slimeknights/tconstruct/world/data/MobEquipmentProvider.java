@@ -10,7 +10,6 @@ import slimeknights.mantle.data.predicate.item.ItemPredicate;
 import slimeknights.mantle.recipe.data.ItemNameOutput;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
-import slimeknights.tconstruct.common.data.FakeRegistryEntry;
 import slimeknights.tconstruct.library.data.tinkering.AbstractMobEquipmentProvider;
 import slimeknights.tconstruct.library.materials.RandomMaterial;
 import slimeknights.tconstruct.tools.TinkerTools;
@@ -60,7 +59,9 @@ public class MobEquipmentProvider extends AbstractMobEquipmentProvider {
       .material(random, random, random);
     // twilight forest compat
     String tf = "twilightforest";
-    equip(FakeRegistryEntry.entity(ResourceLocation.fromNamespaceAndPath(tf, "minotaur")), new ModLoadedCondition(tf))
+    // the minotaur entity is absent in dev, so reference it by id directly instead of faking a registry entry
+    ResourceLocation minotaur = ResourceLocation.fromNamespaceAndPath(tf, "minotaur");
+    equip(minotaur.getPath(), minotaur, new ModLoadedCondition(tf))
       .slot(EquipmentSlot.MAINHAND)
       .tool(ItemNameOutput.fromName(TinkerTools.minotaurAxe.getId()))
       .material(random, random, random);

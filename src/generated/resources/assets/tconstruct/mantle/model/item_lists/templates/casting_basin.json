@@ -5,8 +5,7 @@
       10.0,
       8.0
     ],
-    "size": 11.95,
-    "transform": "tconstruct:casting_basin"
+    "size": 11.95
   },
   {
     "center": [
@@ -14,7 +13,6 @@
       10.0,
       8.0
     ],
-    "size": 12.0,
-    "transform": "tconstruct:casting_basin"
+    "size": 12.0
   }
 ]
