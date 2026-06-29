@@ -81,9 +81,13 @@ public record AttributeModule(String unique, Attribute attribute, Operation oper
     return uniqueToId(name + "." + slot.getName());
   }
 
+  /** Slots an attribute applies to by default: all humanoid + hand slots. Excludes the 1.21 BODY animal-armor slot, matching the six values EquipmentSlot.values() returned in 1.20. */
+  public static final EquipmentSlot[] DEFAULT_SLOTS = { EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND, EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD };
+
   /** Converts a list of slots to an array of ids at each index */
   public static ResourceLocation[] slotsToIds(String name, Collection<EquipmentSlot> slots) {
-    ResourceLocation[] slotIds = new ResourceLocation[6];
+    // sized by slot count so EquipmentSlot#getFilterFlag (max 6 for BODY in 1.21) never overflows, here or in idsToSlots
+    ResourceLocation[] slotIds = new ResourceLocation[EquipmentSlot.values().length];
     for (EquipmentSlot slot : slots) {
       slotIds[slot.getFilterFlag()] = getId(name, slot);
     }
@@ -219,7 +223,7 @@ public record AttributeModule(String unique, Attribute attribute, Operation oper
     protected final Operation operation;
     @Setter
     protected String unique = "";
-    private EquipmentSlot[] slots = EquipmentSlot.values();
+    private EquipmentSlot[] slots = DEFAULT_SLOTS;
     /** Tooltip style override. If set, switches from item stack attributes to equipment change attributes and shows modifier style tooltips. */
     @Setter
     private TooltipStyle tooltipStyle = TooltipStyle.ATTRIBUTE;

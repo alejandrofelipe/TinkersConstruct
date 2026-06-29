@@ -27,9 +27,9 @@ public class EquipmentContext {
   @Getter
   private final LivingEntity entity;
   /** Determines if the tool in the given slot was fetched */
-  protected final boolean[] fetchedTool = new boolean[6];
+  protected final boolean[] fetchedTool = new boolean[EquipmentSlot.values().length];
   /** Array of tools currently on the entity */
-  protected final IToolStackView[] toolsInSlots = new IToolStackView[6];
+  protected final IToolStackView[] toolsInSlots = new IToolStackView[EquipmentSlot.values().length];
   /** Cached tinker data capability, saves capability lookup times slightly */
   @Nullable
   private TinkerDataCapability.Holder tinkerData = null;
