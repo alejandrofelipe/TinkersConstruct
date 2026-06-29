@@ -31,7 +31,7 @@ import java.util.List;
 public class MaterialRepairModule implements MaterialRepairToolHook, ToolModule, IAmLoadable.Record {
   private static final List<ModuleHook<?>> DEFAULT_HOOKS = HookProvider.<MaterialRepairModule>defaultHooks(ToolHooks.MATERIAL_REPAIR);
   private static final LoadableField<MaterialId,MaterialRepairModule> MATERIAL_FIELD = MaterialId.PARSER.requiredField("material", m -> m.material);
-  private static final RecordLoadable<MaterialRepairModule> CONSTANT = RecordLoadable.create(MATERIAL_FIELD, IntLoadable.FROM_ONE.requiredField("durability", MaterialRepairModule::getRepairAmount), MaterialRepairModule::new);
+  private static final RecordLoadable<MaterialRepairModule> CONSTANT = RecordLoadable.create(MATERIAL_FIELD, IntLoadable.FROM_ONE.requiredField("durability", (MaterialRepairModule m) -> m.getRepairAmount()), MaterialRepairModule::new);
   private static final RecordLoadable<StatType> STAT_TYPE = RecordLoadable.create(MATERIAL_FIELD, MaterialStatsId.PARSER.requiredField("stat_type", m -> m.statType), MaterialRepairModule::of);
   public static final RecordLoadable<MaterialRepairModule> LOADER = EitherLoadable.<MaterialRepairModule>record().key("durability", CONSTANT).key("stat_type", STAT_TYPE).build(CONSTANT);
 

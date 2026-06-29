@@ -1,6 +1,8 @@
 package slimeknights.tconstruct.tools.item;
 
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -10,13 +12,16 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+
+import javax.annotation.Nullable;
 import slimeknights.tconstruct.common.Sounds;
 import slimeknights.tconstruct.tools.TinkerTools;
 
@@ -43,7 +48,7 @@ public class CrystalshotItem extends ArrowItem {
   }
 
   @Override
-  public AbstractArrow createArrow(Level pLevel, ItemStack pStack, LivingEntity pShooter) {
+  public AbstractArrow createArrow(Level pLevel, ItemStack pStack, LivingEntity pShooter, @Nullable ItemStack weapon) {
     CrystalshotEntity arrow = new CrystalshotEntity(pLevel, pShooter);
     String variant = "random";
     CustomData data = pStack.get(DataComponents.CUSTOM_DATA);
@@ -58,8 +63,9 @@ public class CrystalshotItem extends ArrowItem {
   }
 
   @Override
-  public boolean isInfinite(ItemStack stack, ItemStack bow, Player player) {
-    return bow.getEnchantmentLevel(Enchantments.INFINITY_ARROWS) > 0;
+  public boolean isInfinite(ItemStack stack, ItemStack bow, LivingEntity entity) {
+    Holder<Enchantment> infinity = entity.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.INFINITY);
+    return EnchantmentHelper.getItemEnchantmentLevel(infinity, bow) > 0;
   }
 
   /** Creates a crystal shot with the given variant */
@@ -90,9 +96,9 @@ public class CrystalshotItem extends ArrowItem {
     }
 
     @Override
-    protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(SYNC_VARIANT, "");
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+      super.defineSynchedData(builder);
+      builder.define(SYNC_VARIANT, "");
     }
 
     /** Gets the texture variant of this shot */

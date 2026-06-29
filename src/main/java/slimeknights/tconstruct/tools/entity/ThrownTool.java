@@ -139,7 +139,8 @@ public class ThrownTool extends ThrownTrident implements ToolProjectile {
     return entityData.get(WATER_INERTIA);
   }
 
-  @Override
+  // PORT M3: ThrownTrident#isChanneling was removed in 1.21 (channeling is now handled inline in the trident hit logic);
+  // kept as a helper since ThrownTool still drives its own lightning logic
   public boolean isChanneling() {
     return !tridentItem().isEmpty() && getTool().getModifiers().getLevel(ModifierIds.channeling) > 0;
   }

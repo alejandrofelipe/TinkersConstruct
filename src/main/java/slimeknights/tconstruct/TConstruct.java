@@ -13,13 +13,13 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.DistExecutor;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import slimeknights.tconstruct.common.TinkerModule;
@@ -133,7 +133,10 @@ public class TConstruct {
     TinkerNetwork.setup();
     TinkerTags.init();
     // init client logic
-    DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> TinkerClient::onConstruct);
+    // PORT: DistExecutor removed in NeoForge 1.21; guard with FMLEnvironment.dist instead
+    if (FMLEnvironment.dist == Dist.CLIENT) {
+      TinkerClient.onConstruct();
+    }
 
     // compat
     ModList modList = ModList.get();

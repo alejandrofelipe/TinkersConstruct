@@ -7,17 +7,18 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.SpriteContents;
+import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.client.renderer.texture.atlas.SpriteSourceType;
 import net.minecraft.client.renderer.texture.atlas.SpriteSources;
 import net.minecraft.client.renderer.texture.atlas.sources.LazyLoadedImage;
-import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -91,7 +92,7 @@ public record ShieldBannerModifierSpriteSource(int cropX, int cropY, int cropWid
 
     @Nullable
     @Override
-    public SpriteContents get() {
+    public SpriteContents apply(SpriteResourceLoader loader) {
       try {
         // its possible the original is bigger than we expect due to HD pack, if so scale it accordingly
         // we only support scaling if it is a multiple of width
@@ -102,7 +103,7 @@ public record ShieldBannerModifierSpriteSource(int cropX, int cropY, int cropWid
         } else {
           NativeImage generated = new NativeImage(outSize * scale, outSize * scale, true);
           original.copyRect(generated, cropX * scale, cropY * scale, offsetX * scale, offsetY * scale, cropWidth * scale, cropHeight * scale, false, false);
-          return new SpriteContents(this.output, new FrameSize(generated.getWidth(), generated.getHeight()), generated, AnimationMetadataSection.EMPTY, null);
+          return new SpriteContents(this.output, new FrameSize(generated.getWidth(), generated.getHeight()), generated, ResourceMetadata.EMPTY);
         }
       } catch (IllegalArgumentException | IOException ex) {
         TConstruct.LOG.warn("Unable to crop {} to produce {}", this.input, this.output, ex);

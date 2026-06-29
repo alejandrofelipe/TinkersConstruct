@@ -13,7 +13,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
 import slimeknights.mantle.command.MantleCommand;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.tconstruct.TConstruct;
@@ -58,7 +57,7 @@ public class ModifierCrystalItem extends Item {
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag advanced) {
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag advanced) {
     ModifierId id = getModifier(stack);
     if (id != null) {
       if (ModifierManager.INSTANCE.contains(id)) {

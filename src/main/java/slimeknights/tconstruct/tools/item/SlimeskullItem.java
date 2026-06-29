@@ -36,8 +36,10 @@ public class SlimeskullItem extends ModifiableArmorItem {
     this(material, material.getId(), properties);
   }
 
+  // PORT M3 (armor layers): IItemExtension#getArmorTexture(ItemStack, Entity, EquipmentSlot, String) was removed
+  // in 1.21; armor textures are now resolved via ArmorMaterial layers / IClientItemExtensions. Deferred to the
+  // armor-layer port (mirrors MultilayerArmorItem).
   @Nullable
-  @Override
   public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
     return ArmorUtil.getDummyArmorTexture(slot);
   }

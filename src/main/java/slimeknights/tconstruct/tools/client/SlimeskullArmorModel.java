@@ -14,6 +14,7 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.WalkAnimationState;
@@ -98,14 +99,19 @@ public class SlimeskullArmorModel extends MultilayerArmorModel {
   }
 
   @Override
-  public void renderToBuffer(PoseStack matrixStackIn, VertexConsumer vertexBuilder, int packedLightIn, int packedOverlayIn, float red, float green, float blue, float alpha) {
+  public void renderToBuffer(PoseStack matrixStackIn, VertexConsumer vertexBuilder, int packedLightIn, int packedOverlayIn, int color) {
     if (base != null && buffer != null) {
+      // 1.21 passes a single packed ARGB color; unpack to feed the float-based head render chain
+      float alpha = FastColor.ARGB32.alpha(color) / 255.0F;
+      float red = FastColor.ARGB32.red(color) / 255.0F;
+      float green = FastColor.ARGB32.green(color) / 255.0F;
+      float blue = FastColor.ARGB32.blue(color) / 255.0F;
       if (model != ArmorModel.EMPTY) {
         matrixStackIn.pushPose();
         // TODO: this offset messes with the rotation of the skull slightly, though it is barely noticable
         matrixStackIn.translate(0.0D, base.young ? -0.015D : -0.02D, 0.0D);
         matrixStackIn.scale(1.01f, 1.1f, 1.01f);
-        super.renderToBuffer(matrixStackIn, vertexBuilder, packedLightIn, packedOverlayIn, red, green, blue, alpha);
+        super.renderToBuffer(matrixStackIn, vertexBuilder, packedLightIn, packedOverlayIn, color);
         matrixStackIn.popPose();
       }
       if (headModel != null && headTexture != null) {

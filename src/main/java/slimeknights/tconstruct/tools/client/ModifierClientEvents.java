@@ -3,6 +3,7 @@ package slimeknights.tconstruct.tools.client;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
@@ -23,10 +24,10 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut;
 import net.neoforged.neoforge.client.event.ComputeFovModifierEvent;
-import net.neoforged.neoforge.client.event.RenderGuiOverlayEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientMobEffectExtensions;
-import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -228,10 +229,10 @@ public class ModifierClientEvents {
 
   /** Render the item in the first shield slot */
   @SubscribeEvent
-  public static void renderHotbar(RenderGuiOverlayEvent.Post event) {
+  public static void renderHotbar(RenderGuiLayerEvent.Post event) {
     Minecraft mc = Minecraft.getInstance();
     Player player = mc.player;
-    if (mc.options.hideGui || event.getOverlay() != VanillaGuiOverlay.HOTBAR.type() || player == null || player != mc.getCameraEntity()) {
+    if (mc.options.hideGui || !event.getName().equals(VanillaGuiLayers.HOTBAR) || player == null || player != mc.getCameraEntity()) {
       return;
     }
     boolean renderShield = Config.CLIENT.renderShieldSlotItem.get() && !nextOffhand.isEmpty();
@@ -257,7 +258,7 @@ public class ModifierClientEvents {
       int scaledWidth = mc.getWindow().getGuiScaledWidth();
       int scaledHeight = mc.getWindow().getGuiScaledHeight();
       GuiGraphics graphics = event.getGuiGraphics();
-      float partialTicks = event.getPartialTick();
+      DeltaTracker partialTicks = event.getPartialTick();
 
       // want just above the normal offhand item
       boolean emptyOffhand = player.getOffhandItem().isEmpty();
