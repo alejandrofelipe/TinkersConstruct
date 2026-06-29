@@ -121,7 +121,7 @@ public class TConstruct {
   @SuppressWarnings("unchecked")
   private static void addReflectiveListener(IEventBus bus, SubscribeEvent ann, Class<?> eventType, Object module, java.lang.reflect.Method m) {
     m.setAccessible(true);
-    bus.addListener(ann.priority(), ann.receiveCancelled(), (Class<net.neoforged.bus.api.Event>) eventType, event -> {
+    bus.addListener(ann.priority(), ann.receiveCanceled(), (Class<net.neoforged.bus.api.Event>) eventType, event -> {
       try {
         m.invoke(module, event);
       } catch (ReflectiveOperationException e) {
