@@ -1941,7 +1941,7 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
     AlloyRecipeBuilder.alloy(TinkerFluids.moltenNetherite, FluidValues.NUGGET)
                       .addInput(TinkerFluids.moltenDebris.ingredient(FluidValues.NUGGET * 4))
                       .addInput(TinkerFluids.moltenGold.ingredient(FluidValues.NUGGET * 4))
-                      .save(withCondition(consumer, new NotCondition(ConfigEnabledCondition.CHEAPER_NETHERITE_ALLOY)), netheriteId);
+                      .save(withCondition(consumer, new NotCondition(ConfigEnabledCondition.CHEAPER_NETHERITE_ALLOY)), netheriteId.withSuffix("_default"));
 
     // knightslime: 1 cobalt + 1 enderslime + 1 obsidian = 2
     AlloyRecipeBuilder.alloy(TinkerFluids.moltenKnightslime, FluidValues.INGOT * 2)
@@ -2003,12 +2003,12 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
     AlloyRecipeBuilder.alloy(TinkerFluids.moltenPewter, FluidValues.INGOT * 4)
       .addInput(TinkerFluids.moltenTin.ingredient(FluidValues.INGOT * 3))
       .addInput(TinkerFluids.moltenIron.ingredient(FluidValues.INGOT))
-      .save(withCondition(consumer, pewterEnabled, tin, new NotCondition(lead)), pewterId);
+      .save(withCondition(consumer, pewterEnabled, tin, new NotCondition(lead)), pewterId.withSuffix("_no_lead"));
     // Edilon does pewter without tin (require lead but not tin)
     AlloyRecipeBuilder.alloy(TinkerFluids.moltenPewter, FluidValues.INGOT * 2)
       .addInput(TinkerFluids.moltenIron.ingredient(FluidValues.INGOT))
       .addInput(TinkerFluids.moltenLead.ingredient(FluidValues.INGOT))
-      .save(withCondition(consumer, pewterEnabled, lead, new NotCondition(tin)), pewterId);
+      .save(withCondition(consumer, pewterEnabled, lead, new NotCondition(tin)), pewterId.withSuffix("_no_tin"));
 
     // thermal alloys
     Function<String,ICondition> fluidTagLoaded = name -> new TagFilledCondition<>(Registries.FLUID, commonResource(name));
@@ -2059,19 +2059,19 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
       .addInput(TinkerFluids.moltenNickel.ingredient(FluidValues.INGOT * 2))
       .addInput(TinkerFluids.moltenEmerald.ingredient(FluidValues.GEM))
       .addInput(TinkerFluids.moltenQuartz.ingredient(FluidValues.GEM))
-      .save(withCondition(consumer, nickel, new NotCondition(chromium)), nicrosilId);
+      .save(withCondition(consumer, nickel, new NotCondition(chromium)), nicrosilId.withSuffix("_no_chromium"));
     // nickel missing? use more chromium and sub in a bit of iron per allomancy (chromium but not nickel)
     AlloyRecipeBuilder.alloy(TinkerFluids.moltenNicrosil, FluidValues.INGOT * 4)
       .addInput(TinkerFluids.moltenChromium.ingredient(FluidValues.INGOT * 2))
       .addInput(TinkerFluids.moltenIron.ingredient(FluidValues.INGOT))
       .addInput(TinkerFluids.moltenQuartz.ingredient(FluidValues.GEM))
-      .save(withCondition(consumer, chromium, new NotCondition(nickel)), nicrosilId);
+      .save(withCondition(consumer, chromium, new NotCondition(nickel)), nicrosilId.withSuffix("_no_nickel"));
     // no nickel or chromium? just use tin and emerald per metalborn (tin but neither nickel nor chromium)
     AlloyRecipeBuilder.alloy(TinkerFluids.moltenNicrosil, FluidValues.INGOT * 4)
       .addInput(TinkerFluids.moltenTin.ingredient(FluidValues.INGOT * 2))
       .addInput(TinkerFluids.moltenEmerald.ingredient(FluidValues.GEM))
       .addInput(TinkerFluids.moltenQuartz.ingredient(FluidValues.GEM))
-      .save(withCondition(consumer, nicrosilTin, new NotCondition(nickel), new NotCondition(chromium)), nicrosilId);
+      .save(withCondition(consumer, nicrosilTin, new NotCondition(nickel), new NotCondition(chromium)), nicrosilId.withSuffix("_tin"));
 
     // duralumin
     wrapped = withCondition(consumer, tagCondition("ingots/duralumin"), tagCondition("ingots/aluminum"));
