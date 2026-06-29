@@ -3,7 +3,6 @@ package slimeknights.tconstruct.library.json.predicate.tool;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
@@ -14,9 +13,17 @@ import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.utils.JsonUtils;
 
-/** Variant of ItemPredicate for matching Tinker tools using {@link ToolStackItemPredicate} */
+/**
+ * Variant of ItemPredicate for matching Tinker tools using {@link ToolStackPredicate}.
+ *
+ * <p>PORT 1.21.1: {@code net.minecraft.advancements.critereon.ItemPredicate} became a {@code final}
+ * record in 1.20.5, so this can no longer extend it, and the Forge {@code ItemPredicate.register(...)}
+ * extension is gone. The advancement system now matches via {@code ItemSubPredicate}/{@code DataComponentPredicate}.
+ * This class is kept as a standalone tool-matching predicate; the advancement-trigger wiring that used to
+ * pass it as a vanilla {@code ItemPredicate} needs to be reworked onto the new sub-predicate API.
+ */
 @RequiredArgsConstructor(staticName = "ofTool")
-public class ToolStackItemPredicate extends ItemPredicate {
+public class ToolStackItemPredicate {
   public static final ResourceLocation ID = TConstruct.getResource("tool_stack");
 
   private final IJsonPredicate<IToolStackView> predicate;
@@ -25,13 +32,11 @@ public class ToolStackItemPredicate extends ItemPredicate {
     return new ToolStackItemPredicate(ToolStackPredicate.context(predicate));
   }
 
-  @Override
   public boolean matches(ItemStack stack) {
     // tag check is important to prevent accidently modifying the NBT of non-tools
     return stack.is(Items.MODIFIABLE) && predicate.matches(ToolStack.from(stack));
   }
 
-  @Override
   public JsonElement serializeToJson() {
     JsonObject json = JsonUtils.withType(ID);
     json.add("predicate", ToolStackPredicate.LOADER.serialize(predicate));

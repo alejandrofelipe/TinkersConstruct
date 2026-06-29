@@ -1,7 +1,10 @@
 package slimeknights.tconstruct.library.modifiers.fluid.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -34,7 +37,7 @@ import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext;
 import java.util.Map;
 
 /** Breaks a block using a fluid */
-public record BreakBlockFluidEffect(float hardness, Map<Enchantment,Integer> enchantments) implements FluidEffect<FluidEffectContext.Block> {
+public record BreakBlockFluidEffect(float hardness, Map<ResourceKey<Enchantment>,Integer> enchantments) implements FluidEffect<FluidEffectContext.Block> {
   public static final RecordLoadable<BreakBlockFluidEffect> LOADER = RecordLoadable.create(
     FloatLoadable.FROM_ZERO.defaultField("hardness", 0f, false, BreakBlockFluidEffect::hardness),
     Loadables.ENCHANTMENT.mapWithValues(IntLoadable.FROM_ONE, 0).defaultField("enchantments", Map.of(), BreakBlockFluidEffect::enchantments),
@@ -44,7 +47,7 @@ public record BreakBlockFluidEffect(float hardness, Map<Enchantment,Integer> enc
     this(hardness, Map.of());
   }
 
-  public BreakBlockFluidEffect(float hardness, Enchantment enchantment, int level) {
+  public BreakBlockFluidEffect(float hardness, ResourceKey<Enchantment> enchantment, int level) {
     this(hardness, Map.of(enchantment, level));
   }
 
@@ -86,7 +89,12 @@ public record BreakBlockFluidEffect(float hardness, Map<Enchantment,Integer> enc
         ItemStack fakeTool = ItemStack.EMPTY;
         if (!enchantments.isEmpty()) {
           fakeTool = new ItemStack(Items.STICK);
-          EnchantmentHelper.setEnchantments(enchantments, fakeTool);
+          net.minecraft.world.item.enchantment.ItemEnchantments.Mutable builder = new net.minecraft.world.item.enchantment.ItemEnchantments.Mutable(net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY);
+          var lookup = server.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+          for (Map.Entry<ResourceKey<Enchantment>,Integer> entry : enchantments.entrySet()) {
+            lookup.get(entry.getKey()).ifPresent(holder -> builder.set(holder, entry.getValue()));
+          }
+          EnchantmentHelper.setEnchantments(fakeTool, builder.toImmutable());
         }
 
         // ensures tile entity is fetched so its around for afterBlockBreak
@@ -140,11 +148,10 @@ public record BreakBlockFluidEffect(float hardness, Map<Enchantment,Integer> enc
     } else {
       translationKey += ".enchanted";
       Component enchantments = enchantments().entrySet().stream().<Component>map(entry -> {
-        Enchantment enchantment = entry.getKey();
-        MutableComponent component = Component.translatable(enchantment.getDescriptionId());
-        if (enchantment.getMaxLevel() != 1) {
-          component.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + entry.getValue()));
-        }
+        ResourceKey<Enchantment> enchantment = entry.getKey();
+        // PORT M3: enchantment is a datapack registry; build the translation key from the ResourceKey rather than the (registry-bound) Enchantment.
+        MutableComponent component = Component.translatable(net.minecraft.Util.makeDescriptionId("enchantment", enchantment.location()));
+        component.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + entry.getValue()));
         return component;
       }).reduce(MERGE_COMPONENT_LIST).orElse(Component.empty());
       if (hardness == 0) {

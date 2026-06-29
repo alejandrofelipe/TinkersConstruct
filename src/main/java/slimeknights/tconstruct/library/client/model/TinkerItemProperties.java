@@ -71,7 +71,7 @@ public class TinkerItemProperties {
       return 0.0F;
     }
     int drawtime = ModifierUtil.getPersistentInt(stack, GeneralInteractionModifierHook.KEY_DRAWTIME, -1);
-    return drawtime == -1 ? 0 : (float)(stack.getUseDuration() - holder.getUseItemRemainingTicks()) / drawtime;
+    return drawtime == -1 ? 0 : (float)(stack.getUseDuration(holder) - holder.getUseItemRemainingTicks()) / drawtime;
   };
   /** ID for the cast fishing rods */
   private static final ResourceLocation CAST_ID = TConstruct.getResource("cast");

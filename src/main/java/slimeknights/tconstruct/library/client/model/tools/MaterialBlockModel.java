@@ -222,7 +222,7 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
         // for simplicity, assume the whole part is tinted if so. Build your model to separate distinct material faces if needed
         TintedSprite tint = null;
         for (BlockElementFace face : part.faces.values()) {
-          TintedSprite faceTint = tints.get(face.texture);
+          TintedSprite faceTint = tints.get(face.texture());
           if (faceTint != null) {
             tint = faceTint;
             break;

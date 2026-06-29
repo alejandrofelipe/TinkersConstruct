@@ -40,7 +40,7 @@ public class WeatheringPlatformBlock extends PlatformBlock implements Weathering
 
   @Override
   public void randomTick(BlockState pState, ServerLevel pLevel, BlockPos pPos, RandomSource pRandom) {
-    this.onRandomTick(pState, pLevel, pPos, pRandom);
+    this.changeOverTime(pState, pLevel, pPos, pRandom);
   }
 
   /** Gets the next state for weathering */

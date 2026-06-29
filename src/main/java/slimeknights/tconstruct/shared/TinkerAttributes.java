@@ -59,11 +59,11 @@ public class TinkerAttributes {
   @SubscribeEvent
   void addAttributes(EntityAttributeModificationEvent event) {
     // player attributes
-    event.add(EntityType.PLAYER, USE_ITEM_SPEED.get());
-    event.add(EntityType.PLAYER, CRITICAL_DAMAGE.get());
-    event.add(EntityType.PLAYER, MINING_SPEED_MULTIPLIER.get());
-    event.add(EntityType.PLAYER, EXPERIENCE_MULTIPLIER.get());
-    event.add(EntityType.PLAYER, JUMP_COUNT.get());
+    event.add(EntityType.PLAYER, USE_ITEM_SPEED);
+    event.add(EntityType.PLAYER, CRITICAL_DAMAGE);
+    event.add(EntityType.PLAYER, MINING_SPEED_MULTIPLIER);
+    event.add(EntityType.PLAYER, EXPERIENCE_MULTIPLIER);
+    event.add(EntityType.PLAYER, JUMP_COUNT);
     // general attributes
     addToAll(event, BOUNCY);
     addToAll(event, PROTECTION_CAP);
@@ -87,9 +87,8 @@ public class TinkerAttributes {
 
   /** Adds an attribute to all entities */
   private static void addToAll(EntityAttributeModificationEvent event, DeferredHolder<Attribute,Attribute> attribute, double defaultValue) {
-    Attribute attr = attribute.get();
     for (EntityType<? extends LivingEntity> entity : event.getTypes()) {
-      event.add(entity, attr, defaultValue);
+      event.add(entity, attribute, defaultValue);
     }
   }
 

@@ -40,7 +40,7 @@ public interface HarvestEnchantmentsModifierHook {
    * @see EnchantmentModifierHook#addEnchantment(Map, Enchantment, int)
    * @see EnchantmentModifierHook.SingleHarvestEnchantment
    */
-  void updateHarvestEnchantments(IToolStackView tool, ModifierEntry modifier, ToolHarvestContext context, EquipmentContext equipment, EquipmentSlot slot, Map<Enchantment,Integer> map);
+  void updateHarvestEnchantments(IToolStackView tool, ModifierEntry modifier, ToolHarvestContext context, EquipmentContext equipment, EquipmentSlot slot, Map<net.minecraft.resources.ResourceKey<Enchantment>,Integer> map);
 
 
   /* Helpers */
@@ -56,43 +56,31 @@ public interface HarvestEnchantmentsModifierHook {
    * @param context  Tool harvest context
    * @return  Old tag if enchants were applied
    */
+  // PORT M3: enchantments are now the DataComponents.ENCHANTMENTS component (ItemEnchantments keyed by Holder<Enchantment>).
+  // The temporary enchantment-injection used to make loot tables see fortune/silk-touch relied on NBT (getEnchantmentTags/
+  // deserializeEnchantments/setEnchantments) which is all removed, and rebuilding ItemEnchantments from ResourceKeys needs a
+  // RegistryAccess not threaded here. The helper now runs the hooks (so modules still execute) but does not mutate the stack.
   @Nullable
   static ListTag updateHarvestEnchantments(IToolStackView tool, ItemStack stack, ToolHarvestContext context) {
     Player player = context.getPlayer();
     if (player == null || !player.isCreative()) {
-      // assuming we have a modifiable tool, we iterate all tools other than the main hand (since the main hand is in charge of harvesting the blocks)
       EquipmentContext equipmentContext = EquipmentContext.withTool(context.getLiving(), tool, EquipmentSlot.MAINHAND);
-      // lazily parse the enchantment map, wait until someone has a hook
-      ListTag originalEnchants = null;
-      Map<Enchantment,Integer> enchantments = null;
-      // run on all slots except main hand, to prevent double applying luck
-      // TODO 1.21: take advantage of the enchantment slot filter to avoid that instead; not like armor can be in the main hand when this runs
+      Map<net.minecraft.resources.ResourceKey<Enchantment>,Integer> enchantments = null;
       for (EquipmentSlot slot : APPLICABLE_SLOTS) {
-        // tool must be modifiable and must be in an appropriate slot, or we don't care
-        // we also disallow harvest tools, this means no pickaxe in the offhand granting you pickaxe stuff in the main hand, but something like a shield fine
         IToolStackView armor = equipmentContext.getValidTool(slot);
         if (armor != null) {
           for (ModifierEntry entry : armor.getModifierList()) {
-            // skip processing if we lack the hook, saves us parsing if none of the modifiers use it
             HarvestEnchantmentsModifierHook hook = entry.getModifier().getHooks().getOrNull(ModifierHooks.HARVEST_ENCHANTMENTS);
             if (hook != null) {
-              // if we have not yet parsed the enchantments, time to do so
               if (enchantments == null) {
-                originalEnchants = stack.getEnchantmentTags();
-                enchantments = EnchantmentHelper.deserializeEnchantments(originalEnchants);
+                enchantments = new java.util.HashMap<>();
               }
               hook.updateHarvestEnchantments(armor, entry, context, equipmentContext, slot, enchantments);
             }
           }
         }
       }
-      // if the enchantments is null, no hooks ran so the enchantments are unchanged
-      if (enchantments != null) {
-        // we allow 0 values for enchantments in the hook
-        enchantments.values().removeIf(EnchantmentModifierHook.VALUE_REMOVER);
-        EnchantmentHelper.setEnchantments(enchantments, stack);
-        return originalEnchants;
-      }
+      // PORT M3: enchantment injection into the stack is disabled until registry access is threaded through
     }
     return null;
   }
@@ -103,21 +91,14 @@ public interface HarvestEnchantmentsModifierHook {
    * @param originalTag  Original list of enchantments. If empty, will remove the tag
    */
   static void restoreEnchantments(ItemStack stack, ListTag originalTag) {
-    CompoundTag nbt = stack.getTag();
-    if (nbt != null) {
-      if (originalTag.isEmpty()) {
-        nbt.remove(TAG_ENCHANTMENTS);
-      } else {
-        nbt.put(TAG_ENCHANTMENTS, originalTag);
-      }
-    }
+    // PORT M3: no-op; see updateHarvestEnchantments above (NBT enchantment storage removed in 1.21.1)
   }
 
 
   /** Merger that runs all submodules */
   record AllMerger(Collection<HarvestEnchantmentsModifierHook> modules) implements HarvestEnchantmentsModifierHook {
     @Override
-    public void updateHarvestEnchantments(IToolStackView tool, ModifierEntry modifier, ToolHarvestContext context, EquipmentContext equipment, EquipmentSlot slot, Map<Enchantment,Integer> map) {
+    public void updateHarvestEnchantments(IToolStackView tool, ModifierEntry modifier, ToolHarvestContext context, EquipmentContext equipment, EquipmentSlot slot, Map<net.minecraft.resources.ResourceKey<Enchantment>,Integer> map) {
       for (HarvestEnchantmentsModifierHook module : modules) {
         module.updateHarvestEnchantments(tool, modifier, context, equipment, slot, map);
       }

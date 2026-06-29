@@ -3,6 +3,7 @@ package slimeknights.tconstruct.common.data.model;
 import net.minecraft.client.renderer.texture.atlas.sources.DirectoryLister;
 import net.minecraft.client.renderer.texture.atlas.sources.PalettedPermutations;
 import net.minecraft.client.renderer.texture.atlas.sources.SingleFile;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,13 +38,13 @@ public class TinkerSpriteSourceProvider extends SpriteSourceProvider {
   private static final String PALETTE_FOLDER = "trims/color_palettes/";
   private static final String TRIM_FOLDER = "trims/models/armor/";
 
-  public TinkerSpriteSourceProvider(PackOutput output, ExistingFileHelper fileHelper) {
-    super(output, fileHelper, TConstruct.MOD_ID);
+  public TinkerSpriteSourceProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, ExistingFileHelper fileHelper) {
+    super(output, lookupProvider, TConstruct.MOD_ID, fileHelper);
   }
 
   @SuppressWarnings("removal")
   @Override
-  protected void addSources() {
+  protected void gather() {
     ResourceLocation trimPalette = ResourceLocation.parse(PALETTE_FOLDER + "trim_palette");
     // map of material suffix to material paeltte for trims
     Map<String,ResourceLocation> tinkerMaterials = Arrays.stream(MaterialIds.TRIM_MATERIALS).collect(Collectors.toMap(id -> id.getNamespace() + "_" + id.getPath(), id -> id.withPrefix(PALETTE_FOLDER)));
@@ -69,7 +71,7 @@ public class TinkerSpriteSourceProvider extends SpriteSourceProvider {
       .addSource(directory("gui/tinker_pattern"))
       // trim armor icons
       .addSource(new PalettedPermutations(
-        Stream.concat(Arrays.stream(Armor.values()).map(Armor::getRoot), customItemTrims.stream()).toList(),
+        Stream.concat(Arrays.stream(Armor.values()).map(armor -> armor.getRoot(false)), customItemTrims.stream()).toList(),
         trimPalette, tinkerMaterials))
       // trim shield icons
       .addSource(new PalettedPermutations(customItemTrims, trimPalette, vanillaMaterials))
@@ -77,7 +79,7 @@ public class TinkerSpriteSourceProvider extends SpriteSourceProvider {
       .addSource(new ShieldBannerModifierSpriteSource(2, 2, 10, 20, TConstruct.getResource("item/tool/armor/plate/shield/banner_large/"), 11, 8, 32));
     // add untinted trim textures, we use them as fallbacks
     for (Armor armor : TrimModifierModel.Armor.values()) {
-      blocks.addSource(new SingleFile(armor.getRoot(), Optional.empty()));
+      blocks.addSource(new SingleFile(armor.getRoot(false), Optional.empty()));
     }
     // add armor trims in our materials
     atlas(ResourceLocation.parse("armor_trims"))

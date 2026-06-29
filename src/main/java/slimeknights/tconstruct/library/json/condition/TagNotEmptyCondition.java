@@ -28,7 +28,7 @@ public class TagNotEmptyCondition<T> implements LootItemCondition, ICondition {
   public static final MapCodec<TagNotEmptyCondition<?>> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
     ResourceLocation.CODEC.fieldOf("registry").forGetter(c -> c.tag.registry().location()),
     ResourceLocation.CODEC.fieldOf("tag").forGetter(c -> c.tag.location())
-  ).apply(inst, (registry, tag) -> new TagNotEmptyCondition<>(TagKey.create(ResourceKey.createRegistryKey(registry), tag))));
+  ).apply(inst, (registry, tag) -> new TagNotEmptyCondition<Object>(TagKey.create(ResourceKey.createRegistryKey(registry), tag))));
 
   private final TagKey<T> tag;
 

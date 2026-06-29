@@ -152,9 +152,11 @@ public class MaterialNBT implements Iterable<MaterialVariant> {
    * @return  List of materials
    */
   public ListTag serializeToNBT() {
-    return list.stream()
-               .map(lazy -> StringTag.valueOf(lazy.getVariant().toString()))
-               .collect(Collectors.toCollection(ListTag::new));
+    ListTag tag = new ListTag();
+    for (MaterialVariant lazy : list) {
+      tag.add(StringTag.valueOf(lazy.getVariant().toString()));
+    }
+    return tag;
   }
 
 

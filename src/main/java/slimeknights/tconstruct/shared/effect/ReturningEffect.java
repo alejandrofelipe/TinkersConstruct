@@ -5,7 +5,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.common.NeoForge;
@@ -28,7 +27,7 @@ public class ReturningEffect extends TinkerEffect {
   private void onEffectAdded(MobEffectEvent.Added event) {
     // store entity's current position when the effect is added
     LivingEntity entity = event.getEntity();
-    if (!entity.level().isClientSide() && event.getOldEffectInstance() == null && event.getEffectInstance().getEffect() == this) {
+    if (!entity.level().isClientSide() && event.getOldEffectInstance() == null && event.getEffectInstance().getEffect().value() == this) {
       ModDataNBT data = PersistentDataCapability.getOrWarn(entity);
       CompoundTag tag = new CompoundTag();
       tag.put("pos", NbtUtils.writeBlockPos(entity.blockPosition()));
@@ -43,7 +42,7 @@ public class ReturningEffect extends TinkerEffect {
   }
 
   @Override
-  public boolean applyEffectTick(ServerLevel serverLevel, LivingEntity living, int amplifier) {
+  public boolean applyEffectTick(LivingEntity living, int amplifier) {
     ModDataNBT data = PersistentDataCapability.getOrWarn(living);
     if (data.contains(KEY, Tag.TAG_COMPOUND)) {
       CompoundTag tag = data.getCompound(KEY);

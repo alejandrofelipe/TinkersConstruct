@@ -15,6 +15,7 @@ import slimeknights.tconstruct.TConstruct;
 
 import net.minecraft.resources.ResourceLocation;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,38 @@ public class HarvestTiers {
       return ResourceLocation.fromNamespaceAndPath("minecraft", vanilla.name().toLowerCase(java.util.Locale.ROOT));
     }
     return ResourceLocation.fromNamespaceAndPath("minecraft", "unknown");
+  }
+
+  /**
+   * Serializes a tier to its registry name.
+   * PORT M3: stand-in for the removed {@code TierSortingRegistry.getName(Tier)}. Currently only resolves
+   * vanilla tiers; modded tiers need the central tier-ordering replacement.
+   * @return  Tier name, or null if the tier is not registered
+   */
+  @Nullable
+  public static ResourceLocation tierName(Tier tier) {
+    if (tier instanceof Tiers vanilla) {
+      return ResourceLocation.fromNamespaceAndPath("minecraft", vanilla.name().toLowerCase(java.util.Locale.ROOT));
+    }
+    return null;
+  }
+
+  /**
+   * Deserializes a tier from its registry name.
+   * PORT M3: stand-in for the removed {@code TierSortingRegistry.byName(ResourceLocation)}. Currently only
+   * resolves vanilla tiers; modded tiers need the central tier-ordering replacement.
+   * @return  Tier, or null if no tier matches the name
+   */
+  @Nullable
+  public static Tier byName(ResourceLocation id) {
+    if ("minecraft".equals(id.getNamespace())) {
+      for (Tiers vanilla : Tiers.values()) {
+        if (vanilla.name().toLowerCase(java.util.Locale.ROOT).equals(id.getPath())) {
+          return vanilla;
+        }
+      }
+    }
+    return null;
   }
 
   /** Cache of name for each tier */

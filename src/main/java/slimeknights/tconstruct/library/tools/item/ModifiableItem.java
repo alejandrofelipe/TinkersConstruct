@@ -4,7 +4,10 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -127,20 +130,9 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
     return false;
   }
 
-  @Override
-  public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
-    return enchantment.isCurse() && super.canApplyAtEnchantingTable(stack, enchantment);
-  }
-
-  @Override
-  public int getEnchantmentLevel(ItemStack stack, Enchantment enchantment) {
-    return EnchantmentModifierHook.getEnchantmentLevel(stack, enchantment);
-  }
-
-  @Override
-  public Map<Enchantment,Integer> getAllEnchantments(ItemStack stack) {
-    return EnchantmentModifierHook.getAllEnchantments(stack);
-  }
+  // PORT M3 (enchantments): Item#canApplyAtEnchantingTable / Enchantment#isCurse removed; getEnchantmentLevel and
+  // getAllEnchantments now use Holder<Enchantment> / ItemEnchantments. EnchantmentModifierHook (library/modifiers) must
+  // be ported to the new API before these overrides can be reinstated.
 
 
   /* Loading */
@@ -150,8 +142,13 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
   // initCapabilities/ICapabilityProvider override is removed.
 
   @Override
-  public void verifyTagAfterLoad(CompoundTag nbt) {
-    ToolStack.verifyTag(this, nbt, getToolDefinition());
+  public void verifyComponentsAfterLoad(ItemStack stack) {
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    if (data != null) {
+      CompoundTag nbt = data.copyTag();
+      ToolStack.verifyTag(this, nbt, getToolDefinition());
+      stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+    }
   }
 
   @Override
@@ -202,7 +199,8 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
     return false;
   }
 
-  @Override
+  // PORT M3: Item#canBeDepleted was removed in 1.21 (damageability is the max_damage data component). Kept as a plain
+  // helper for the damage accessors below; these items are always damageable.
   public boolean canBeDepleted() {
     return true;
   }
@@ -228,8 +226,8 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
   }
 
   @Override
-  public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T damager, Consumer<T> onBroken) {
-    ToolDamageUtil.handleDamageItem(stack, amount, damager, onBroken);
+  public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T damager, Consumer<Item> onBroken) {
+    ToolDamageUtil.handleDamageItem(stack, amount, damager, broken -> onBroken.accept(this));
     return 0;
   }
 
@@ -267,8 +265,7 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
   // PORT M3: 1.21 replaced Forge's getAttributeModifiers(EquipmentSlot, ItemStack) override and the
   // Attribute/AttributeModifier multimap with vanilla's ItemAttributeModifiers data component (built via
   // getDefaultAttributeModifiers / DataComponents.ATTRIBUTE_MODIFIERS, keyed by Holder<Attribute>). The tconstruct
-  // AttributesModifierHook abstraction needs the matching module-wide redesign; this override is left for that pass.
-  @Override
+  // AttributesModifierHook abstraction needs the matching module-wide redesign; @Override dropped (method removed in 1.21).
   public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
     if (!ToolStack.isInitialized(stack) || slot.getType() != Type.HAND) {
       return ImmutableMultimap.of();
@@ -553,29 +550,12 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
       return true;
     }
 
-    // PORT M3 (attributes): ItemStack.getAttributeModifiers(EquipmentSlot) (a Forge extension) was removed in 1.21;
-    // attribute data is now the ItemAttributeModifiers component (Holder<Attribute> keyed). This reequip comparison is
-    // part of the module-wide attribute redesign shared with IModifiable#getAttributeModifiers and is left for that pass.
+    // 1.21: ItemStack.getAttributeModifiers(EquipmentSlot) (a Forge extension) was removed; attribute data is now the
+    // ItemAttributeModifiers component (Holder<Attribute> keyed). Compare the components directly to detect changes.
+    ItemAttributeModifiers attributesNew = newStack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+    ItemAttributeModifiers attributesOld = oldStack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
     // if the attributes changed, reequip
-    Multimap<Attribute,AttributeModifier> attributesNew = newStack.getAttributeModifiers(EquipmentSlot.MAINHAND);
-    Multimap<Attribute, AttributeModifier> attributesOld = oldStack.getAttributeModifiers(EquipmentSlot.MAINHAND);
-    if (attributesNew.size() != attributesOld.size()) {
-      return true;
-    }
-    for (Attribute attribute : attributesOld.keySet()) {
-      if (!attributesNew.containsKey(attribute)) {
-        return true;
-      }
-      Iterator<AttributeModifier> iter1 = attributesNew.get(attribute).iterator();
-      Iterator<AttributeModifier> iter2 = attributesOld.get(attribute).iterator();
-      while (iter1.hasNext() && iter2.hasNext()) {
-        if (!iter1.next().equals(iter2.next())) {
-          return true;
-        }
-      }
-    }
-    // no changes, no reequip
-    return false;
+    return !attributesNew.modifiers().equals(attributesOld.modifiers());
   }
 
   @Override

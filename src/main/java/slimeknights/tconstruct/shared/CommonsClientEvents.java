@@ -28,7 +28,7 @@ public class CommonsClientEvents extends ClientEventBase {
 
   @SubscribeEvent
   static void registerModelLoaders(RegisterGeometryLoaders event) {
-    event.register("gui", UniqueGuiModel.LOADER);
+    event.register(TConstruct.getResource("gui"), UniqueGuiModel.LOADER);
   }
 
   @SubscribeEvent

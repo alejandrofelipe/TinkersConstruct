@@ -98,7 +98,7 @@ public class FluidTextureModel implements IUnbakedGeometry<FluidTextureModel> {
       for (int i = 0; i < size; i++) {
         BlockElement part = elements.get(i);
         long fluidFaces = part.faces.values().stream()
-                                    .filter(face -> fluidTextures.contains(trimTextureName(face.texture)))
+                                    .filter(face -> fluidTextures.contains(trimTextureName(face.texture())))
                                     .count();
         // for simplicity, each part is either a fluid or not. If for some reason it contains both we mark it as a fluid, meaning it may get colored
         // if this is undesired, just use separate elements

@@ -1,8 +1,10 @@
 package slimeknights.tconstruct.library.tools.part.block;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -43,7 +45,12 @@ public class MaterialBlockItem extends BlockItem implements IMaterialItem {
   }
 
   @Override
-  public void verifyTagAfterLoad(CompoundTag tag) {
-    MaterialItem.verifyTag(tag);
+  public void verifyComponentsAfterLoad(ItemStack stack) {
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    if (data != null) {
+      CompoundTag tag = data.copyTag();
+      MaterialItem.verifyTag(tag);
+      stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
   }
 }

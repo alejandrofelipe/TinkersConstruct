@@ -4,58 +4,24 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.item.ArmorItem.Type;
-import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.crafting.Ingredient;
 import slimeknights.mantle.registration.object.IdAwareObject;
 
-/** Armor material that returns 0 except for name, since we bypass all the usages */
+/**
+ * Lightweight armor material descriptor used as a container for Tinkers' armor tool definitions.
+ * <p>
+ * PORT M3 (armor subsystem): {@code net.minecraft.world.item.ArmorMaterial} became a {@code final record} in 1.21
+ * (defense/toughness/knockback moved to attribute-based data components and {@code Holder<ArmorMaterial>}). This class
+ * therefore can no longer {@code implements ArmorMaterial}; it now only carries the id + equip sound that the rest of
+ * Tinkers relies on. The integration with vanilla armor (building a real {@code Holder<ArmorMaterial>} / layers) is
+ * deferred to the armor-layer port.
+ */
 @RequiredArgsConstructor
 @Getter
-public class DummyArmorMaterial implements ArmorMaterial, IdAwareObject {
+public class DummyArmorMaterial implements IdAwareObject {
   private final ResourceLocation id;
   private final SoundEvent equipSound;
 
-  @Override
   public String getName() {
     return id.toString();
-  }
-
-
-  /* Required dummy methods */
-
-  @Override
-  @Deprecated
-  public int getDurabilityForType(Type pType) {
-    return 0;
-  }
-
-  @Override
-  @Deprecated
-  public int getDefenseForType(Type pType) {
-    return 0;
-  }
-
-  @Override
-  public int getEnchantmentValue() {
-    return 0;
-  }
-
-  @Override
-  @Deprecated
-  public Ingredient getRepairIngredient() {
-    return Ingredient.EMPTY;
-  }
-
-  @Override
-  @Deprecated
-  public float getToughness() {
-    return 0;
-  }
-
-  @Override
-  @Deprecated
-  public float getKnockbackResistance() {
-    return 0;
   }
 }

@@ -25,14 +25,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
@@ -101,7 +102,7 @@ public class GenerateMeltingRecipesCommand {
 
   /** Runs the command */
   @SuppressWarnings("unchecked")  // not like we are using the generics at all
-  private static <C extends Container, T extends Recipe<C>> int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+  private static <C extends RecipeInput, T extends Recipe<C>> int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
     long startTime = System.nanoTime();
     Holder<RecipeType<?>> recipeType = ResourceArgument.getResource(context, "recipe_type", Registries.RECIPE_TYPE);
 
@@ -174,7 +175,7 @@ public class GenerateMeltingRecipesCommand {
       // don't bother with results that have NBT unless its a damagable item, in which case we ignore NBT and hope for the best
       // also skip anything already meltable
       Item result = resultStack.getItem();
-      if (resultStack.isEmpty() || (!resultStack.getComponentsPatch().isEmpty() && !result.canBeDepleted()) || !melt.matches(result) || MeltingRecipeLookup.canMelt(result)) {
+      if (resultStack.isEmpty() || (!resultStack.getComponentsPatch().isEmpty() && !result.components().has(DataComponents.MAX_DAMAGE)) || !melt.matches(result) || MeltingRecipeLookup.canMelt(result)) {
         continue;
       }
       List<MeltingResult> fluids = new ArrayList<>();
@@ -284,7 +285,7 @@ public class GenerateMeltingRecipesCommand {
           builder.addByproduct(fluids.get(i).toOutput());
         }
         // mark it damagable if its true
-        if (result.canBeDepleted()) {
+        if (result.components().has(DataComponents.MAX_DAMAGE)) {
           // we don't know the proper unit size, but 10mb is pretty likely
           builder.setDamagable(10);
         }

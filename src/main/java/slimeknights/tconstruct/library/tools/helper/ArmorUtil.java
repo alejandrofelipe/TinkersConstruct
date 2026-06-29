@@ -3,13 +3,21 @@ package slimeknights.tconstruct.library.tools.helper;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 
-import static net.minecraft.world.damagesource.CombatRules.getDamageAfterAbsorb;
-
 /**
  * Utinet.minecraft.world.damagesource.CombatRulesation logic
  */
 public class ArmorUtil {
   private ArmorUtil() {}
+
+  /**
+   * Reimplements the 1.20 {@code CombatRules#getDamageAfterAbsorb(float, float, float)} formula, which in 1.21 was
+   * replaced by an entity/damage-source aware overload. This helper only needs the raw armor/toughness math.
+   */
+  private static float getDamageAfterAbsorb(float damage, float armor, float toughness) {
+    float reduction = 2.0F + toughness / 4.0F;
+    float clamped = Mth.clamp(armor - damage / reduction, armor * 0.2F, 20.0F);
+    return damage * (1.0F - clamped / 25.0F);
+  }
 
   /**
    * Inverse of {@link net.minecraft.world.damagesource.CombatRules#getDamageAfterAbsorb(float, float, float)}  with respect to damage

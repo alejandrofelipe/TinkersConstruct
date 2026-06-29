@@ -1,12 +1,12 @@
 package slimeknights.tconstruct.library.client.modifiers.model;
 
 import com.mojang.math.Transformation;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceKey;
@@ -46,7 +46,8 @@ public record BannerModifierModel(@Nullable ResourceLocation smallPrefix, @Nulla
   public void validate(Function<Material, TextureAtlasSprite> spriteGetter) {
     // since these are dynamically loaded, condition based on the config option
     if (Config.CLIENT.logMissingModifierTextures.get()) {
-      for (ResourceKey<BannerPattern> key : Sheets.SHIELD_MATERIALS.keySet()) {
+      // PORT M3: SHIELD_MATERIALS is now private in Sheets; iterate the banner pattern registry instead
+      for (ResourceKey<BannerPattern> key : BuiltInRegistries.BANNER_PATTERN.registryKeySet()) {
         String suffix = MaterialRenderInfo.getSuffix(key.location());
         if (smallPrefix != null) {
           spriteGetter.apply(ModifierModel.blockAtlas(smallPrefix.withSuffix(suffix)));
@@ -77,7 +78,10 @@ public record BannerModifierModel(@Nullable ResourceLocation smallPrefix, @Nulla
           // patterns are stored as short strings for some reason, for consistency we also store as hashes
           // map that back to the pattern
           CompoundTag tag = list.getCompound(i);
-          Holder<BannerPattern> pattern = BannerPattern.byHash(tag.getString(BannerModule.KEY_PATTERN));
+          // PORT M3: BannerPattern.byHash was removed in 1.21 (BannerPattern is now a record without hashname);
+          // patterns are now referenced by ResourceLocation/Holder. Blocked on the BannerModule data-format port in the tools bucket.
+          ResourceLocation patternId = ResourceLocation.tryParse(tag.getString(BannerModule.KEY_PATTERN));
+          Holder<BannerPattern> pattern = patternId == null ? null : BuiltInRegistries.BANNER_PATTERN.getHolder(patternId).orElse(null);
           int color = tag.getInt(BannerModule.KEY_COLOR);
           if (pattern != null) {
             // why must holders be such a pain?

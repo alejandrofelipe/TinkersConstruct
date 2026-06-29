@@ -255,7 +255,7 @@ public class SmelteryRecipeBuilder {
 
   /** Adds a recipe for melting an item by ID. Automatically optional */
   private void itemMelting(float scale, String output, float factor, ResourceLocation itemName, boolean damagable) {
-    MeltingRecipeBuilder builder = MeltingRecipeBuilder.melting(ItemNameIngredient.from(itemName), result((int) (baseUnit * scale)), temperature, factor);
+    MeltingRecipeBuilder builder = MeltingRecipeBuilder.melting(ItemNameIngredient.from(itemName).toVanilla(), result((int) (baseUnit * scale)), temperature, factor);
     if (damagable) {
       builder.setDamagable(damageUnits());
     }

@@ -24,7 +24,7 @@ import java.util.Set;
 public class MaterialGeneratorInfo {
   /** GSON adapter for generator deserializing. TODO: migrate ISpriteTransformer to loadables? */
   private static final Gson GSON = (new GsonBuilder())
-    .registerTypeAdapter(ResourceLocation.class, new ResourceLocation.Serializer())
+    .registerTypeAdapter(ResourceLocation.class, ResourceLocationSerializer.resourceLocation(TConstruct.MOD_ID))
     .registerTypeAdapter(MaterialStatsId.class, new ResourceLocationSerializer<>(MaterialStatsId::new, TConstruct.MOD_ID))
     .registerTypeHierarchyAdapter(ISpriteTransformer.class, ISpriteTransformer.SERIALIZER)
     .registerTypeHierarchyAdapter(IColorMapping.class, IColorMapping.SERIALIZER)

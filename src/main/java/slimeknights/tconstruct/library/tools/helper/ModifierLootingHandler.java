@@ -11,8 +11,7 @@ import net.neoforged.neoforge.common.NeoForge;
 // PORT M3 (looting): NeoForge 1.21 removed LootingLevelEvent; looting/loot-bonus is now driven by the
 // minecraft:looting enchantment value effect (EnchantmentHelper.getMobLooting / EnchantmentValueEffect) rather than a
 // per-attack event. The onLooting handler below needs to be re-expressed against that system (or a NeoForge
-// enchantment-level hook) during the M3 convergence; the import and handler are left as a marker.
-import net.neoforged.neoforge.event.entity.living.LootingLevelEvent;
+// enchantment-level hook) during the M3 convergence; the event listener is disabled until then.
 import net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent;
 import net.neoforged.bus.api.EventPriority;
 import slimeknights.tconstruct.common.TinkerDamageTypes;
@@ -49,8 +48,7 @@ public class ModifierLootingHandler {
       return;
     }
     init = true;
-    // we overwrite looting values from vanilla in a couple cases, but mod effects that globally boost looting should still boost us
-    NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, ModifierLootingHandler::onLooting);
+    // PORT M3 (looting): re-register the looting handler once it is ported to the 1.21 enchantment value-effect system.
     NeoForge.EVENT_BUS.addListener(ModifierLootingHandler::onLeaveServer);
   }
 
@@ -72,26 +70,25 @@ public class ModifierLootingHandler {
     return entity != null ? LOOTING_OFFHAND.getOrDefault(entity.getUUID(), EquipmentSlot.MAINHAND) : EquipmentSlot.MAINHAND;
   }
 
-  /** Applies the looting bonus for modifiers */
-  private static void onLooting(LootingLevelEvent event) {
-    // must be an attacker with our tool
-    DamageSource damageSource = event.getDamageSource();
-    if (damageSource == null) {
-      return;
-    }
-    LivingEntity target = event.getEntity();
-
+  /**
+   * Computes the looting level for the given attack context.
+   * <p>
+   * PORT M3 (looting): formerly the {@code LootingLevelEvent} handler. 1.21 removed that event; looting is now a
+   * data-driven enchantment value effect. This method preserves the modifier-driven looting computation so it can be
+   * wired into the new system (e.g. an {@code EnchantmentValueEffect} override or NeoForge looting hook) during the
+   * combat/enchantment convergence. Currently unused pending that wiring.
+   */
+  public static int computeLooting(LivingEntity target, DamageSource damageSource, int baseLevel) {
     // bleeding kills use the level of the effect for looting
     if (damageSource.is(TinkerDamageTypes.BLEEDING)) {
-      event.setLootingLevel(Math.max(0, TinkerEffect.getAmplifier(target, TinkerEffects.bleeding.get())));
-      return;
+      return Math.max(0, TinkerEffect.getAmplifier(target, TinkerEffects.bleeding.get()));
     }
 
     // otherwise, use the proper tool
     Entity source = damageSource.getEntity();
     if (source instanceof LivingEntity holder) {
       Entity direct = damageSource.getDirectEntity();
-      int level = event.getLootingLevel();
+      int level = baseLevel;
 
       // determine who is in charge of the looting
       LootingContext context;
@@ -128,8 +125,9 @@ public class ModifierLootingHandler {
       // boost looting with armor regardless, hopefully you did not switch your pants mid arrow firing
       level = ArmorLootingModifierHook.getLooting(tool, context, level);
       // we allow the hook to return negatives to cancel out looting, so ensure its at least 0
-      event.setLootingLevel(Math.max(level, 0));
+      return Math.max(level, 0);
     }
+    return Math.max(baseLevel, 0);
   }
 
   /** Called when a player leaves the server to clear the face */

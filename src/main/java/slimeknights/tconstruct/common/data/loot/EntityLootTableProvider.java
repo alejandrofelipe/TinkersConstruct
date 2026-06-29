@@ -1,9 +1,11 @@
 package slimeknights.tconstruct.common.data.loot;
 
+import net.minecraft.advancements.critereon.EntityFlagsPredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.NbtPredicate;
 import net.minecraft.advancements.critereon.SlimePredicate;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.EntityLootSubProvider;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
@@ -16,7 +18,7 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
-import net.minecraft.world.level.storage.loot.functions.LootingEnchantFunction;
+import net.minecraft.world.level.storage.loot.functions.EnchantedCountIncreaseFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.functions.SmeltItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -36,9 +38,12 @@ import java.util.Map.Entry;
 import java.util.stream.Stream;
 
 public class EntityLootTableProvider extends EntityLootSubProvider {
-  protected EntityLootTableProvider() {
-    super(FeatureFlags.REGISTRY.allFlags());
+  protected EntityLootTableProvider(HolderLookup.Provider registries) {
+    super(FeatureFlags.REGISTRY.allFlags(), registries);
   }
+
+  /** Predicate matching an entity that is on fire, for smelting drops. */
+  private static final EntityPredicate.Builder ENTITY_ON_FIRE = EntityPredicate.Builder.entity().flags(EntityFlagsPredicate.Builder.flags().setOnFire(true));
 
   @Override
   protected Stream<EntityType<?>> getKnownEntityTypes() {
@@ -57,7 +62,7 @@ public class EntityLootTableProvider extends EntityLootSubProvider {
                                                                    .setRolls(ConstantValue.exactly(1))
                                                                    .add(LootItem.lootTableItem(Items.CLAY_BALL)
                                                                                           .apply(SetItemCountFunction.setCount(UniformGenerator.between(-2.0F, 1.0F)))
-                                                                                          .apply(LootingEnchantFunction.lootingMultiplier(UniformGenerator.between(0.0F, 1.0F)))
+                                                                                          .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries, UniformGenerator.between(0.0F, 1.0F)))
                                                                                           .apply(SmeltItemFunction.smelted().when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, ENTITY_ON_FIRE))))));
 
     LootItemCondition.Builder killedByFrog = killedByFrog();
@@ -67,7 +72,7 @@ public class EntityLootTableProvider extends EntityLootSubProvider {
                                         .setRolls(ConstantValue.exactly(1))
                                         .add(LootItem.lootTableItem(Items.CLAY_BALL)
                                                      .apply(SetItemCountFunction.setCount(UniformGenerator.between(-2.0F, 1.0F)))
-                                                     .apply(LootingEnchantFunction.lootingMultiplier(UniformGenerator.between(0.0F, 1.0F)))
+                                                     .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries, UniformGenerator.between(0.0F, 1.0F)))
                                                      .when(killedByFrog.invert())
                                                      .when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().subPredicate(SlimePredicate.sized(MinMaxBounds.Ints.atLeast(2))))))
                                         .add(LootItem.lootTableItem(TinkerSmeltery.searedLamp)
@@ -77,10 +82,10 @@ public class EntityLootTableProvider extends EntityLootSubProvider {
   }
 
   /** Drops an item using the same chances as slimeballs */
-  private static LootPoolEntryContainer.Builder<?> slimeball(Item item) {
+  private LootPoolEntryContainer.Builder<?> slimeball(Item item) {
     return LootItem.lootTableItem(item)
       .apply(SetItemCountFunction.setCount(UniformGenerator.between(0.0F, 2.0F)))
-      .apply(LootingEnchantFunction.lootingMultiplier(UniformGenerator.between(0.0F, 1.0F)));
+      .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries, UniformGenerator.between(0.0F, 1.0F)));
   }
 
   /** Drops a frog slimeball */

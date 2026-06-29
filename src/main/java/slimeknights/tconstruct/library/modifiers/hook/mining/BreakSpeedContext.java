@@ -74,7 +74,9 @@ public sealed interface BreakSpeedContext {
       }
     }
     // water
-    if (entity.isEyeInFluid(FluidTags.WATER) && !EnchantmentHelper.hasAquaAffinity(entity)) {
+    // PORT M3: EnchantmentHelper.hasAquaAffinity was removed in 1.21.1 (aqua affinity is now a data-driven enchantment value effect
+    // applied directly to the player's dig speed). The affinity exemption can no longer be cheaply checked here.
+    if (entity.isEyeInFluid(FluidTags.WATER)) {
       modifier /= 5.0F;
     }
     if (!entity.onGround()) {

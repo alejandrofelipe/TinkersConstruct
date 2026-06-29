@@ -11,6 +11,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -69,7 +70,7 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
       ResourceLocation original = entry.getKey();
 
       try (InputStream io = existingFileHelper.getResource(original, PackType.SERVER_DATA, ".nbt", "structures").open()) {
-        CompoundTag inputNBT = NbtIo.readCompressed(io);
+        CompoundTag inputNBT = NbtIo.readCompressed(io, NbtAccounter.unlimitedHeap());
         for (RepaletteTask task : entry.getValue()) {
           // start by fetching the palette, we assume its not randomized
           CompoundTag newStructure = inputNBT.copy();

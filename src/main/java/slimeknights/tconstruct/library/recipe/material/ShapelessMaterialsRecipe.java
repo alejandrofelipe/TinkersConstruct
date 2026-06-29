@@ -66,7 +66,7 @@ public class ShapelessMaterialsRecipe extends ShapelessRecipe implements Materia
     static final Loadable<List<MaterialVariantId>> EXTRA_MATERIALS = ShapedMaterialsRecipe.Serializer.EXTRA_MATERIALS;
 
     private static final MapCodec<ShapelessMaterialsRecipe> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-      ShapelessRecipe.Serializer.CODEC.forGetter(r -> (ShapelessRecipe) r),
+      RecipeSerializer.SHAPELESS_RECIPE.codec().forGetter(r -> (ShapelessRecipe) r),
       Codec.INT.fieldOf("parts").forGetter(r -> r.partCount),
       EXTRA_MATERIALS.codec().optionalFieldOf("extra_materials", List.of()).forGetter(r -> r.extraMaterials)
     ).apply(inst, ShapelessMaterialsRecipe::new));

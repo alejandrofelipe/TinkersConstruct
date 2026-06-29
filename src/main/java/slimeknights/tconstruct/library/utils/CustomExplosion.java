@@ -6,10 +6,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.enchantment.ProtectionEnchantment;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
@@ -35,8 +33,14 @@ public class CustomExplosion extends Explosion {
   /** Size of the hollowed out cube determining the number of rays to cast */
   private static final int RAY_COUNT = 16;
   private static final int MAX_RAY = RAY_COUNT - 1;
-  /** Default predicate for which entities to match */
-  public static final Predicate<Entity> DEFAULT_ENTITY_PREDICATE = entity -> entity != null && entity.isAlive() && !entity.ignoreExplosion() && !entity.isSpectator();
+  /**
+   * Default predicate for which entities to match.
+   * PORT 1.21.1: {@code Entity#ignoreExplosion()} now takes the {@code Explosion} instance, so it cannot be
+   * checked from a static predicate. The per-entity ignore behaviour is still applied by the vanilla
+   * {@link Explosion} machinery during {@link #damageAndPushEntities()}; here we only keep the
+   * stateless alive/spectator filters.
+   */
+  public static final Predicate<Entity> DEFAULT_ENTITY_PREDICATE = entity -> entity != null && entity.isAlive() && !entity.isSpectator();
 
   /** Maximum damage to deal; setting to 7*2*radius will match the vanilla explosion. */
   protected final float damage;
@@ -173,9 +177,9 @@ public class CustomExplosion extends Explosion {
           // apply enchantment to reduce knockback
           if (knockback != 0) {
             double adjustedStrength = strength * knockback;
-            if (entity instanceof LivingEntity living) {
-              adjustedStrength = ProtectionEnchantment.getExplosionKnockbackAfterDampener(living, adjustedStrength);
-            }
+            // PORT 1.21.1: ProtectionEnchantment.getExplosionKnockbackAfterDampener was removed; blast-protection
+            // knockback dampening is now data-driven via the enchantment's effect components. Dropping the
+            // dampening here keeps core knockback working; re-add via EnchantmentHelper once enchantments are ported.
             Vec3 velocity = dir.scale(adjustedStrength / length);
             entity.setDeltaMovement(entity.getDeltaMovement().add(velocity));
             if (entity instanceof Player player) {

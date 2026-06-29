@@ -170,7 +170,12 @@ public class MaterialItem extends Item implements IMaterialItem {
   }
 
   @Override
-  public void verifyTagAfterLoad(CompoundTag nbt) {
-    verifyTag(nbt);
+  public void verifyComponentsAfterLoad(ItemStack stack) {
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    if (data != null) {
+      CompoundTag nbt = data.copyTag();
+      verifyTag(nbt);
+      stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+    }
   }
 }

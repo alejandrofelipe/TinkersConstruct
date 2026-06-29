@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -84,6 +86,12 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
     this.toolDefinition = toolDefinition;
   }
 
+  // PORT M3 (ranged): ProjectileWeaponItem#shootProjectile is new in 1.21's vanilla shooting flow. Tinkers' launchers
+  // shoot via their own releaseUsing/firing logic, so this is a no-op to satisfy the abstract method until/if the
+  // ranged layer is converged onto the vanilla projectile pipeline.
+  @Override
+  protected void shootProjectile(LivingEntity shooter, net.minecraft.world.entity.projectile.Projectile projectile, int index, float velocity, float inaccuracy, float angle, @javax.annotation.Nullable LivingEntity target) {}
+
 
   /* Basic properties */
 
@@ -110,25 +118,17 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
     return false;
   }
 
-  @Override
-  public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
-    return enchantment.isCurse() && super.canApplyAtEnchantingTable(stack, enchantment);
-  }
+  // PORT M3 (enchantments): Item#canApplyAtEnchantingTable and Enchantment#isCurse were removed in 1.21 (enchantments are
+  // now data-driven Holder<Enchantment> with tag-based table support). Override removed; revisit with the enchantment port.
 
   @Override
   public int getEnchantmentValue() {
     return 0;
   }
 
-  @Override
-  public int getEnchantmentLevel(ItemStack stack, Enchantment enchantment) {
-    return EnchantmentModifierHook.getEnchantmentLevel(stack, enchantment);
-  }
-
-  @Override
-  public Map<Enchantment,Integer> getAllEnchantments(ItemStack stack) {
-    return EnchantmentModifierHook.getAllEnchantments(stack);
-  }
+  // PORT M3 (enchantments): Item#getEnchantmentLevel(ItemStack, Enchantment) and getAllEnchantments(ItemStack) were
+  // replaced by Holder<Enchantment> / ItemEnchantments variants in 1.21. EnchantmentModifierHook needs porting to the
+  // new API (cross-package: library/modifiers) before these overrides can be reinstated.
 
 
   /* Loading */
@@ -137,8 +137,13 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
   // ToolCapabilityProvider.getCapability(stack, cap); the initCapabilities/ICapabilityProvider override is removed.
 
   @Override
-  public void verifyTagAfterLoad(CompoundTag nbt) {
-    ToolStack.verifyTag(this, nbt, getToolDefinition());
+  public void verifyComponentsAfterLoad(ItemStack stack) {
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    if (data != null) {
+      CompoundTag nbt = data.copyTag();
+      ToolStack.verifyTag(this, nbt, getToolDefinition());
+      stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+    }
   }
 
   @Override

@@ -121,7 +121,7 @@ public record TrimArmorTextureSupplier(ModifierId modifier, ResourceLocation pat
     @Override
     public void renderTexture(Model model, PoseStack matrices, MultiBufferSource bufferSource, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean hasGlint) {
       // ignoring glint as odds are very low trim texture is the first one
-      VertexConsumer buffer = trimSprite.wrap(bufferSource.getBuffer(Sheets.armorTrimsSheet()));
+      VertexConsumer buffer = trimSprite.wrap(bufferSource.getBuffer(Sheets.armorTrimsSheet(false)));
       // 1.21 renderToBuffer takes a single packed ARGB int rather than four floats
       model.renderToBuffer(matrices, buffer, packedLight, packedOverlay, FastColor.ARGB32.colorFromFloat(alpha, red, green, blue));
     }

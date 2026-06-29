@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.shared;
 
-import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -62,7 +62,7 @@ public final class AchievementEvents {
   private static void grantAdvancement(ServerPlayer playerMP, String advancementResource) {
     MinecraftServer server = playerMP.getServer();
     if (server != null) {
-      Advancement advancement = server.getAdvancements().getAdvancement(Objects.requireNonNull(ResourceLocation.tryParse(advancementResource)));
+      AdvancementHolder advancement = server.getAdvancements().get(Objects.requireNonNull(ResourceLocation.tryParse(advancementResource)));
       if (advancement != null) {
         AdvancementProgress advancementProgress = playerMP.getAdvancements().getOrStartProgress(advancement);
         if (!advancementProgress.isDone()) {

@@ -34,7 +34,7 @@ public class BlockContainerOpenedTrigger extends SimpleCriterionTrigger<BlockCon
   public record Instance(Optional<ContextAwarePredicate> player, BlockEntityType<?> type) implements SimpleCriterionTrigger.SimpleInstance {
     public static final Codec<Instance> CODEC = RecordCodecBuilder.create(inst -> inst.group(
       EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(Instance::player),
-      ResourceLocation.CODEC.fieldOf("type").xmap(
+      ResourceLocation.CODEC.fieldOf("type").<BlockEntityType<?>>xmap(
         id -> BuiltInRegistries.BLOCK_ENTITY_TYPE.getOptional(id).orElseThrow(() -> new IllegalArgumentException("Unknown tile entity '" + id + "'")),
         type -> BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(type)
       ).forGetter(Instance::type)
