@@ -26,7 +26,7 @@ public abstract class RetexturedTableBlockEntity extends TableBlockEntity implem
   public RetexturedTableBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, Component name, int size) {
     super(type, pos, state, name, size);
   }
-  @Override
+  // PORT M3: getRenderBoundingBox moved to client BlockEntityRenderer in 1.21.1; renderer should delegate here
   public AABB getRenderBoundingBox() {
     return new AABB(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
                     worldPosition.getX() + 1, worldPosition.getY() + 2, worldPosition.getZ() + 1);

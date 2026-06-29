@@ -96,6 +96,8 @@ public enum BrushModule implements ModifierModule, GeneralInteractionModifierHoo
     // spawn particles
     // shouldn't be needed to do the instance of, but might as well be safe
     if (Items.BRUSH instanceof BrushItem brush) {
+      // PORT M3: BrushItem#spawnDustParticles is private in 1.21; needs an access transformer entry
+      // (public net.minecraft.world.item.BrushItem spawnDustParticles(...)) in tinkers accesstransformer.cfg.
       brush.spawnDustParticles(level, blockHit, state, player.getViewVector(0.0F), arm);
     }
 

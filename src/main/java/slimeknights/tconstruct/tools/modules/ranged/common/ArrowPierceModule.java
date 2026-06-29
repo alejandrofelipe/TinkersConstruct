@@ -40,6 +40,8 @@ public record ArrowPierceModule(LevelingInt amount, ModifierCondition<IToolStack
     if (condition.matches(tool, modifier) && arrow != null) {
       int amount = this.amount.compute(modifier.getEffectiveLevel());
       if (amount > 0) {
+        // PORT M3: AbstractArrow#setPierceLevel is private in 1.21; needs an access transformer entry
+        // (public net.minecraft.world.entity.projectile.AbstractArrow setPierceLevel(B)V) in tinkers accesstransformer.cfg.
         arrow.setPierceLevel((byte) amount);
       }
     }

@@ -75,7 +75,7 @@ public record BucketModule(IJsonPredicate<Fluid> fluids) implements ModifierModu
    */
   private static boolean cannotContainFluid(Level world, BlockPos pos, BlockState state, Fluid fluid) {
     Block block = state.getBlock();
-    return !(block instanceof LiquidBlockContainer container && container.canPlaceLiquid(world, pos, state, fluid));
+    return !(block instanceof LiquidBlockContainer container && container.canPlaceLiquid(null, world, pos, state, fluid));
   }
 
   @Override
@@ -191,7 +191,7 @@ public record BucketModule(IJsonPredicate<Fluid> fluids) implements ModifierModu
     BlockState state = world.getBlockState(target);
     // note that not all bucket pickup is a fluid, but we validated fluid state above
     if (state.getBlock() instanceof BucketPickup bucketPickup) {
-      ItemStack bucket = bucketPickup.pickupBlock(world, target, state);
+      ItemStack bucket = bucketPickup.pickupBlock(player, world, target, state);
       if (!bucket.isEmpty() && bucket.getItem() instanceof BucketItem bucketItem) {
         Fluid pickedUpFluid = bucketItem.getFluid();
         if (pickedUpFluid != Fluids.EMPTY) {

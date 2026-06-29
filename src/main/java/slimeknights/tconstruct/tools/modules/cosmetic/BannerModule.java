@@ -3,7 +3,6 @@ package slimeknights.tconstruct.tools.modules.cosmetic;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -77,7 +76,9 @@ public enum BannerModule implements ModifierModule, DisplayNameModifierHook, Too
         for (int i = 0; i < patterns.size(); i++) {
           CompoundTag tag = patterns.getCompound(i);
           DyeColor dye = DyeColor.byId(tag.getInt(KEY_DYE));
-          Holder<BannerPattern> holder = BannerPattern.byHash(tag.getString(KEY_PATTERN));
+          // PORT M3: BannerPattern.byHash was removed in 1.21; banner patterns are now a datapack registry resolved via RegistryAccess.
+          // Tooltip rendering of stored patterns needs reworking against Registries.BANNER_PATTERN; skip for now.
+          Holder<BannerPattern> holder = null;
           if (holder != null) {
             // note that Forge is dumb in BannerItem with their patch - mojang already adds the mod ID to the tooltip key
             holder.unwrapKey().ifPresent(key ->
@@ -107,10 +108,12 @@ public enum BannerModule implements ModifierModule, DisplayNameModifierHook, Too
     ListTag patterns = new ListTag();
 
     // add in the base pattern, it only exists on shields and we copy from banners
-    BannerPattern base = BuiltInRegistries.BANNER_PATTERN.get(BannerPatterns.BASE);
-    if (base != null) {
+    // PORT M3: BuiltInRegistries.BANNER_PATTERN and BannerPattern#getHashname were removed in 1.21;
+    // banner patterns are now a datapack registry (Registries.BANNER_PATTERN) keyed by ResourceKey.
+    // This base-pattern copy needs reworking against the new BannerPatternLayers component.
+    {
       CompoundTag basePattern = new CompoundTag();
-      basePattern.putString(KEY_PATTERN, base.getHashname());
+      basePattern.putString(KEY_PATTERN, BannerPatterns.BASE.location().toString());
       basePattern.putInt(KEY_DYE, dye.getId());
       basePattern.putInt(KEY_COLOR, baseColor);
       patterns.add(basePattern);
