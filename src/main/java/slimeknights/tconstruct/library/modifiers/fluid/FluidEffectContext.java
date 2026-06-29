@@ -102,7 +102,9 @@ public abstract class FluidEffectContext {
 
   /** If true, this context is not allowed to place blocks at the given position */
   public boolean placeRestricted(ItemStack stack) {
-    return player != null && !player.mayBuild() && !stack.hasAdventureModePlaceTagForBlock(net.minecraft.core.registries.BuiltInRegistries.BLOCK, new BlockInWorld(level, getBlockPos(), false));
+    // PORT M3: ItemStack.hasAdventureModePlaceTagForBlock(registry, BlockInWorld) was removed in 1.21; the
+    // adventure-mode placement check is now data-component based via canPlaceOnBlockInAdventureMode(BlockInWorld).
+    return player != null && !player.mayBuild() && !stack.canPlaceOnBlockInAdventureMode(new BlockInWorld(level, getBlockPos(), false));
   }
 
   /** Context for fluid effects targeting an entity */

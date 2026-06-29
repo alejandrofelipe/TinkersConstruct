@@ -1096,7 +1096,7 @@ public final class TinkerModifiers extends TinkerModule {
     PackOutput packOutput = generator.getPackOutput();
     boolean server = event.includeServer();
     generator.addProvider(server, new ModifierProvider(packOutput));
-    generator.addProvider(server, new ModifierRecipeProvider(packOutput));
+    generator.addProvider(server, new ModifierRecipeProvider(packOutput, event.getLookupProvider()));
     generator.addProvider(server, new FluidEffectProvider(packOutput));
     generator.addProvider(server, new ModifierTagProvider(packOutput, event.getExistingFileHelper()));
     generator.addProvider(server, new EnchantmentToModifierProvider(packOutput));

@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.tools.data;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -57,12 +58,13 @@ import slimeknights.tconstruct.tools.stats.StatlessMaterialStats;
 import slimeknights.tconstruct.world.TinkerHeadType;
 import slimeknights.tconstruct.world.TinkerWorld;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class ToolsRecipeProvider extends BaseRecipeProvider implements IMaterialRecipeHelper, IToolRecipeHelper {
-  public ToolsRecipeProvider(PackOutput packOutput) {
-    super(packOutput);
+  public ToolsRecipeProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
+    super(packOutput, registries);
   }
 
   @Override

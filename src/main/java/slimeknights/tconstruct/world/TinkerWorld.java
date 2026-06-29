@@ -412,7 +412,7 @@ public final class TinkerWorld extends TinkerModule {
     DataGenerator generator = event.getGenerator();
     boolean server = event.includeServer();
     PackOutput packOutput = generator.getPackOutput();
-    generator.addProvider(server, new WorldRecipeProvider(packOutput));
+    generator.addProvider(server, new WorldRecipeProvider(packOutput, event.getLookupProvider()));
     generator.addProvider(server, new MobEquipmentProvider(packOutput));
   }
 

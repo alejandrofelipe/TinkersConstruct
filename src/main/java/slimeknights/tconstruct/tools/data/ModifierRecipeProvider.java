@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.tools.data;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -87,6 +88,7 @@ import slimeknights.tconstruct.world.block.FoliageType;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -94,8 +96,8 @@ import static slimeknights.mantle.Mantle.COMMON;
 import static slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe.getTemperature;
 
 public class ModifierRecipeProvider extends BaseRecipeProvider {
-  public ModifierRecipeProvider(PackOutput packOutput) {
-    super(packOutput);
+  public ModifierRecipeProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
+    super(packOutput, registries);
   }
 
   @Override

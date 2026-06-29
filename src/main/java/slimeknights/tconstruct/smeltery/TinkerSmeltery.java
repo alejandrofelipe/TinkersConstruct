@@ -489,7 +489,7 @@ public final class TinkerSmeltery extends TinkerModule {
     boolean server = event.includeServer();
     DataGenerator generator = event.getGenerator();
     PackOutput packOutput = generator.getPackOutput();
-    generator.addProvider(server, new SmelteryRecipeProvider(packOutput));
+    generator.addProvider(server, new SmelteryRecipeProvider(packOutput, event.getLookupProvider()));
     generator.addProvider(server, new FluidContainerTransferProvider(packOutput));
   }
 

@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.tools.data.material;
 
 import java.util.List;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.tags.ItemTags;
@@ -40,13 +41,14 @@ import slimeknights.tconstruct.tools.TinkerModifiers;
 import slimeknights.tconstruct.tools.recipe.severing.SheepShearingRecipe;
 import slimeknights.tconstruct.world.TinkerWorld;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import static slimeknights.mantle.Mantle.COMMON;
 
 public class MaterialRecipeProvider extends BaseRecipeProvider implements IMaterialRecipeHelper {
-  public MaterialRecipeProvider(PackOutput packOutput) {
-    super(packOutput);
+  public MaterialRecipeProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
+    super(packOutput, registries);
   }
 
   @Override

@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.smeltery.data;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -91,6 +92,7 @@ import slimeknights.tconstruct.world.TinkerWorld;
 import slimeknights.tconstruct.world.block.FoliageType;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -110,8 +112,8 @@ import static slimeknights.tconstruct.library.data.recipe.SmelteryRecipeBuilder.
 
 @SuppressWarnings("removal")
 public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelteryRecipeHelper, ICommonRecipeHelper {
-  public SmelteryRecipeProvider(PackOutput packOutput) {
-    super(packOutput);
+  public SmelteryRecipeProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
+    super(packOutput, registries);
   }
 
   @Override

@@ -2,6 +2,7 @@ package slimeknights.tconstruct.gadgets.data;
 
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -29,9 +30,11 @@ import slimeknights.tconstruct.shared.block.SlimeType;
 import slimeknights.tconstruct.world.TinkerWorld;
 import slimeknights.tconstruct.world.block.FoliageType;
 
+import java.util.concurrent.CompletableFuture;
+
 public class GadgetRecipeProvider extends BaseRecipeProvider {
-  public GadgetRecipeProvider(PackOutput packOutput) {
-    super(packOutput);
+  public GadgetRecipeProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
+    super(packOutput, registries);
   }
 
   @Override

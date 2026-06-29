@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.tables.data;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -40,12 +41,13 @@ import slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe;
 import slimeknights.tconstruct.tools.TinkerToolParts;
 import slimeknights.tconstruct.tools.TinkerTools;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public class TableRecipeProvider extends BaseRecipeProvider {
 
-  public TableRecipeProvider(PackOutput packOutput) {
-    super(packOutput);
+  public TableRecipeProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
+    super(packOutput, registries);
   }
 
   @Override

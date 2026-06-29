@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.world.data;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -20,9 +21,11 @@ import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.shared.block.SlimeType;
 import slimeknights.tconstruct.world.TinkerWorld;
 
+import java.util.concurrent.CompletableFuture;
+
 public class WorldRecipeProvider extends BaseRecipeProvider implements ICommonRecipeHelper {
-  public WorldRecipeProvider(PackOutput packOutput) {
-    super(packOutput);
+  public WorldRecipeProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
+    super(packOutput, registries);
   }
 
   @Override

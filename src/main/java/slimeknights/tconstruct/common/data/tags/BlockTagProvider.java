@@ -7,7 +7,6 @@ import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -452,8 +451,10 @@ public class BlockTagProvider extends BlockTagsProvider {
         Tiers dirtTier = dirt.getHarvestTier();
         Tiers grassTier = grass.getHarvestTier();
         // PORT M3: Tiers.getLevel() was removed in 1.21 (mining level is tag-based now). Use the HarvestTiers
-        // ordering helper to pick the higher tier, which preserves the vanilla ordering fallback.
-        Tier tier = HarvestTiers.max(dirtTier, grassTier);
+        // ordering helper to pick the higher tier, which preserves the vanilla ordering fallback. Both inputs are
+        // vanilla Tiers, so max() returns one of them; cast to Tiers to reach NeoForge's getTag() (only injected
+        // on the Tiers enum, not the Tier interface).
+        Tiers tier = (Tiers) HarvestTiers.max(dirtTier, grassTier);
         this.tag(Objects.requireNonNull(tier.getTag())).add(TinkerWorld.slimeGrass.get(dirt).get(grass));
       }
     }

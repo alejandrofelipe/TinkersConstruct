@@ -116,6 +116,14 @@ public class TooltipUtil {
     return nbt != null && nbt.getBoolean(KEY_DISPLAY);
   }
 
+  /**
+   * Marks the given stack as a display stack, suppressing part of the tooltip.
+   * @param stack  Stack to mark
+   */
+  public static void setDisplay(ItemStack stack) {
+    CustomData.update(DataComponents.CUSTOM_DATA, stack, t -> t.putBoolean(KEY_DISPLAY, true));
+  }
+
   /** Sets the tool name in a way that will not be italic */
   public static void setDisplayName(ItemStack tool, String name) {
     if (name.isEmpty()) {
