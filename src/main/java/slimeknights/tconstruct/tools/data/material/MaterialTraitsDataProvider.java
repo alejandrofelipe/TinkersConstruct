@@ -54,7 +54,7 @@ public class MaterialTraitsDataProvider extends AbstractMaterialTraitDataProvide
     addDefaultTraits(MaterialIds.leather, ModifierIds.tanned);
     addDefaultTraits(MaterialIds.vine, ModifierIds.solarPowered);
     addTraits(MaterialIds.gold, ARMOR, TinkerModifiers.golden.getId(), ModifierIds.magicProtection);
-    addTraits(MaterialIds.gold, PlatingMaterialStats.SHIELD.getId(), ModifierIds.magicProtection);
+    addTraits(MaterialIds.gold, PlatingMaterialStats.SHIELD.getStatId(), ModifierIds.magicProtection);
 
     // tier 2
     addDefaultTraits(MaterialIds.iron, ModifierIds.magnetic);
@@ -219,11 +219,11 @@ public class MaterialTraitsDataProvider extends AbstractMaterialTraitDataProvide
     material(MaterialIds.knightmetal).addTraits(SkullStats.ID, ModifierIds.spitting);
 
     // slimecage
-    MaterialStatsId cage = RepairStats.RIBCAGE.getId();
+    MaterialStatsId cage = RepairStats.RIBCAGE.getStatId();
     addTraits(MaterialIds.blaze, cage, ModifierIds.scorching);
 
     // slimeshell
-    MaterialStatsId shell = RepairStats.SHELL.getId();
+    MaterialStatsId shell = RepairStats.SHELL.getStatId();
     // shells
     addTraits(MaterialIds.turtle, shell, ModifierIds.turtlesGrace);
     addTraits(MaterialIds.shulker, shell, ModifierIds.shulkerBox);
@@ -234,7 +234,7 @@ public class MaterialTraitsDataProvider extends AbstractMaterialTraitDataProvide
     addTraits(MaterialIds.knightly, shell, ModifierIds.loyal);
 
     // slimeboots
-    MaterialStatsId laces = RepairStats.LACES.getId();
+    MaterialStatsId laces = RepairStats.LACES.getStatId();
     addTraits(MaterialIds.string, laces, ModifierIds.stepUp);
     addTraits(MaterialIds.leather, laces, ModifierIds.snowBoots);
     // vine uses default

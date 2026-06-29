@@ -1,19 +1,18 @@
 package slimeknights.tconstruct.tools.recipe.severing;
 
-import com.google.gson.JsonObject;
+import com.mojang.datafixers.util.Function3;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
 import slimeknights.tconstruct.library.recipe.modifiers.severing.SeveringRecipe;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /** Builder for severing recipes that have only the base chance and looting bonus as fields */
@@ -21,14 +20,10 @@ import java.util.function.Supplier;
 @Accessors(chain = true)
 @RequiredArgsConstructor(staticName = "serializer")
 public class SpecialSeveringRecipeBuilder extends AbstractRecipeBuilder<SpecialSeveringRecipeBuilder> {
-  private final RecipeSerializer<? extends SeveringRecipe> serializer;
+  private final Supplier<? extends RecipeSerializer<? extends SeveringRecipe>> serializer;
+  private final Function3<ResourceLocation,Float,Float,? extends SeveringRecipe> constructor;
   private float baseChance = 0.05f;
   private float lootingBonus = 0.01f;
-
-  /** Creates a new builder for the given serializer. */
-  public static SpecialSeveringRecipeBuilder serializer(Supplier<? extends RecipeSerializer<? extends SeveringRecipe>> supplier) {
-    return serializer(supplier.get());
-  }
 
   /** Doubles the drop chances for this rare mob */
   public SpecialSeveringRecipeBuilder rareMob() {
@@ -39,30 +34,13 @@ public class SpecialSeveringRecipeBuilder extends AbstractRecipeBuilder<SpecialS
 
   @SuppressWarnings("deprecation")
   @Override
-  public void save(Consumer<FinishedRecipe> consumer) {
-    save(consumer, Objects.requireNonNull(BuiltInRegistries.RECIPE_SERIALIZER.getKey(serializer)));
+  public void save(RecipeOutput output) {
+    save(output, Objects.requireNonNull(BuiltInRegistries.RECIPE_SERIALIZER.getKey(serializer.get())));
   }
 
   @Override
-  public void save(Consumer<FinishedRecipe> consumer, ResourceLocation id) {
-    consumer.accept(new Finished(id, null));
-  }
-
-  /** Finished recipe instance */
-  private class Finished extends AbstractFinishedRecipe {
-    public Finished(ResourceLocation id, @Nullable ResourceLocation advancementId) {
-      super(id, advancementId);
-    }
-
-    @Override
-    public void serializeRecipeData(JsonObject json) {
-      json.addProperty("per_level_chance", baseChance);
-      json.addProperty("looting_bonus", lootingBonus);
-    }
-
-    @Override
-    public RecipeSerializer<?> getType() {
-      return serializer;
-    }
+  public void save(RecipeOutput output, ResourceLocation id) {
+    AdvancementHolder advancement = buildOptionalAdvancement(id, "severing");
+    output.accept(id, constructor.apply(id, baseChance, lootingBonus), advancement);
   }
 }

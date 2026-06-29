@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.tools.recipe;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -50,7 +50,7 @@ public class TippedToolTransformRecipe extends ToolBuildingRecipe {
   }
 
   @Override
-  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, RegistryAccess access) {
+  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, HolderLookup.Provider access) {
     RecipeResult<LazyToolStack> result = super.getValidatedResult(inv, access);
     if (result.isSuccess()) {
       // tool must have modifier, else we are adding bad data
@@ -70,7 +70,7 @@ public class TippedToolTransformRecipe extends ToolBuildingRecipe {
           if (contents != null) {
             contents.potion()
               .map(holder -> holder.unwrapKey().map(key -> key.location().toString()).orElse(null))
-              .ifPresent(id -> tool.getPersistentData().putString(modifier, id));
+              .ifPresent(id -> tool.getPersistentData().putString(modifier.getLocation(), id));
           }
         }
       }
@@ -92,7 +92,7 @@ public class TippedToolTransformRecipe extends ToolBuildingRecipe {
               .orElse(null);
             if (id != null) {
               ItemStack copy = result.copy();
-              ToolStack.from(copy).getPersistentData().putString(modifier, id);
+              ToolStack.from(copy).getPersistentData().putString(modifier.getLocation(), id);
               return copy;
             }
           }

@@ -191,34 +191,34 @@ public class ToolsRecipeProvider extends BaseRecipeProvider implements IMaterial
       .pattern("l l")
       .pattern("glg")
       .pattern("c c")
-      .define('c', travelersMaterial.apply(PlatingMaterialStats.HELMET.getId()))
+      .define('c', travelersMaterial.apply(PlatingMaterialStats.HELMET.getStatId()))
       .define('l', Tags.Items.LEATHERS)
       .define('g', Tags.Items.GLASS_PANES_COLORLESS)
       .unlockedBy("has_item", has(Tags.Items.LEATHERS))
-      .save(shapedMaterial.apply(travelersMaterial.apply(PlatingMaterialStats.HELMET.getId())), location(travelersFolder + "goggles"));
+      .save(shapedMaterial.apply(travelersMaterial.apply(PlatingMaterialStats.HELMET.getStatId())), location(travelersFolder + "goggles"));
     ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, TinkerTools.travelersGear.get(ArmorItem.Type.CHESTPLATE))
       .pattern("l l")
       .pattern("lcl")
       .pattern("lcl")
-      .define('c', travelersMaterial.apply(PlatingMaterialStats.CHESTPLATE.getId()))
+      .define('c', travelersMaterial.apply(PlatingMaterialStats.CHESTPLATE.getStatId()))
       .define('l', Tags.Items.LEATHERS)
       .unlockedBy("has_item", has(Tags.Items.LEATHERS))
-      .save(shapedMaterial.apply(travelersMaterial.apply(PlatingMaterialStats.CHESTPLATE.getId())), location(travelersFolder + "chestplate"));
+      .save(shapedMaterial.apply(travelersMaterial.apply(PlatingMaterialStats.CHESTPLATE.getStatId())), location(travelersFolder + "chestplate"));
     ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, TinkerTools.travelersGear.get(ArmorItem.Type.LEGGINGS))
       .pattern("lll")
       .pattern("c c")
       .pattern("l l")
-      .define('c', travelersMaterial.apply(PlatingMaterialStats.LEGGINGS.getId()))
+      .define('c', travelersMaterial.apply(PlatingMaterialStats.LEGGINGS.getStatId()))
       .define('l', Tags.Items.LEATHERS)
       .unlockedBy("has_item", has(Tags.Items.LEATHERS))
-      .save(shapedMaterial.apply(travelersMaterial.apply(PlatingMaterialStats.LEGGINGS.getId())), location(travelersFolder + "pants"));
+      .save(shapedMaterial.apply(travelersMaterial.apply(PlatingMaterialStats.LEGGINGS.getStatId())), location(travelersFolder + "pants"));
     ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, TinkerTools.travelersGear.get(ArmorItem.Type.BOOTS))
       .pattern("c c")
       .pattern("l l")
-      .define('c', travelersMaterial.apply(PlatingMaterialStats.BOOTS.getId()))
+      .define('c', travelersMaterial.apply(PlatingMaterialStats.BOOTS.getStatId()))
       .define('l', Tags.Items.LEATHERS)
       .unlockedBy("has_item", has(Tags.Items.LEATHERS))
-      .save(shapedMaterial.apply(travelersMaterial.apply(PlatingMaterialStats.BOOTS.getId())), location(travelersFolder + "boots"));
+      .save(shapedMaterial.apply(travelersMaterial.apply(PlatingMaterialStats.BOOTS.getStatId())), location(travelersFolder + "boots"));
     // shield needs no special variants, no compat shield cores exist
     ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, TinkerTools.travelersShield)
                        .pattern("cl")
@@ -459,11 +459,11 @@ public class ToolsRecipeProvider extends BaseRecipeProvider implements IMaterial
 
     // bowstrings and shield cores are part builder exclusive. Shield core additionally disallows anything that conflicts with casting shield plating (obsidian/nahuatl conflict)
     uncastablePart(consumer, TinkerToolParts.bowstring.get(), 1, null, partFolder);
-    uncastablePart(consumer, TinkerToolParts.shieldCore.get(), 4, PlatingMaterialStats.SHIELD.getId(), partFolder);
+    uncastablePart(consumer, TinkerToolParts.shieldCore.get(), 4, PlatingMaterialStats.SHIELD.getStatId(), partFolder);
     // slimesuit - not castable
-    uncastablePart(consumer, TinkerToolParts.ribcage.get(), 2, PlatingMaterialStats.SHIELD.getId(), partFolder);
-    uncastablePart(consumer, TinkerToolParts.shell.get(), 2, PlatingMaterialStats.SHIELD.getId(), partFolder);
-    uncastablePart(consumer, TinkerToolParts.laces.get(), 2, PlatingMaterialStats.SHIELD.getId(), partFolder);
+    uncastablePart(consumer, TinkerToolParts.ribcage.get(), 2, PlatingMaterialStats.SHIELD.getStatId(), partFolder);
+    uncastablePart(consumer, TinkerToolParts.shell.get(), 2, PlatingMaterialStats.SHIELD.getStatId(), partFolder);
+    uncastablePart(consumer, TinkerToolParts.laces.get(), 2, PlatingMaterialStats.SHIELD.getStatId(), partFolder);
     // arrow parts are just part builder, no composite currently
     Ingredient arrowPattern = CompoundIngredient.of(Ingredient.of(TinkerTags.Items.DEFAULT_PATTERNS), Ingredient.of(TinkerSmeltery.arrowCast));
     PartRecipeBuilder.partRecipe(TinkerToolParts.arrowHead.get())

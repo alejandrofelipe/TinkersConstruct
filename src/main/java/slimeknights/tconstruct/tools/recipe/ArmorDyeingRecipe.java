@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.tools.recipe;
 
 import lombok.Getter;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.Tag;
@@ -66,7 +67,7 @@ public class ArmorDyeingRecipe implements ITinkerStationRecipe, IMultiRecipe<IDi
   }
 
   @Override
-  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, RegistryAccess access) {
+  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, HolderLookup.Provider access) {
     ToolStack tool = inv.getTinkerable().copy();
 
     ModDataNBT persistentData = tool.getPersistentData();
@@ -76,8 +77,8 @@ public class ArmorDyeingRecipe implements ITinkerStationRecipe, IMultiRecipe<IDi
     int count = 0;
 
     // copy existing color
-    if (persistentData.contains(key, Tag.TAG_INT)) {
-      int color = persistentData.getInt(key);
+    if (persistentData.contains(key.getLocation(), Tag.TAG_INT)) {
+      int color = persistentData.getInt(key.getLocation());
       int r = color >> 16 & 255;
       int g = color >>  8 & 255;
       int b = color       & 255;
@@ -122,7 +123,7 @@ public class ArmorDyeingRecipe implements ITinkerStationRecipe, IMultiRecipe<IDi
     ng = (int)((float)ng * scaledBrightness / brightness);
     nb = (int)((float)nb * scaledBrightness / brightness);
     int finalColor = (nr << 16) | (ng << 8) | nb;
-    persistentData.putInt(key, finalColor);
+    persistentData.putInt(key.getLocation(), finalColor);
 
     // add the modifier if missing
     if (tool.getModifierLevel(key) == 0) {
@@ -182,7 +183,7 @@ public class ArmorDyeingRecipe implements ITinkerStationRecipe, IMultiRecipe<IDi
       this.dyes = RegistryHelper.getTagValueStream(BuiltInRegistries.ITEM, color.getTag()).map(ItemStack::new).toList();
       this.variant = Component.translatable("color.minecraft." + color.getSerializedName());
 
-      ResourceLocation modID = RESULT.getId();
+      ResourceLocation modID = RESULT.getId().getLocation();
       int tintColor = Util.getColor(color);
       List<ModifierEntry> results = List.of(RESULT);
       toolWithModifier = tools.stream().map(stack -> IDisplayModifierRecipe.withModifiers(stack, DEFAULT_TOOL_STACK_SIZE, results, data -> data.putInt(modID, tintColor))).toList();

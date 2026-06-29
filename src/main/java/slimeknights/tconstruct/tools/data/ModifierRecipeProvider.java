@@ -2066,10 +2066,10 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
       .setMaxLevel(maxLevel)
       .setSlots(SlotType.UPGRADE, 1);
     if (salvageFolder != null) {
-      builder.saveSalvage(consumer, prefix(modifier, salvageFolder));
+      builder.saveSalvage(consumer, prefix(modifier.getLocation(), salvageFolder));
     }
     if (recipeFolder != null) {
-      builder.save(consumer, wrap(modifier, recipeFolder, "_from_dust"));
+      builder.save(consumer, wrap(modifier.getLocation(), recipeFolder, "_from_dust"));
       IncrementalModifierRecipeBuilder.modifier(modifier)
                                       .setTools(tools)
                                       .setInput(Tags.Items.STORAGE_BLOCKS_REDSTONE, 9, 45)
@@ -2077,7 +2077,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                                       .setMaxLevel(maxLevel)
                                       .setSlots(SlotType.UPGRADE, 1)
                                       .disallowCrystal() // avoid redundancy, though in this case the end result is the same
-                                      .save(consumer, wrap(modifier, recipeFolder, "_from_block"));
+                                      .save(consumer, wrap(modifier.getLocation(), recipeFolder, "_from_block"));
     }
   }
 
