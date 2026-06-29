@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.library.utils;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,6 +16,7 @@ import net.minecraft.world.level.Level.ExplosionInteraction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.EventHooks;
@@ -50,9 +52,15 @@ public class CustomExplosion extends Explosion {
   protected final Predicate<Entity> entityPredicate;
   /** If true, explosion damage bypasses the invulnerability time */
   protected final boolean bypassInvulnerableTime;
+  /**
+   * PORT 1.21.1: {@code Explosion#damageSource} is now private with no accessor, so we keep our own copy.
+   * Resolved the same way vanilla does: a null source falls back to the default explosion damage source.
+   */
+  protected final DamageSource customDamageSource;
 
   public CustomExplosion(Level level, Vec3 location, float radius, @Nullable Entity sourceEntity, @Nullable Predicate<Entity> entityPredicate, float damage, @Nullable DamageSource damageSource, float knockback, @Nullable ExplosionDamageCalculator damageCalculator, boolean placeFire, BlockInteraction blockInteraction, boolean bypassInvulnerableTime) {
-    super(level, sourceEntity, damageSource, damageCalculator, location.x, location.y, location.z, radius, placeFire, blockInteraction);
+    super(level, sourceEntity, damageSource, damageCalculator, location.x, location.y, location.z, radius, placeFire, blockInteraction, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+    this.customDamageSource = damageSource != null ? damageSource : Explosion.getDefaultDamageSource(level, sourceEntity);
     this.entityPredicate = Objects.requireNonNullElse(entityPredicate, DEFAULT_ENTITY_PREDICATE);
     this.damage = damage;
     this.knockback = knockback;
@@ -65,7 +73,7 @@ public class CustomExplosion extends Explosion {
 
   @Override
   public void explode() {
-    this.level.gameEvent(this.source, GameEvent.EXPLODE, getPosition());
+    this.level.gameEvent(this.source, GameEvent.EXPLODE, center());
     calculateHitBlocks();
     damageAndPushEntities();
   }
@@ -150,7 +158,7 @@ public class CustomExplosion extends Explosion {
 
     // start pushing entities
     // this logic is for the most part identical to vanilla, except taking better advantage of vec3
-    Vec3 center = getPosition();
+    Vec3 center = center();
     for (Entity entity : list) {
       Vec3 dir = entity.position().subtract(center);
       double length = dir.length();
@@ -168,9 +176,9 @@ public class CustomExplosion extends Explosion {
           if (damage > 0) {
             int toDeal = (int) ((strength * strength + strength) / 2 * damage + 1);
             if (bypassInvulnerableTime) {
-              ToolAttackUtil.hurtNoInvulnerableTime(entity, getDamageSource(), toDeal);
+              ToolAttackUtil.hurtNoInvulnerableTime(entity, customDamageSource, toDeal);
             } else {
-              entity.hurt(getDamageSource(), toDeal);
+              entity.hurt(customDamageSource, toDeal);
             }
           }
 
@@ -218,10 +226,10 @@ public class CustomExplosion extends Explosion {
     if (!level.isClientSide && level instanceof ServerLevel server) {
       // skip position sync if there are no blocks to be removed
       List<BlockPos> toBlow = interactsWithBlocks() ? getToBlow() : List.of();
-      Vec3 position = getPosition();
+      Vec3 position = center();
       for (ServerPlayer player : server.players()) {
         if (player.distanceToSqr(position) < 4096.0D) {
-          player.connection.send(new ClientboundExplodePacket(x, y, z, radius, toBlow, hitPlayers.get(player)));
+          player.connection.send(new ClientboundExplodePacket(x, y, z, radius, toBlow, hitPlayers.get(player), getBlockInteraction(), getSmallExplosionParticles(), getLargeExplosionParticles(), getExplosionSound()));
         }
       }
     }

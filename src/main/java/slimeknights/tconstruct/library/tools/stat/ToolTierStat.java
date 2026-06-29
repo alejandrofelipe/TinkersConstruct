@@ -75,7 +75,7 @@ public class ToolTierStat implements IToolStat<Tier> {
 
   @Override
   public Tag write(Tier value) {
-    ResourceLocation id = HarvestTiers.getId(value);
+    ResourceLocation id = HarvestTiers.tierName(value);
     if (id != null) {
       return StringTag.valueOf(id.toString());
     }
@@ -94,7 +94,7 @@ public class ToolTierStat implements IToolStat<Tier> {
 
   @Override
   public JsonElement serialize(Tier value) {
-    return new JsonPrimitive(Objects.requireNonNull(HarvestTiers.getId(value)).toString());
+    return new JsonPrimitive(Objects.requireNonNull(HarvestTiers.tierName(value)).toString());
   }
 
   @Override
@@ -109,7 +109,7 @@ public class ToolTierStat implements IToolStat<Tier> {
 
   @Override
   public void toNetwork(FriendlyByteBuf buffer, Tier value) {
-    buffer.writeResourceLocation(Objects.requireNonNull(HarvestTiers.getId(value)));
+    buffer.writeResourceLocation(Objects.requireNonNull(HarvestTiers.tierName(value)));
   }
 
   @Override

@@ -66,7 +66,7 @@ public record TeleportDodgeModule(IJsonPredicate<LivingEntity> defender, IJsonPr
         // if we successfully teleport, apply the cooldown
         int cooldown = this.cooldown.compute(level);
         if (cooldown > 0) {
-          entity.addEffect(new MobEffectInstance(TinkerEffects.enderference.get(), cooldown));
+          entity.addEffect(new MobEffectInstance(TinkerEffects.enderference, cooldown));
         }
         // damage tool based on how much damage we blocked
         ToolDamageUtil.damageAnimated(tool, (int)amount, entity, slotType, modifier.getId());

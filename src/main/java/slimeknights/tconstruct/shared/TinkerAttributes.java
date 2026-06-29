@@ -80,7 +80,7 @@ public class TinkerAttributes {
     event.enqueueWork(() -> {
       // make knockback resistance syncable, as we need that info clientside
       if (Config.COMMON.syncKnockbackResistance.get()) {
-        Attributes.KNOCKBACK_RESISTANCE.setSyncable(true);
+        Attributes.KNOCKBACK_RESISTANCE.value().setSyncable(true);
       }
     });
   }

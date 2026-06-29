@@ -3,21 +3,22 @@ package slimeknights.tconstruct.tools.recipe;
 import lombok.Getter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.BannerItem;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import slimeknights.mantle.recipe.IMultiRecipe;
 import slimeknights.mantle.util.RegistryHelper;
+import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.json.IntRange;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -41,11 +42,11 @@ import java.util.stream.Stream;
 
 /** Recipe to add a banner to a shield */
 public class BannerModifierRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisplayModifierRecipe> {
+  /** PORT M3 (recipes): 1.21 recipes no longer carry an id; retained for JEI display only. */
   @Getter
-  private final ResourceLocation id;
+  private final ResourceLocation id = TConstruct.getResource("banner_modifier");
 
-  public BannerModifierRecipe(ResourceLocation id) {
-    this.id = id;
+  public BannerModifierRecipe() {
     ModifierRecipeLookup.addRecipeModifier(null, TinkerModifiers.banner);
   }
 
@@ -101,10 +102,13 @@ public class BannerModifierRecipe implements ITinkerStationRecipe, IMultiRecipe<
     }
 
     // get the banner data
-    CompoundTag bannerData = BlockItem.getBlockEntityData(banner);
+    // PORT M3: block entity data moved to DataComponents.BLOCK_ENTITY_DATA (CustomData) in 1.21;
+    // banner patterns are now the BannerPatternLayers component, so this legacy "Patterns" list read
+    // returns empty until BannerModule is reworked against the new component.
+    CustomData bannerData = banner.get(DataComponents.BLOCK_ENTITY_DATA);
     ListTag patterns = new ListTag();
     if (bannerData != null) {
-      patterns = bannerData.getList("Patterns", Tag.TAG_COMPOUND);
+      patterns = bannerData.copyTag().getList("Patterns", Tag.TAG_COMPOUND);
     }
 
     // apply the pattern

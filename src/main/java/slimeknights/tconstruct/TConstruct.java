@@ -102,7 +102,7 @@ public class TConstruct {
     IEventBus bus = modBus;
     TConstruct.modBus = bus;
 
-    Config.init();
+    Config.init(container);
     TinkerItemDisplays.init();
     MaterialRegistry.init();
 
@@ -198,9 +198,9 @@ public class TConstruct {
     generator.addProvider(server, new DamageTypeTagProvider(packOutput, datapackRegistryProvider.getRegistryProvider(), existingFileHelper));
 
     // other datagen
-    generator.addProvider(server, new TConstructLootTableProvider(packOutput));
+    generator.addProvider(server, new TConstructLootTableProvider(packOutput, lookupProvider));
     generator.addProvider(server, new AdvancementsProvider(packOutput));
-    generator.addProvider(server, new GlobalLootModifiersProvider(packOutput));
+    generator.addProvider(server, new GlobalLootModifiersProvider(packOutput, lookupProvider));
     generator.addProvider(server, new LootTableInjectionProvider(packOutput));
     generator.addProvider(server, new ConfigurationDataProvider(packOutput));
   }

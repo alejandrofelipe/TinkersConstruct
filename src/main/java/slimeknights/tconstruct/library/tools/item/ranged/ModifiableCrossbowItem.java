@@ -246,7 +246,9 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
           projectile = arrow;
           arrow.setCritArrow(true);
           arrow.setSoundEvent(SoundEvents.CROSSBOW_HIT);
-          arrow.setShotFromCrossbow(true);
+          // 1.21 removed AbstractArrow.setShotFromCrossbow; the flag is now derived from the firedFromWeapon stack
+          // (true only for vanilla Items.CROSSBOW). createArrow above already passes the held weapon, and the
+          // crossbow-hit sound is set explicitly, so no extra wiring is needed here.
           speed = 3f;
           damage += 1;
 

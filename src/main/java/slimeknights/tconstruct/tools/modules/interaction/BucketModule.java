@@ -193,7 +193,7 @@ public record BucketModule(IJsonPredicate<Fluid> fluids) implements ModifierModu
     if (state.getBlock() instanceof BucketPickup bucketPickup) {
       ItemStack bucket = bucketPickup.pickupBlock(player, world, target, state);
       if (!bucket.isEmpty() && bucket.getItem() instanceof BucketItem bucketItem) {
-        Fluid pickedUpFluid = bucketItem.getFluid();
+        Fluid pickedUpFluid = bucketItem.content;
         if (pickedUpFluid != Fluids.EMPTY) {
           player.playSound(Objects.requireNonNullElse(pickedUpFluid.getFluidType().getSound(SoundActions.BUCKET_FILL), SoundEvents.BUCKET_FILL), 1.0F, 1.0F);
           // set the fluid if empty, increase the fluid if filled

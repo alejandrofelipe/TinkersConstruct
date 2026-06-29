@@ -165,7 +165,7 @@ public class GenerateMeltingRecipesCommand {
 
     // iterate all recipes and try adding a melting recipe
     MeltingCache cache = new MeltingCache();
-    for (RecipeHolder<T> holder : level.getRecipeManager().getAllRecipesFor((RecipeType<T>) recipeType.get())) {
+    for (RecipeHolder<T> holder : level.getRecipeManager().getAllRecipesFor((RecipeType<T>) recipeType.value())) {
       // skip any recipes that are specifically blacklisted
       if (skipRecipes.contains(holder.id())) {
         continue;
@@ -336,7 +336,9 @@ public class GenerateMeltingRecipesCommand {
     /** Creates a fluid output for this object */
     public FluidOutput toOutput() {
       if (tag != null) {
-        return FluidOutput.fromTag(tag, fluid.getAmount(), fluid.getTag());
+        // PORT M3: FluidStack.getTag() removed in 1.21 (component-based). Melting outputs do not carry
+        // component data here, so use the no-NBT overload.
+        return FluidOutput.fromTag(tag, fluid.getAmount());
       }
       return FluidOutput.fromStack(fluid);
     }
@@ -449,7 +451,7 @@ public class GenerateMeltingRecipesCommand {
       }
       // handle buckets directly as its faster
       if (item instanceof BucketItem bucket) {
-        Fluid fluid = bucket.getFluid();
+        Fluid fluid = bucket.content;
         if (fluid != Fluids.EMPTY) {
           return MeltingResult.from(new FluidStack(fluid, FluidType.BUCKET_VOLUME));
         }

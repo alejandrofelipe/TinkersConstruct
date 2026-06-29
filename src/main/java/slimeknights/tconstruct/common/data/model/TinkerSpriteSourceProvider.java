@@ -47,7 +47,7 @@ public class TinkerSpriteSourceProvider extends SpriteSourceProvider {
   protected void gather() {
     ResourceLocation trimPalette = ResourceLocation.parse(PALETTE_FOLDER + "trim_palette");
     // map of material suffix to material paeltte for trims
-    Map<String,ResourceLocation> tinkerMaterials = Arrays.stream(MaterialIds.TRIM_MATERIALS).collect(Collectors.toMap(id -> id.getNamespace() + "_" + id.getPath(), id -> id.withPrefix(PALETTE_FOLDER)));
+    Map<String,ResourceLocation> tinkerMaterials = Arrays.stream(MaterialIds.TRIM_MATERIALS).collect(Collectors.toMap(id -> id.getNamespace() + "_" + id.getPath(), id -> id.getLocation().withPrefix(PALETTE_FOLDER)));
     Map<String,ResourceLocation> vanillaMaterials = new HashMap<>();
     addVanilla(vanillaMaterials, TrimMaterials.QUARTZ);
     addVanilla(vanillaMaterials, TrimMaterials.IRON);

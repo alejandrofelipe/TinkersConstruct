@@ -34,7 +34,7 @@ public record SyncPersistentDataPacket(CompoundTag data) implements IThreadsafeP
     private static void handle(SyncPersistentDataPacket packet) {
       Player player = Minecraft.getInstance().player;
       if (player != null) {
-        PersistentDataCapability.getData(player).copyFrom(packet.data);
+        PersistentDataCapability.getOrWarn(player).copyFrom(packet.data);
       }
     }
   }

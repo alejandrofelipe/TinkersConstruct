@@ -101,7 +101,7 @@ public record SpittingModule(LevelingInt shots) implements ModifierModule, Gener
           int primaryIndex = shots / 2;
           Level world = entity.level();
           for (int shotIndex = 0; shotIndex < shots; shotIndex++) {
-            FluidEffectProjectile spit = new FluidEffectProjectile(world, entity, new FluidStack(fluid, amount), power);
+            FluidEffectProjectile spit = new FluidEffectProjectile(world, entity, fluid.copyWithAmount(amount), power);
             // apply fins
             spit.setWaterInertia(ConditionalStatModifierHook.getModifiedStat(tool, entity, ToolStats.WATER_INERTIA));
 

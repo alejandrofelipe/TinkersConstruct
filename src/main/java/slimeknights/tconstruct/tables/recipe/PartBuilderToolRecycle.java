@@ -9,6 +9,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -230,7 +231,8 @@ public class PartBuilderToolRecycle implements IPartBuilderRecipe, IMultiRecipe<
     return displayParts.stream().map(pi -> {
       ItemStack part = pi.part.withMaterialForDisplay(ToolBuildHandler.getRenderMaterial(pi.index));
       CustomData.update(DataComponents.CUSTOM_DATA, part, tag -> tag.putBoolean(TooltipUtil.KEY_DISPLAY, true));
-      return new DisplayPartRecipe(MaterialVariant.UNKNOWN, new Pattern(Loadables.ITEM.getKey(pi.part.asItem())), patternItems, 0, tool, List.of(part));
+      ResourceLocation partId = Loadables.ITEM.getKey(pi.part.asItem());
+      return new DisplayPartRecipe(partId, MaterialVariant.UNKNOWN, new Pattern(partId), patternItems, 0, tool, List.of(part));
     });
   }
 

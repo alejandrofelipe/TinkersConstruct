@@ -42,7 +42,10 @@ public record PunchModule(LevelingValue amount, ModifierCondition<IToolStackView
       float amount = this.amount.compute(modifier.getEffectiveLevel());
       if (amount > 0) {
         if (arrow != null) {
-          arrow.setKnockback((int) amount);
+          // PORT M3 (enchantments): AbstractArrow#setKnockback(int) was removed in 1.21; vanilla arrow knockback is
+          // now driven entirely by the firing weapon's minecraft:punch enchantment via EnchantmentHelper.modifyKnockback.
+          // Re-applying punch knockback to vanilla arrows needs the M3 enchantment convergence (a punch-enchanted
+          // weapon stack passed as firedFromWeapon); skipped for now. Tinkers' own projectiles still get knockback below.
         } else if (projectile instanceof ProjectileWithKnockback withKnockback) {
           withKnockback.addKnockback(amount);
         }

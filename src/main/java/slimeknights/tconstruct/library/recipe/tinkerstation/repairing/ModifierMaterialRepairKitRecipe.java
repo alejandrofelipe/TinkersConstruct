@@ -35,7 +35,8 @@ public class ModifierMaterialRepairKitRecipe extends CraftingTableRepairKitRecip
   @Getter
   private final MaterialStatsId statType;
   public ModifierMaterialRepairKitRecipe(ResourceLocation id, ModifierId modifier, MaterialId repairMaterial, MaterialStatsId statType) {
-    super(id);
+    // PORT 1.21.1: CustomRecipe no longer stores an id; id is still consumed by the loader's ContextKey.ID field.
+    super();
     this.modifier = modifier;
     this.repairMaterial = repairMaterial;
     this.statType = statType;

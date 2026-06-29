@@ -33,7 +33,8 @@ public class ModifierMaterialRepairRecipe extends TinkerStationRepairRecipe impl
   @Getter
   private final MaterialStatsId statType;
   public ModifierMaterialRepairRecipe(ResourceLocation id, ModifierId modifier, MaterialId repairMaterialID, MaterialStatsId statType) {
-    super(id);
+    // PORT 1.21.1: recipe base no longer stores an id; id is still consumed by the loader's ContextKey.ID field.
+    super();
     this.modifier = modifier;
     this.repairMaterial = LazyMaterial.of(repairMaterialID);
     this.statType = statType;

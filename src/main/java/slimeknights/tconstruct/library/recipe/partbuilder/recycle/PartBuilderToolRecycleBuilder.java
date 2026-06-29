@@ -57,6 +57,6 @@ public class PartBuilderToolRecycleBuilder extends AbstractRecipeBuilder<PartBui
   @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
     AdvancementHolder advancement = buildOptionalAdvancement(id, "parts");
-    consumer.accept(id, new PartBuilderToolRecycle(id, tools, pattern, parts), advancement);
+    consumer.accept(id, new PartBuilderToolRecycle(tools, pattern, parts), advancement);
   }
 }

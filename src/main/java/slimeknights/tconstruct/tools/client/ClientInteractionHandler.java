@@ -34,10 +34,7 @@ public class ClientInteractionHandler {
   /** Implements the client side of chestplate {@link slimeknights.tconstruct.library.modifiers.hook.interaction.GeneralInteractionModifierHook#onToolUse(IToolStackView, ModifierEntry, Player, InteractionHand, InteractionSource)} */
   @SubscribeEvent(priority = EventPriority.LOW)
   static void chestplateToolUse(PlayerInteractEvent.RightClickEmpty event) {
-    // not sure if anyone sets the result, but just in case listen to it so they can stop us running
-    if (event.getCancellationResult() != InteractionResult.PASS) {
-      return;
-    }
+    // 1.21: RightClickEmpty no longer carries a cancellation result and is not cancelable; just run our logic
     // figure out if we have a chestplate making us care
     Player player = event.getEntity();
     ItemStack chestplate = player.getItemBySlot(EquipmentSlot.CHEST);
@@ -54,8 +51,6 @@ public class ClientInteractionHandler {
         if (hand == InteractionHand.MAIN_HAND) {
           cancelNextOffhand = true;
         }
-        // set the result so later listeners see we did something
-        event.setCancellationResult(result);
       }
     }
   }
@@ -75,10 +70,7 @@ public class ClientInteractionHandler {
   /** Implements the client side of left click interaction for {@link slimeknights.tconstruct.library.modifiers.hook.interaction.GeneralInteractionModifierHook#onToolUse(IToolStackView, ModifierEntry, Player, InteractionHand, InteractionSource)} */
   @SubscribeEvent
   static void leftClickAir(LeftClickEmpty event) {
-    // not sure if anyone sets the result, but just in case listen to it so they can stop us running
-    if (event.getCancellationResult() != InteractionResult.PASS) {
-      return;
-    }
+    // 1.21: LeftClickEmpty no longer carries a cancellation result and is not cancelable; just run our logic
     // figure out if we have a chestplate making us care
     Player player = event.getEntity();
     ItemStack tool = event.getItemStack();
@@ -92,8 +84,6 @@ public class ClientInteractionHandler {
           player.swing(hand);
         }
         Minecraft.getInstance().gameRenderer.itemInHandRenderer.itemUsed(hand);
-        // set the result so later listeners see we did something
-        event.setCancellationResult(result);
       }
     }
   }

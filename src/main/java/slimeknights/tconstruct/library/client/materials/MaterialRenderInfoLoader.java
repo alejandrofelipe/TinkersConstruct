@@ -54,7 +54,7 @@ public class MaterialRenderInfoLoader implements IEarlySafeManagerReloadListener
     // we do this as we need to guarantee we run before models are baked, which happens in the first stage of listeners in the bakery constructor
     // the other option would be to wait until the atlas stitch event, though that would make it more difficult to know which sprites we need
     TConstruct.modBus.addListener(EventPriority.NORMAL, false, ModelEvent.RegisterAdditional.class, event -> {
-      if(ModLoader.isLoadingStateValid()) {
+      if(!ModLoader.hasErrors()) {
         INSTANCE.onReloadSafe(Minecraft.getInstance().getResourceManager());
       }
     });

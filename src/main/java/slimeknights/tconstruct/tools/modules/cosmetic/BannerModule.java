@@ -94,12 +94,12 @@ public enum BannerModule implements ModifierModule, DisplayNameModifierHook, Too
 
   /** Gets the key for the cache used in the model */
   public static ResourceLocation cacheKey(ModifierId modifier) {
-    return modifier.withSuffix("_cache");
+    return modifier.getLocation().withSuffix("_cache");
   }
 
   /** Gets the key for the pattern list in NBT */
   public static ResourceLocation patternKey(ModifierId modifier) {
-    return modifier.withSuffix("_patterns");
+    return modifier.getLocation().withSuffix("_patterns");
   }
 
   /** Copies the given list of patterns from banner format to the tool's NBT */

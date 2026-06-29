@@ -335,17 +335,19 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
    * Utils
    */
 
-  private static final LootItemCondition.Builder SILK_TOUCH = MatchTool.toolMatches(ItemPredicate.Builder.item().hasEnchantment(new EnchantmentPredicate(Enchantments.SILK_TOUCH, MinMaxBounds.Ints.atLeast(1))));
   private static final LootItemCondition.Builder SHEARS = CanItemPerformAbility.canItemPerformAbility(ItemAbilities.SHEARS_DIG);
-  private static final LootItemCondition.Builder SILK_TOUCH_OR_SHEARS = SHEARS.or(SILK_TOUCH);
+  /** Silk touch condition. In 1.21 enchantment predicates require a {@link Holder}, so this must resolve via the instance registries. */
+  private LootItemCondition.Builder silkTouchOrShears() {
+    return SHEARS.or(this.hasSilkTouch());
+  }
 
   protected static LootTable.Builder onlyShears(ItemLike item) {
     return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1)).when(SHEARS).add(LootItem.lootTableItem(item)));
   }
 
   /** Recreation of {@link #createShearsDispatchTable(Block, Builder)} using the tool action instead of the shears item */
-  private static LootTable.Builder droppingSilkOrShears(Block block, LootPoolEntryContainer.Builder<?> alternativeLootEntry) {
-    return createSelfDropDispatchTable(block, SILK_TOUCH_OR_SHEARS, alternativeLootEntry);
+  private LootTable.Builder droppingSilkOrShears(Block block, LootPoolEntryContainer.Builder<?> alternativeLootEntry) {
+    return createSelfDropDispatchTable(block, this.silkTouchOrShears(), alternativeLootEntry);
   }
 
   /** Reimplementation of {@link #createLeavesDrops(Block, Block, float...)} dropping the sticks from the loot table */

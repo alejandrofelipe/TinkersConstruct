@@ -84,7 +84,7 @@ public class CrystalshotItem extends ArrowItem {
     }
 
     public CrystalshotEntity(Level level, LivingEntity shooter) {
-      super(TinkerTools.crystalshotEntity.get(), shooter, level);
+      super(TinkerTools.crystalshotEntity.get(), shooter, level, withVariant("amethyst", 1), null);
       soundEvent = Sounds.CRYSTALSHOT.getSound();
     }
 
@@ -117,6 +117,11 @@ public class CrystalshotItem extends ArrowItem {
 
     @Override
     public ItemStack getPickupItem() {
+      return withVariant(getVariant(), 1);
+    }
+
+    @Override
+    protected ItemStack getDefaultPickupItem() {
       return withVariant(getVariant(), 1);
     }
 

@@ -7,13 +7,19 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -39,6 +45,7 @@ import slimeknights.tconstruct.tools.network.ToolContainerFluidUpdatePacket;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 /** Container for a tool inventory */
 public class ToolContainerMenu extends AbstractContainerMenu {
@@ -272,8 +279,25 @@ public class ToolContainerMenu extends AbstractContainerMenu {
   @Override
   public void slotsChanged(Container pContainer) {
     super.slotsChanged(pContainer);
-    if (craftingContainer != null && resultContainer != null) {
-      CraftingMenu.slotChangedCraftingGrid(this, player.level(), player, craftingContainer, resultContainer);
+    // PORT M3 (recipes): CraftingMenu#slotChangedCraftingGrid is now protected (inaccessible cross-package) and takes the
+    // matched RecipeHolder<CraftingRecipe>. Inline the vanilla server-side result-update logic here.
+    if (craftingContainer != null && resultContainer != null && player instanceof ServerPlayer serverPlayer && player.level() instanceof ServerLevel serverLevel) {
+      CraftingInput input = craftingContainer.asCraftInput();
+      ItemStack result = ItemStack.EMPTY;
+      Optional<RecipeHolder<CraftingRecipe>> optional = serverLevel.getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, serverLevel);
+      if (optional.isPresent()) {
+        RecipeHolder<CraftingRecipe> holder = optional.get();
+        CraftingRecipe recipe = holder.value();
+        if (resultContainer.setRecipeUsed(serverLevel, serverPlayer, holder)) {
+          ItemStack assembled = recipe.assemble(input, serverLevel.registryAccess());
+          if (assembled.isItemEnabled(serverLevel.enabledFeatures())) {
+            result = assembled;
+          }
+        }
+      }
+      resultContainer.setItem(0, result);
+      setRemoteSlot(0, result);
+      serverPlayer.connection.send(new ClientboundContainerSetSlotPacket(containerId, incrementStateId(), 0, result));
     }
   }
 

@@ -67,7 +67,9 @@ public class ToolHookIngredient implements ICustomIngredient {
       }
     }
     if (!found) {
-      builder.add(new ItemStack(Blocks.BARRIER).setHoverName(Component.literal("Empty Tag: " + tag.location())));
+      ItemStack barrier = new ItemStack(Blocks.BARRIER);
+      barrier.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, Component.literal("Empty Tag: " + tag.location()));
+      builder.add(barrier);
     }
     return builder.build();
   }

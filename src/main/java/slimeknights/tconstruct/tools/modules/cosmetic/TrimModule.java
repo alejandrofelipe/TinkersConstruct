@@ -90,11 +90,11 @@ public class TrimModule implements ModifierModule, DisplayNameModifierHook, Modi
 
   /** Gets the pattern key for the given modifier ID */
   public static ResourceLocation patternKey(ModifierId modifier) {
-    return modifier.withSuffix("_pattern");
+    return modifier.getLocation().withSuffix("_pattern");
   }
 
   /** Gets the material key for the given modifier ID */
   public static ResourceLocation materialKey(ModifierId modifier) {
-    return modifier.withSuffix("_material");
+    return modifier.getLocation().withSuffix("_material");
   }
 }

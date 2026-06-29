@@ -135,11 +135,13 @@ public class ToolHarvestLogic {
       exp = BlockSideHitListener.getLastXP(player);
     } else {
       // NeoForge: ForgeHooks.onBlockBreakEvent -> CommonHooks.fireBlockBreak, which returns the event rather than an int
-      BlockEvent.BreakEvent breakEvent = CommonHooks.fireBlockBreak(world, type, player, pos, world.getBlockState(pos));
+      BlockState brokenState = world.getBlockState(pos);
+      BlockEvent.BreakEvent breakEvent = CommonHooks.fireBlockBreak(world, type, player, pos, brokenState);
       if (breakEvent.isCanceled()) {
         return false;
       }
-      exp = breakEvent.getExpToDrop();
+      // 1.21: BreakEvent no longer carries the dropped experience (moved to BlockDropsEvent); query the block directly
+      exp = brokenState.getExpDrop(world, pos, world.getBlockEntity(pos), player, stack);
     }
     // checked after the NeoForge hook, so we have to recheck
     // TODO: is this needed? Seems its called inside CommonHooks.fireBlockBreak

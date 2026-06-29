@@ -2,6 +2,7 @@ package slimeknights.tconstruct.shared;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
@@ -89,6 +90,8 @@ import slimeknights.tconstruct.shared.item.TinkerBookItem;
 import slimeknights.tconstruct.shared.item.TinkerBookItem.BookType;
 import slimeknights.tconstruct.shared.particle.FluidParticleData;
 import slimeknights.tconstruct.tools.TinkerModifiers;
+
+import java.util.concurrent.CompletableFuture;
 
 import static slimeknights.tconstruct.TConstruct.getResource;
 
@@ -241,14 +244,15 @@ public final class TinkerCommons extends TinkerModule {
     DataGenerator generator = event.getGenerator();
     PackOutput output = generator.getPackOutput();
     ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
+    CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
     boolean client = event.includeClient();
     generator.addProvider(client, new ModelSpriteProvider(output, existingFileHelper));
-    generator.addProvider(client, new TinkerSpriteSourceProvider(output, existingFileHelper));
+    generator.addProvider(client, new TinkerSpriteSourceProvider(output, lookupProvider, existingFileHelper));
     generator.addProvider(client, new TinkerItemModelProvider(output, existingFileHelper));
     generator.addProvider(client, new TinkerBlockStateProvider(output, existingFileHelper));
     generator.addProvider(client, new RenderFluidProvider(output));
     generator.addProvider(client, new RenderItemProvider(output));
-    generator.addProvider(event.includeServer(), new CommonRecipeProvider(output));
+    generator.addProvider(event.includeServer(), new CommonRecipeProvider(output, lookupProvider));
   }
 
   /** Adds all relevant items to the creative tab */

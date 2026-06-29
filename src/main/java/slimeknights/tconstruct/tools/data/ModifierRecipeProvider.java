@@ -76,6 +76,10 @@ import slimeknights.tconstruct.tools.recipe.EnchantmentConvertingRecipeBuilder;
 import slimeknights.tconstruct.tools.recipe.ModifierRemovalRecipeBuilder;
 import slimeknights.tconstruct.tools.recipe.ModifierSortingRecipeBuilder;
 import slimeknights.tconstruct.tools.recipe.ToggleInteractionWorktableRecipeBuilder;
+import slimeknights.tconstruct.tools.recipe.severing.MooshroomDemushroomingRecipe;
+import slimeknights.tconstruct.tools.recipe.severing.PlayerBeheadingRecipe;
+import slimeknights.tconstruct.tools.recipe.severing.SheepShearingRecipe;
+import slimeknights.tconstruct.tools.recipe.severing.SnowGolemBeheadingRecipe;
 import slimeknights.tconstruct.tools.recipe.severing.SpecialSeveringRecipeBuilder;
 import slimeknights.tconstruct.world.TinkerHeadType;
 import slimeknights.tconstruct.world.TinkerWorld;
@@ -1908,11 +1912,10 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
 
     // cosmetics //
     // PORT M3: SimpleFinishedRecipe was removed in the 1.21 datagen port. Special recipes now go through
-    // RecipeOutput.accept(id, recipe, advancement). These recipe classes still carry an id constructor; once the
-    // library drops the recipe id field (RecipeHolder), instantiate them no-arg.
-    consumer.accept(location(folder + "dyeing"), new ArmorDyeingRecipe(location(folder + "dyeing")), null);
-    consumer.accept(location(folder + "trim"), new ArmorTrimRecipe(location(folder + "trim")), null);
-    consumer.accept(location(folder + "banner"), new BannerModifierRecipe(location(folder + "banner")), null);
+    // RecipeOutput.accept(id, recipe, advancement). 1.21 recipes no longer carry an id, so these are instantiated no-arg.
+    consumer.accept(location(folder + "dyeing"), new ArmorDyeingRecipe(), null);
+    consumer.accept(location(folder + "trim"), new ArmorTrimRecipe(), null);
+    consumer.accept(location(folder + "banner"), new BannerModifierRecipe(), null);
 
     // slimesuit //
     // basic slime
@@ -1958,8 +1961,8 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
 												 .save(consumer, location(folder + "creeper_head"));
     SeveringRecipeBuilder.severing(EntityIngredient.of(EntityType.PIGLIN), Items.PIGLIN_HEAD)
                          .save(consumer, location(folder + "piglin_head"));
-    SpecialSeveringRecipeBuilder.serializer(TinkerModifiers.playerBeheadingSerializer).rareMob().save(consumer, location(folder + "player_head"));
-    SpecialSeveringRecipeBuilder.serializer(TinkerModifiers.snowGolemBeheadingSerializer).save(consumer, location(folder + "snow_golem_head"));
+    SpecialSeveringRecipeBuilder.serializer(TinkerModifiers.playerBeheadingSerializer, PlayerBeheadingRecipe::new).rareMob().save(consumer, location(folder + "player_head"));
+    SpecialSeveringRecipeBuilder.serializer(TinkerModifiers.snowGolemBeheadingSerializer, SnowGolemBeheadingRecipe::new).save(consumer, location(folder + "snow_golem_head"));
     SeveringRecipeBuilder.severing(EntityIngredient.of(EntityType.IRON_GOLEM), Blocks.CARVED_PUMPKIN)
                          .save(consumer, location(folder + "iron_golem_head"));
     SeveringRecipeBuilder.severing(EntityIngredient.of(EntityType.ENDER_DRAGON), Items.DRAGON_HEAD).rareMob()
@@ -2020,13 +2023,13 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                          .noChildOutput()
                          .save(consumer, location(folder + "chicken_feather"));
     // beshrooming
-    SpecialSeveringRecipeBuilder.serializer(TinkerModifiers.mooshroomDemushroomingSerializer).save(consumer, location(folder + "mooshroom_shroom"));
+    SpecialSeveringRecipeBuilder.serializer(TinkerModifiers.mooshroomDemushroomingSerializer, MooshroomDemushroomingRecipe::new).save(consumer, location(folder + "mooshroom_shroom"));
     // beshelling
     SeveringRecipeBuilder.severing(EntityIngredient.of(EntityType.TURTLE), Items.TURTLE_HELMET)
                          .setChildOutput(ItemOutput.fromItem(Items.TURTLE_SCUTE))
                          .save(consumer, location(folder + "turtle_shell"));
     // befleecing
-    SpecialSeveringRecipeBuilder.serializer(TinkerModifiers.sheepShearing).save(consumer, location(folder + "sheep_wool"));
+    SpecialSeveringRecipeBuilder.serializer(TinkerModifiers.sheepShearing, SheepShearingRecipe::new).save(consumer, location(folder + "sheep_wool"));
   }
 
   /** Adds recipes for a plate armor texture with a custom tag */

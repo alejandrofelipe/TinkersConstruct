@@ -1,10 +1,12 @@
 package slimeknights.tconstruct.tables.recipe;
 
 import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
+import slimeknights.mantle.data.loadable.field.ContextKey;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.recipe.ingredient.SizedIngredient;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
@@ -29,16 +31,16 @@ import java.util.stream.IntStream;
  * Recipe that replaces a tool part with another
  */
 public class TinkerStationPartSwapping extends MaterialSwappingRecipe {
-  public static final RecordLoadable<TinkerStationPartSwapping> LOADER = RecordLoadable.create(TOOLS_FIELD, STACK_SIZE_FIELD, EXTRA_REQUIREMENTS_FIELD, TinkerStationPartSwapping::new);
+  public static final RecordLoadable<TinkerStationPartSwapping> LOADER = RecordLoadable.create(ContextKey.ID.requiredField(), TOOLS_FIELD, STACK_SIZE_FIELD, EXTRA_REQUIREMENTS_FIELD, TinkerStationPartSwapping::new);
 
-  public TinkerStationPartSwapping(Ingredient tools, int maxStackSize, List<SizedIngredient> extraRequirements) {
-    super(tools, maxStackSize, extraRequirements);
+  public TinkerStationPartSwapping(ResourceLocation id, Ingredient tools, int maxStackSize, List<SizedIngredient> extraRequirements) {
+    super(id, tools, maxStackSize, extraRequirements);
   }
 
-  /** @deprecated use {@link #TinkerStationPartSwapping(Ingredient, int, List)} */
+  /** @deprecated use {@link #TinkerStationPartSwapping(ResourceLocation, Ingredient, int, List)} */
   @Deprecated(forRemoval = true)
-  public TinkerStationPartSwapping(Ingredient tools, int maxStackSize) {
-    this(tools, maxStackSize, List.of());
+  public TinkerStationPartSwapping(ResourceLocation id, Ingredient tools, int maxStackSize) {
+    this(id, tools, maxStackSize, List.of());
   }
 
   @Override

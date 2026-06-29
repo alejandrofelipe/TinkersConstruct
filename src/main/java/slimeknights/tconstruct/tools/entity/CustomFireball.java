@@ -69,7 +69,7 @@ public class CustomFireball extends Fireball implements ProjectileWithPower {
 
   @Override
   protected Component getTypeName() {
-    ItemStack stack = getItemRaw();
+    ItemStack stack = getItem();
     if (!stack.isEmpty()) {
       return stack.getHoverName();
     }

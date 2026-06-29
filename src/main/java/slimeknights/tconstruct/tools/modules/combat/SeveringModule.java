@@ -56,7 +56,10 @@ public enum SeveringModule implements ModifierModule, ProcessLootModifierHook {
         List<SeveringRecipe> recipes = SeveringRecipeCache.findRecipe(world.getRecipeManager(), entity.getType());
         if (!recipes.isEmpty()) {
           float level = modifier.getEffectiveLevel();
-          float looting = context.getLootingModifier();
+          // PORT M3 (looting): LootContext.getLootingModifier() was removed in 1.21; loot bonus is now driven by the
+          // minecraft:looting enchantment value effect. Until the M3 looting convergence (see ModifierLootingHandler),
+          // no looting bonus is applied to severing chance.
+          float looting = 0;
           // deprecated method of doubling chances
           float chanceMultiplier = entity.getType().is(TinkerTags.EntityTypes.RARE_MOBS) ? 2 : 1;
           for (SeveringRecipe recipe : recipes) {

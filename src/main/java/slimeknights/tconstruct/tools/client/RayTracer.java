@@ -75,7 +75,7 @@ public class RayTracer {
    * @return the block reach distance
    */
   public static double getBlockReachDistance(Player player) {
-    return player.level().isClientSide ? ClientOnly.getBlockReachDistanceClient() : player instanceof ServerPlayer serverPlayer ? getBlockReachDistanceServer(serverPlayer) : 5D;
+    return player.level().isClientSide ? ClientOnly.getBlockReachDistanceClient(player) : player instanceof ServerPlayer serverPlayer ? getBlockReachDistanceServer(serverPlayer) : 5D;
   }
 
   /**
@@ -92,9 +92,10 @@ public class RayTracer {
      * Gets the block reach distance from the client
      * @return the block reach distance from the client
      */
-    private static double getBlockReachDistanceClient() {
+    private static double getBlockReachDistanceClient(Player player) {
       assert Minecraft.getInstance().gameMode != null;
-      return Minecraft.getInstance().gameMode.getPickRange();
+      // 1.21: MultiPlayerGameMode#getPickRange is gone; reach is now the BLOCK_INTERACTION_RANGE attribute (synced to the client)
+      return player.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE);
     }
   }
 }
