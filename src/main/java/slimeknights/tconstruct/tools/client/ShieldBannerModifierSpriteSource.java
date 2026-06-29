@@ -57,7 +57,10 @@ public record ShieldBannerModifierSpriteSource(int cropX, int cropY, int cropWid
   @Internal
   public static SpriteSourceType register() {
     if (TYPE == null) {
-      TYPE = SpriteSources.register(TConstruct.getResource("shield_banner_to_modifier").toString(), CODEC);
+      // 1.21: SpriteSources.register applies ResourceLocation.withDefaultNamespace to the name, so it must be a bare
+      // path (no namespace). The type id therefore lives under the minecraft namespace, matching the other sprite
+      // source types in our generated atlas JSON (minecraft:directory, minecraft:paletted_permutations, ...).
+      TYPE = SpriteSources.register("shield_banner_to_modifier", CODEC);
     }
     return TYPE;
   }
