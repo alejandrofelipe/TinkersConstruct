@@ -191,7 +191,8 @@ public class ModifierEvents {
       for (int i = 0; i < hotbarSize; i++) {
         ItemStack stack = inventory.getItem(i);
         if (!stack.isEmpty() && (soulBelt || ModifierUtil.checkVolatileFlag(stack, SOULBOUND))) {
-          CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt(MantleEvents.SOULBOUND_SLOT, i));
+          final int slot = i;
+          CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt(MantleEvents.SOULBOUND_SLOT, slot));
         }
       }
       // rest of the inventory, only check soulbound (no modifier that moves non-soulbound currently)
@@ -200,7 +201,8 @@ public class ModifierEvents {
       for (int i = hotbarSize; i < totalSize; i++) {
         ItemStack stack = inventory.getItem(i);
         if (!stack.isEmpty() && ModifierUtil.checkVolatileFlag(stack, SOULBOUND)) {
-          CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt(MantleEvents.SOULBOUND_SLOT, i));
+          final int slot = i;
+          CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt(MantleEvents.SOULBOUND_SLOT, slot));
         }
       }
     }
