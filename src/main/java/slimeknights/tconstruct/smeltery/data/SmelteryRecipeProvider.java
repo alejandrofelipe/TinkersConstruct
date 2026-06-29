@@ -2098,29 +2098,29 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
                                        TinkerFluids.meatSoup.result(FluidValues.BOWL / 5)).save(consumer, location(folder + "meat_soup"));
 
     // zombies give iron, they drop it sometimes
-    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.ZOMBIE, EntityType.HUSK, EntityType.ZOMBIE_HORSE), TinkerFluids.moltenIron.result(FluidValues.NUGGET).get(), 4)
+    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.ZOMBIE, EntityType.HUSK, EntityType.ZOMBIE_HORSE), TinkerFluids.moltenIron.result(FluidValues.NUGGET), 4)
                               .save(consumer, location(folder + "zombie"));
     MeltingRecipeBuilder.melting(Ingredient.of(Items.ZOMBIE_HEAD, TinkerWorld.heads.get(TinkerHeadType.HUSK)), TinkerFluids.moltenIron, FluidValues.INGOT)
                         .save(consumer, location(headFolder + "zombie"));
     // drowned drop copper instead
-    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.DROWNED), TinkerFluids.moltenCopper.result(FluidValues.NUGGET).get(), 4)
+    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.DROWNED), TinkerFluids.moltenCopper.result(FluidValues.NUGGET), 4)
                               .save(consumer, location(folder + "drowned"));
     MeltingRecipeBuilder.melting(Ingredient.of(TinkerWorld.heads.get(TinkerHeadType.DROWNED)), TinkerFluids.moltenCopper, FluidValues.INGOT)
                         .save(consumer, location(headFolder + "drowned"));
     // and piglins gold
-    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.PIGLIN, EntityType.PIGLIN_BRUTE, EntityType.ZOMBIFIED_PIGLIN), TinkerFluids.moltenGold.result(FluidValues.NUGGET).get(), 4)
+    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.PIGLIN, EntityType.PIGLIN_BRUTE, EntityType.ZOMBIFIED_PIGLIN), TinkerFluids.moltenGold.result(FluidValues.NUGGET), 4)
                               .save(consumer, location(folder + "piglin"));
     MeltingRecipeBuilder.melting(Ingredient.of(Items.PIGLIN_HEAD, TinkerWorld.heads.get(TinkerHeadType.PIGLIN_BRUTE), TinkerWorld.heads.get(TinkerHeadType.ZOMBIFIED_PIGLIN)), TinkerFluids.moltenGold, FluidValues.INGOT)
                         .save(consumer, location(headFolder + "piglin"));
 
     // melt spiders into venom
-    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.SPIDER, EntityType.CAVE_SPIDER), TinkerFluids.venom.result(FluidValues.BOTTLE / 10).get(), 2)
+    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.SPIDER, EntityType.CAVE_SPIDER), TinkerFluids.venom.result(FluidValues.BOTTLE / 10), 2)
                               .save(consumer, location(folder + "spider"));
     MeltingRecipeBuilder.melting(Ingredient.of(TinkerWorld.heads.get(TinkerHeadType.SPIDER), TinkerWorld.heads.get(TinkerHeadType.CAVE_SPIDER)), TinkerFluids.venom, FluidValues.SLIMEBALL * 2)
                         .save(consumer, location(headFolder + "spider"));
 
     // creepers are based on explosives, tnt is explosive, tnt is made from sand, sand melts into glass. therefore, creepers melt into glass
-    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.CREEPER), TinkerFluids.moltenGlass.result(FluidValues.GLASS_BLOCK / 20).get(), 2)
+    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.CREEPER), TinkerFluids.moltenGlass.result(FluidValues.GLASS_BLOCK / 20), 2)
                               .save(consumer, location(folder + "creeper"));
     MeltingRecipeBuilder.melting(Ingredient.of(Items.CREEPER_HEAD), TinkerFluids.moltenGlass, FluidType.BUCKET_VOLUME / 4)
                         .save(consumer, location(headFolder + "creeper"));
@@ -2176,34 +2176,34 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
 
     // iron golems can be healed using an iron ingot 25 health
     // 4 * 9 gives 36, which is larger
-    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.IRON_GOLEM), TinkerFluids.moltenIron.result(FluidValues.NUGGET).get(), 4)
+    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.IRON_GOLEM), TinkerFluids.moltenIron.result(FluidValues.NUGGET), 4)
                               .save(consumer, location(folder + "iron_golem"));
     EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.SNOW_GOLEM), new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME / 10))
                               .save(consumer, location(folder + "snow_golem"));
 
     // "melt" blazes to get fuel
-    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.BLAZE), TinkerFluids.blazingBlood.result(FluidType.BUCKET_VOLUME / 50).get(), 2)
+    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.BLAZE), TinkerFluids.blazingBlood.result(FluidType.BUCKET_VOLUME / 50), 2)
                               .save(consumer, location(folder + "blaze"));
     MeltingRecipeBuilder.melting(Ingredient.of(TinkerWorld.heads.get(TinkerHeadType.BLAZE)), TinkerFluids.blazingBlood.result(FluidType.BUCKET_VOLUME / 10), 1000, IMeltingRecipe.calcTime(1500, 1.0f))
                         .save(consumer, location(headFolder + "blaze"));
 
     // guardians are rock, seared stone is rock, don't think about it too hard
-    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.GUARDIAN, EntityType.ELDER_GUARDIAN), TinkerFluids.searedStone.result(FluidValues.BRICK / 5).get(), 4)
+    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.GUARDIAN, EntityType.ELDER_GUARDIAN), TinkerFluids.searedStone.result(FluidValues.BRICK / 5), 4)
                               .save(consumer, location(folder + "guardian"));
     // silverfish also seem like rock, sorta?
-    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.SILVERFISH), TinkerFluids.searedStone.result(FluidValues.BRICK / 5).get(), 2)
+    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.SILVERFISH), TinkerFluids.searedStone.result(FluidValues.BRICK / 5), 2)
                               .save(consumer, location(folder + "silverfish"));
 
     // villagers melt into emerald, but they die quite quick
-    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(TinkerTags.EntityTypes.VILLAGERS), TinkerFluids.moltenEmerald.result(FluidValues.GEM_SHARD).get(), 5)
+    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(TinkerTags.EntityTypes.VILLAGERS), TinkerFluids.moltenEmerald.result(FluidValues.GEM_SHARD), 5)
                               .save(consumer, location(folder + "villager"));
     // illagers are more resistant, they resist the villager culture afterall
-    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(TinkerTags.EntityTypes.ILLAGERS), TinkerFluids.moltenEmerald.result(FluidValues.GEM_SHARD).get(), 2)
+    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(TinkerTags.EntityTypes.ILLAGERS), TinkerFluids.moltenEmerald.result(FluidValues.GEM_SHARD), 2)
                               .save(consumer, location(folder + "illager"));
 
     // melt ender for the molten ender
     EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.ENDER_DRAGON),
-                                       TinkerFluids.moltenEnder.result(FluidValues.SLIMEBALL / 10).get(), 2)
+                                       TinkerFluids.moltenEnder.result(FluidValues.SLIMEBALL / 10), 2)
                               .save(consumer, location(folder + "ender"));
     MeltingRecipeBuilder.melting(Ingredient.of(TinkerWorld.heads.get(TinkerHeadType.ENDERMAN)), TinkerFluids.moltenEnder, FluidValues.SLIMEBALL * 2)
                         .save(consumer, location(headFolder + "enderman"));
@@ -2211,7 +2211,7 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
                         .save(consumer, location(headFolder + "ender_dragon"));
 
     // if you can get him to stay, wither is a source of free liquid soul
-    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.WITHER), TinkerFluids.liquidSoul.result(FluidValues.GLASS_BLOCK / 20).get(), 2)
+    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.WITHER), TinkerFluids.liquidSoul.result(FluidValues.GLASS_BLOCK / 20), 2)
                               .save(consumer, location(folder + "wither"));
   }
 
