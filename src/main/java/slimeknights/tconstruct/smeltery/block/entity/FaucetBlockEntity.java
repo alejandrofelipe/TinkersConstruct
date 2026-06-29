@@ -279,7 +279,7 @@ public class FaucetBlockEntity extends MantleBlockEntity {
     }
   }
 
-  @Override
+  // PORT M3: getRenderBoundingBox moved to client BlockEntityRenderer in 1.21.1; renderer should delegate here
   public AABB getRenderBoundingBox() {
     return new AABB(worldPosition.getX(), worldPosition.getY() - 1, worldPosition.getZ(), worldPosition.getX() + 1, worldPosition.getY() + 1, worldPosition.getZ() + 1);
   }

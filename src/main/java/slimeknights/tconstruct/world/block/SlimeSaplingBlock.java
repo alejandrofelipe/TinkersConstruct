@@ -5,13 +5,13 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SaplingBlock;
-import net.minecraft.world.level.block.grower.AbstractTreeGrower;
+import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockState;
 import slimeknights.tconstruct.world.TinkerWorld;
 
 public class SlimeSaplingBlock extends SaplingBlock implements SlimePlant {
   private final FoliageType foliageType;
-  public SlimeSaplingBlock(AbstractTreeGrower treeIn, FoliageType foliageType, Properties properties) {
+  public SlimeSaplingBlock(TreeGrower treeIn, FoliageType foliageType, Properties properties) {
     super(treeIn, properties);
     this.foliageType = foliageType;
   }

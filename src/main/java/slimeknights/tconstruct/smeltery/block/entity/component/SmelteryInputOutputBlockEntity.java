@@ -2,6 +2,7 @@ package slimeknights.tconstruct.smeltery.block.entity.component;
 
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.Block;
@@ -33,7 +34,7 @@ import static slimeknights.mantle.util.RetexturedHelper.TAG_TEXTURE;
  */
 public abstract class SmelteryInputOutputBlockEntity<T> extends SmelteryComponentBlockEntity implements IRetexturedBlockEntity {
   /** Capability this TE watches */
-  private final BlockCapability<T, @Nullable net.minecraft.core.Direction> capability;
+  private final BlockCapability<T, @Nullable Direction> capability;
   /** Empty capability for in case the valid capability becomes invalid without invalidating */
   protected final T emptyInstance;
   /** Cached handler resolved from the master, or null if not yet resolved */
@@ -47,7 +48,7 @@ public abstract class SmelteryInputOutputBlockEntity<T> extends SmelteryComponen
   @Getter
   private Block texture = Blocks.AIR;
 
-  protected SmelteryInputOutputBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, BlockCapability<T, @Nullable net.minecraft.core.Direction> capability, T emptyInstance) {
+  protected SmelteryInputOutputBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, BlockCapability<T, @Nullable Direction> capability, T emptyInstance) {
     super(type, pos, state);
     this.capability = capability;
     this.emptyInstance = emptyInstance;

@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.fluids;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.BlockSource;
+import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
@@ -272,12 +272,12 @@ public final class TinkerFluids extends TinkerModule {
   @SubscribeEvent
   void commonSetup(final FMLCommonSetupEvent event) {
     event.enqueueWork(() -> {
-      CauldronInteraction.WATER.put(splashBottle.get(), new FillBottle(Items.SPLASH_POTION));
-      CauldronInteraction.WATER.put(lingeringBottle.get(), new FillBottle(Items.LINGERING_POTION));
-      CauldronInteraction.WATER.put(Items.SPLASH_POTION,    new EmptyBottleIntoWater(splashBottle,    CauldronInteraction.WATER.get(Items.SPLASH_POTION)));
-      CauldronInteraction.WATER.put(Items.LINGERING_POTION, new EmptyBottleIntoWater(lingeringBottle, CauldronInteraction.WATER.get(Items.LINGERING_POTION)));
-      CauldronInteraction.EMPTY.put(Items.SPLASH_POTION,    new EmptyBottleIntoEmpty(splashBottle,    CauldronInteraction.EMPTY.get(Items.SPLASH_POTION)));
-      CauldronInteraction.EMPTY.put(Items.LINGERING_POTION, new EmptyBottleIntoEmpty(lingeringBottle, CauldronInteraction.EMPTY.get(Items.LINGERING_POTION)));
+      CauldronInteraction.WATER.map().put(splashBottle.get(), new FillBottle(Items.SPLASH_POTION));
+      CauldronInteraction.WATER.map().put(lingeringBottle.get(), new FillBottle(Items.LINGERING_POTION));
+      CauldronInteraction.WATER.map().put(Items.SPLASH_POTION,    new EmptyBottleIntoWater(splashBottle,    CauldronInteraction.WATER.map().get(Items.SPLASH_POTION)));
+      CauldronInteraction.WATER.map().put(Items.LINGERING_POTION, new EmptyBottleIntoWater(lingeringBottle, CauldronInteraction.WATER.map().get(Items.LINGERING_POTION)));
+      CauldronInteraction.EMPTY.map().put(Items.SPLASH_POTION,    new EmptyBottleIntoEmpty(splashBottle,    CauldronInteraction.EMPTY.map().get(Items.SPLASH_POTION)));
+      CauldronInteraction.EMPTY.map().put(Items.LINGERING_POTION, new EmptyBottleIntoEmpty(lingeringBottle, CauldronInteraction.EMPTY.map().get(Items.LINGERING_POTION)));
     });
 
     // dispense buckets
@@ -287,8 +287,8 @@ public final class TinkerFluids extends TinkerModule {
       @Override
       public ItemStack execute(BlockSource source, ItemStack stack) {
         DispensibleContainerItem container = (DispensibleContainerItem)stack.getItem();
-        BlockPos blockpos = source.getPos().relative(source.getBlockState().getValue(DispenserBlock.FACING));
-        Level level = source.getLevel();
+        BlockPos blockpos = source.pos().relative(source.state().getValue(DispenserBlock.FACING));
+        Level level = source.level();
         if (container.emptyContents(null, level, blockpos, null, stack)) {
           container.checkExtraContent(null, level, stack, blockpos);
           return new ItemStack(Items.BUCKET);

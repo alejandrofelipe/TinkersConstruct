@@ -24,7 +24,7 @@ public record SmelteryTankUpdatePacket(BlockPos pos, List<FluidStack> fluids) im
   public static final CustomPacketPayload.Type<SmelteryTankUpdatePacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(TConstruct.MOD_ID, "smeltery_tank_update"));
   public static final StreamCodec<RegistryFriendlyByteBuf, SmelteryTankUpdatePacket> STREAM_CODEC = StreamCodec.composite(
     BlockPos.STREAM_CODEC, SmelteryTankUpdatePacket::pos,
-    ByteBufCodecs.<RegistryFriendlyByteBuf, FluidStack>collection(ArrayList::new, FluidStack.OPTIONAL_STREAM_CODEC), SmelteryTankUpdatePacket::fluids,
+    ByteBufCodecs.<RegistryFriendlyByteBuf, FluidStack, List<FluidStack>>collection(ArrayList::new, FluidStack.OPTIONAL_STREAM_CODEC), SmelteryTankUpdatePacket::fluids,
     SmelteryTankUpdatePacket::new);
 
   @Override

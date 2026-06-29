@@ -3,6 +3,7 @@ package slimeknights.tconstruct.library.recipe.casting.container;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -121,7 +122,7 @@ public class ContainerFillingRecipe implements ICastingRecipe, IMultiRecipe<Disp
   private List<DisplayCastingRecipe> displayRecipes = null;
 
   @Override
-  public List<DisplayCastingRecipe> getRecipes(HolderLookup.Provider access) {
+  public List<DisplayCastingRecipe> getRecipes(RegistryAccess access) {
     if (displayRecipes == null) {
       List<ItemStack> casts = Collections.singletonList(new ItemStack(container));
       displayRecipes = BuiltInRegistries.FLUID.stream()

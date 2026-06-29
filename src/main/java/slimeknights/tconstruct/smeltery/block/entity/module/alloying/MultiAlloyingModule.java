@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.smeltery.block.entity.module.alloying;
 
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
@@ -13,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /** Module to handle running alloys via a fluid handler, can alloy multiple recipes at once */
 public class MultiAlloyingModule implements IAlloyingModule {
@@ -47,7 +49,8 @@ public class MultiAlloyingModule implements IAlloyingModule {
    */
   private List<AlloyRecipe> getRecipes() {
     if (lastRecipes == null) {
-      lastRecipes = getLevel().getRecipeManager().getRecipesFor(TinkerRecipeTypes.ALLOYING.get(), alloyTank, getLevel());
+      lastRecipes = getLevel().getRecipeManager().getRecipesFor(TinkerRecipeTypes.ALLOYING.get(), alloyTank, getLevel())
+                              .stream().map(RecipeHolder::value).collect(Collectors.toList());
     }
     return lastRecipes;
   }

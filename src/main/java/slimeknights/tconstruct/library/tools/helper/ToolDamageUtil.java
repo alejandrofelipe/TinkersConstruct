@@ -9,6 +9,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -254,12 +255,15 @@ public class ToolDamageUtil {
     return false;
   }
 
-  /** Implements {@link net.minecraft.world.item.Item#damageItem(ItemStack, int, LivingEntity, Consumer)} for a modifiable item */
-  public static <T extends LivingEntity> void handleDamageItem(ItemStack stack, int amount, T damager, Consumer<T> onBroken) {
+  /**
+   * Implements {@link net.neoforged.neoforge.common.extensions.IItemExtension#damageItem(ItemStack, int, LivingEntity, Consumer)} for a modifiable item.
+   * 1.21: the vanilla broken callback is now {@code Consumer<Item>} (it receives the broken item), not {@code Consumer<entity>}.
+   */
+  public static <T extends LivingEntity> void handleDamageItem(ItemStack stack, int amount, T damager, Consumer<Item> onBroken) {
     // We basically emulate Itemstack.damageItem here. We always return 0 to skip the handling in ItemStack.
     // If we don't tools ignore our damage logic
     if (stack.isDamageableItem() && ToolDamageUtil.damage(ToolStack.from(stack), amount, damager, stack)) {
-      onBroken.accept(damager);
+      onBroken.accept(stack.getItem());
     }
   }
 

@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 
 public class SearedStairsBlock extends StairBlock implements EntityBlock {
 
-  public SearedStairsBlock(Supplier<BlockState> state, Properties properties) {
+  public SearedStairsBlock(BlockState state, Properties properties) {
     super(state, properties);
   }
 

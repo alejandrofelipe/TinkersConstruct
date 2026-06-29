@@ -58,7 +58,7 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
     RenderNameTagEvent renderNameplate = new RenderNameTagEvent(frame, frame.getDisplayName(), this, matrices, bufferIn, packedLight, partialTicks);
     NeoForge.EVENT_BUS.post(renderNameplate);
     if (renderNameplate.canRender().isTrue() || (!renderNameplate.canRender().isFalse() && this.shouldShowName(frame))) {
-      this.renderNameTag(frame, renderNameplate.getContent(), matrices, bufferIn, packedLight);
+      this.renderNameTag(frame, renderNameplate.getContent(), matrices, bufferIn, packedLight, partialTicks);
     }
 
     // orient the renderer

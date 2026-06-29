@@ -28,8 +28,10 @@ public class Pattern extends ResourceId {
     super(location);
   }
 
-  private Pattern(String namespace, String path, @Nullable Dummy pDummy) {
-    super(namespace, path, pDummy);
+  // PORT M3: ResourceLocation's (String,String,Dummy) constructor was removed in 1.21; delegate to the
+  // (namespace, path) form. Resolved fully as part of the ResourceId-wrapping refactor (see ResourceId).
+  private Pattern(String namespace, String path) {
+    super(namespace, path);
   }
 
   /**
@@ -60,12 +62,12 @@ public class Pattern extends ResourceId {
   /** {@return Pattern ID, or null if invalid} */
   @Nullable
   public static Pattern tryParse(String string) {
-    return tryParse(string, (namespace, path) -> new Pattern(namespace, path, null));
+    return tryParse(string, Pattern::new);
   }
 
   /** {@return Pattern ID, or null if invalid} */
   @Nullable
   public static Pattern tryBuild(String namespace, String path) {
-    return tryBuild(namespace, path, (n, p) -> new Pattern(namespace, path, null));
+    return tryBuild(namespace, path, Pattern::new);
   }
 }

@@ -42,7 +42,7 @@ public class FluidClientEvents extends ClientEventBase {
 
   @SubscribeEvent
   static void registerModelLoaders(RegisterGeometryLoaders event) {
-    event.register("fluid_container", FluidContainerModel.LOADER);
+    event.register(TConstruct.getResource("fluid_container"), FluidContainerModel.LOADER);
   }
 
   private static void setTranslucent(FlowingFluidObject<?> fluid) {

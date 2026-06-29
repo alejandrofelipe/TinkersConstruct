@@ -9,6 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent.BreakSpeed;
 import slimeknights.mantle.data.registry.IdAwareComponentRegistry;
@@ -208,12 +209,12 @@ public class ModifierHooks {
   /** Hook for adding item stack attributes to a tool when in the proper slot */
   public static final ModuleHook<EnchantmentModifierHook> ENCHANTMENTS = register("enchantments", EnchantmentModifierHook.class, EnchantmentModifierHook.AllMerger::new, new EnchantmentModifierHook() {
     @Override
-    public int updateEnchantmentLevel(IToolStackView tool, ModifierEntry modifier, Enchantment enchantment, int level) {
+    public int updateEnchantmentLevel(IToolStackView tool, ModifierEntry modifier, ResourceKey<Enchantment> enchantment, int level) {
       return level;
     }
 
     @Override
-    public void updateEnchantments(IToolStackView tool, ModifierEntry modifier, Map<Enchantment,Integer> map) {}
+    public void updateEnchantments(IToolStackView tool, ModifierEntry modifier, Map<ResourceKey<Enchantment>,Integer> map) {}
   });
 
   /** Hook to add data that resets every time stats rebuild */

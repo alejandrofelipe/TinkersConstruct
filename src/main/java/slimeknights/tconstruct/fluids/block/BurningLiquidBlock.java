@@ -20,7 +20,7 @@ public class BurningLiquidBlock extends LiquidBlock {
   /** Damage from being in the fluid, lava uses 4 */
   private final float damage;
   public BurningLiquidBlock(Supplier<? extends FlowingFluid> supplier, Properties properties, int burnTime, float damage) {
-    super(supplier, properties);
+    super(supplier.get(), properties);
     this.burnTime = burnTime;
     this.damage = damage;
   }

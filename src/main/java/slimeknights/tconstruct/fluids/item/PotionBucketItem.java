@@ -116,7 +116,7 @@ public class PotionBucketItem extends PotionItem {
   }
 
   @Override
-  public int getUseDuration(ItemStack pStack) {
+  public int getUseDuration(ItemStack pStack, LivingEntity entity) {
     return 96; // 3x duration of potion bottles
   }
 

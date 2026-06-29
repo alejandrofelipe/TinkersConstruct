@@ -1,7 +1,6 @@
 package slimeknights.tconstruct.library.tools.capability;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -64,11 +63,19 @@ public class TinkerDataCapability {
 
   /** Class for generic keys */
   @SuppressWarnings("unused")
-  @RequiredArgsConstructor(staticName = "of")
   public static class TinkerDataKey<T> implements IdAwareObject {
     /** Name for debug */
     @Getter
     private final ResourceLocation id;
+
+    protected TinkerDataKey(ResourceLocation id) {
+      this.id = id;
+    }
+
+    /** Creates a new key */
+    public static <T> TinkerDataKey<T> of(ResourceLocation id) {
+      return new TinkerDataKey<>(id);
+    }
 
     @Override
     public String toString() {

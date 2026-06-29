@@ -46,16 +46,9 @@ public record BannerModifierModel(@Nullable ResourceLocation smallPrefix, @Nulla
   public void validate(Function<Material, TextureAtlasSprite> spriteGetter) {
     // since these are dynamically loaded, condition based on the config option
     if (Config.CLIENT.logMissingModifierTextures.get()) {
-      // PORT M3: SHIELD_MATERIALS is now private in Sheets; iterate the banner pattern registry instead
-      for (ResourceKey<BannerPattern> key : BuiltInRegistries.BANNER_PATTERN.registryKeySet()) {
-        String suffix = MaterialRenderInfo.getSuffix(key.location());
-        if (smallPrefix != null) {
-          spriteGetter.apply(ModifierModel.blockAtlas(smallPrefix.withSuffix(suffix)));
-        }
-        if (largePrefix != null) {
-          spriteGetter.apply(ModifierModel.blockAtlas(largePrefix.withSuffix(suffix)));
-        }
-      }
+      // PORT M3: BannerPattern moved from BuiltInRegistries to the datapack registry Registries.BANNER_PATTERN in 1.21,
+      // so the pattern keys are no longer reachable here without a RegistryAccess/HolderLookup. This validation is only a
+      // missing-texture warning; blocked on the BannerModule data-format port in the tools bucket to thread a lookup through.
     }
   }
 
@@ -81,7 +74,9 @@ public record BannerModifierModel(@Nullable ResourceLocation smallPrefix, @Nulla
           // PORT M3: BannerPattern.byHash was removed in 1.21 (BannerPattern is now a record without hashname);
           // patterns are now referenced by ResourceLocation/Holder. Blocked on the BannerModule data-format port in the tools bucket.
           ResourceLocation patternId = ResourceLocation.tryParse(tag.getString(BannerModule.KEY_PATTERN));
-          Holder<BannerPattern> pattern = patternId == null ? null : BuiltInRegistries.BANNER_PATTERN.getHolder(patternId).orElse(null);
+          // PORT M3: BannerPattern moved to the datapack registry Registries.BANNER_PATTERN in 1.21; resolving a Holder
+          // needs a RegistryAccess that isn't available here. Blocked on the BannerModule data-format port in the tools bucket.
+          Holder<BannerPattern> pattern = null;
           int color = tag.getInt(BannerModule.KEY_COLOR);
           if (pattern != null) {
             // why must holders be such a pain?

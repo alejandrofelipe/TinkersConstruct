@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.library.recipe.casting.material;
 
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -218,7 +219,7 @@ public class PartSwapCastingRecipe extends AbstractMaterialCastingRecipe impleme
   }
 
   @Override
-  public List<IDisplayableCastingRecipe> getRecipes(HolderLookup.Provider access) {
+  public List<IDisplayableCastingRecipe> getRecipes(RegistryAccess access) {
     if (multiRecipes == null) {
       List<ItemStack> casts = List.of(getCast().getItems());
       Predicate<MaterialFluidRecipe> validRecipe = recipe -> recipe.isVisible() && materials.matches(recipe.getOutput().getVariant());

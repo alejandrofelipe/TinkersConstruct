@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.tables.recipe;
 
 import lombok.RequiredArgsConstructor;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -42,7 +42,7 @@ public class TinkerStationDamagingRecipe implements ITinkerStationRecipe {
   }
 
   @Override
-  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, RegistryAccess access) {
+  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, HolderLookup.Provider access) {
     ToolStack tool = inv.getTinkerable();
     if (tool.isBroken()) {
       return BROKEN;

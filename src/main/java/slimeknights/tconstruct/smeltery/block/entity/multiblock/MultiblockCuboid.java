@@ -442,10 +442,14 @@ public abstract class MultiblockCuboid<T extends MultiblockStructureData> {
     if (!rootTag.contains(key, Tag.TAG_LIST)) {
       return Collections.emptyList();
     }
-    ListTag list = rootTag.getList(key, Tag.TAG_COMPOUND);
+    ListTag list = rootTag.getList(key, Tag.TAG_INT_ARRAY);
     List<BlockPos> collection = new ArrayList<>(list.size());
     for (int i = 0; i < list.size(); i++) {
-      BlockPos pos = NbtUtils.readBlockPos(list.getCompound(i));
+      int[] coords = list.getIntArray(i);
+      if (coords.length != 3) {
+        continue;
+      }
+      BlockPos pos = new BlockPos(coords[0], coords[1], coords[2]);
       if (!pos.equals(BlockPos.ZERO)) {
         collection.add(pos.offset(offset));
       }

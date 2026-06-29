@@ -25,7 +25,7 @@ public record StructureUpdatePacket(BlockPos pos, BlockPos minPos, BlockPos maxP
     BlockPos.STREAM_CODEC, StructureUpdatePacket::pos,
     BlockPos.STREAM_CODEC, StructureUpdatePacket::minPos,
     BlockPos.STREAM_CODEC, StructureUpdatePacket::maxPos,
-    ByteBufCodecs.<RegistryFriendlyByteBuf, BlockPos>collection(ArrayList::new, BlockPos.STREAM_CODEC), StructureUpdatePacket::tanks,
+    ByteBufCodecs.<RegistryFriendlyByteBuf, BlockPos, List<BlockPos>>collection(ArrayList::new, BlockPos.STREAM_CODEC), StructureUpdatePacket::tanks,
     StructureUpdatePacket::new);
 
   @Override

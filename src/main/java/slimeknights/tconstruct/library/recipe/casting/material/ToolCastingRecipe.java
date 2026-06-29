@@ -3,6 +3,7 @@ package slimeknights.tconstruct.library.recipe.casting.material;
 import com.google.common.collect.Streams;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -159,7 +160,7 @@ public class ToolCastingRecipe extends PartSwapCastingRecipe implements IMultiRe
   /* JEI display */
 
   @Override
-  public List<IDisplayableCastingRecipe> getRecipes(HolderLookup.Provider access) {
+  public List<IDisplayableCastingRecipe> getRecipes(RegistryAccess access) {
     if (multiRecipes == null) {
       List<MaterialStatsId> requirements = ToolMaterialHook.stats(result.getToolDefinition());
       if (requirements.isEmpty()) {

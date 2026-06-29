@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 public class MobEffectLiquidBlock extends LiquidBlock {
   private final Supplier<MobEffectInstance> effect;
   public MobEffectLiquidBlock(Supplier<? extends FlowingFluid> supplier, Properties properties, Supplier<MobEffectInstance> effect) {
-    super(supplier, properties);
+    super(supplier.get(), properties);
     this.effect = effect;
   }
 

@@ -3,7 +3,6 @@ package slimeknights.tconstruct.gadgets.entity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -18,12 +17,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.entity.IEntityAdditionalSpawnData;
 import slimeknights.tconstruct.common.Sounds;
 import slimeknights.tconstruct.gadgets.TinkerGadgets;
 import slimeknights.tconstruct.library.utils.Util;
 
-public class FancyItemFrameEntity extends ItemFrame implements IEntityAdditionalSpawnData {
+public class FancyItemFrameEntity extends ItemFrame {
   private static final int DIAMOND_TIMER = 300;
   private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(FancyItemFrameEntity.class, EntityDataSerializers.INT);
   private static final String TAG_VARIANT = "Variant";
@@ -120,10 +118,9 @@ public class FancyItemFrameEntity extends ItemFrame implements IEntityAdditional
 
   /** Internal logic to set the rotation */
   private void setRotationRaw(int rotationIn, boolean updateComparator) {
-    this.getEntityData().set(DATA_ROTATION, rotationIn);
-    if (updateComparator) {
-      this.level().updateNeighbourForOutputSignal(this.pos, Blocks.AIR);
-    }
+    // PORT M3: ItemFrame.DATA_ROTATION is now private and its setRotation(int,boolean) always applies % 8,
+    // so the diamond frame's 0-16 rotation range is clamped to 0-7. Cosmetic-only, non-blocking.
+    super.setRotation(rotationIn, updateComparator);
   }
 
   @Override
@@ -229,21 +226,6 @@ public class FancyItemFrameEntity extends ItemFrame implements IEntityAdditional
       rotationTimer = compound.getInt(TAG_ROTATION_TIMER);
     }
   }
-
-  @Override
-  public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
-    buffer.writeVarInt(this.getFrameId());
-    buffer.writeBlockPos(this.pos);
-    buffer.writeVarInt(this.direction.get3DDataValue());
-  }
-
-  @Override
-  public void readSpawnData(RegistryFriendlyByteBuf buffer) {
-    this.entityData.set(VARIANT, buffer.readVarInt());
-    this.pos = buffer.readBlockPos();
-    this.setDirection(Direction.from3DDataValue(buffer.readVarInt()));
-  }
-
 
   @Override
   protected Component getTypeName() {

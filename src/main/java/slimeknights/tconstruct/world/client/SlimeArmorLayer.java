@@ -1,6 +1,5 @@
 package slimeknights.tconstruct.world.client;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -20,6 +19,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -96,15 +96,11 @@ public class SlimeArmorLayer<T extends Slime, M extends HierarchicalModel<T>, A 
         if (item instanceof BlockItem block && block.getBlock() instanceof AbstractSkullBlock skullBlock) {
           matrices.scale(1.1875F, -1.1875F, -1.1875F);
           // 1.21: the skull owner is stored in the PROFILE data component
-          GameProfile gameprofile = null;
           ResolvableProfile profile = helmet.get(DataComponents.PROFILE);
-          if (profile != null) {
-            gameprofile = profile.gameProfile();
-          }
           matrices.translate(-0.5, 0.0, -0.5);
           SkullBlock.Type type = skullBlock.getType();
           SkullModelBase skullModel = this.skullModels.get(type);
-          RenderType renderType = SkullBlockRenderer.getRenderType(type, gameprofile);
+          RenderType renderType = SkullBlockRenderer.getRenderType(type, profile);
           SkullBlockRenderer.renderSkull(null, 180.0F, pLimbSwing, matrices, buffer, packedLight, skullModel, renderType);
         } else {
           // standard rendering
@@ -118,7 +114,7 @@ public class SlimeArmorLayer<T extends Slime, M extends HierarchicalModel<T>, A 
 
   private static void renderModel(PoseStack matrices, MultiBufferSource buffer, int packedLight, boolean enchanted, Model model, float red, float green, float blue, ResourceLocation texture) {
     VertexConsumer vertexconsumer = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.armorCutoutNoCull(texture), enchanted);
-    model.renderToBuffer(matrices, vertexconsumer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1.0F);
+    model.renderToBuffer(matrices, vertexconsumer, packedLight, OverlayTexture.NO_OVERLAY, FastColor.ARGB32.colorFromFloat(1.0F, red, green, blue));
   }
 
   /**

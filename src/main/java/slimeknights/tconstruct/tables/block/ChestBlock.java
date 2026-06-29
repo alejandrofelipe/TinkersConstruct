@@ -5,7 +5,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -79,18 +79,18 @@ public class ChestBlock extends TabbedTableBlock {
   }
 
   @Override
-  protected InteractionResult useItemOn(ItemStack heldItem, BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+  protected ItemInteractionResult useItemOn(ItemStack heldItem, BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
     BlockEntity te = worldIn.getBlockEntity(pos);
     if (!heldItem.isEmpty() && te instanceof AbstractChestBlockEntity chest && chest.canInsert(player, heldItem)) {
       IItemHandlerModifiable itemHandler = chest.getItemHandler();
       ItemStack rest = ItemHandlerHelper.insertItem(itemHandler, heldItem, false);
       if (rest.isEmpty() || rest.getCount() < heldItem.getCount()) {
         player.setItemInHand(hand, rest);
-        return InteractionResult.SUCCESS;
+        return ItemInteractionResult.SUCCESS;
       }
     }
     // fall through to useWithoutItem (opens the GUI)
-    return InteractionResult.PASS;
+    return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
   }
 
   @Override

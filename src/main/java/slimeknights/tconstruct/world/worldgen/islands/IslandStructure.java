@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.world.worldgen.islands;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -31,7 +32,7 @@ import java.util.Optional;
 
 /** Base logic for all island variants */
 public class IslandStructure extends Structure {
-  public static final Codec<IslandStructure> CODEC = RecordCodecBuilder.create(inst ->
+  public static final MapCodec<IslandStructure> CODEC = RecordCodecBuilder.mapCodec(inst ->
     inst.group(settingsCodec(inst)).and(inst.group(
           IslandPlacement.CODEC.fieldOf("placement").forGetter(s -> s.placement),
           SimpleWeightedRandomList.wrappedCodec(ResourceLocation.CODEC).fieldOf("templates").forGetter(s -> s.templates),

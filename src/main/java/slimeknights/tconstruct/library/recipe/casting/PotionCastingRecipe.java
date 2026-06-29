@@ -4,6 +4,7 @@ import lombok.Getter;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -146,7 +147,7 @@ public class PotionCastingRecipe implements ICastingRecipe, IMultiRecipe<Display
   protected List<DisplayCastingRecipe> displayRecipes = null;
 
   @Override
-  public List<DisplayCastingRecipe> getRecipes(HolderLookup.Provider access) {
+  public List<DisplayCastingRecipe> getRecipes(RegistryAccess access) {
     if (displayRecipes == null) {
       // create a subrecipe for every potion variant
       List<ItemStack> bottles = List.of(bottle.getItems());

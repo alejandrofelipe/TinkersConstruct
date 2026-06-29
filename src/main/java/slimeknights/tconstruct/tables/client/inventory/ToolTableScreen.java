@@ -3,7 +3,6 @@ package slimeknights.tconstruct.tables.client.inventory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.gui.screens.inventory.SmithingScreen;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -17,6 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag.Default;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import slimeknights.mantle.client.SafeClientAccess;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.GuiUtil;
@@ -42,6 +42,8 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
   private static final Component TRAITS_TEXT = TConstruct.makeTranslation("gui", "tinker_station.traits");
 
   private static final ResourceLocation ICON_TEXTURE = TConstruct.getResource("textures/gui/icons.png");
+  /** Translation for the rendered armor stand, matches vanilla SmithingScreen.ARMOR_STAND_TRANSLATION */
+  private static final Vector3f ARMOR_STAND_TRANSLATION = new Vector3f(0.0F, 0.0F, 0.0F);
 
   /** Side panels, for tools and modifiers */
   protected final InfoPanelScreen<ToolTableScreen<T,C>,C> tinkerInfo;
@@ -94,9 +96,10 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
    */
   protected void renderArmorStand(GuiGraphics graphics) {
     if (this.armorStandPreview != null) {
-      Quaternionf pose = new Quaternionf();
-      SmithingScreen.ARMOR_STAND_ANGLE.rotateY(this.armorStandAngle, pose);
-      InventoryScreen.renderEntityInInventory(graphics, this.armorStandX, this.armorStandY, this.armorStandScale, pose, null, this.armorStandPreview);
+      // matches vanilla SmithingScreen.ARMOR_STAND_ANGLE (X rotation 25 degrees), then animate around Y
+      Quaternionf pose = new Quaternionf().rotateX(25.0F * ((float) Math.PI / 180F));
+      pose.rotateY(this.armorStandAngle);
+      InventoryScreen.renderEntityInInventory(graphics, this.armorStandX, this.armorStandY, this.armorStandScale, ARMOR_STAND_TRANSLATION, pose, null, this.armorStandPreview);
 
       graphics.blit(ICON_TEXTURE, armorStandX - 16, armorStandY - 16, 0, 184, 32, 32);
     }

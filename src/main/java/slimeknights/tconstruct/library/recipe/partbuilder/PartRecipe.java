@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -169,7 +170,7 @@ public class PartRecipe implements IPartBuilderRecipe, IMultiRecipe<IDisplayPart
   private List<IDisplayPartBuilderRecipe> multiRecipes;
 
   @Override
-  public List<IDisplayPartBuilderRecipe> getRecipes(HolderLookup.Provider access) {
+  public List<IDisplayPartBuilderRecipe> getRecipes(RegistryAccess access) {
     if (multiRecipes == null) {
       multiRecipes = MaterialRegistry
         .getMaterials().stream()

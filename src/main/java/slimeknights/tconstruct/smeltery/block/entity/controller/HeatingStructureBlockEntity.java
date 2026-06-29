@@ -498,12 +498,12 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
     this.setChangedFast();
   }
 
-  @Override
+  // PORT M3: getRenderBoundingBox moved to client BlockEntityRenderer in 1.21.1; renderer should delegate here
   public AABB getRenderBoundingBox() {
     if (structure != null) {
       return structure.getBounds();
     } else if (defaultBounds == null) {
-      defaultBounds = new AABB(worldPosition, worldPosition.offset(1, 1, 1));
+      defaultBounds = new AABB(worldPosition);
     }
     return defaultBounds;
   }

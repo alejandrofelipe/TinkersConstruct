@@ -2,23 +2,20 @@ package slimeknights.tconstruct.gadgets.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.neoforge.entity.IEntityAdditionalSpawnData;
 import slimeknights.tconstruct.gadgets.TinkerGadgets;
 import slimeknights.tconstruct.shared.TinkerCommons;
 
 /** @deprecated use {@link slimeknights.tconstruct.tools.entity.ThrownShuriken} */
 @Deprecated
-public class GlowballEntity extends ThrowableItemProjectile implements IEntityAdditionalSpawnData {
+public class GlowballEntity extends ThrowableItemProjectile {
   public GlowballEntity(EntityType<? extends GlowballEntity> p_i50159_1_, Level p_i50159_2_) {
     super(p_i50159_1_, p_i50159_2_);
   }
@@ -63,15 +60,5 @@ public class GlowballEntity extends ThrowableItemProjectile implements IEntityAd
       level.broadcastEntityEvent(this, (byte) 3);
       this.discard();
     }
-  }
-
-  @Override
-  public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
-    ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, this.getItemRaw());
-  }
-
-  @Override
-  public void readSpawnData(RegistryFriendlyByteBuf additionalData) {
-    this.setItem(ItemStack.OPTIONAL_STREAM_CODEC.decode(additionalData));
   }
 }

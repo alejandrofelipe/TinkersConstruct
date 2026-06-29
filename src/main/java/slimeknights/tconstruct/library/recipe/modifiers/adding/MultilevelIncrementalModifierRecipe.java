@@ -2,6 +2,7 @@ package slimeknights.tconstruct.library.recipe.modifiers.adding;
 
 import com.google.common.collect.Streams;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -104,7 +105,7 @@ public class MultilevelIncrementalModifierRecipe extends IncrementalModifierReci
   private List<IDisplayModifierRecipe> displayRecipes = null;
 
   @Override
-  public List<IDisplayModifierRecipe> getRecipes(HolderLookup.Provider access) {
+  public List<IDisplayModifierRecipe> getRecipes(RegistryAccess access) {
     if (displayRecipes == null) {
       // this instance is a proper display recipe for the first level entry, for the rest build display instances with unique requirements keys
       DisplayModifierRecipe.Builder builder = DisplayModifierRecipe.builder()

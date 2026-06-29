@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.library.recipe.casting;
 
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -56,7 +57,7 @@ public class TipClearingCastingRecipe extends PotionCastingRecipe {
   /* JEI */
 
   @Override
-  public List<DisplayCastingRecipe> getRecipes(HolderLookup.Provider access) {
+  public List<DisplayCastingRecipe> getRecipes(RegistryAccess access) {
     if (displayRecipes == null) {
       // create a list of tools with the modifier
       List<ItemStack> tools = Arrays.stream(bottle.getItems())

@@ -80,7 +80,7 @@ public class PartBuilderBlockEntity extends RetexturedTableBlockEntity implement
       } else {
         record PatternRecipe(Pattern pattern, IPartBuilderRecipe recipe) {}
         // fetch all recipes that can match these inputs, the map ensures the patterns are unique
-        recipes = level.getRecipeManager().byType(TinkerRecipeTypes.PART_BUILDER.get()).stream()
+        recipes = level.getRecipeManager().getAllRecipesFor(TinkerRecipeTypes.PART_BUILDER.get()).stream()
                        .filter(holder -> holder.value().partialMatch(inventoryWrapper))
                        .sorted(Comparator.comparing(RecipeHolder::id))
                        .flatMap(holder -> holder.value().getPatterns(inventoryWrapper).map(p -> new PatternRecipe(p, holder.value())))
@@ -288,7 +288,7 @@ public class PartBuilderBlockEntity extends RetexturedTableBlockEntity implement
 
     // we are definitely crafting at this point
     result.onCraftedBy(this.level, player, amount);
-    ForgeEventFactory.firePlayerCraftingEvent(player, result, this.inventoryWrapper);
+    EventHooks.firePlayerCraftingEvent(player, result, this);
     this.playCraftSound(player);
 
     // give the player any leftovers

@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -120,7 +121,7 @@ public class PartBuilderToolRecycle implements IPartBuilderRecipe, IMultiRecipe<
   }
 
   @Override
-  public ItemStack assemble(IPartBuilderContainer inv, RegistryAccess access, Pattern pattern) {
+  public ItemStack assemble(IPartBuilderContainer inv, HolderLookup.Provider access, Pattern pattern) {
     ToolStack tool = ToolStack.from(inv.getStack());
     // find our parts list, either set or override
     ToolDefinition definition = tool.getDefinition();
@@ -194,10 +195,10 @@ public class PartBuilderToolRecycle implements IPartBuilderRecipe, IMultiRecipe<
     return parts.get(index).withMaterial(tool.getMaterial(indices.getInt(index)).getVariant());
   }
 
-  /** @deprecated use {@link IPartBuilderRecipe#assemble(IPartBuilderContainer, RegistryAccess, Pattern)} */
+  /** @deprecated use {@link IPartBuilderRecipe#assemble(IPartBuilderContainer, HolderLookup.Provider, Pattern)} */
   @Deprecated
   @Override
-  public ItemStack getResultItem(RegistryAccess access) {
+  public ItemStack getResultItem(HolderLookup.Provider access) {
     return ItemStack.EMPTY;
   }
 

@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.tables.recipe;
 
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -125,7 +125,7 @@ public class TinkerStationRepairRecipe implements ITinkerStationRecipe {
   }
 
   @Override
-  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, RegistryAccess access) {
+  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, HolderLookup.Provider access) {
     ToolStack tool = inv.getTinkerable();
     if (tool.getDefinition() == ToolDefinition.EMPTY) {
       return RecipeResult.pass();

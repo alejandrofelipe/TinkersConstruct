@@ -259,7 +259,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
       textField.setEditable(false);
       textField.setValue("");
       textField.visible = false;
-    } else if (!textField.isEditable()) {
+    } else if (!textField.visible) {
       textField.setEditable(true);
       textField.setValue("");
       textField.visible = true;
@@ -470,7 +470,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   }
 
   @Override
-  public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+  public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double delta) {
     if (this.tinkerInfo.handleMouseScrolled(mouseX, mouseY, delta)) {
       return false;
     }
@@ -479,7 +479,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
       return false;
     }
 
-    return super.mouseScrolled(mouseX, mouseY, delta);
+    return super.mouseScrolled(mouseX, mouseY, scrollX, delta);
   }
 
   @Override
@@ -635,7 +635,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   @Override
   public void containerTick() {
     super.containerTick();
-    this.textField.tick();
+    // EditBox.tick() was removed in 1.21.1; cursor blink is now time-based
   }
 
   @Override

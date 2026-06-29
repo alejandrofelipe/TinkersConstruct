@@ -2,7 +2,6 @@ package slimeknights.tconstruct.library.tools.definition.module.material;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ArmorItem;
@@ -39,8 +38,12 @@ public class MaterialRepairModule implements MaterialRepairToolHook, ToolModule,
   /** Material used for repairing */
   protected final MaterialId material;
   /** Amount to repair */
-  @Getter(AccessLevel.PROTECTED)
   protected int repairAmount;
+
+  /** Gets the constant repair amount for this module */
+  protected int getRepairAmount() {
+    return repairAmount;
+  }
 
   /** Creates a new module using a constant durability */
   public static MaterialRepairModule of(MaterialId material, int repairAmount) {

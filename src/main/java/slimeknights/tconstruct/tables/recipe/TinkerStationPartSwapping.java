@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.tables.recipe;
 
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -74,7 +74,7 @@ public class TinkerStationPartSwapping extends MaterialSwappingRecipe {
   }
 
   @Override
-  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, RegistryAccess access) {
+  public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer inv, HolderLookup.Provider access) {
     // copy the tool NBT to ensure the original tool is intact
     List<IToolPart> parts = ToolPartsHook.parts(inv.getTinkerable().getDefinition());
 

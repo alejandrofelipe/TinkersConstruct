@@ -54,6 +54,7 @@ public class WorldClientEvents extends ClientEventBase {
   static void registerParticleFactories(RegisterParticleProvidersEvent event) {
     event.registerSpecial(TinkerWorld.skySlimeParticle.get(), new SlimeParticle.Factory(SlimeType.SKY));
     event.registerSpecial(TinkerWorld.enderSlimeParticle.get(), new SlimeParticle.Factory(SlimeType.ENDER));
+    // PORT M3: SlimeParticle.Factory (library) only has a Factory(SlimeType) ctor; needs a Factory(ItemLike) overload for the clay-ball terracube particle.
     event.registerSpecial(TinkerWorld.terracubeParticle.get(), new SlimeParticle.Factory(Items.CLAY_BALL));
   }
 

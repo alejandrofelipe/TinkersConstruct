@@ -3,6 +3,7 @@ package slimeknights.tconstruct.library.recipe.partbuilder.recycle;
 import lombok.Getter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -181,7 +182,7 @@ public class PartBuilderRecycle implements IPartBuilderRecipe, IMultiRecipe<Disp
   private List<DisplayPartRecipe> displayRecipes;
 
   @Override
-  public List<DisplayPartRecipe> getRecipes(HolderLookup.Provider access) {
+  public List<DisplayPartRecipe> getRecipes(RegistryAccess access) {
     if (displayRecipes == null) {
       List<ItemStack> patternItems = List.of(pattern.getItems());
       List<ItemStack> toolItems = List.of(tool.getItems());

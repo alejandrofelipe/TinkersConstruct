@@ -70,7 +70,7 @@ public class GadgetRecipeProvider extends BaseRecipeProvider {
                        .save(consumer, location("gadgets/frame/" + FrameType.DIAMOND.getSerializedName()));
     ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, TinkerGadgets.itemFrame.get(FrameType.CLEAR))
                        .define('e', Tags.Items.GLASS_PANES_COLORLESS)
-                       .define('M', Tags.Items.GLASS_COLORLESS)
+                       .define('M', Tags.Items.GLASS_BLOCKS_COLORLESS)
                        .pattern(" e ")
                        .pattern("eMe")
                        .pattern(" e ")
