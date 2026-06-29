@@ -199,7 +199,7 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
                         .save(withCondition(ConsumerWrapperBuilder.wrap(ResourceLocation.fromNamespaceAndPath("ceramics", "kiln")).build(consumer), new ModLoadedCondition("ceramics")), kilnId);
     SimpleCookingRecipeBuilder.blasting(Ingredient.of(TinkerSmeltery.grout), RecipeCategory.BUILDING_BLOCKS, TinkerSmeltery.searedBrick, 0.3f, 100)
                         .unlockedBy("has_item", has(TinkerSmeltery.grout))
-                        .save(withCondition(consumer, new NotCondition(new ModLoadedCondition("ceramics"))), kilnId);
+                        .save(withCondition(consumer, new NotCondition(new ModLoadedCondition("ceramics"))), kilnId.withSuffix("_blasting"));
 
 
     // block from bricks
@@ -648,7 +648,7 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
                               .save(withCondition(ConsumerWrapperBuilder.wrap(ResourceLocation.fromNamespaceAndPath("ceramics", "kiln")).build(consumer), new ModLoadedCondition("ceramics")), scorchedKilnId);
     SimpleCookingRecipeBuilder.blasting(Ingredient.of(TinkerSmeltery.netherGrout), RecipeCategory.BUILDING_BLOCKS, TinkerSmeltery.scorchedBrick, 0.3f, 100)
                               .unlockedBy("has_item", has(TinkerSmeltery.netherGrout))
-                              .save(withCondition(consumer, new NotCondition(new ModLoadedCondition("ceramics"))), scorchedKilnId);
+                              .save(withCondition(consumer, new NotCondition(new ModLoadedCondition("ceramics"))), scorchedKilnId.withSuffix("_blasting"));
 
     // block from bricks
     ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, TinkerSmeltery.scorchedBricks)
