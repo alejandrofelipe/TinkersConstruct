@@ -17,7 +17,7 @@ import java.util.function.Function;
  * Helper to parse variants of resource locations, doubles as a loadable.
  * @see ResourceId
  */
-public record IdParser<T extends ResourceLocation>(Function<String, T> constructor, String name) implements StringLoadable<T> {
+public record IdParser<T extends ResourceId>(Function<String, T> constructor, String name) implements StringLoadable<T> {
   /**
    * Creates a new ID from the given string
    * @param string  String
@@ -53,7 +53,7 @@ public record IdParser<T extends ResourceLocation>(Function<String, T> construct
 
   @Override
   public void encode(FriendlyByteBuf buffer, T object) throws EncoderException {
-    buffer.writeResourceLocation(object);
+    buffer.writeResourceLocation(object.getLocation());
   }
 
 

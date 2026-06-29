@@ -7,32 +7,73 @@ import java.util.function.BiFunction;
 
 /**
  * Helper for use with our extensions of resource location for some type safety in IDs.
- * Note we left {@link ResourceLocation#withPath(String)} and alike as returning {@link ResourceLocation} as there is not much use extending an ID.
  *
- * <p>PORT M3 (ARCHITECTURAL BLOCKER): {@link ResourceLocation} became {@code final} in 1.20.5/1.21, so this
- * class can no longer extend it. The private constructor + {@code Dummy} marker and the {@code decompose(String,char)}
- * helper were also removed from {@code ResourceLocation}. Every subclass ({@code MaterialId}, {@code MaterialStatsId},
- * {@code ModifierId}, {@code ToolStatId}, {@code Pattern}) treats itself as a {@code ResourceLocation} (returns
- * {@code this} where one is expected, calls {@code getNamespace()}/{@code getPath()}). Porting requires reworking the
- * whole {@code ResourceId} hierarchy to <em>wrap</em> a {@code ResourceLocation} rather than extend it, touching
- * {@code materials/}, {@code modifiers/}, {@code recipe/}, and {@code tools/stat/}. The {@code extends ResourceLocation}
- * below is the remaining hard error to resolve as part of that cross-package refactor.
+ * <p>PORT M3: {@link ResourceLocation} became {@code final} in 1.20.5/1.21, so this class can no longer extend it.
+ * Instead, {@code ResourceId} now <em>wraps</em> a {@link ResourceLocation} and delegates the methods subclasses and
+ * callers actually use ({@link #getNamespace()}, {@link #getPath()}, {@link #toString()}, equality, ordering). Use
+ * {@link #getLocation()} to obtain the wrapped {@link ResourceLocation} where a bare one is required (e.g. when writing
+ * to a buffer or building a translation key).
  * @see IdParser
  */
-public abstract class ResourceId extends ResourceLocation {
+public abstract class ResourceId implements Comparable<ResourceId> {
+  /** Wrapped resource location backing this ID */
+  private final ResourceLocation location;
+
   protected ResourceId(String namespace, String path) {
-    // PORT M3: ResourceLocation's namespace+path constructor is now package-private; the (String,String,Dummy)
-    // form is gone. Resolved as part of the ResourceId-wrapping refactor described above.
-    super(namespace, path, null);
+    this.location = ResourceLocation.fromNamespaceAndPath(namespace, path);
   }
 
   public ResourceId(ResourceLocation location) {
-    this(location.getNamespace(), location.getPath());
+    this.location = location;
   }
 
   public ResourceId(String location) {
     this(splitNamespace(location), splitPath(location));
   }
+
+  /** {@return the wrapped resource location} */
+  public ResourceLocation getLocation() {
+    return location;
+  }
+
+  /** {@return the namespace of this ID} */
+  public String getNamespace() {
+    return location.getNamespace();
+  }
+
+  /** {@return the path of this ID} */
+  public String getPath() {
+    return location.getPath();
+  }
+
+  @Override
+  public String toString() {
+    return location.toString();
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) {
+      return true;
+    }
+    if (!(other instanceof ResourceId resourceId)) {
+      return false;
+    }
+    return location.equals(resourceId.location);
+  }
+
+  @Override
+  public int hashCode() {
+    return location.hashCode();
+  }
+
+  @Override
+  public int compareTo(ResourceId other) {
+    return location.compareTo(other.location);
+  }
+
+
+  /* Parsing helpers, mirroring the removed ResourceLocation static helpers */
 
   private static String splitNamespace(String location) {
     int colon = location.indexOf(':');
@@ -53,7 +94,7 @@ public abstract class ResourceId extends ResourceLocation {
    * @return  ID, or null if invalid
    */
   @Nullable
-  protected static <T extends ResourceLocation> T tryParse(String string, BiFunction<String,String,T> constructor) {
+  protected static <T extends ResourceId> T tryParse(String string, BiFunction<String,String,T> constructor) {
     return tryBuild(splitNamespace(string), splitPath(string), constructor);
   }
 
@@ -64,8 +105,8 @@ public abstract class ResourceId extends ResourceLocation {
    * @return  ID, or null if invalid
    */
   @Nullable
-  protected static <T extends ResourceLocation> T tryBuild(String namespace, String path, BiFunction<String,String,T> constructor) {
-    if (isValidNamespace(namespace) && isValidPath(path)) {
+  protected static <T extends ResourceId> T tryBuild(String namespace, String path, BiFunction<String,String,T> constructor) {
+    if (ResourceLocation.isValidNamespace(namespace) && ResourceLocation.isValidPath(path)) {
       return constructor.apply(namespace, path);
     }
     return null;

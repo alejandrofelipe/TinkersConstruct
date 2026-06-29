@@ -28,18 +28,12 @@ public class Pattern extends ResourceId {
     super(location);
   }
 
-  // PORT M3: ResourceLocation's (String,String,Dummy) constructor was removed in 1.21; delegate to the
-  // (namespace, path) form. Resolved fully as part of the ResourceId-wrapping refactor (see ResourceId).
-  private Pattern(String namespace, String path) {
-    super(namespace, path);
-  }
-
   /**
    * Gets the translation key for this pattern
    * @return  Translation key
    */
   public String getTranslationKey() {
-    return Util.makeTranslationKey("pattern", this);
+    return Util.makeTranslationKey("pattern", getLocation());
   }
 
   /**

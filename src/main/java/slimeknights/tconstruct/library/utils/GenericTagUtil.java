@@ -29,7 +29,7 @@ public class GenericTagUtil {
   }
 
   /** Creates a map of reverse tags for the given map of tags */
-  public static <T, I extends ResourceLocation> Map<I,Set<TagKey<T>>> reverseTags(Function<T,I> keyMapper, Map<TagKey<T>,? extends Collection<T>> tags) {
+  public static <T, I> Map<I,Set<TagKey<T>>> reverseTags(Function<T,I> keyMapper, Map<TagKey<T>,? extends Collection<T>> tags) {
     Map<I,ImmutableSet.Builder<TagKey<T>>> reverseTags = new HashMap<>();
     Function<I,Builder<TagKey<T>>> makeSet = id -> ImmutableSet.builder();
     for (Entry<TagKey<T>,? extends Collection<T>> entry : tags.entrySet()) {

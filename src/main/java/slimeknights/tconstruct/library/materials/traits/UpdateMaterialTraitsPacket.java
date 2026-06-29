@@ -30,7 +30,7 @@ public record UpdateMaterialTraitsPacket(Map<MaterialId,MaterialTraits> material
   private static void encode(RegistryFriendlyByteBuf buffer, UpdateMaterialTraitsPacket packet) {
     buffer.writeInt(packet.materialToTraits.size());
     packet.materialToTraits.forEach((materialId, traits) -> {
-      buffer.writeResourceLocation(materialId);
+      buffer.writeResourceLocation(materialId.getLocation());
       traits.write(buffer);
     });
   }

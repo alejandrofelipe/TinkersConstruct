@@ -128,27 +128,27 @@ public class UpdateModifiersPacket implements IThreadsafePacket {
     // write modifiers
     buffer.writeVarInt(modifiers.size());
     for (ComposableModifier modifier : modifiers) {
-      buffer.writeResourceLocation(modifier.getId());
+      buffer.writeResourceLocation(modifier.getId().getLocation());
       ComposableModifier.LOADER.encode(buffer, modifier);
     }
     // write redirects
     buffer.writeVarInt(redirects.size());
     for (Entry<ModifierId,ModifierId> entry : redirects.entrySet()) {
-      buffer.writeResourceLocation(entry.getKey());
-      buffer.writeResourceLocation(entry.getValue());
+      buffer.writeResourceLocation(entry.getKey().getLocation());
+      buffer.writeResourceLocation(entry.getValue().getLocation());
     }
-    GenericTagUtil.encodeTags(buffer, Modifier::getId, this.tags);
+    GenericTagUtil.encodeTags(buffer, m -> m.getId().getLocation(), this.tags);
 
     // enchantment mapping
     buffer.writeVarInt(enchantmentMap.size());
     for (Entry<ResourceKey<Enchantment>,Modifier> entry : enchantmentMap.entrySet()) {
       buffer.writeResourceLocation(entry.getKey().location());
-      buffer.writeResourceLocation(entry.getValue().getId());
+      buffer.writeResourceLocation(entry.getValue().getId().getLocation());
     }
     buffer.writeVarInt(enchantmentTagMappings.size());
     for (Entry<TagKey<Enchantment>, Modifier> entry : enchantmentTagMappings.entrySet()) {
       buffer.writeResourceLocation(entry.getKey().location());
-      buffer.writeResourceLocation(entry.getValue().getId());
+      buffer.writeResourceLocation(entry.getValue().getId().getLocation());
     }
   }
 

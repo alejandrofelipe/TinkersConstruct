@@ -53,7 +53,7 @@ public record UpdateMaterialStatsPacket(Map<MaterialId,Collection<IMaterialStats
   private static void encode(RegistryFriendlyByteBuf buffer, UpdateMaterialStatsPacket packet) {
     buffer.writeInt(packet.materialToStats.size());
     packet.materialToStats.forEach((materialId, stats) -> {
-      buffer.writeResourceLocation(materialId);
+      buffer.writeResourceLocation(materialId.getLocation());
       buffer.writeInt(stats.size());
       stats.forEach(stat -> encodeStat(buffer, stat, stat.getType()));
     });

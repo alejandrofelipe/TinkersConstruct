@@ -55,7 +55,7 @@ public class MaterialTraits {
     // write map of traits
     buffer.writeVarInt(traitsPerStats.size());
     for (Entry<MaterialStatsId,List<ModifierEntry>> entry : traitsPerStats.entrySet()) {
-      buffer.writeResourceLocation(entry.getKey());
+      buffer.writeResourceLocation(entry.getKey().getLocation());
       writeTraitList(buffer, entry.getValue());
     }
   }
@@ -141,8 +141,9 @@ public class MaterialTraits {
       // also suppress the map if no stat types were defined
       Map<ResourceLocation,List<ModifierEntry>> newMap = null;
       if (!traitsPerStats.isEmpty()) {
-        newMap = new HashMap<>(traitsPerStats.size());
-        newMap.putAll(traitsPerStats);
+        Map<ResourceLocation,List<ModifierEntry>> converted = new HashMap<>(traitsPerStats.size());
+        traitsPerStats.forEach((statsId, traits) -> converted.put(statsId.getLocation(), traits));
+        newMap = converted;
       }
       return new MaterialTraitsJson(defaultTraits, newMap);
     }

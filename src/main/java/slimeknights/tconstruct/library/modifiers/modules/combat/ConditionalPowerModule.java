@@ -59,9 +59,9 @@ public record ConditionalPowerModule(IJsonPredicate<LivingEntity> target, IJsonP
     ModifierEntry.VALID_LEVEL.defaultField("modifier_level", ConditionalPowerModule::modifierLevel),
     ConditionalPowerModule::new);
   /** Projectile persistent data key for the stat multiplier */
-  private static final ResourceLocation AMMO_MULTIPLIER = ToolStats.PROJECTILE_DAMAGE.getName().withSuffix("_ammo_multiplier");
+  private static final ResourceLocation AMMO_MULTIPLIER = ToolStats.PROJECTILE_DAMAGE.getName().getLocation().withSuffix("_ammo_multiplier");
   /** Projectile persistent data key for the stat multiplier */
-  private static final ResourceLocation BOW_MULTIPLIER = ToolStats.PROJECTILE_DAMAGE.getName().withSuffix("_bow_multiplier");
+  private static final ResourceLocation BOW_MULTIPLIER = ToolStats.PROJECTILE_DAMAGE.getName().getLocation().withSuffix("_bow_multiplier");
 
   /** @apiNote Internal constructor, use {@link #builder()} */
   @Internal

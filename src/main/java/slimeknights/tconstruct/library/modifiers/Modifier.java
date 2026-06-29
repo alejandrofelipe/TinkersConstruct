@@ -141,7 +141,7 @@ public class Modifier implements IdAwareObject {
    * @return  Translation key
    */
   protected String makeTranslationKey() {
-    return Util.makeTranslationKey("modifier", Objects.requireNonNull(id));
+    return Util.makeTranslationKey("modifier", Objects.requireNonNull(id).getLocation());
   }
 
   /**

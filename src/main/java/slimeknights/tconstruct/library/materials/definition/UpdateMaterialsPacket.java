@@ -51,7 +51,7 @@ public record UpdateMaterialsPacket(Map<MaterialId,IMaterial> materials, Map<Mat
   private static void encode(RegistryFriendlyByteBuf buffer, UpdateMaterialsPacket packet) {
     buffer.writeInt(packet.materials.size());
     packet.materials.values().forEach(material -> {
-      buffer.writeResourceLocation(material.getIdentifier());
+      buffer.writeResourceLocation(material.getIdentifier().getLocation());
       buffer.writeVarInt(material.getTier());
       buffer.writeVarInt(material.getSortOrder());
       buffer.writeBoolean(material.isCraftable());
@@ -62,7 +62,7 @@ public record UpdateMaterialsPacket(Map<MaterialId,IMaterial> materials, Map<Mat
       buffer.writeUtf(key.toString());
       buffer.writeUtf(value.toString());
     });
-    GenericTagUtil.encodeTags(buffer, IMaterial::getIdentifier, packet.tags);
+    GenericTagUtil.encodeTags(buffer, m -> m.getIdentifier().getLocation(), packet.tags);
   }
 
   @Override

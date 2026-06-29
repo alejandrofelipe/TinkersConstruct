@@ -32,7 +32,7 @@ record MaterialVariantIdImpl(MaterialId material, String variant) implements Mat
 
   @Override
   public ResourceLocation getLocation(char separator) {
-    return material.withSuffix(separator + variant);
+    return material.getLocation().withSuffix(separator + variant);
   }
 
   @Override

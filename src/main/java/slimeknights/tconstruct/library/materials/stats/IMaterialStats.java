@@ -31,7 +31,7 @@ public interface IMaterialStats {
    * Returns the name of the stat type, to be displayed to the player.
    */
   default MutableComponent getLocalizedName() {
-    return Component.translatable(Util.makeTranslationKey("stat", getIdentifier()));
+    return Component.translatable(Util.makeTranslationKey("stat", getIdentifier().getLocation()));
   }
 
   /**

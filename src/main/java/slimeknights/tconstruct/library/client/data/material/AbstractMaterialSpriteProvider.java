@@ -78,7 +78,7 @@ public abstract class AbstractMaterialSpriteProvider {
 
   /** Adds a new material to the data generator */
   protected MaterialSpriteInfoBuilder buildMaterial(MaterialId name) {
-    return buildMaterial((ResourceLocation)name);
+    return buildMaterial(name.getLocation());
   }
 
   /** Adds a new material variant to the data generator */
