@@ -195,7 +195,7 @@ public class MaterialStatsModule implements ToolStatsHook, ToolTraitHook, ToolMa
 
     /** Adds a stat type */
     public Builder stat(MaterialStatType<?> stat, float scale) {
-      return stat(stat.getId(), scale);
+      return stat(stat.getStatId(), scale);
     }
 
     /** Adds a stat type */
@@ -275,7 +275,7 @@ public class MaterialStatsModule implements ToolStatsHook, ToolTraitHook, ToolMa
     /** Adds a stat to all slots from the given stat type list */
     public ArmorBuilder stat(List<? extends MaterialStatType<?>> stats, float scale) {
       for (ArmorItem.Type slotType : slotTypes) {
-        getBuilder(slotType).stat(stats.get(slotType.ordinal()).getId(), scale);
+        getBuilder(slotType).stat(stats.get(slotType.ordinal()).getStatId(), scale);
       }
       return this;
     }

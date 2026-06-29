@@ -24,7 +24,7 @@ public interface IMaterialStats {
    */
   @NonExtendable
   default MaterialStatsId getIdentifier() {
-    return getType().getId();
+    return getType().getStatId();
   }
 
   /**

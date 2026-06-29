@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 /** Supplier that will return a modifier once they are fully registered, typically used with {@link ModifierDeferredRegister} */
 @RequiredArgsConstructor
-public class LazyModifier implements Supplier<Modifier>, IdAwareObject {
+public class LazyModifier implements Supplier<Modifier>, IdAwareObject<ModifierId> {
   /** ID of the modifier to fetch */
   @Getter
   protected final ModifierId id;

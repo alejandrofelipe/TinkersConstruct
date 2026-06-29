@@ -17,7 +17,7 @@ import slimeknights.mantle.registration.object.IdAwareObject;
  */
 @RequiredArgsConstructor
 @Getter
-public class DummyArmorMaterial implements IdAwareObject {
+public class DummyArmorMaterial implements IdAwareObject<ResourceLocation> {
   private final ResourceLocation id;
   private final SoundEvent equipSound;
 

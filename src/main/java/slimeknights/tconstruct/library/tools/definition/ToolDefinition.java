@@ -16,7 +16,7 @@ import slimeknights.tconstruct.library.tools.definition.module.ToolHooks;
  * @see #create(ResourceLocation)
  */
 @RequiredArgsConstructor
-public class ToolDefinition implements IdAwareObject {
+public class ToolDefinition implements IdAwareObject<ResourceLocation> {
   /** Empty tool definition instance to prevent the need for null for a fallback */
   public static final ToolDefinition EMPTY = new ToolDefinition(TConstruct.getResource("empty"));
 
@@ -39,7 +39,7 @@ public class ToolDefinition implements IdAwareObject {
   }
 
   /** Creates and registers a new tool definition */
-  public static ToolDefinition create(IdAwareObject item) {
+  public static ToolDefinition create(IdAwareObject<ResourceLocation> item) {
     return create(item.getId());
   }
 

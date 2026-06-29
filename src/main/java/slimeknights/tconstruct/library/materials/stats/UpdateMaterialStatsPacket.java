@@ -66,7 +66,7 @@ public record UpdateMaterialStatsPacket(Map<MaterialId,Collection<IMaterialStats
    */
   @SuppressWarnings("unchecked")
   private static <T extends IMaterialStats> void encodeStat(RegistryFriendlyByteBuf buffer, IMaterialStats stat, MaterialStatType<T> type) {
-    MaterialStatsId.PARSER.encode(buffer, type.getId());
+    MaterialStatsId.PARSER.encode(buffer, type.getStatId());
     type.getLoadable().encode(buffer, (T) stat);
   }
 

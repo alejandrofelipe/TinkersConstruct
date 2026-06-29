@@ -63,7 +63,7 @@ public class TinkerDataCapability {
 
   /** Class for generic keys */
   @SuppressWarnings("unused")
-  public static class TinkerDataKey<T> implements IdAwareObject {
+  public static class TinkerDataKey<T> implements IdAwareObject<ResourceLocation> {
     /** Name for debug */
     @Getter
     private final ResourceLocation id;

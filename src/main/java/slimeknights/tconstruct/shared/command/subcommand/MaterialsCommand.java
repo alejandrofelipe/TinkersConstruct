@@ -136,7 +136,7 @@ public class MaterialsCommand {
   private static int stats(CommandContext<CommandSourceStack> context, float scale) throws CommandSyntaxException {
     MaterialId material = MaterialArgument.getMaterial(context, "material").getIdentifier();
     MaterialStatType<?> statType = MaterialStatsArgument.getStat(context, "stat_type");
-    Optional<IMaterialStats> stats = MaterialRegistry.getInstance().getMaterialStats(material, statType.getId());
+    Optional<IMaterialStats> stats = MaterialRegistry.getInstance().getMaterialStats(material, statType.getStatId());
     if (stats.isPresent()) {
       context.getSource().sendSuccess(() -> {
         MutableComponent output = TConstruct.makeTranslation("command", "materials.success.stats.material", stats.get().getLocalizedName(), MaterialTooltipCache.getDisplayName(material), scale);
@@ -147,7 +147,7 @@ public class MaterialsCommand {
       }, true);
       return 1;
     } else {
-      throw INVALID_STATS.create(statType.getId(), MaterialTooltipCache.getDisplayName(material));
+      throw INVALID_STATS.create(statType.getStatId(), MaterialTooltipCache.getDisplayName(material));
     }
   }
 
@@ -165,7 +165,7 @@ public class MaterialsCommand {
       traits = MaterialRegistry.getInstance().getDefaultTraits(material);
       output = TConstruct.makeTranslation("command", "materials.success.traits.default", MaterialTooltipCache.getDisplayName(material));
     } else {
-      traits = MaterialRegistry.getInstance().getTraits(material, statType.getId());
+      traits = MaterialRegistry.getInstance().getTraits(material, statType.getStatId());
       output = TConstruct.makeTranslation("command", "materials.success.traits.stat", statType.getDefaultStats().getLocalizedName(), MaterialTooltipCache.getDisplayName(material));
     }
     // if no traits, add special empty string

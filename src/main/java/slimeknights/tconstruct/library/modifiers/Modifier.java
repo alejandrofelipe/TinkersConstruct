@@ -38,7 +38,7 @@ import java.util.Random;
  * @see #registerHooks(Builder)
  */
 @SuppressWarnings("unused")
-public class Modifier implements IdAwareObject {
+public class Modifier implements IdAwareObject<ModifierId> {
   /** Modifier random instance, use for chance based effects */
   public static Random RANDOM = new Random();
 
@@ -103,8 +103,7 @@ public class Modifier implements IdAwareObject {
     this.id = name;
   }
 
-  // PORT M3: cannot @Override IdAwareObject#getId() until Mantle's IdAwareObject is made generic
-  //          (IdAwareObject<T>), since ModifierId no longer extends ResourceLocation (it wraps one).
+  @Override
   public ModifierId getId() {
     return Objects.requireNonNull(id, "Modifier has null registry name");
   }
