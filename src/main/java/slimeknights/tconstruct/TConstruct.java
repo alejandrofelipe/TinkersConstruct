@@ -97,6 +97,23 @@ public class TConstruct {
   /** Mod event bus, used for registration */
   public static IEventBus modBus;
 
+  /**
+   * Registers a module on the mod bus, but only if it declares any {@code @SubscribeEvent} methods.
+   * NeoForge 1.21 throws {@code IllegalArgumentException} when registering a listener with no event methods
+   * (Forge silently ignored it). Constructing the module already triggers its static deferred-register
+   * initializers, so pure-registration modules (e.g. TinkerToolParts) need no bus listener.
+   */
+  private static void registerModule(IEventBus bus, Object module) {
+    for (Class<?> c = module.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+      for (java.lang.reflect.Method m : c.getDeclaredMethods()) {
+        if (m.isAnnotationPresent(SubscribeEvent.class)) {
+          bus.register(module);
+          return;
+        }
+      }
+    }
+  }
+
   public TConstruct(IEventBus modBus, ModContainer container) {
     instance = this;
     IEventBus bus = modBus;
@@ -111,22 +128,22 @@ public class TConstruct {
     // initialize modules, done this way rather than with annotations to give us control over the order
     // PORT: MissingMappingsEvent removed in NeoForge (no legacy remap)
     // base
-    bus.register(new TinkerCommons());
-    bus.register(new TinkerMaterials());
-    bus.register(new TinkerEffects());
-    bus.register(new TinkerGadgets());
-    bus.register(new TinkerAttributes());
+    registerModule(bus, new TinkerCommons());
+    registerModule(bus, new TinkerMaterials());
+    registerModule(bus, new TinkerEffects());
+    registerModule(bus, new TinkerGadgets());
+    registerModule(bus, new TinkerAttributes());
     // world
-    bus.register(new TinkerWorld());
-    bus.register(new TinkerStructures());
+    registerModule(bus, new TinkerWorld());
+    registerModule(bus, new TinkerStructures());
     // tools
-    bus.register(new TinkerTables());
-    bus.register(new TinkerModifiers());
-    bus.register(new TinkerToolParts());
-    bus.register(new TinkerTools());
+    registerModule(bus, new TinkerTables());
+    registerModule(bus, new TinkerModifiers());
+    registerModule(bus, new TinkerToolParts());
+    registerModule(bus, new TinkerTools());
     // smeltery
-    bus.register(new TinkerSmeltery());
-    bus.register(new TinkerFluids());
+    registerModule(bus, new TinkerSmeltery());
+    registerModule(bus, new TinkerFluids());
 
     // init deferred registers
     TinkerModule.initRegisters();
