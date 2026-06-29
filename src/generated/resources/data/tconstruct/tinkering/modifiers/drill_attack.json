@@ -4,7 +4,7 @@
     {
       "type": "tconstruct:tool_actions",
       "tool_actions": [
-        "drill_attack"
+        "tconstruct:drill_attack"
       ]
     },
     {

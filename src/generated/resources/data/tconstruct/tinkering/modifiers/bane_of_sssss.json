@@ -10,7 +10,7 @@
         "predicates": [
           {
             "type": "mantle:mob_type",
-            "mobs": "minecraft:arthropod"
+            "tag": "minecraft:arthropod"
           },
           {
             "type": "mantle:tag",
@@ -34,7 +34,7 @@
         "predicates": [
           {
             "type": "mantle:mob_type",
-            "mobs": "minecraft:arthropod"
+            "tag": "minecraft:arthropod"
           },
           {
             "type": "mantle:tag",

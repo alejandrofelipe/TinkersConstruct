@@ -10,7 +10,7 @@
         "predicates": [
           {
             "type": "mantle:mob_type",
-            "mobs": "minecraft:illager"
+            "tag": "minecraft:illager"
           },
           {
             "type": "mantle:tag",

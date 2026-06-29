@@ -32,6 +32,9 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
   @Nullable
   private final ModifierId modifier;
   private final TypeAwareRecipeSerializer<? extends PotionCastingRecipe> recipeSerializer;
+  /** Factory for the modifier recipe variant (tipping vs tip-clearing); null for bottle-filling recipes. Must create the class matching {@link #recipeSerializer}'s loader, else serialization casts to the wrong type. */
+  @Nullable
+  private final TippingRecipeFactory tippingFactory;
   private Ingredient bottle = Ingredient.EMPTY;
   private FluidIngredient fluid = FluidIngredient.EMPTY;
   @Setter @Accessors(chain = true)
@@ -41,7 +44,7 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
 
   /** Creates a new casting recipe for a bottle */
   public static PotionCastingRecipeBuilder castingRecipe(ItemLike result, TypeAwareRecipeSerializer<PotionCastingRecipe> serializer) {
-    return new PotionCastingRecipeBuilder(result.asItem(), null, serializer);
+    return new PotionCastingRecipeBuilder(result.asItem(), null, serializer, null);
   }
 
   /**
@@ -65,9 +68,9 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
 
   /* Modifier casting */
 
-  /** Creates a new casting recipe for a bottle */
-  public static PotionCastingRecipeBuilder tippingRecipe(ModifierId modifier, TypeAwareRecipeSerializer<? extends PotionCastingRecipe> serializer) {
-    return new PotionCastingRecipeBuilder(Items.AIR, modifier, serializer);
+  /** Creates a new casting recipe for a bottle. The factory must match the serializer's loader type (tipping vs clearing). */
+  public static PotionCastingRecipeBuilder tippingRecipe(ModifierId modifier, TypeAwareRecipeSerializer<? extends PotionCastingRecipe> serializer, TippingRecipeFactory factory) {
+    return new PotionCastingRecipeBuilder(Items.AIR, modifier, serializer, factory);
   }
 
   /**
@@ -76,7 +79,7 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
    * @return  Builder instance
    */
   public static PotionCastingRecipeBuilder basinTipping(ModifierId modifier) {
-    return tippingRecipe(modifier, TinkerSmeltery.basinTippingRecipeSerializer.get());
+    return tippingRecipe(modifier, TinkerSmeltery.basinTippingRecipeSerializer.get(), TippingCastingRecipe::new);
   }
 
   /**
@@ -85,7 +88,7 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
    * @return  Builder instance
    */
   public static PotionCastingRecipeBuilder tableTipping(ModifierId modifier) {
-    return tippingRecipe(modifier, TinkerSmeltery.tableTippingRecipeSerializer.get());
+    return tippingRecipe(modifier, TinkerSmeltery.tableTippingRecipeSerializer.get(), TippingCastingRecipe::new);
   }
 
   /**
@@ -94,7 +97,7 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
    * @return  Builder instance
    */
   public static PotionCastingRecipeBuilder basinClearing(ModifierId modifier) {
-    return tippingRecipe(modifier, TinkerSmeltery.basinTipClearingRecipeSerializer.get());
+    return tippingRecipe(modifier, TinkerSmeltery.basinTipClearingRecipeSerializer.get(), TipClearingCastingRecipe::new);
   }
 
   /**
@@ -103,7 +106,7 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
    * @return  Builder instance
    */
   public static PotionCastingRecipeBuilder tableClearing(ModifierId modifier) {
-    return tippingRecipe(modifier, TinkerSmeltery.tableTipClearingRecipeSerializer.get());
+    return tippingRecipe(modifier, TinkerSmeltery.tableTipClearingRecipeSerializer.get(), TipClearingCastingRecipe::new);
   }
 
 
@@ -179,9 +182,15 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
     }
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "casting");
     if (modifier != null) {
-      consumer.accept(id, new TippingCastingRecipe(recipeSerializer, id, group, bottle, fluid, coolingTime, modifier), advancement);
+      consumer.accept(id, tippingFactory.create(recipeSerializer, id, group, bottle, fluid, coolingTime, modifier), advancement);
     } else {
       consumer.accept(id, new PotionCastingRecipe(recipeSerializer, id, group, bottle, fluid, result, coolingTime), advancement);
     }
+  }
+
+  /** Factory for the tipping/tip-clearing recipe variant; both recipe constructors share this signature */
+  @FunctionalInterface
+  public interface TippingRecipeFactory {
+    PotionCastingRecipe create(TypeAwareRecipeSerializer<?> serializer, ResourceLocation id, String group, Ingredient bottle, FluidIngredient fluid, int coolingTime, ModifierId modifier);
   }
 }

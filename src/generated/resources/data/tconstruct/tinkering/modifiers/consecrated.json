@@ -5,7 +5,7 @@
       "type": "tconstruct:protection",
       "attacker": {
         "type": "mantle:mob_type",
-        "mobs": "minecraft:undead"
+        "tag": "minecraft:undead"
       },
       "damage_source": "mantle:can_protect",
       "each_level": 1.25

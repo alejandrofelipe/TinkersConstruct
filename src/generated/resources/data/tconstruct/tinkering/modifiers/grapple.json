@@ -4,7 +4,7 @@
     {
       "type": "tconstruct:tool_actions",
       "tool_actions": [
-        "grapple_hook"
+        "tconstruct:grapple_hook"
       ]
     },
     {

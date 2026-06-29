@@ -4,7 +4,7 @@
     {
       "type": "tconstruct:tool_actions",
       "tool_actions": [
-        "item_hook"
+        "tconstruct:item_hook"
       ]
     },
     {

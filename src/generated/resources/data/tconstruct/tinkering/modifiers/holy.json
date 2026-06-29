@@ -7,7 +7,7 @@
       "percent": false,
       "target": {
         "type": "mantle:mob_type",
-        "mobs": "minecraft:undead"
+        "tag": "minecraft:undead"
       }
     }
   ],
