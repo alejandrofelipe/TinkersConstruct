@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import slimeknights.tconstruct.common.TinkerModule;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.config.Config;
+import slimeknights.tconstruct.library.recipe.ingredient.TinkerIngredients;
 import slimeknights.tconstruct.common.data.AdvancementsProvider;
 import slimeknights.tconstruct.common.data.ConfigurationDataProvider;
 import slimeknights.tconstruct.common.data.DamageTypeProvider;
@@ -140,6 +141,7 @@ public class TConstruct {
     MaterialRegistry.init();
 
     // PORT M3: central capability + ingredient-type registration
+    TinkerIngredients.init(bus);
 
     // initialize modules, done this way rather than with annotations to give us control over the order
     // PORT: MissingMappingsEvent removed in NeoForge (no legacy remap)
