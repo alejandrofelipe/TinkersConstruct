@@ -44,14 +44,15 @@ public class ChrysophiliteModifier extends NoLevelsModifier implements Equipment
   public void onEquip(IToolStackView tool, ModifierEntry modifier, EquipmentChangeContext context) {
     // adding a helmet? activate bonus
     if (context.getChangedSlot() == EquipmentSlot.HEAD) {
-      context.getTinkerData().ifPresent(data -> {
+      TinkerDataCapability.Holder data = context.getTinkerData();
+      if (data != null) {
         TotalGold gold = data.get(TOTAL_GOLD);
         if (gold == null) {
           data.computeIfAbsent(TOTAL_GOLD).initialize(context);
         } else {
           gold.setGold(EquipmentSlot.HEAD, tool.getVolatileData().getBoolean(ModifiableArmorItem.PIGLIN_NEUTRAL));
         }
-      });
+      }
     }
   }
 
@@ -61,7 +62,10 @@ public class ChrysophiliteModifier extends NoLevelsModifier implements Equipment
       IToolStackView newTool = context.getReplacementTool();
       // when replacing with a helmet that lacks this modifier, remove bonus
       if (newTool == null || newTool.getModifierLevel(this) == 0) {
-        context.getTinkerData().ifPresent(data -> data.remove(TOTAL_GOLD));
+        TinkerDataCapability.Holder data = context.getTinkerData();
+        if (data != null) {
+          data.remove(TOTAL_GOLD);
+        }
       }
     }
   }
@@ -70,9 +74,12 @@ public class ChrysophiliteModifier extends NoLevelsModifier implements Equipment
   public void onEquipmentChange(IToolStackView tool, ModifierEntry modifier, EquipmentChangeContext context, EquipmentSlot slotType) {
     // adding a helmet? activate bonus
     EquipmentSlot changed = context.getChangedSlot();
-    if (slotType == EquipmentSlot.HEAD && changed.getType() == Type.ARMOR) {
+    if (slotType == EquipmentSlot.HEAD && changed.getType() == Type.HUMANOID_ARMOR) {
       boolean hasGold = ChrysophiliteModifier.hasGold(context, changed);
-      context.getTinkerData().ifPresent(data -> data.computeIfAbsent(TOTAL_GOLD).setGold(changed, hasGold));
+      TinkerDataCapability.Holder data = context.getTinkerData();
+      if (data != null) {
+        data.computeIfAbsent(TOTAL_GOLD).setGold(changed, hasGold);
+      }
     }
   }
 
@@ -142,7 +149,7 @@ public class ChrysophiliteModifier extends NoLevelsModifier implements Equipment
      * @param value     New value
      */
     protected boolean setGold(EquipmentSlot slotType, boolean value) {
-      if (slotType.getType() == Type.ARMOR) {
+      if (slotType.getType() == Type.HUMANOID_ARMOR) {
         int index = slotType.getIndex();
         if (hasGold[index] != value) {
           hasGold[index] = value;

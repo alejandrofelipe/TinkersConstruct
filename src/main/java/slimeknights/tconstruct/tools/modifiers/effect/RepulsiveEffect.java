@@ -17,7 +17,7 @@ public class RepulsiveEffect extends TinkerEffect {
   }
 
   @Override
-  public boolean applyEffectTick(ServerLevel serverLevel, LivingEntity entity, int amplifier) {
+  public boolean applyEffectTick(LivingEntity entity, int amplifier) {
     MagneticEffect.applyVelocity(entity, amplifier, LivingEntity.class, 2, -0.1f, 10);
     return true;
   }

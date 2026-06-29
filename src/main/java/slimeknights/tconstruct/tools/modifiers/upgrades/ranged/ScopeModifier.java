@@ -16,7 +16,7 @@ import slimeknights.tconstruct.tools.modules.ZoomModule;
 @Deprecated(forRemoval = true)
 public class ScopeModifier extends Modifier {
   @Deprecated(forRemoval = true)
-  public static final ResourceLocation SCOPE = ModifierIds.scope;
+  public static final ResourceLocation SCOPE = ModifierIds.scope.getLocation();
 
   @Override
   protected void registerHooks(Builder hookBuilder) {

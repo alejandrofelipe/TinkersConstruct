@@ -28,9 +28,9 @@ import java.util.Collection;
 public class EntityMeltingRecipe implements ICustomOutputRecipe<IEmptyContainer> {
   public static final RecordLoadable<EntityMeltingRecipe> LOADER = RecordLoadable.create(
     ContextKey.ID.requiredField(),
-    EntityIngredient.LOADABLE.requiredField("entity", r -> r.ingredient),
-    FluidOutput.Loadable.REQUIRED.requiredField("result", r -> r.output),
-    IntLoadable.FROM_ONE.defaultField("damage", 2, true, r -> r.damage),
+    EntityIngredient.LOADABLE.requiredField("entity", (EntityMeltingRecipe r) -> r.ingredient),
+    FluidOutput.Loadable.REQUIRED.requiredField("result", (EntityMeltingRecipe r) -> r.output),
+    IntLoadable.FROM_ONE.defaultField("damage", 2, true, (EntityMeltingRecipe r) -> r.damage),
     EntityMeltingRecipe::new);
 
   @Getter

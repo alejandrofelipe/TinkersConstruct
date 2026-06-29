@@ -388,7 +388,7 @@ public class ModifierManager extends SimpleJsonResourceReloadListener {
     // filter out redirects (redirects are any modifiers where the ID does not match the key
     return Stream.concat(staticModifiers.entrySet().stream(), dynamicModifiers.entrySet().stream())
                  .filter(entry -> entry.getKey().equals(entry.getValue().getId()))
-                 .map(Entry::getKey);
+                 .map(entry -> entry.getKey().getLocation());
   }
 
   /** Gets a stream of all modifier values */
@@ -474,7 +474,7 @@ public class ModifierManager extends SimpleJsonResourceReloadListener {
      * @param modifier  Modifier instance
      */
     public void registerStatic(ModifierId name, Modifier modifier) {
-      checkModNamespace(name);
+      checkModNamespace(name.getLocation());
 
       // should not include under both types
       if (expectedDynamicModifiers.contains(name)) {
@@ -494,7 +494,7 @@ public class ModifierManager extends SimpleJsonResourceReloadListener {
      * @param name  Modifier name
      */
     public void registerExpected(ModifierId name) {
-      checkModNamespace(name);
+      checkModNamespace(name.getLocation());
 
       // should not include under both types
       if (staticModifiers.containsKey(name)) {

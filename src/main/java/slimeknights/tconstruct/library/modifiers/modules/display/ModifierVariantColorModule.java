@@ -39,7 +39,7 @@ public enum ModifierVariantColorModule implements ModifierModule, DisplayNameMod
 
   @Override
   public Component getDisplayName(IToolStackView tool, ModifierEntry entry, Component name, @Nullable RegistryAccess access) {
-    String variant = tool.getPersistentData().getString(entry.getId());
+    String variant = tool.getPersistentData().getString(entry.getId().getLocation());
     if (!variant.isEmpty()) {
       String key = entry.getModifier().getTranslationKey();
       return name.copy().withStyle(style -> style.withColor(ResourceColorManager.getTextColor(key + "." + variant)));

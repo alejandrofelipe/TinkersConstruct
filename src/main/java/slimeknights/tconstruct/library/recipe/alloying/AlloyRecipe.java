@@ -28,9 +28,9 @@ import java.util.List;
 public class AlloyRecipe implements ICustomOutputRecipe<IAlloyTank> {
   public static final RecordLoadable<AlloyRecipe> LOADER = RecordLoadable.create(
     ContextKey.ID.requiredField(),
-    AlloyIngredient.LOADABLE.list(2).requiredField("inputs", r -> r.inputs),
-    FluidOutput.Loadable.REQUIRED.requiredField("result", r -> r.output),
-    IntLoadable.FROM_ONE.requiredField("temperature", r -> r.temperature),
+    AlloyIngredient.LOADABLE.list(2).requiredField("inputs", (AlloyRecipe r) -> r.inputs),
+    FluidOutput.Loadable.REQUIRED.requiredField("result", (AlloyRecipe r) -> r.output),
+    IntLoadable.FROM_ONE.requiredField("temperature", (AlloyRecipe r) -> r.temperature),
     AlloyRecipe::new);
 
   @Getter

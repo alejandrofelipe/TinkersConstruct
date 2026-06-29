@@ -76,7 +76,7 @@ public class MaterialMeltingRecipeBuilder extends AbstractRecipeBuilder<Material
 
   @Override
   public void save(RecipeOutput output) {
-    save(output, inputId.getId());
+    save(output, inputId.getId().getLocation());
   }
 
   @Override

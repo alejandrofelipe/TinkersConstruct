@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
@@ -33,7 +32,6 @@ import java.util.function.Predicate;
 /**
  * Base class for all cuboid multiblocks
  */
-@RequiredArgsConstructor
 public abstract class MultiblockCuboid<T extends MultiblockStructureData> {
   /** Error if the multiblock detection logic never ran */
   protected static final MultiblockResult NO_ATTEMPT = MultiblockResult.error(null, TConstruct.makeTranslation("multiblock", "generic.no_attempt"));
@@ -80,6 +78,17 @@ public abstract class MultiblockCuboid<T extends MultiblockStructureData> {
   /** Gets the last result of the structure */
   @Setter(AccessLevel.PROTECTED) @Getter
   private MultiblockResult lastResult = NO_ATTEMPT;
+
+  /**
+   * Full constructor
+   */
+  public MultiblockCuboid(boolean hasFloor, boolean hasFrame, boolean hasCeiling, int maxHeight, int innerLimit) {
+    this.hasFloor = hasFloor;
+    this.hasFrame = hasFrame;
+    this.hasCeiling = hasCeiling;
+    this.maxHeight = maxHeight;
+    this.innerLimit = innerLimit;
+  }
 
   /**
    * Constructor with default belowLimit of 64 and innerLimit of 9

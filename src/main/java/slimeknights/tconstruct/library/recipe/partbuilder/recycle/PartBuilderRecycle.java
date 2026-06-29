@@ -187,7 +187,7 @@ public class PartBuilderRecycle implements IPartBuilderRecipe, IMultiRecipe<Disp
       List<ItemStack> patternItems = List.of(pattern.getItems());
       List<ItemStack> toolItems = List.of(tool.getItems());
       displayRecipes = results.entrySet().stream()
-        .map(entry -> new DisplayPartRecipe(id, MaterialVariant.UNKNOWN, entry.getKey(), patternItems, 0, toolItems, List.of(entry.getValue().get()))).toList();
+        .map((Map.Entry<Pattern,ItemOutput> entry) -> new DisplayPartRecipe(id, MaterialVariant.UNKNOWN, entry.getKey(), patternItems, 0, toolItems, List.of(entry.getValue().get()))).toList();
     }
     return displayRecipes;
   }

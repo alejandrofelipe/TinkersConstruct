@@ -16,6 +16,7 @@ public class MaterialValue implements IMaterialValue {
   private final int value;
 
   public MaterialValue(MaterialVariantId material, int value) {
-    this(MaterialVariant.of(material), value);
+    this.material = MaterialVariant.of(material);
+    this.value = value;
   }
 }

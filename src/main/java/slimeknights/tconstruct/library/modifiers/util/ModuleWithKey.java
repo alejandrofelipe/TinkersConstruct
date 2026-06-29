@@ -23,7 +23,7 @@ public interface ModuleWithKey {
     if (key != null) {
       return key;
     }
-    return modifier.getId();
+    return modifier.getId().getLocation();
   }
 
   /** Gets the key field from the record */

@@ -57,7 +57,7 @@ public class PartSwapCastingRecipe extends AbstractMaterialCastingRecipe impleme
     ContextKey.ID.requiredField(), LoadableRecipeSerializer.RECIPE_GROUP,
     IngredientLoadable.ALLOW_EMPTY.requiredField("tools", AbstractCastingRecipe::getCast),
     ITEM_COST_FIELD,
-    IntLoadable.FROM_ZERO.requiredField("index", r -> r.index),
+    IntLoadable.FROM_ZERO.requiredField("index", (PartSwapCastingRecipe r) -> r.index),
     MATERIALS_FIELD,
     PartSwapCastingRecipe::new);
 

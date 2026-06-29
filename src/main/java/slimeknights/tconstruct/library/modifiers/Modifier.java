@@ -103,7 +103,8 @@ public class Modifier implements IdAwareObject {
     this.id = name;
   }
 
-  @Override
+  // PORT M3: cannot @Override IdAwareObject#getId() until Mantle's IdAwareObject is made generic
+  //          (IdAwareObject<T>), since ModifierId no longer extends ResourceLocation (it wraps one).
   public ModifierId getId() {
     return Objects.requireNonNull(id, "Modifier has null registry name");
   }

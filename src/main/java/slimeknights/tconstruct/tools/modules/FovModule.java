@@ -3,7 +3,6 @@ package slimeknights.tconstruct.tools.modules;
 import net.minecraft.resources.ResourceLocation;
 import slimeknights.mantle.data.loadable.primitive.EnumLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
-import slimeknights.mantle.util.LogicHelper;
 import slimeknights.tconstruct.library.json.LevelingValue;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
@@ -38,13 +37,13 @@ public record FovModule(LevelingValue value, FovAction action) implements Modifi
 
   /** Gets the key for the given context */
   private static ResourceLocation getKey(ModifierEntry modifier, EquipmentChangeContext context) {
-    return modifier.getId().withSuffix('_' + context.getChangedSlot().getName());
+    return modifier.getId().getLocation().withSuffix('_' + context.getChangedSlot().getName());
   }
 
   @Override
   public void onEquip(IToolStackView tool, ModifierEntry modifier, EquipmentChangeContext context) {
     if (!tool.isBroken()) {
-      TinkerDataCapability.Holder data = LogicHelper.orElseNull(context.getTinkerData());
+      TinkerDataCapability.Holder data = context.getTinkerData();
       if (data != null) {
         data.computeIfAbsent(TinkerDataKeys.FOV_MODIFIER).set(getKey(modifier, context), action.apply(value.compute(modifier.getEffectiveLevel())));
       }
@@ -54,7 +53,7 @@ public record FovModule(LevelingValue value, FovAction action) implements Modifi
   @Override
   public void onUnequip(IToolStackView tool, ModifierEntry modifier, EquipmentChangeContext context) {
     if (!tool.isBroken()) {
-      TinkerDataCapability.Holder data = LogicHelper.orElseNull(context.getTinkerData());
+      TinkerDataCapability.Holder data = context.getTinkerData();
       if (data != null) {
         data.computeIfAbsent(TinkerDataKeys.FOV_MODIFIER).remove(getKey(modifier, context));
       }

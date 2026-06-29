@@ -44,11 +44,11 @@ public class PartRecipe implements IPartBuilderRecipe, IMultiRecipe<IDisplayPart
     ContextKey.ID.requiredField(),
     LoadableRecipeSerializer.RECIPE_GROUP,
     Pattern.PARSER.requiredField("pattern", PartRecipe::getPattern),
-    IngredientLoadable.DISALLOW_EMPTY.defaultField("pattern_item", DEFAULT_PATTERNS, r -> r.patternItem),
+    IngredientLoadable.DISALLOW_EMPTY.defaultField("pattern_item", DEFAULT_PATTERNS, (PartRecipe r) -> r.patternItem),
     IntLoadable.FROM_ONE.requiredField("cost", PartRecipe::getCost),
-    BooleanLoadable.INSTANCE.defaultField("allow_uncraftable", false, false, r -> r.allowUncraftable),
-    new MergingField<>(TinkerLoadables.MATERIAL_ITEM.requiredField("item", r -> r.output), "result", MissingMode.DISALLOWED),
-    new MergingField<>(IntLoadable.FROM_ONE.defaultField("count", 1, r -> r.outputCount), "result", MissingMode.CREATE),
+    BooleanLoadable.INSTANCE.defaultField("allow_uncraftable", false, false, (PartRecipe r) -> r.allowUncraftable),
+    new MergingField<>(TinkerLoadables.MATERIAL_ITEM.requiredField("item", (PartRecipe r) -> r.output), "result", MissingMode.DISALLOWED),
+    new MergingField<>(IntLoadable.FROM_ONE.defaultField("count", 1, (PartRecipe r) -> r.outputCount), "result", MissingMode.CREATE),
     PartRecipe::new);
 
   @Getter

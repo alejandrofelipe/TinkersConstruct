@@ -31,7 +31,7 @@ public record ModifierVariantNameModule(VariantFormatter formatter) implements M
 
   @Override
   public Component getDisplayName(IToolStackView tool, ModifierEntry entry, Component name, @Nullable RegistryAccess access) {
-    String variant = tool.getPersistentData().getString(entry.getId());
+    String variant = tool.getPersistentData().getString(entry.getId().getLocation());
     if (!variant.isEmpty()) {
       // allow overriding the color of the result using the resource color manager
       TextColor color = ResourceColorManager.getOrNull(entry.getModifier().getTranslationKey() + '.' + variant);

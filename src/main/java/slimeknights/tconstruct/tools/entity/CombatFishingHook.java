@@ -105,11 +105,11 @@ public class CombatFishingHook extends FishingHook implements ProjectileWithKnoc
   }
 
   @Override
-  protected void defineSynchedData() {
-    super.defineSynchedData();
-    this.entityData.define(GRAPPLE, (byte) GrappleType.NONE.ordinal());
-    this.entityData.define(COLLECTING, false);
-    this.entityData.define(MATERIAL, IMaterial.UNKNOWN_ID);
+  protected void defineSynchedData(SynchedEntityData.Builder builder) {
+    super.defineSynchedData(builder);
+    builder.define(GRAPPLE, (byte) GrappleType.NONE.ordinal());
+    builder.define(COLLECTING, false);
+    builder.define(MATERIAL, IMaterial.UNKNOWN_ID);
   }
 
   /** Gets the currently displayed material */
@@ -238,8 +238,10 @@ public class CombatFishingHook extends FishingHook implements ProjectileWithKnoc
         float oldHealth = targetLiving != null ? targetLiving.getHealth() : 0;
         if (target.hurt(source, damage)) {
           if (!this.level().isClientSide && owner instanceof LivingEntity ownerLiving) {
-            if (targetLiving != null) {
-              EnchantmentHelper.doPostHurtEffects(targetLiving, owner);
+            // 1.21: EnchantmentHelper#doPostHurtEffects(LivingEntity, Entity) was unified into
+            // doPostAttackEffectsWithItemSource which runs the target's post-hit enchantment effects (e.g. thorns)
+            if (targetLiving != null && this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+              EnchantmentHelper.doPostAttackEffectsWithItemSource(serverLevel, targetLiving, source, null);
             }
 
             // run modifier hook
@@ -297,7 +299,7 @@ public class CombatFishingHook extends FishingHook implements ProjectileWithKnoc
     knockback = knockback.scale(GRAPPLE_STRENGTH * Math.pow(knockback.lengthSqr(), -0.25f));
     owner.push(knockback.x, knockback.y, knockback.z);
     if (isDrill() && owner instanceof Player player) {
-      player.startAutoSpinAttack(20);
+      player.startAutoSpinAttack(20, 0f, ItemStack.EMPTY);
     }
     if (owner instanceof ServerPlayer player) {
       player.connection.send(new ClientboundSetEntityMotionPacket(player.getId(), player.getDeltaMovement()));

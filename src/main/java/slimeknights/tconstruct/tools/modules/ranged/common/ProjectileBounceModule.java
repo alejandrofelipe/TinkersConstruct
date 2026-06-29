@@ -45,7 +45,7 @@ public record ProjectileBounceModule(LevelingInt bounces) implements ModifierMod
 
   @Override
   public boolean onProjectileHitsBlock(ModifierNBT modifiers, ModDataNBT persistentData, ModifierEntry modifier, Projectile projectile, BlockHitResult hit, @Nullable LivingEntity owner) {
-    ResourceLocation key = modifier.getId();
+    ResourceLocation key = modifier.getId().getLocation();
     int bounces = persistentData.getInt(key);
     if (bounces < this.bounces.compute(modifier.getEffectiveLevel())) {
       Vec3 motion = projectile.getDeltaMovement();

@@ -43,13 +43,13 @@ public class TipClearingCastingRecipe extends PotionCastingRecipe {
     // must have the modifier to cast
     ItemStack stack = inv.getStack();
     // must have the modifier, and the potion set
-    return super.matches(inv, level) && ModifierUtil.getModifierLevel(stack, modifier) > 0 && !ModifierUtil.getPersistentString(stack, modifier).isEmpty();
+    return super.matches(inv, level) && ModifierUtil.getModifierLevel(stack, modifier) > 0 && !ModifierUtil.getPersistentString(stack, modifier.getLocation()).isEmpty();
   }
 
   @Override
   public ItemStack assemble(ICastingContainer inv, HolderLookup.Provider access) {
     ItemStack result = inv.getStack().copy();
-    ToolStack.from(result).getPersistentData().remove(modifier);
+    ToolStack.from(result).getPersistentData().remove(modifier.getLocation());
     return result;
   }
 
@@ -69,7 +69,7 @@ public class TipClearingCastingRecipe extends PotionCastingRecipe {
           String id = Loadables.POTION.getString(potion);
           return tools.stream().map(stack -> {
             ToolStack tool = ToolStack.copyFrom(stack);
-            tool.getPersistentData().putString(modifier, id);
+            tool.getPersistentData().putString(modifier.getLocation(), id);
             return tool.copyStack(stack);
           });
         }).toList();

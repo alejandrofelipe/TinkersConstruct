@@ -23,7 +23,7 @@ public class MagneticEffect extends TinkerEffect {
   }
 
   @Override
-  public boolean applyEffectTick(net.minecraft.server.level.ServerLevel serverLevel, LivingEntity entity, int amplifier) {
+  public boolean applyEffectTick(LivingEntity entity, int amplifier) {
     applyMagnet(entity, amplifier);
     return true;
   }

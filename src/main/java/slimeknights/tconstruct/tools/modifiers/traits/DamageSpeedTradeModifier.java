@@ -39,10 +39,10 @@ import java.util.function.BiConsumer;
 public class DamageSpeedTradeModifier extends Modifier implements AttributesModifierHook, TooltipModifierHook, BreakSpeedModifierHook {
   private static final Component MINING_SPEED = TConstruct.makeTranslation("armor_stat", "mining_speed");
   private final float multiplier;
-  private final Lazy<UUID> uuid = Lazy.of(() -> UUID.nameUUIDFromBytes(getId().toString().getBytes()));
-  private final Lazy<String> attributeName = Lazy.of(() -> {
-    ResourceLocation id = getId();
-    return id.getPath() + "." + id.getNamespace() + ".attack_damage";
+  /** ID used for the attack damage attribute modifier, derived from the modifier id */
+  private final Lazy<ResourceLocation> attributeId = Lazy.of(() -> {
+    ResourceLocation id = getId().getLocation();
+    return id.withSuffix(".attack_damage");
   });
 
   @Override
@@ -78,7 +78,7 @@ public class DamageSpeedTradeModifier extends Modifier implements AttributesModi
       double boost = getMultiplier(tool, modifier.getLevel());
       if (boost != 0) {
         // half boost for attack speed, its
-        consumer.accept(Attributes.ATTACK_DAMAGE, new AttributeModifier(uuid.get(), attributeName.get(), boost / 2, Operation.MULTIPLY_TOTAL));
+        consumer.accept(Attributes.ATTACK_DAMAGE, new AttributeModifier(attributeId.get(), boost / 2, Operation.ADD_MULTIPLIED_TOTAL));
       }
     }
   }

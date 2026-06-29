@@ -26,7 +26,7 @@ public final class DisplayCastingRecipe implements IDisplayableCastingRecipe {
   private final boolean consumed;
 
   public DisplayCastingRecipe(@Nullable ResourceLocation recipeId, RecipeType<?> type, List<ItemStack> castItems, List<FluidStack> fluids, ItemStack output, int coolingTime, boolean consumed) {
-    this(recipeId, type, castItems, fluids, List.of(output), coolingTime, consumed);
+    this(recipeId, type, castItems, fluids, List.<ItemStack>of(output), coolingTime, consumed);
   }
 
   /** @deprecated use {@link #DisplayCastingRecipe(ResourceLocation,RecipeType,List,List,ItemStack,int,boolean)} */

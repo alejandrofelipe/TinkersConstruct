@@ -40,8 +40,8 @@ import java.util.List;
 public class ContainerFillingRecipe implements ICastingRecipe, IMultiRecipe<DisplayCastingRecipe> {
   public static final RecordLoadable<ContainerFillingRecipe> LOADER = RecordLoadable.create(
     LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(), ContextKey.ID.requiredField(), LoadableRecipeSerializer.RECIPE_GROUP,
-    IntLoadable.FROM_ONE.requiredField("fluid_amount", r -> r.fluidAmount),
-    Loadables.ITEM.requiredField("container", r -> r.container),
+    IntLoadable.FROM_ONE.requiredField("fluid_amount", (ContainerFillingRecipe r) -> r.fluidAmount),
+    Loadables.ITEM.requiredField("container", (ContainerFillingRecipe r) -> r.container),
     ContainerFillingRecipe::new);
 
   @Getter

@@ -38,8 +38,8 @@ public class MaterialRecipe implements ICustomOutputRecipe<ISingleStackContainer
     IngredientLoadable.DISALLOW_EMPTY.requiredField("ingredient", MaterialRecipe::getIngredient),
     IMaterialValue.VALUE_FIELD,
     IMaterialValue.NEEDED_FIELD,
-    MaterialVariantId.LOADABLE.requiredField("material", r -> r.getMaterial().getVariant()),
-    ItemOutput.Loadable.OPTIONAL_STACK.emptyField("leftover", r -> r.leftover),
+    MaterialVariantId.LOADABLE.requiredField("material", (MaterialRecipe r) -> r.getMaterial().getVariant()),
+    ItemOutput.Loadable.OPTIONAL_STACK.emptyField("leftover", (MaterialRecipe r) -> r.leftover),
     MaterialRecipe::new);
 
   /** Vanilla requires 4 ingots for full repair, we drop it down to 3 to mesh better with nuggets and blocks and to fit small head costs better */

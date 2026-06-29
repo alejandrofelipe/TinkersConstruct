@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.library.recipe.modifiers.adding;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -16,12 +17,17 @@ import slimeknights.tconstruct.common.TinkerTags;
 /**
  * Builder for overslime recipes
  */
-@RequiredArgsConstructor(staticName = "modifier")
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class OverslimeModifierRecipeBuilder extends AbstractRecipeBuilder<OverslimeModifierRecipeBuilder> {
   @Setter @Accessors(chain = true)
   private Ingredient tools = Ingredient.of(TinkerTags.Items.DURABILITY);
   private final Ingredient ingredient;
   private final int restoreAmount;
+
+  /** Creates a new builder for the given ingredient */
+  public static OverslimeModifierRecipeBuilder modifier(Ingredient ingredient, int restoreAmount) {
+    return new OverslimeModifierRecipeBuilder(ingredient, restoreAmount);
+  }
 
   /** Creates a new builder for the given item */
   public static OverslimeModifierRecipeBuilder modifier(ItemLike item, int restoreAmount) {

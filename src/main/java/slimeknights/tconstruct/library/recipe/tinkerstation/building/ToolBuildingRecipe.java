@@ -67,11 +67,11 @@ public class ToolBuildingRecipe implements ITinkerStationRecipe {
   /** Loader instance */
   public static final RecordLoadable<ToolBuildingRecipe> LOADER = RecordLoadable.create(
     ContextKey.ID.requiredField(), LoadableRecipeSerializer.RECIPE_GROUP, RESULT_FIELD,
-    IntLoadable.FROM_ONE.defaultField("result_count", 1, true, r -> r.outputCount),
+    IntLoadable.FROM_ONE.defaultField("result_count", 1, true, (ToolBuildingRecipe r) -> r.outputCount),
     LAYOUT_FIELD,
-    IngredientLoadable.DISALLOW_EMPTY.list(0).defaultField("extra_requirements", List.of(), r -> r.ingredients),
-    TinkerLoadables.TOOL_PART_ITEM.list(0).nullableField("parts_override", r -> r.parts),
-    MaterialVariantId.LOADABLE.list(0).defaultField("extra_materials", List.of(), false, r -> r.materials),
+    IngredientLoadable.DISALLOW_EMPTY.list(0).defaultField("extra_requirements", List.of(), (ToolBuildingRecipe r) -> r.ingredients),
+    TinkerLoadables.TOOL_PART_ITEM.list(0).nullableField("parts_override", (ToolBuildingRecipe r) -> r.parts),
+    MaterialVariantId.LOADABLE.list(0).defaultField("extra_materials", List.of(), false, (ToolBuildingRecipe r) -> r.materials),
     ToolBuildingRecipe::new);
 
   @Getter

@@ -92,14 +92,14 @@ public enum ZoomModule implements ModifierModule, GeneralInteractionModifierHook
   private static void setZoom(ModifierEntry modifier, LivingEntity living, float amount) {
     TinkerDataCapability.Holder data = living.getCapability(TinkerDataCapability.CAPABILITY);
     if (data != null) {
-      data.computeIfAbsent(TinkerDataKeys.FOV_MODIFIER).set(modifier.getId(), amount);
+      data.computeIfAbsent(TinkerDataKeys.FOV_MODIFIER).set(modifier.getId().getLocation(), amount);
     }
   }
 
   /** Stops zooming */
   private static void stopZoom(ModifierEntry modifier, @Nullable TinkerDataCapability.Holder tinkerData) {
     if (tinkerData != null) {
-      tinkerData.computeIfAbsent(TinkerDataKeys.FOV_MODIFIER).remove(modifier.getId());
+      tinkerData.computeIfAbsent(TinkerDataKeys.FOV_MODIFIER).remove(modifier.getId().getLocation());
     }
   }
 

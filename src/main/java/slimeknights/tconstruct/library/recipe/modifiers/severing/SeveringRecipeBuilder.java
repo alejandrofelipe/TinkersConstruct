@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.library.recipe.modifiers.severing;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -17,7 +18,7 @@ import javax.annotation.Nullable;
 /** Builder for entity melting recipes */
 @Setter
 @Accessors(chain = true)
-@RequiredArgsConstructor(staticName = "severing")
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class SeveringRecipeBuilder extends AbstractRecipeBuilder<SeveringRecipeBuilder> {
   private final EntityIngredient ingredient;
   private final ItemOutput output;
@@ -25,6 +26,11 @@ public class SeveringRecipeBuilder extends AbstractRecipeBuilder<SeveringRecipeB
   private float lootingBonus = 0.01f;
   @Nullable
   private ItemOutput childOutput = null;
+
+  /** Creates a new builder from an item output */
+  public static SeveringRecipeBuilder severing(EntityIngredient ingredient, ItemOutput output) {
+    return new SeveringRecipeBuilder(ingredient, output);
+  }
 
   /** Creates a new builder from an item */
   public static SeveringRecipeBuilder severing(EntityIngredient ingredient, ItemLike output) {

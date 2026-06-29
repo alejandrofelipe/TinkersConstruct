@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.library.recipe.casting.container;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -13,12 +14,23 @@ import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 /**
  * Builder for a container filling recipe. Takes an arbitrary fluid for a specific amount to fill a Forge {@link net.neoforged.neoforge.fluids.capability.IFluidHandlerItem}
  */
-@AllArgsConstructor(staticName = "castingRecipe")
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class ContainerFillingRecipeBuilder extends AbstractRecipeBuilder<ContainerFillingRecipeBuilder> {
   private final ResourceLocation result;
   private final int fluidAmount;
   private final TypeAwareRecipeSerializer<? extends ContainerFillingRecipe> recipeSerializer;
+
+  /**
+   * Creates a new builder instance using the given result, amount, and serializer
+   * @param result            Recipe result
+   * @param fluidAmount       Container size
+   * @param recipeSerializer  Serializer
+   * @return  Builder instance
+   */
+  public static ContainerFillingRecipeBuilder castingRecipe(ResourceLocation result, int fluidAmount, TypeAwareRecipeSerializer<? extends ContainerFillingRecipe> recipeSerializer) {
+    return new ContainerFillingRecipeBuilder(result, fluidAmount, recipeSerializer);
+  }
 
   /**
    * Creates a new builder instance using the given result, amount, and serializer

@@ -194,9 +194,9 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
         EntityDimensions dimensions = getType().getDimensions();
         float factor = 0.01f;
         if (((BlockHitResult)hitResult).getDirection().getAxis() == Axis.Y) {
-          factor += dimensions.height;
+          factor += dimensions.height();
         } else {
-          factor += dimensions.width / 2;
+          factor += dimensions.width() / 2;
         }
         newLocation = hitResult.getLocation().add(velocity.normalize().scale(factor));
       } else {
@@ -315,9 +315,9 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
   private static final String KEY_WATER_INERTIA = "water_inertia";
 
   @Override
-  protected void defineSynchedData() {
-    this.entityData.define(FLUID, FluidStack.EMPTY);
-    this.entityData.define(WATER_INERTIA, 0.6f);
+  protected void defineSynchedData(SynchedEntityData.Builder builder) {
+    builder.define(FLUID, FluidStack.EMPTY);
+    builder.define(WATER_INERTIA, 0.6f);
   }
 
   @Override
@@ -345,7 +345,7 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
     }
     FluidStack fluid = getFluid();
     if (!fluid.isEmpty()) {
-      nbt.put(KEY_FLUID, fluid.writeToNBT(new CompoundTag()));
+      nbt.put(KEY_FLUID, fluid.save(this.registryAccess()));
     }
   }
 
@@ -356,10 +356,10 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
     this.knockback = nbt.getFloat(KEY_KNOCKBACK);
     this.entityData.set(WATER_INERTIA, nbt.getFloat(KEY_WATER_INERTIA));
     if (nbt.contains(KEY_CANNON)) {
-      this.cannon = NbtUtils.readBlockPos(nbt.getCompound(KEY_CANNON));
+      this.cannon = NbtUtils.readBlockPos(nbt, KEY_CANNON).orElse(null);
     } else {
       this.cannon = null;
     }
-    setFluid(FluidStack.loadFluidStackFromNBT(nbt.getCompound(KEY_FLUID)));
+    setFluid(FluidStack.parseOptional(this.registryAccess(), nbt.getCompound(KEY_FLUID)));
   }
 }

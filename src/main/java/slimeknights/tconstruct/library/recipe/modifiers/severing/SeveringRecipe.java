@@ -31,7 +31,7 @@ public class SeveringRecipe implements ICustomOutputRecipe<IEmptyContainer> {
   /** Loader instance */
   public static final RecordLoadable<SeveringRecipe> LOADER = RecordLoadable.create(
     ContextKey.ID.requiredField(), ENTITY_FIELD,
-    ItemOutput.Loadable.REQUIRED_STACK.requiredField("result", r -> r.output),
+    ItemOutput.Loadable.REQUIRED_STACK.requiredField("result", (SeveringRecipe r) -> r.output),
     BASE_CHANCE_FIELD, LOOTING_BONUS_FIELD,
     SeveringRecipe::new);
 

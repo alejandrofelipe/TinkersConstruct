@@ -55,7 +55,7 @@ public class TippingCastingRecipe extends PotionCastingRecipe {
       // but it can't match what is already on the stack
       String potionId = getPotionId(inv.getFluidComponents());
       return !potionId.isEmpty()
-        && !ModifierUtil.getPersistentString(stack, modifier).equals(potionId);
+        && !ModifierUtil.getPersistentString(stack, modifier.getLocation()).equals(potionId);
     }
     return false;
   }
@@ -65,7 +65,7 @@ public class TippingCastingRecipe extends PotionCastingRecipe {
     ItemStack result = inv.getStack().copy();
     String potionId = getPotionId(inv.getFluidComponents());
     if (!potionId.isEmpty()) {
-      ToolStack.from(result).getPersistentData().putString(modifier, potionId);
+      ToolStack.from(result).getPersistentData().putString(modifier.getLocation(), potionId);
     }
     return result;
   }
@@ -87,7 +87,7 @@ public class TippingCastingRecipe extends PotionCastingRecipe {
           String id = Loadables.POTION.getString(potion);
           List<ItemStack> results = tools.stream().map(stack -> {
             ToolStack tool = ToolStack.copyFrom(stack);
-            tool.getPersistentData().putString(modifier, id);
+            tool.getPersistentData().putString(modifier.getLocation(), id);
             return tool.copyStack(stack);
           }).toList();
           // add the potion to the fluid via the potion contents component

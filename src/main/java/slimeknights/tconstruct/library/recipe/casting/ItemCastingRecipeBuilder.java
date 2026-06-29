@@ -1,8 +1,6 @@
 package slimeknights.tconstruct.library.recipe.casting;
 
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -32,7 +30,6 @@ public class ItemCastingRecipeBuilder extends AbstractRecipeBuilder<ItemCastingR
   private final TypeAwareRecipeSerializer<? extends ItemCastingRecipe> recipeSerializer;
   private Ingredient cast = Ingredient.EMPTY;
   private FluidIngredient fluid = FluidIngredient.EMPTY;
-  @Setter @Accessors(chain = true)
   private int coolingTime = -1;
   private boolean consumed = false;
   private boolean switchSlots = false;
@@ -165,6 +162,16 @@ public class ItemCastingRecipeBuilder extends AbstractRecipeBuilder<ItemCastingR
    */
   public ItemCastingRecipeBuilder setCoolingTime(int temperature, int amount) {
     return setCoolingTime(ICastingRecipe.calcCoolingTime(temperature, amount));
+  }
+
+  /**
+   * Sets the recipe cooling time directly
+   * @param coolingTime  Cooling time
+   * @return  Builder instance
+   */
+  public ItemCastingRecipeBuilder setCoolingTime(int coolingTime) {
+    this.coolingTime = coolingTime;
+    return this;
   }
 
   /**

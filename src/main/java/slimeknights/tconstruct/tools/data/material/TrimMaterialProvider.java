@@ -56,9 +56,9 @@ public class TrimMaterialProvider {
   /** Registers a trim materials with the context */
   private static void material(BootstrapContext<TrimMaterial> context, MaterialId material, ItemLike ingredient, int color, float modelIndex) {
     context.register(
-      ResourceKey.create(Registries.TRIM_MATERIAL, material),
+      ResourceKey.create(Registries.TRIM_MATERIAL, material.getLocation()),
       TrimMaterial.create(material.getSuffix(), ingredient.asItem(), modelIndex,
-        Component.translatable(TRIM_FORMAT, Component.translatable(Util.makeDescriptionId("material", material))).withStyle(style -> style.withColor(color)),
+        Component.translatable(TRIM_FORMAT, Component.translatable(Util.makeDescriptionId("material", material.getLocation()))).withStyle(style -> style.withColor(color)),
         Map.of())
     );
   }

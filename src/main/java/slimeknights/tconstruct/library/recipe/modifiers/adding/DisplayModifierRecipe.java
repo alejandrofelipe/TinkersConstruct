@@ -114,9 +114,21 @@ public class DisplayModifierRecipe implements IDisplayModifierRecipe {
       return copy;
     }
 
+    /** Sets the resolved inputs list */
+    public Builder inputs(List<List<ItemStack>> inputs) {
+      this.inputs = inputs;
+      return this;
+    }
+
     /** Sets the inputs to a list of ingredients */
     public Builder ingredients(List<SizedIngredient> inputs) {
       return inputs(resolve(inputs));
+    }
+
+    /** Sets whether this display recipe is incremental */
+    public Builder incremental(boolean incremental) {
+      this.incremental = incremental;
+      return this;
     }
 
     /** Sets this display recipe to be incremental */

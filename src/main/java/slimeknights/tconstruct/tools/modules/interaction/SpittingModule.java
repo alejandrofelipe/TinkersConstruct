@@ -172,7 +172,7 @@ public record SpittingModule(LevelingInt shots) implements ModifierModule, Gener
       if (fluid.getAmount() >= modifier.getLevel() && FluidEffectManager.INSTANCE.find(fluid.getFluid()).hasEffects()) {
         int time = HelmetChargingEffect.startUsingHelmet(tool, player, 1.5f);
         // mark the stack with the end time so we know how long to run particles
-        tool.getPersistentData().putInt(modifier.getId(), player.tickCount + time);
+        tool.getPersistentData().putInt(modifier.getId().getLocation(), player.tickCount + time);
         return true;
       }
     }
@@ -185,7 +185,7 @@ public record SpittingModule(LevelingInt shots) implements ModifierModule, Gener
       if (chargeTime > 0 && !player.level().isClientSide) {
         spit(tool, modifier, player, chargeTime);
       }
-      tool.getPersistentData().remove(modifier.getId());
+      tool.getPersistentData().remove(modifier.getId().getLocation());
     }
   }
 
@@ -193,7 +193,7 @@ public record SpittingModule(LevelingInt shots) implements ModifierModule, Gener
   public void onInventoryTick(IToolStackView tool, ModifierEntry modifier, Level world, LivingEntity holder, int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack) {
     if (isCorrectSlot && tool.hasTag(TinkerTags.Items.WORN_ARMOR)) {
       ModDataNBT persistentData = tool.getPersistentData();
-      int finishTime = persistentData.getInt(modifier.getId());
+      int finishTime = persistentData.getInt(modifier.getId().getLocation());
       if (finishTime > 0) {
         // how long we have left?
         int timeLeft = finishTime - holder.tickCount;
@@ -202,7 +202,7 @@ public record SpittingModule(LevelingInt shots) implements ModifierModule, Gener
           holder.playSound(SoundEvents.PLAYER_BREATH, 0.5F, holder.getRandom().nextFloat() * 0.1f + 0.9f);
           SlurpingModule.addFluidParticles(holder, TANK_HELPER.getFluid(tool), 16);
           // stop animation
-          persistentData.remove(modifier.getId());
+          persistentData.remove(modifier.getId().getLocation());
         }
         // sound is only every 4 ticks
         else if (timeLeft % 4 == 0) {

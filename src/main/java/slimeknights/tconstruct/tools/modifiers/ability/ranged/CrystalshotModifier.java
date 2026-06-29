@@ -30,7 +30,7 @@ public class CrystalshotModifier extends NoLevelsModifier {
   @Override
   public Component getDisplayName(IToolStackView tool, ModifierEntry entry, @Nullable RegistryAccess access) {
     // color the display name for the variant
-    String variant = tool.getPersistentData().getString(getId());
+    String variant = tool.getPersistentData().getString(getId().getLocation());
     if (!variant.isEmpty()) {
       String key = getTranslationKey();
       return Component.translatable(getTranslationKey())

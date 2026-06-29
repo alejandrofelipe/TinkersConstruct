@@ -58,9 +58,19 @@ public class MaterialFluidRecipeBuilder extends AbstractRecipeBuilder<MaterialFl
     return this;
   }
 
+  /**
+   * Sets the fluid ingredient directly
+   * @param fluid  Fluid ingredient
+   * @return  Builder instance
+   */
+  public MaterialFluidRecipeBuilder setFluid(FluidIngredient fluid) {
+    this.fluid = fluid;
+    return this;
+  }
+
   @Override
   public void save(RecipeOutput consumer) {
-    save(consumer, outputId.getId());
+    save(consumer, outputId.getId().getLocation());
   }
 
   @Override

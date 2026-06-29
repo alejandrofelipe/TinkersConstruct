@@ -34,7 +34,7 @@ public record HeadlightModule(int defaultLight) implements ModifierModule, RawDa
 
   @Override
   public void addRawData(IToolStackView tool, ModifierEntry modifier, RestrictedCompoundTag tag) {
-    String lightStr = tool.getPersistentData().getString(modifier.getId());
+    String lightStr = tool.getPersistentData().getString(modifier.getId().getLocation());
     if (!lightStr.isEmpty()) {
       try {
         tag.putInt(HEADLIGHT_LIGHT, Integer.parseInt(lightStr));

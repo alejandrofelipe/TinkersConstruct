@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 public class BlockTagIngredient implements ICustomIngredient {
   /** Loadable serializer instance, registered as an {@link IngredientType} in {@link TinkerIngredients} */
   public static final LoadableIngredientSerializer<BlockTagIngredient> SERIALIZER = new LoadableIngredientSerializer<>(RecordLoadable.create(
-    Loadables.BLOCK_TAG.requiredField("tag", i -> i.tag),
+    Loadables.BLOCK_TAG.requiredField("tag", (BlockTagIngredient i) -> i.tag),
     BlockTagIngredient::new));
 
   private final TagKey<Block> tag;
