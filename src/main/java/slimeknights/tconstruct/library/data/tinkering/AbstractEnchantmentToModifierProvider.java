@@ -52,7 +52,7 @@ public abstract class AbstractEnchantmentToModifierProvider extends GenericDataP
     if (enchantmentMap.has(key) || enchantmentMap.has(key + '?')) {
       throw new IllegalArgumentException("Duplicate enchantment " + key);
     }
-    enchantmentMap.addProperty(key, optionalId(modifierId, optionalModifier));
+    enchantmentMap.addProperty(key, optionalId(modifierId.getLocation(), optionalModifier));
   }
 
   /** Adds the given optional enchantment, ignoring errors if missing */
@@ -61,7 +61,7 @@ public abstract class AbstractEnchantmentToModifierProvider extends GenericDataP
     if (enchantmentMap.has(key) || enchantmentMap.has(key + '?')) {
       throw new IllegalArgumentException("Duplicate enchantment " + key);
     }
-    enchantmentMap.addProperty(key + '?', optionalId(modifierId, optionalModifier));
+    enchantmentMap.addProperty(key + '?', optionalId(modifierId.getLocation(), optionalModifier));
   }
 
   /** Adds the given enchantment tag */
@@ -75,7 +75,7 @@ public abstract class AbstractEnchantmentToModifierProvider extends GenericDataP
     if (enchantmentMap.has(key)) {
       throw new IllegalArgumentException("Duplicate enchantment tag " + tag.location());
     }
-    enchantmentMap.addProperty(key, optionalId(modifierId, optionalModifier));
+    enchantmentMap.addProperty(key, optionalId(modifierId.getLocation(), optionalModifier));
   }
 
   /** Adds the given enchantment tag */

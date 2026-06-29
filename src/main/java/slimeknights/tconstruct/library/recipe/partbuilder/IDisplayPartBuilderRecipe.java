@@ -33,7 +33,7 @@ public interface IDisplayPartBuilderRecipe extends IPartBuilderRecipe {
 
   /** Gets a list of results. Should either be size 1, or size matching {@link #getMaterialItems()} */
   default List<ItemStack> getResultItems() {
-    HolderLookup.Provider access = SafeClientAccess.getHolderLookup.Provider();
+    HolderLookup.Provider access = SafeClientAccess.getRegistryAccess();
     return access == null ? List.of() : List.of(getResultItem(access));
   }
 

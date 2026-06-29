@@ -108,7 +108,7 @@ public class MaxToolStat implements IToolStat<Integer> {
 
   @Override
   public Component formatValue(Integer number) {
-    return Component.translatable(Util.makeTranslationKey("tool_stat", getName())).append(displayName.apply(number));
+    return Component.translatable(Util.makeTranslationKey("tool_stat", getName().getLocation())).append(displayName.apply(number));
   }
 
   @Override

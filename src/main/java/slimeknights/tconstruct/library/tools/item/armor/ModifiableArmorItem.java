@@ -21,7 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
@@ -76,8 +76,12 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
   private final ToolDefinition toolDefinition;
   /** Cache of the tool built for rendering */
   private ItemStack toolForRendering = null;
-  public ModifiableArmorItem(ArmorMaterial materialIn, ArmorItem.Type type, Properties builderIn, ToolDefinition toolDefinition) {
-    super(materialIn, type, builderIn);
+  // PORT M3 (armor materials): vanilla ArmorMaterial is now a record behind Holder<ArmorMaterial> and Tinkers'
+  // ModifiableArmorMaterial no longer extends it (see DummyArmorMaterial). The real Holder<ArmorMaterial> (defense
+  // values + layers) is deferred to the armor-layer port; we pass a vanilla placeholder holder to the super ctor so
+  // construction compiles, while Tinkers drives armor stats through ToolStats/attributes instead.
+  public ModifiableArmorItem(DummyArmorMaterial materialIn, ArmorItem.Type type, Properties builderIn, ToolDefinition toolDefinition) {
+    super(ArmorMaterials.IRON, type, builderIn);
     this.toolDefinition = toolDefinition;
   }
 
@@ -130,20 +134,11 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
     return false;
   }
 
-  @Override
-  public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
-    return enchantment.isCurse() && super.canApplyAtEnchantingTable(stack, enchantment);
-  }
-
-  @Override
-  public int getEnchantmentLevel(ItemStack stack, Enchantment enchantment) {
-    return EnchantmentModifierHook.getEnchantmentLevel(stack, enchantment);
-  }
-
-  @Override
-  public Map<Enchantment,Integer> getAllEnchantments(ItemStack stack) {
-    return EnchantmentModifierHook.getAllEnchantments(stack);
-  }
+  // PORT M3 (enchantments): IItemExtension#canApplyAtEnchantingTable was removed in 1.21; enchantability is now
+  // data-driven (enchantable tags / EnchantmentHelper). Deferred to the enchantment subsystem port.
+  // PORT M3: IItemExtension#getEnchantmentLevel now takes Holder<Enchantment> and getAllEnchantments takes a
+  // RegistryLookup<Enchantment> returning ItemEnchantments; the EnchantmentModifierHook still works in
+  // ResourceKey<Enchantment>/Map terms, so these are left un-overridden until that bridge is built.
 
 
   /* Loading */
@@ -151,7 +146,7 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
   // PORT M3: item capabilities now registered centrally on RegisterCapabilitiesEvent via
   // ToolCapabilityProvider.getCapability(stack, cap); the initCapabilities/ICapabilityProvider override is removed.
 
-  @Override
+  // PORT M3: Item#verifyTagAfterLoad(CompoundTag) was removed in 1.21 (NBT -> data components).
   public void verifyTagAfterLoad(CompoundTag nbt) {
     ToolStack.verifyTag(this, nbt, getToolDefinition());
   }
@@ -183,7 +178,7 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
     return ModifierUtil.checkVolatileFlag(stack, SHINY);
   }
 
-  @Override
+  // PORT M3: Item#getRarity(ItemStack) was removed in 1.21 (DataComponents.RARITY).
   public Rarity getRarity(ItemStack stack) {
     return RarityModule.getRarity(stack);
   }
@@ -211,7 +206,7 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
     return false;
   }
 
-  @Override
+  // PORT M3: Item#canBeDepleted() was removed in 1.21 (durability is now DataComponents.MAX_DAMAGE).
   public boolean canBeDepleted() {
     return true;
   }
@@ -285,18 +280,20 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
     if (!tool.isBroken()) {
       // base stats
       StatsNBT statsNBT = tool.getStats();
-      UUID uuid = ARMOR_MODIFIER_UUID_PER_TYPE.get(type);
+      // PORT M3 (attributes): vanilla's ARMOR_MODIFIER_UUID_PER_TYPE was removed; AttributeModifier ids are now
+      // ResourceLocation. Using a per-slot resource id derived from the type until the attribute redesign lands.
+      ResourceLocation id = TConstruct.getResource("armor." + type.getName());
       float armor = statsNBT.get(ToolStats.ARMOR);
       if (armor > 0) {
-        builder.put(Attributes.ARMOR, new AttributeModifier(uuid, "tconstruct.armor.armor", armor, AttributeModifier.Operation.ADDITION));
+        builder.put(Attributes.ARMOR.value(), new AttributeModifier(id, armor, AttributeModifier.Operation.ADD_VALUE));
       }
       float toughness = statsNBT.get(ToolStats.ARMOR_TOUGHNESS);
       if (toughness > 0) {
-        builder.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(uuid, "tconstruct.armor.toughness", toughness, AttributeModifier.Operation.ADDITION));
+        builder.put(Attributes.ARMOR_TOUGHNESS.value(), new AttributeModifier(id, toughness, AttributeModifier.Operation.ADD_VALUE));
       }
       double knockbackResistance = statsNBT.get(ToolStats.KNOCKBACK_RESISTANCE);
       if (knockbackResistance > 0) {
-        builder.put(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(uuid, "tconstruct.armor.knockback_resistance", knockbackResistance, AttributeModifier.Operation.ADDITION));
+        builder.put(Attributes.KNOCKBACK_RESISTANCE.value(), new AttributeModifier(id, knockbackResistance, AttributeModifier.Operation.ADD_VALUE));
       }
       // grab attributes from modifiers
       BiConsumer<Attribute,AttributeModifier> attributeConsumer = builder::put;
@@ -312,7 +309,6 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
   // Attribute/AttributeModifier multimap (built above with UUID-keyed modifiers and Operation.ADDITION) are replaced in
   // 1.21 by the ItemAttributeModifiers data component keyed by Holder<Attribute> with ResourceLocation ids and
   // Operation.ADD_VALUE. Part of the module-wide attribute redesign; left for that pass.
-  @Override
   public Multimap<Attribute,AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
     if (slot != getEquipmentSlot() || !ToolStack.isInitialized(stack)) {
       return ImmutableMultimap.of();
@@ -401,7 +397,7 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
     return tooltips;
   }
 
-  @Override
+  // PORT M3: IItemExtension#getDefaultTooltipHideFlags was removed in 1.21 (DataComponents.TOOLTIP_DISPLAY).
   public int getDefaultTooltipHideFlags(ItemStack stack) {
     return TooltipUtil.getModifierHideFlags(getToolDefinition());
   }

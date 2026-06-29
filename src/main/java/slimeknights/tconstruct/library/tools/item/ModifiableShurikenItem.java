@@ -81,7 +81,7 @@ public class ModifiableShurikenItem extends Item implements IModifiableDisplay {
   // PORT M3: item capabilities now registered centrally on RegisterCapabilitiesEvent via
   // ToolCapabilityProvider.getCapability(stack, cap); the initCapabilities/ICapabilityProvider override is removed.
 
-  @Override
+  // PORT M3: Item#verifyTagAfterLoad(CompoundTag) was removed in 1.21 (NBT -> data components).
   public void verifyTagAfterLoad(CompoundTag nbt) {
     ToolStack.verifyTag(this, nbt, getToolDefinition());
   }
@@ -101,7 +101,7 @@ public class ModifiableShurikenItem extends Item implements IModifiableDisplay {
     return ModifierUtil.checkVolatileFlag(stack, SHINY);
   }
 
-  @Override
+  // PORT M3: Item#getRarity(ItemStack) was removed in 1.21 (DataComponents.RARITY).
   public Rarity getRarity(ItemStack stack) {
     return RarityModule.getRarity(stack);
   }
@@ -151,7 +151,7 @@ public class ModifiableShurikenItem extends Item implements IModifiableDisplay {
     TooltipUtil.addInformation(this, stack, context.level(), tooltip, SafeClientAccess.getTooltipKey(), flag);
   }
 
-  @Override
+  // PORT M3: IItemExtension#getDefaultTooltipHideFlags was removed in 1.21 (DataComponents.TOOLTIP_DISPLAY).
   public int getDefaultTooltipHideFlags(ItemStack stack) {
     return TooltipUtil.getModifierHideFlags(getToolDefinition());
   }

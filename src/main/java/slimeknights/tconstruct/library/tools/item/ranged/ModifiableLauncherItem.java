@@ -161,7 +161,7 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
     return ModifierUtil.checkVolatileFlag(stack, SHINY);
   }
 
-  @Override
+  // PORT M3: Item#getRarity(ItemStack) was removed in 1.21 (DataComponents.RARITY).
   public Rarity getRarity(ItemStack stack) {
     return RarityModule.getRarity(stack);
   }
@@ -189,7 +189,7 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
     return false;
   }
 
-  @Override
+  // PORT M3: Item#canBeDepleted() was removed in 1.21 (durability is now DataComponents.MAX_DAMAGE).
   public boolean canBeDepleted() {
     return true;
   }
@@ -276,7 +276,6 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
 
   // PORT M3 (attributes): see ModifiableItem; replace with the 1.21 ItemAttributeModifiers data component
   // (Holder<Attribute> keyed) during the module-wide attribute redesign.
-  @Override
   public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
     if (!ToolStack.isInitialized(stack) || slot.getType() != Type.HAND) {
       return ImmutableMultimap.of();
@@ -293,7 +292,7 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
   /* Arrow logic */
 
   @Override
-  public int getUseDuration(ItemStack pStack) {
+  public int getUseDuration(ItemStack pStack, LivingEntity entity) {
     return 72000;
   }
 
@@ -351,7 +350,7 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
     TooltipUtil.addInformation(this, stack, context.level(), tooltip, SafeClientAccess.getTooltipKey(), flag);
   }
 
-  @Override
+  // PORT M3: IItemExtension#getDefaultTooltipHideFlags was removed in 1.21 (DataComponents.TOOLTIP_DISPLAY).
   public int getDefaultTooltipHideFlags(ItemStack stack) {
     return TooltipUtil.getModifierHideFlags(getToolDefinition());
   }
@@ -403,7 +402,7 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
     return MiningSpeedToolHook.getDestroySpeed(stack, state);
   }
 
-  @Override
+  // PORT M3: IItemExtension#onBlockStartBreak was removed in NeoForge 1.21 (BlockEvent.BreakEvent).
   public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, Player player) {
     return ToolHarvestLogic.handleBlockBreak(stack, pos, player);
   }

@@ -25,7 +25,7 @@ public class MaterialHasFallbackTextureSupplier implements ArmorTextureSupplier,
     IntLoadable.FROM_ZERO.requiredField("index", m -> m.index),
     StringLoadable.DEFAULT.set(ArrayLoadable.COMPACT).requiredField("fallback", m -> m.fallback),
     ArmorTextureSupplier.LOADER.requiredField("apply", m -> m.apply),
-    MaterialHasFallbackTextureSupplier::new);
+    (index, fallback, apply) -> new MaterialHasFallbackTextureSupplier(index, fallback, apply));
 
   /** Material index on the tool */
   private final int index;

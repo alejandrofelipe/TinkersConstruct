@@ -5,7 +5,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
@@ -30,7 +33,14 @@ public class GeneratorPartTextureJsonGenerator extends GenericDataProvider {
   /** GSON adapter for material info deserializing */
   public static final Gson GSON = (new GsonBuilder())
     .registerTypeAdapter(ResourceLocation.class, ResourceLocationSerializer.resourceLocation(TConstruct.MOD_ID))
-    .registerTypeAdapter(MaterialStatsId.class, new ResourceLocationSerializer<>(MaterialStatsId::new, TConstruct.MOD_ID))
+    .registerTypeAdapter(MaterialStatsId.class, (JsonDeserializer<MaterialStatsId>) (element, type, context) -> {
+      String loc = element.getAsString();
+      if (!loc.contains(":")) {
+        loc = TConstruct.MOD_ID + ":" + loc;
+      }
+      return new MaterialStatsId(loc);
+    })
+    .registerTypeAdapter(MaterialStatsId.class, (JsonSerializer<MaterialStatsId>) (id, type, context) -> new JsonPrimitive(id.toString()))
     .setPrettyPrinting()
     .disableHtmlEscaping()
     .create();

@@ -176,7 +176,7 @@ public abstract class AbstractMaterialSpriteProvider {
     /** Adds a stat type as supported */
     public MaterialSpriteInfoBuilder statType(MaterialStatType<?>... stats) {
       for (MaterialStatType<?> stat : stats) {
-        statTypes.add(stat.getId());
+        statTypes.add(stat.getStatId());
       }
       return this;
     }
@@ -184,7 +184,7 @@ public abstract class AbstractMaterialSpriteProvider {
     /** Adds a stat type as supported */
     public MaterialSpriteInfoBuilder statType(List<? extends MaterialStatType<?>> stats) {
       for (MaterialStatType<?> stat : stats) {
-        statTypes.add(stat.getId());
+        statTypes.add(stat.getStatId());
       }
       return this;
     }
@@ -230,7 +230,7 @@ public abstract class AbstractMaterialSpriteProvider {
     public MaterialSpriteInfoBuilder plating() {
       statType(TinkerPartSpriteProvider.ARMOR_PLATING);
       for (MaterialStatType<?> type : PlatingMaterialStats.TYPES) {
-        statType(type.getId());
+        statType(type.getStatId());
       }
       repairKit();
       return this;

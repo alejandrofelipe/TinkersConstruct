@@ -6,7 +6,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.platform.NativeImage;
-import lombok.extern.log4j.Log4j2;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -57,8 +56,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /** Actual logic to generate tool textures */
-@Log4j2
 public class ClientGeneratePartTexturesCommand {
+  private static final org.apache.logging.log4j.Logger log = TConstruct.LOG;
   private static final String SUCCESS_KEY = TConstruct.makeTranslationKey("command", "generate_part_textures.finish");
   private static final String FAILURE_KEY = TConstruct.makeTranslationKey("command", "generate_part_textures.failure");
   private static final Component NO_PARTS = TConstruct.makeTranslation("command", "generate_part_textures.no_parts");

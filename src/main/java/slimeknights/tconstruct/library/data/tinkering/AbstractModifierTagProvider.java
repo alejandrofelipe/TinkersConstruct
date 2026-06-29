@@ -10,6 +10,6 @@ import slimeknights.tconstruct.library.modifiers.ModifierManager;
 public abstract class AbstractModifierTagProvider extends AbstractTagProvider<Modifier> {
   protected AbstractModifierTagProvider(PackOutput packOutput, String modId, ExistingFileHelper existingFileHelper) {
     // TODO: we don't fire modifier event during datagen, should we?
-    super(packOutput, modId, ModifierManager.TAG_FOLDER, Modifier::getId, id -> true/*ModifierManager.INSTANCE.containsStatic(new ModifierId(id))*/, existingFileHelper);
+    super(packOutput, modId, ModifierManager.TAG_FOLDER, modifier -> modifier.getId().getLocation(), id -> true/*ModifierManager.INSTANCE.containsStatic(new ModifierId(id))*/, existingFileHelper);
   }
 }

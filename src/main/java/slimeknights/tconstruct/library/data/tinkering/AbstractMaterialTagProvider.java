@@ -9,6 +9,6 @@ import slimeknights.tconstruct.library.materials.definition.MaterialManager;
 /** Tag provider for materials */
 public abstract class AbstractMaterialTagProvider extends AbstractTagProvider<IMaterial> {
   protected AbstractMaterialTagProvider(PackOutput packOutput, String modId, ExistingFileHelper existingFileHelper) {
-    super(packOutput, modId, MaterialManager.TAG_FOLDER, IMaterial::getIdentifier, id -> true, existingFileHelper);
+    super(packOutput, modId, MaterialManager.TAG_FOLDER, material -> material.getIdentifier().getLocation(), id -> true, existingFileHelper);
   }
 }

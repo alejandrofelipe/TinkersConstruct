@@ -17,7 +17,7 @@ public interface IMaterial extends Comparable<IMaterial> {
    * <p>
    * The fallback material needs to have all part types associated with it.
    */
-  IMaterial UNKNOWN = new Material(UNKNOWN_ID, false, true);
+  IMaterial UNKNOWN = new Material(UNKNOWN_ID.getLocation(), false, true);
 
   /**
    * Used to identify the material in NBT and other constructs.

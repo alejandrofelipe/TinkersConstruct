@@ -14,6 +14,7 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.materials.MaterialTooltipCache;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
+import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 
 import java.util.Collection;
@@ -41,7 +42,7 @@ public class MaterialVariantArgument implements ArgumentType<MaterialVariantId> 
 
   @Override
   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-    return TinkerSuggestionProvider.suggestResource(TConstruct.MOD_ID, MaterialRegistry.getInstance().getAllMaterials().stream().map(IMaterial::getIdentifier), builder, id -> id, MaterialTooltipCache::getColoredDisplayName);
+    return TinkerSuggestionProvider.suggestResource(TConstruct.MOD_ID, MaterialRegistry.getInstance().getAllMaterials().stream().map(IMaterial::getIdentifier), builder, MaterialId::getLocation, MaterialTooltipCache::getColoredDisplayName);
   }
 
   @Override

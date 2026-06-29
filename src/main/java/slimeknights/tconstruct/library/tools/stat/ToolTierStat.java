@@ -114,7 +114,7 @@ public class ToolTierStat implements IToolStat<Tier> {
 
   @Override
   public Component formatValue(Tier value) {
-    return Component.translatable(Util.makeTranslationKey("tool_stat", getName())).append(HarvestTiers.getName(value));
+    return Component.translatable(Util.makeTranslationKey("tool_stat", getName().getLocation())).append(HarvestTiers.getName(value));
   }
 
   @Override

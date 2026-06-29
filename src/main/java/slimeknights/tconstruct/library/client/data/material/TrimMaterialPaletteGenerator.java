@@ -34,7 +34,7 @@ public class TrimMaterialPaletteGenerator extends GenericTextureGenerator {
 
   /** Gets the sprite transformer for the given material */
   protected ISpriteTransformer getTransformer(MaterialId material) {
-    return Objects.requireNonNull(materialProvider.getMaterialInfo(material), "Missing material provider " + material).getTransformer();
+    return Objects.requireNonNull(materialProvider.getMaterialInfo(material.getLocation()), "Missing material provider " + material).getTransformer();
   }
 
   @SuppressWarnings("removal")

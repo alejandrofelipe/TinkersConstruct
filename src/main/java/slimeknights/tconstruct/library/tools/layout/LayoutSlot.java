@@ -74,7 +74,7 @@ public class LayoutSlot {
   public void write(FriendlyByteBuf buffer) {
     if (icon != null) {
       buffer.writeBoolean(true);
-      buffer.writeResourceLocation(icon);
+      buffer.writeResourceLocation(icon.getLocation());
     } else {
       buffer.writeBoolean(false);
     }

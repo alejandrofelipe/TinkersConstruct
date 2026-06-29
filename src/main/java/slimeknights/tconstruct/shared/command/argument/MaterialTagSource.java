@@ -58,7 +58,7 @@ public record MaterialTagSource(MaterialManager manager) implements TagSource<IM
     if (entries == null) {
       return null;
     }
-    return entries.stream().map(IMaterial::getIdentifier).collect(Collectors.toList());
+    return entries.stream().map(material -> material.getIdentifier().getLocation()).collect(Collectors.toList());
   }
 
 
@@ -77,6 +77,6 @@ public record MaterialTagSource(MaterialManager manager) implements TagSource<IM
 
   @Override
   public Stream<ResourceLocation> valueKeys() {
-    return manager.getAllMaterials().stream().map(IMaterial::getIdentifier);
+    return manager.getAllMaterials().stream().map(material -> material.getIdentifier().getLocation());
   }
 }

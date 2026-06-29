@@ -111,7 +111,7 @@ public class MultilevelIncrementalModifierRecipe extends IncrementalModifierReci
       DisplayModifierRecipe.Builder builder = DisplayModifierRecipe.builder()
         .id(getId()).inputs(getInputs()).resultSlots(getResultSlots()).incremental()
         .toolWithoutModifier(getToolWithoutModifier()).toolWithModifier(getToolWithModifier());
-      displayRecipes = Streams.concat(
+      displayRecipes = Streams.<IDisplayModifierRecipe>concat(
         Stream.of(this),
         levels.stream().skip(1).map(levelEntry -> builder.copy()
           .result(new ModifierEntry(result, levelEntry.level().min()))

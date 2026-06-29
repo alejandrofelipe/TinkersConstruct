@@ -91,7 +91,7 @@ public abstract class AbstractModifierProvider extends GenericDataProvider {
   @Override
   public CompletableFuture<?> run(CachedOutput cache) {
     addModifiers();
-    return allOf(composableModifiers.entrySet().stream().map(entry -> saveJson(cache, entry.getKey(), entry.getValue().serialize())));
+    return allOf(composableModifiers.entrySet().stream().map(entry -> saveJson(cache, entry.getKey().getLocation(), entry.getValue().serialize())));
   }
 
   /** Result for composable too */

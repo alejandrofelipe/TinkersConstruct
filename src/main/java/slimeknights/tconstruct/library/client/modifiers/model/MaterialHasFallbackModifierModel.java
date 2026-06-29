@@ -32,7 +32,7 @@ public final class MaterialHasFallbackModifierModel implements ModifierModel, Fu
     StringLoadable.DEFAULT.set(ArrayLoadable.COMPACT).requiredField("fallback", m -> m.fallback),
     ModifierModel.LOADER.requiredField("if_true", m -> m.ifTrue),
     ModifierModel.LOADER.requiredField("if_false", m -> m.ifFalse),
-    MaterialHasFallbackModifierModel::new);
+    (index, fallback, ifTrue, ifFalse) -> new MaterialHasFallbackModifierModel(index, fallback, ifTrue, ifFalse));
 
   private final int index;
   private final Set<String> fallback;

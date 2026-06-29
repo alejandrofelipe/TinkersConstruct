@@ -30,7 +30,7 @@ public record UpdateMaterialsPacket(Map<MaterialId,IMaterial> materials, Map<Mat
       int sortOrder = buffer.readVarInt();
       boolean craftable = buffer.readBoolean();
       boolean hidden = buffer.readBoolean();
-      materials.put(id, new Material(id, tier, sortOrder, craftable, hidden));
+      materials.put(id, new Material(id.getLocation(), tier, sortOrder, craftable, hidden));
     }
     Map<MaterialId,IMaterial> materialMap = materials.build();
     // process redirects

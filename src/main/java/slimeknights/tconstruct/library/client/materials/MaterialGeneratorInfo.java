@@ -2,6 +2,9 @@ package slimeknights.tconstruct.library.client.materials;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.resources.ResourceLocation;
@@ -25,7 +28,14 @@ public class MaterialGeneratorInfo {
   /** GSON adapter for generator deserializing. TODO: migrate ISpriteTransformer to loadables? */
   private static final Gson GSON = (new GsonBuilder())
     .registerTypeAdapter(ResourceLocation.class, ResourceLocationSerializer.resourceLocation(TConstruct.MOD_ID))
-    .registerTypeAdapter(MaterialStatsId.class, new ResourceLocationSerializer<>(MaterialStatsId::new, TConstruct.MOD_ID))
+    .registerTypeAdapter(MaterialStatsId.class, (JsonDeserializer<MaterialStatsId>) (element, type, context) -> {
+      String loc = element.getAsString();
+      if (!loc.contains(":")) {
+        loc = TConstruct.MOD_ID + ":" + loc;
+      }
+      return new MaterialStatsId(loc);
+    })
+    .registerTypeAdapter(MaterialStatsId.class, (JsonSerializer<MaterialStatsId>) (id, type, context) -> new JsonPrimitive(id.toString()))
     .registerTypeHierarchyAdapter(ISpriteTransformer.class, ISpriteTransformer.SERIALIZER)
     .registerTypeHierarchyAdapter(IColorMapping.class, IColorMapping.SERIALIZER)
     .create();

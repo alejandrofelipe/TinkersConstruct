@@ -76,7 +76,7 @@ public class MaterialTraitsManager extends MergingJsonDataLoader<MaterialTraits.
    */
   public <T extends IMaterialStats> void registerStatTypeFallback(MaterialStatsId statType, MaterialStatsId fallback) {
     if (statTypeFallbacks.containsKey(statType)) {
-      throw TinkerAPIMaterialException.materialStatsTypeRegisteredTwice(statType);
+      throw TinkerAPIMaterialException.materialStatsTypeRegisteredTwice(statType.getLocation());
     }
     statTypeFallbacks.put(statType, fallback);
   }

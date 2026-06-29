@@ -52,7 +52,7 @@ public abstract class AbstractMaterialStatsDataProvider extends GenericDataProvi
     }
     // does not ensure we have materials for all stats, we may be adding stats for another mod
     // generate finally
-    return allOf(allMaterialStats.entrySet().stream().map(entry -> saveJson(cache, entry.getKey(), entry.getValue().serialize())));
+    return allOf(allMaterialStats.entrySet().stream().map(entry -> saveJson(cache, entry.getKey().getLocation(), entry.getValue().serialize())));
   }
 
 
@@ -126,12 +126,12 @@ public abstract class AbstractMaterialStatsDataProvider extends GenericDataProvi
     public MaterialStatJson serialize() {
       Map<ResourceLocation,JsonElement> map = new HashMap<>();
       for (IMaterialStats stat : required) {
-        map.put(stat.getIdentifier(), encodeStats(stat, stat.getType()));
+        map.put(stat.getIdentifier().getLocation(), encodeStats(stat, stat.getType()));
       }
       for (IMaterialStats stat : optional) {
         JsonObject encoded = encodeStats(stat, stat.getType());
         encoded.addProperty("optional", true);
-        map.put(stat.getIdentifier(), encoded);
+        map.put(stat.getIdentifier().getLocation(), encoded);
       }
       return new MaterialStatJson(map);
     }

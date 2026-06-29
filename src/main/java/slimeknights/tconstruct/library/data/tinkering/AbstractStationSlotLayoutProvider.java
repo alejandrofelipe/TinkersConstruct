@@ -71,7 +71,7 @@ public abstract class AbstractStationSlotLayoutProvider extends GenericDataProvi
 
   /** Defines the given ID as a general layout */
   protected StationSlotLayout.Builder definePattern(Pattern id) {
-    return define(id).icon(id);
+    return define(id.getLocation()).icon(id);
   }
 
   /** Defines the given ID as a tool layout, sets icon and name */

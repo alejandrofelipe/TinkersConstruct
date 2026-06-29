@@ -59,14 +59,14 @@ public class ModifiableArrowItem extends ArrowItem implements IModifiableDisplay
   /* Arrowing */
 
   @Override
-  public AbstractArrow createArrow(Level level, ItemStack stack, LivingEntity shooter) {
+  public AbstractArrow createArrow(Level level, ItemStack stack, LivingEntity shooter, @Nullable ItemStack weapon) {
     ModifiableArrow arrow = new ModifiableArrow(level, shooter);
     arrow.onCreate(stack, shooter);
     return arrow;
   }
 
   @Override
-  public boolean isInfinite(ItemStack stack, ItemStack bow, Player player) {
+  public boolean isInfinite(ItemStack stack, ItemStack bow, LivingEntity entity) {
     return false;
   }
 
@@ -104,7 +104,8 @@ public class ModifiableArrowItem extends ArrowItem implements IModifiableDisplay
   // PORT M3: item capabilities now registered centrally on RegisterCapabilitiesEvent via
   // ToolCapabilityProvider.getCapability(stack, cap); the initCapabilities/ICapabilityProvider override is removed.
 
-  @Override
+  // PORT M3: Item#verifyTagAfterLoad(CompoundTag) was removed in 1.21 (NBT -> data components). Kept as a
+  // plain helper until tag verification is reworked onto components.
   public void verifyTagAfterLoad(CompoundTag nbt) {
     ToolStack.verifyTag(this, nbt, getToolDefinition());
   }
@@ -124,7 +125,7 @@ public class ModifiableArrowItem extends ArrowItem implements IModifiableDisplay
     return ModifierUtil.checkVolatileFlag(stack, SHINY);
   }
 
-  @Override
+  // PORT M3: Item#getRarity(ItemStack) was removed in 1.21 (DataComponents.RARITY). Kept as a plain helper.
   public Rarity getRarity(ItemStack stack) {
     return RarityModule.getRarity(stack);
   }
@@ -174,7 +175,7 @@ public class ModifiableArrowItem extends ArrowItem implements IModifiableDisplay
     TooltipUtil.addInformation(this, stack, context.level(), tooltip, SafeClientAccess.getTooltipKey(), flag);
   }
 
-  @Override
+  // PORT M3: IItemExtension#getDefaultTooltipHideFlags was removed in 1.21 (DataComponents.TOOLTIP_DISPLAY).
   public int getDefaultTooltipHideFlags(ItemStack stack) {
     return TooltipUtil.getModifierHideFlags(getToolDefinition());
   }

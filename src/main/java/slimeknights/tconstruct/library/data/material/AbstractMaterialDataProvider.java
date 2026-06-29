@@ -82,7 +82,7 @@ public abstract class AbstractMaterialDataProvider extends GenericDataProvider {
   @Override
   public CompletableFuture<?> run(CachedOutput cache) {
     ensureAddMaterialsRun();
-    return allOf(allMaterials.entrySet().stream().map(entry -> saveJson(cache, entry.getKey(), convert(entry.getValue()))));
+    return allOf(allMaterials.entrySet().stream().map(entry -> saveJson(cache, entry.getKey().getLocation(), convert(entry.getValue()))));
   }
 
   /**
@@ -129,7 +129,7 @@ public abstract class AbstractMaterialDataProvider extends GenericDataProvider {
 
   /** Creates a normal material with a condition and a redirect */
   protected void addMaterial(MaterialId location, int tier, int order, boolean craftable, boolean hidden, @Nullable ICondition condition, JsonRedirect... redirect) {
-    addMaterial(new Material(location, tier, order, craftable, hidden), condition, redirect);
+    addMaterial(new Material(location.getLocation(), tier, order, craftable, hidden), condition, redirect);
   }
 
   /** Creates a normal material */

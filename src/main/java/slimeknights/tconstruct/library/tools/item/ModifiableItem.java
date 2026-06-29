@@ -166,7 +166,8 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
     return ModifierUtil.checkVolatileFlag(stack, SHINY);
   }
 
-  @Override
+  // PORT M3: Item#getRarity(ItemStack) was removed in 1.21; rarity is now the DataComponents.RARITY
+  // component. Kept as a plain helper until the rarity component is wired up.
   public Rarity getRarity(ItemStack stack) {
     return RarityModule.getRarity(stack);
   }
@@ -296,7 +297,8 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
     return stack.getCount() == 1 ? MiningSpeedToolHook.getDestroySpeed(stack, state) : 0;
   }
 
-  @Override
+  // PORT M3: IItemExtension#onBlockStartBreak was removed in NeoForge 1.21; block-break interception now
+  // goes through BlockEvent.BreakEvent / IBlockExtension. Kept as a plain helper until that is wired up.
   public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, Player player) {
     return stack.getCount() > 1 || ToolHarvestLogic.handleBlockBreak(stack, pos, player);
   }
@@ -461,7 +463,7 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
   }
 
   @Override
-  public int getUseDuration(ItemStack stack) {
+  public int getUseDuration(ItemStack stack, LivingEntity entity) {
     ToolStack tool = ToolStack.from(stack);
     ModifierEntry activeModifier = GeneralInteractionModifierHook.getActiveModifier(tool);
     if (activeModifier != ModifierEntry.EMPTY) {
@@ -498,7 +500,8 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
     TooltipUtil.addInformation(this, stack, context.level(), tooltip, SafeClientAccess.getTooltipKey(), flag);
   }
 
-  @Override
+  // PORT M3: IItemExtension#getDefaultTooltipHideFlags was removed in 1.21; tooltip visibility is now the
+  // DataComponents.TOOLTIP_DISPLAY component. Kept as a plain helper until that is wired up.
   public int getDefaultTooltipHideFlags(ItemStack stack) {
     return TooltipUtil.getModifierHideFlags(getToolDefinition());
   }

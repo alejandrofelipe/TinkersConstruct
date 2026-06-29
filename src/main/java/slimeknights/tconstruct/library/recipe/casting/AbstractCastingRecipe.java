@@ -1,7 +1,6 @@
 package slimeknights.tconstruct.library.recipe.casting;
 
 import lombok.Getter;
-import lombok.experimental.Accessors;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -30,8 +29,12 @@ public abstract class AbstractCastingRecipe implements ICastingRecipe {
   private final Ingredient cast;
   @Getter
   private final boolean consumed;
-  @Getter @Accessors(fluent = true)
   private final boolean switchSlots;
+
+  @Override
+  public boolean switchSlots() {
+    return this.switchSlots;
+  }
 
   protected AbstractCastingRecipe(RecipeType<?> type, ResourceLocation id, String group, Ingredient cast, boolean consumed, boolean switchSlots) {
     this.type = type;
