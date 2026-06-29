@@ -18,15 +18,15 @@ public class ModifiableArmorMaterial extends DummyArmorMaterial {
 
   private ModifiableArmorMaterial(ResourceLocation id, SoundEvent equipSound, ToolDefinition... armorDefinitions) {
     super(id, equipSound);
-    if (armorDefinitions.length != 4) {
-      throw new IllegalArgumentException("Must have an armor definition for each slot");
+    if (armorDefinitions.length != ArmorItem.Type.values().length) {
+      throw new IllegalArgumentException("Must have an armor definition slot for each ArmorItem.Type");
     }
     this.armorDefinitions = armorDefinitions;
   }
 
   /** Creates a modifiable armor material, creates tool definition for the selected slots */
   public static ModifiableArmorMaterial create(ResourceLocation id, SoundEvent equipSound, ArmorItem.Type... slots) {
-    ToolDefinition[] definitions = new ToolDefinition[4];
+    ToolDefinition[] definitions = new ToolDefinition[ArmorItem.Type.values().length];
     for (ArmorItem.Type slot : slots) {
       definitions[slot.ordinal()] = ToolDefinition.create(id.withSuffix("_" + slot.getName()));
     }
@@ -35,7 +35,8 @@ public class ModifiableArmorMaterial extends DummyArmorMaterial {
 
   /** Creates a modifiable armor material, creates tool definition for all four armor slots */
   public static ModifiableArmorMaterial create(ResourceLocation id, SoundEvent equipSound) {
-    return create(id, equipSound, ArmorItem.Type.values());
+    // Tinkers armor is humanoid-only; exclude ArmorItem.Type.BODY (added in 1.21 for wolf/animal armor)
+    return create(id, equipSound, ArmorItem.Type.HELMET, ArmorItem.Type.CHESTPLATE, ArmorItem.Type.LEGGINGS, ArmorItem.Type.BOOTS);
   }
 
   /**
