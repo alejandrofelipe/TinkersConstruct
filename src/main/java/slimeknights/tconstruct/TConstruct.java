@@ -166,6 +166,9 @@ public class TConstruct {
     // init deferred registers
     TinkerModule.initRegisters();
     TinkerNetwork.setup();
+    // wire payload registration onto the mod bus (RegisterPayloadHandlersEvent); without this no Tinkers packet is
+    // registered and any send throws "Payload ... may not be sent to the client"
+    bus.addListener(TinkerNetwork::registerPayloads);
     TinkerTags.init();
     // init client logic
     // PORT: DistExecutor removed in NeoForge 1.21; guard with FMLEnvironment.dist instead
