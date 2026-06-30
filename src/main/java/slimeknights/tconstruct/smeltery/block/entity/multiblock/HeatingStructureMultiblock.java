@@ -275,6 +275,9 @@ public abstract class HeatingStructureMultiblock<T extends MantleBlockEntity & I
     @Override
     public CompoundTag writeToTag(BlockPos controllerPos) {
       CompoundTag nbt = super.writeToTag(controllerPos);
+      // persist tanks on the full save too (readFromTag reads TAG_TANKS); without this, the tank list is lost on
+      // world reload until the structure is re-scanned, leaving the smeltery with "no tank" fuel after a restart
+      nbt.put(TAG_TANKS, writePosList(tanks, controllerPos));
       if (insideCheck != null) {
         nbt.put(TAG_INSIDE_CHECK, NbtUtils.writeBlockPos(insideCheck.subtract(controllerPos)));
       }
