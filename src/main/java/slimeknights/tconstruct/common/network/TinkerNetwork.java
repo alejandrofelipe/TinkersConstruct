@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.entity.Entity;
@@ -162,7 +163,14 @@ public class TinkerNetwork extends NetworkWrapper {
    */
   public void sendToPlayerList(@Nullable ServerPlayer targetedPlayer, PlayerList playerList, CustomPacketPayload msg) {
     if (targetedPlayer != null) {
-      sendTo(msg, targetedPlayer);
+      // a joining player receives OnDatapackSyncEvent during placeNewPlayer, before the connection is ready for
+      // play-phase payloads ("may not be sent to the client"); defer to the next server tick when it is in play
+      MinecraftServer server = targetedPlayer.getServer();
+      if (server != null) {
+        server.execute(() -> sendTo(msg, targetedPlayer));
+      } else {
+        sendTo(msg, targetedPlayer);
+      }
     } else {
       for (ServerPlayer player : playerList.getPlayers()) {
         sendTo(msg, player);

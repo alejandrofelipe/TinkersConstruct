@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import slimeknights.mantle.command.argument.TagSource;
@@ -279,7 +280,14 @@ public final class MaterialRegistry {
     // send to single player
     ServerPlayer targetedPlayer = event.getPlayer();
     if (targetedPlayer != null) {
-      sendPackets(targetedPlayer, packets);
+      // a joining player receives this during placeNewPlayer, before its connection is ready for play-phase payloads;
+      // defer to the next server tick when it is fully in play (also ensures player.connection is set)
+      MinecraftServer server = targetedPlayer.getServer();
+      if (server != null) {
+        server.execute(() -> sendPackets(targetedPlayer, packets));
+      } else {
+        sendPackets(targetedPlayer, packets);
+      }
     } else {
       // send to all players
       for (ServerPlayer player : event.getPlayerList().getPlayers()) {
