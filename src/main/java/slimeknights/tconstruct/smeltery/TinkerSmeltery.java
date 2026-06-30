@@ -30,6 +30,8 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.SimpleFluidContent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -130,6 +132,7 @@ import slimeknights.tconstruct.smeltery.data.SmelteryRecipeProvider;
 import slimeknights.tconstruct.smeltery.item.CopperCanItem;
 import slimeknights.tconstruct.smeltery.item.DummyMaterialItem;
 import slimeknights.tconstruct.smeltery.item.TankItem;
+import slimeknights.tconstruct.smeltery.item.TankItemFluidHandler;
 import slimeknights.tconstruct.smeltery.menu.AlloyerContainerMenu;
 import slimeknights.tconstruct.smeltery.menu.HeatingStructureContainerMenu;
 import slimeknights.tconstruct.smeltery.menu.MelterContainerMenu;
@@ -466,6 +469,51 @@ public final class TinkerSmeltery extends TinkerModule {
   public static final DeferredHolder<MenuType<?>, MenuType<HeatingStructureContainerMenu>> smelteryContainer = MENUS.register("smeltery", HeatingStructureContainerMenu::new);
   public static final DeferredHolder<MenuType<?>, MenuType<SingleItemContainerMenu>> singleItemContainer = MENUS.register("single_item", SingleItemContainerMenu::new);
   public static final DeferredHolder<MenuType<?>, MenuType<AlloyerContainerMenu>> alloyerContainer = MENUS.register("alloyer", AlloyerContainerMenu::new);
+
+  /**
+   * Registers the smeltery block-entity and item capabilities. These getters were ported from 1.20 but the central
+   * {@link RegisterCapabilitiesEvent} registration was never written, so at runtime the blocks exposed no item/fluid
+   * handler (e.g. the heating-structure side inventory resolved an empty handler on the client and built zero slots).
+   */
+  @SubscribeEvent
+  void registerCapabilities(RegisterCapabilitiesEvent event) {
+    // controllers
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,  smeltery.get(),    (be, side) -> be.getItemCapability());
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, smeltery.get(),    (be, side) -> be.getFluidCapability());
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,  foundry.get(),     (be, side) -> be.getItemCapability());
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, foundry.get(),     (be, side) -> be.getFluidCapability());
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,  melter.get(),      (be, side) -> be.getItemCapabilityHandler(side));
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, melter.get(),      (be, side) -> be.getFluidHandler(side));
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, alloyer.get(),     (be, side) -> be.getFluidHandler());
+    // components (drain/chute/duct proxy to the master via getCachedCapability)
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, tank.get(),        (be, side) -> be.getFluidHandler(side));
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, drain.get(),       (be, side) -> be.getCachedCapability());
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,  chute.get(),       (be, side) -> be.getCachedCapability());
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, duct.get(),        (be, side) -> be.getCachedCapability());
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,  duct.get(),        (be, side) -> be.getItemCapability());
+    // casting (item handler inherited from Mantle InventoryBlockEntity; backs both table and basin types)
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,  table.get(),       (be, side) -> be.getItemHandler(side));
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, table.get(),       (be, side) -> be.getFluidHandler());
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,  basin.get(),       (be, side) -> be.getItemHandler(side));
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, basin.get(),       (be, side) -> be.getFluidHandler());
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,  castingTank.get(), (be, side) -> be.getItemHandler(side));
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, castingTank.get(), (be, side) -> be.getFluidHandler());
+    // tanks & misc (proxy tank is both item and fluid; fluid cannon/lantern extend TankBlockEntity)
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,  proxyTank.get(),   (be, side) -> be.getTank());
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, proxyTank.get(),   (be, side) -> be.getTank());
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,  fluidCannon.get(), (be, side) -> be.getItemCapability());
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, fluidCannon.get(), (be, side) -> be.getFluidHandler(side));
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,  heater.get(),      (be, side) -> be.getItemHandler(side));
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, channel.get(),     (be, side) -> be.getFluidHandler(side));
+    event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, lantern.get(),     (be, side) -> be.getFluidHandler(side));
+
+    // item fluid handlers: the copper can and every tank-style block item carry fluid in NBT
+    event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((CopperCanItem) stack.getItem()).getFluidHandler(stack), copperCan.get());
+    searedTank.forEach(block   -> event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> new TankItemFluidHandler((TankItem) stack.getItem(), stack), block));
+    scorchedTank.forEach(block -> event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> new TankItemFluidHandler((TankItem) stack.getItem(), stack), block));
+    event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> new TankItemFluidHandler((TankItem) stack.getItem(), stack),
+                       searedCastingTank.get(), searedLantern.get(), scorchedLantern.get(), searedFluidCannon.get(), scorchedFluidCannon.get(), endFluidCannon.get());
+  }
 
   @SubscribeEvent
   void commonSetup(FMLCommonSetupEvent event) {

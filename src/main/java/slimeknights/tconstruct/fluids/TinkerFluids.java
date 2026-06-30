@@ -36,6 +36,8 @@ import net.neoforged.neoforge.common.brewing.BrewingRecipe;
 import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
@@ -267,6 +269,18 @@ public final class TinkerFluids extends TinkerModule {
     generator.addProvider(client, new FluidTextureCameraProvider(packOutput, event.getExistingFileHelper(), textureProvider));
     generator.addProvider(client, new FluidBucketModelProvider(packOutput, TConstruct.MOD_ID));
     generator.addProvider(client, new FluidBlockstateModelProvider(packOutput, TConstruct.MOD_ID));
+  }
+
+  /**
+   * Registers the fluid-container item capabilities (magma/venom/slime bottles and the potion bucket). Ported from 1.20
+   * but never wired onto {@link RegisterCapabilitiesEvent}, so these items exposed no fluid handler at runtime.
+   */
+  @SubscribeEvent
+  void registerCapabilities(RegisterCapabilitiesEvent event) {
+    event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((MagmaBottleItem) stack.getItem()).getFluidHandler(stack), magmaBottle.get());
+    event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((FluidContainerFoodItem) stack.getItem()).getFluidHandler(stack), venomBottle.get());
+    slimeBottle.forEach(item -> event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((FluidContainerFoodItem) stack.getItem()).getFluidHandler(stack), item));
+    event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((PotionBucketItem) stack.getItem()).getFluidHandler(stack), potion.getBucket());
   }
 
   @SubscribeEvent
