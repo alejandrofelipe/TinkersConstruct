@@ -22,7 +22,7 @@ import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
 public class MoldingRecipe implements ICommonRecipe<IMoldingContainer> {
   public static final RecordLoadable<MoldingRecipe> LOADER = RecordLoadable.create(
     LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(),
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     IngredientLoadable.DISALLOW_EMPTY.requiredField("material", MoldingRecipe::getMaterial),
     IngredientLoadable.ALLOW_EMPTY.defaultField("pattern", Ingredient.EMPTY, MoldingRecipe::getPattern),
     BooleanLoadable.INSTANCE.defaultField("pattern_consumed", false, false, MoldingRecipe::isPatternConsumed),

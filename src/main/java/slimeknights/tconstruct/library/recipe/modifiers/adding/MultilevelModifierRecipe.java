@@ -32,7 +32,7 @@ import java.util.stream.Stream;
  */
 public class MultilevelModifierRecipe extends ModifierRecipe implements IMultiRecipe<IDisplayModifierRecipe> {
   public static final RecordLoadable<MultilevelModifierRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     SizedIngredient.LOADABLE.list(0).defaultField("inputs", List.of(), r -> r.inputs),
     TOOLS_FIELD, MAX_TOOL_SIZE_FIELD, RESULT_FIELD, ALLOW_CRYSTAL_FIELD,
     LevelEntry.LOADABLE.list(1).requiredField("levels", r -> r.levels),

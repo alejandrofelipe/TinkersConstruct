@@ -24,7 +24,7 @@ import java.util.function.Function;
 public class DamageableMeltingRecipe extends MeltingRecipe {
   /** Loader instance */
   public static final RecordLoadable<DamageableMeltingRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(), LoadableRecipeSerializer.RECIPE_GROUP, INPUT, OUTPUT, TEMPERATURE, TIME, BYPRODUCTS,
+    ContextKey.ID.nullableField(), LoadableRecipeSerializer.RECIPE_GROUP, INPUT, OUTPUT, TEMPERATURE, TIME, BYPRODUCTS,
     new MergingField<>(IntLoadable.FROM_ONE.defaultField("unit_size", 1, r -> r.unitSize), "result", MissingMode.IGNORE),
     new MergingListField<>(IntLoadable.FROM_ONE.defaultField("unit_size", 1, Function.identity()), "byproducts", r -> r.byproductSizes),
     DamageableMeltingRecipe::new);

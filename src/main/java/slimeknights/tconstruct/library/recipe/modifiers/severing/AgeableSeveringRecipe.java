@@ -14,7 +14,7 @@ import slimeknights.tconstruct.tools.TinkerModifiers;
 public class AgeableSeveringRecipe extends SeveringRecipe {
   /** Loader instance */
   public static final RecordLoadable<AgeableSeveringRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(), ENTITY_FIELD,
+    ContextKey.ID.nullableField(), ENTITY_FIELD,
     ItemOutput.Loadable.REQUIRED_STACK.requiredField("adult_result", r -> r.output),
     ItemOutput.Loadable.OPTIONAL_STACK.emptyField("child_result", r -> r.childOutput),
     BASE_CHANCE_FIELD, LOOTING_BONUS_FIELD,

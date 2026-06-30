@@ -17,7 +17,7 @@ import slimeknights.mantle.util.RetexturedHelper;
 public class RetexturedCastingRecipe extends ItemCastingRecipe {
   /** Loader instance */
   public static final RecordLoadable<RetexturedCastingRecipe> LOADER = RecordLoadable.create(
-    LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(), ContextKey.ID.requiredField(),
+    LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(), ContextKey.ID.nullableField(),
     LoadableRecipeSerializer.RECIPE_GROUP, CAST_FIELD, FLUID_FIELD, RESULT_FIELD, COOLING_TIME_FIELD, CAST_CONSUMED_FIELD, SWITCH_SLOTS_FIELD,
     RetexturedCastingRecipe::new);
 

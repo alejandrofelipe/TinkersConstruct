@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class CompositeCastingRecipe extends MaterialCastingRecipe {
   public static final RecordLoadable<CompositeCastingRecipe> LOADER = RecordLoadable.create(
-    LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(), ContextKey.ID.requiredField(),
+    LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(), ContextKey.ID.nullableField(),
     LoadableRecipeSerializer.RECIPE_GROUP, ITEM_COST_FIELD, RESULT_FIELD, MATERIALS_FIELD,
     MaterialStatsId.PARSER.nullableField("casting_stat_conflict", r -> r.castingStatConflict),
     CompositeCastingRecipe::new);

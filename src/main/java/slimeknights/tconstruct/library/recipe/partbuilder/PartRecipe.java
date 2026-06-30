@@ -41,7 +41,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class PartRecipe implements IPartBuilderRecipe, IMultiRecipe<IDisplayPartBuilderRecipe> {
   public static final RecordLoadable<PartRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     LoadableRecipeSerializer.RECIPE_GROUP,
     Pattern.PARSER.requiredField("pattern", PartRecipe::getPattern),
     IngredientLoadable.DISALLOW_EMPTY.defaultField("pattern_item", DEFAULT_PATTERNS, (PartRecipe r) -> r.patternItem),

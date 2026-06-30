@@ -31,7 +31,7 @@ import java.util.stream.IntStream;
  * Recipe that replaces a tool part with another
  */
 public class TinkerStationPartSwapping extends MaterialSwappingRecipe {
-  public static final RecordLoadable<TinkerStationPartSwapping> LOADER = RecordLoadable.create(ContextKey.ID.requiredField(), TOOLS_FIELD, STACK_SIZE_FIELD, EXTRA_REQUIREMENTS_FIELD, TinkerStationPartSwapping::new);
+  public static final RecordLoadable<TinkerStationPartSwapping> LOADER = RecordLoadable.create(ContextKey.ID.nullableField(), TOOLS_FIELD, STACK_SIZE_FIELD, EXTRA_REQUIREMENTS_FIELD, TinkerStationPartSwapping::new);
 
   public TinkerStationPartSwapping(ResourceLocation id, Ingredient tools, int maxStackSize, List<SizedIngredient> extraRequirements) {
     super(id, tools, maxStackSize, extraRequirements);

@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  */
 public class MaterialMeltingRecipe implements IMeltingRecipe, IMultiRecipe<MeltingRecipe> {
   public static final RecordLoadable<MaterialMeltingRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     MaterialVariantId.LOADABLE.requiredField("input", r -> r.input.getVariant()),
     IntLoadable.FROM_ONE.requiredField("temperature", r -> r.temperature),
     FluidOutput.Loadable.REQUIRED.requiredField("result", r -> r.result),

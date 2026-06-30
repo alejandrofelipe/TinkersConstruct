@@ -20,7 +20,7 @@ import java.util.List;
 /** Recipe which duplicates the input cast using a fluid */
 public class CastDuplicationRecipe extends ItemCastingRecipe implements IMultiRecipe<DisplayCastingRecipe> {
   public static final RecordLoadable<CastDuplicationRecipe> LOADER = RecordLoadable.create(
-    LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(), ContextKey.ID.requiredField(),
+    LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(), ContextKey.ID.nullableField(),
     LoadableRecipeSerializer.RECIPE_GROUP,
     IngredientLoadable.DISALLOW_EMPTY.requiredField("cast", CastDuplicationRecipe::getCast),
     FLUID_FIELD, COOLING_TIME_FIELD,

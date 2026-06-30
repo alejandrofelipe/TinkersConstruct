@@ -34,7 +34,7 @@ import java.util.List;
 /** Recipe for swapping a single material on a tool given a specific tool part. Notably allows swapping a part into a tool on an index other than the first. */
 public class PartSwappingOverrideRecipe extends MaterialSwappingRecipe {
   public static final RecordLoadable<PartSwappingOverrideRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(), TOOLS_FIELD, STACK_SIZE_FIELD,
+    ContextKey.ID.nullableField(), TOOLS_FIELD, STACK_SIZE_FIELD,
     TinkerLoadables.TOOL_PART_ITEM.requiredField("part", r -> r.part),
     new IntArrayLoadable(IntLoadable.FROM_ZERO, ArrayLoadable.COMPACT, 10).requiredField("index", r -> r.indices),
     EXTRA_REQUIREMENTS_FIELD,

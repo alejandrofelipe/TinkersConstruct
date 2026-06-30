@@ -38,7 +38,7 @@ public class PotionCastingRecipe implements ICastingRecipe, IMultiRecipe<Display
   protected static final LoadableField<FluidIngredient, PotionCastingRecipe> FLUID_FIELD = FluidIngredient.LOADABLE.requiredField("fluid", r -> r.fluid);
   protected static final LoadableField<Integer, PotionCastingRecipe> COOLING_TIME_FIELD = IntLoadable.FROM_ONE.defaultField("cooling_time", 5, r -> r.coolingTime);
   public static final RecordLoadable<PotionCastingRecipe> LOADER = RecordLoadable.create(
-    LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(), ContextKey.ID.requiredField(), LoadableRecipeSerializer.RECIPE_GROUP,
+    LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(), ContextKey.ID.nullableField(), LoadableRecipeSerializer.RECIPE_GROUP,
     IngredientLoadable.DISALLOW_EMPTY.requiredField("bottle", r -> r.bottle),
     FLUID_FIELD,
     Loadables.ITEM.requiredField("result", r -> r.result),

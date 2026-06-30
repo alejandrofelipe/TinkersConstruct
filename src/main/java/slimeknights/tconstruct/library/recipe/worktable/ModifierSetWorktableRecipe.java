@@ -47,7 +47,7 @@ public class ModifierSetWorktableRecipe extends AbstractWorktableRecipe {
   public static final BiFunction<CompoundTag, String, ListTag> LIST_GETTER = (tag, name) -> tag.getList(name, Tag.TAG_STRING);
   /** Loader instance */
   public static final RecordLoadable<ModifierSetWorktableRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     Loadables.RESOURCE_LOCATION.requiredField("data_key", r -> r.dataKey),
     INPUTS_FIELD, TOOL_FIELD,
     // TODO: move modifier predicate to base recipe

@@ -19,7 +19,7 @@ import slimeknights.tconstruct.tools.TinkerModifiers;
 
 /** Beheading recipe that sets player skin */
 public class PlayerBeheadingRecipe extends SeveringRecipe {
-  public static final RecordLoadable<PlayerBeheadingRecipe> LOADER = RecordLoadable.create(ContextKey.ID.requiredField(), BASE_CHANCE_FIELD, LOOTING_BONUS_FIELD, PlayerBeheadingRecipe::new);
+  public static final RecordLoadable<PlayerBeheadingRecipe> LOADER = RecordLoadable.create(ContextKey.ID.nullableField(), BASE_CHANCE_FIELD, LOOTING_BONUS_FIELD, PlayerBeheadingRecipe::new);
   public PlayerBeheadingRecipe(ResourceLocation id, float baseChance, float lootingBonus) {
     super(id, EntityIngredient.of(EntityType.PLAYER), ItemOutput.fromItem(Items.PLAYER_HEAD), baseChance, lootingBonus);
   }

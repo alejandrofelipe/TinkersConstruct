@@ -46,7 +46,7 @@ import java.util.stream.Stream;
 public class ToolCastingRecipe extends PartSwapCastingRecipe implements IMultiRecipe<IDisplayableCastingRecipe> {
   public static final RecordLoadable<ToolCastingRecipe> LOADER = RecordLoadable.create(
     LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(),
-    ContextKey.ID.requiredField(), LoadableRecipeSerializer.RECIPE_GROUP, CAST_FIELD, ITEM_COST_FIELD,
+    ContextKey.ID.nullableField(), LoadableRecipeSerializer.RECIPE_GROUP, CAST_FIELD, ITEM_COST_FIELD,
     new EnumLoadable<>(CastPurpose.class).defaultField("cast_purpose", CastPurpose.MAYBE_MATERIAL, true, r -> r.castPurpose),
     TinkerLoadables.MODIFIABLE_ITEM.requiredField("result", r -> r.result),
     MATERIALS_FIELD,

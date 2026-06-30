@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 /** Standard capacity bar implementation which scales through modifier level */
 public class CapacityBarModule extends CapacityBarHook.PersistentDataCapacityBar implements ModifierModule {
   public static final RecordLoadable<CapacityBarModule> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     LevelingInt.LOADABLE.directField(m -> m.capacity),
     ToolStats.NUMERIC_LOADER.nullableField("multiplier", m -> m.multiplier),
     CapacityBarModule::new);

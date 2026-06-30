@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 /** Combination of {@link MultilevelModifierRecipe} into {@link IncrementalModifierRecipe}. */
 public class MultilevelIncrementalModifierRecipe extends IncrementalModifierRecipe implements IMultiRecipe<IDisplayModifierRecipe> {
   public static final RecordLoadable<MultilevelIncrementalModifierRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(), INPUT_FIELD, AMOUNT_FIELD, NEEDED_FIELD,
+    ContextKey.ID.nullableField(), INPUT_FIELD, AMOUNT_FIELD, NEEDED_FIELD,
     TOOLS_FIELD, MAX_TOOL_SIZE_FIELD, RESULT_FIELD, LEFTOVER_FIELD, ALLOW_CRYSTAL_FIELD,
     LevelEntry.LOADABLE.list(1).requiredField("levels", r -> r.levels),
     CHECK_TRAIT_LEVEL_FIELD,

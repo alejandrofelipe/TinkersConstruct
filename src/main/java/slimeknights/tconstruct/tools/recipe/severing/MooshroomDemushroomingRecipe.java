@@ -19,7 +19,7 @@ import slimeknights.tconstruct.tools.TinkerModifiers;
  * Recipe to deshroom a mooshroom, taking brown into account
  */
 public class MooshroomDemushroomingRecipe extends SeveringRecipe {
-  public static final RecordLoadable<MooshroomDemushroomingRecipe> LOADER = RecordLoadable.create(ContextKey.ID.requiredField(), BASE_CHANCE_FIELD, LOOTING_BONUS_FIELD, MooshroomDemushroomingRecipe::new);
+  public static final RecordLoadable<MooshroomDemushroomingRecipe> LOADER = RecordLoadable.create(ContextKey.ID.nullableField(), BASE_CHANCE_FIELD, LOOTING_BONUS_FIELD, MooshroomDemushroomingRecipe::new);
 
   public MooshroomDemushroomingRecipe(ResourceLocation id, float baseChance, float lootingBonus) {
     super(id, EntityIngredient.of(EntityType.MOOSHROOM), ItemOutput.fromItem(Items.RED_MUSHROOM, 5), baseChance, lootingBonus);

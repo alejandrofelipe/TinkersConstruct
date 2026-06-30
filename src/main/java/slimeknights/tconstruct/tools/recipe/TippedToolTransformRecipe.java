@@ -31,7 +31,7 @@ import java.util.List;
 public class TippedToolTransformRecipe extends ToolBuildingRecipe {
   /** Loader instance */
   public static final RecordLoadable<TippedToolTransformRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     LoadableRecipeSerializer.RECIPE_GROUP, RESULT_FIELD, LAYOUT_FIELD,
     IngredientLoadable.DISALLOW_EMPTY.requiredField("input", r -> r.ingredients.get(0)),
     MaterialVariantId.LOADABLE.list(0).defaultField("materials", List.of(), false, r -> r.materials),

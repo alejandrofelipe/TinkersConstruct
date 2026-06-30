@@ -41,7 +41,7 @@ public class OverslimeModifierRecipe implements ITinkerStationRecipe, IDisplayMo
   private static final RecipeResult<LazyToolStack> AT_CAPACITY = RecipeResult.failure(TConstruct.makeTranslationKey("recipe", "overslime.at_capacity"));
   private static final String KEY_AMOUNT = TConstruct.makeTranslationKey("recipe", "modifier.amount");
   public static final RecordLoadable<OverslimeModifierRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     IngredientLoadable.DISALLOW_EMPTY.defaultField("tools", Ingredient.of(TinkerTags.Items.DURABILITY), true, r -> r.tools),
     IngredientLoadable.DISALLOW_EMPTY.requiredField("ingredient", r -> r.ingredient),
     IntLoadable.FROM_ONE.requiredField("restore_amount", r -> r.restoreAmount),

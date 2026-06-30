@@ -17,7 +17,7 @@ import slimeknights.tconstruct.tools.TinkerModifiers;
 
 /** Beheading recipe to drop pumpkins only if equipped */
 public class SnowGolemBeheadingRecipe extends SeveringRecipe {
-  public static final RecordLoadable<SnowGolemBeheadingRecipe> LOADER = RecordLoadable.create(ContextKey.ID.requiredField(), BASE_CHANCE_FIELD, LOOTING_BONUS_FIELD, SnowGolemBeheadingRecipe::new);
+  public static final RecordLoadable<SnowGolemBeheadingRecipe> LOADER = RecordLoadable.create(ContextKey.ID.nullableField(), BASE_CHANCE_FIELD, LOOTING_BONUS_FIELD, SnowGolemBeheadingRecipe::new);
 
   public SnowGolemBeheadingRecipe(ResourceLocation id, float baseChance, float lootingBonus) {
     super(id, EntityIngredient.of(EntityType.SNOW_GOLEM), ItemOutput.fromItem(Items.CARVED_PUMPKIN), baseChance, lootingBonus);

@@ -30,7 +30,7 @@ public class SeveringRecipe implements ICustomOutputRecipe<IEmptyContainer> {
   protected static LoadableField<Float,SeveringRecipe> LOOTING_BONUS_FIELD = FloatLoadable.PERCENT.defaultField("looting_bonus", 0.01f, true, r -> r.lootingBonus);
   /** Loader instance */
   public static final RecordLoadable<SeveringRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(), ENTITY_FIELD,
+    ContextKey.ID.nullableField(), ENTITY_FIELD,
     ItemOutput.Loadable.REQUIRED_STACK.requiredField("result", (SeveringRecipe r) -> r.output),
     BASE_CHANCE_FIELD, LOOTING_BONUS_FIELD,
     SeveringRecipe::new);

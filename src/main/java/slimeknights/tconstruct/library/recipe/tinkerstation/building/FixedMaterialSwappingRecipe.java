@@ -30,7 +30,7 @@ import java.util.List;
 /** Recipe for swapping a single material on a tool given a specific input ingredient. */
 public class FixedMaterialSwappingRecipe extends MaterialSwappingRecipe {
   public static final RecordLoadable<FixedMaterialSwappingRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(), TOOLS_FIELD, STACK_SIZE_FIELD,
+    ContextKey.ID.nullableField(), TOOLS_FIELD, STACK_SIZE_FIELD,
     SizedIngredient.LOADABLE.requiredField("ingredient", r -> r.ingredient),
     MaterialVariantId.LOADABLE.requiredField("material", r -> r.material),
     new IntArrayLoadable(IntLoadable.FROM_ZERO, ArrayLoadable.COMPACT, 10).requiredField("index", r -> r.indices),

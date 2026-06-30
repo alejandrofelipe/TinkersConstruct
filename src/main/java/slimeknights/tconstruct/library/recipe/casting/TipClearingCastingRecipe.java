@@ -27,7 +27,7 @@ import java.util.List;
 /** Casting recipe clearing the potion from a tool */
 public class TipClearingCastingRecipe extends PotionCastingRecipe {
   public static final RecordLoadable<TipClearingCastingRecipe> LOADER = RecordLoadable.create(
-    LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(), ContextKey.ID.requiredField(), LoadableRecipeSerializer.RECIPE_GROUP,
+    LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(), ContextKey.ID.nullableField(), LoadableRecipeSerializer.RECIPE_GROUP,
     TippingCastingRecipe.TOOL_FIELD, FLUID_FIELD, COOLING_TIME_FIELD,
     ModifierId.PARSER.requiredField("modifier", r -> r.modifier),
     TipClearingCastingRecipe::new);

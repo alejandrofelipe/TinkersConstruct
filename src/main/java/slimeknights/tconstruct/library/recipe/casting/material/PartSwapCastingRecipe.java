@@ -54,7 +54,7 @@ import java.util.stream.Stream;
 public class PartSwapCastingRecipe extends AbstractMaterialCastingRecipe implements IMultiRecipe<IDisplayableCastingRecipe> {
   public static final RecordLoadable<PartSwapCastingRecipe> LOADER = RecordLoadable.create(
     LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(),
-    ContextKey.ID.requiredField(), LoadableRecipeSerializer.RECIPE_GROUP,
+    ContextKey.ID.nullableField(), LoadableRecipeSerializer.RECIPE_GROUP,
     IngredientLoadable.ALLOW_EMPTY.requiredField("tools", AbstractCastingRecipe::getCast),
     ITEM_COST_FIELD,
     IntLoadable.FROM_ZERO.requiredField("index", (PartSwapCastingRecipe r) -> r.index),

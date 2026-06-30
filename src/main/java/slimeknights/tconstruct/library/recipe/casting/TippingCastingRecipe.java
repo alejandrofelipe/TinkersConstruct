@@ -35,7 +35,7 @@ import java.util.List;
 public class TippingCastingRecipe extends PotionCastingRecipe {
   protected static final LoadableField<Ingredient, PotionCastingRecipe> TOOL_FIELD = IngredientLoadable.DISALLOW_EMPTY.requiredField("tools", r -> r.bottle);
   public static final RecordLoadable<TippingCastingRecipe> LOADER = RecordLoadable.create(
-    LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(), ContextKey.ID.requiredField(), LoadableRecipeSerializer.RECIPE_GROUP,
+    LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(), ContextKey.ID.nullableField(), LoadableRecipeSerializer.RECIPE_GROUP,
     TOOL_FIELD, FLUID_FIELD, COOLING_TIME_FIELD,
     ModifierId.PARSER.requiredField("modifier", r -> r.modifier),
     TippingCastingRecipe::new);

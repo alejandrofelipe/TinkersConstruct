@@ -26,7 +26,7 @@ import java.util.List;
 /** Recipe defining casting and composite fluids for a given input */
 public class MaterialFluidRecipe implements ICustomOutputRecipe<ICastingContainer> {
   public static final RecordLoadable<MaterialFluidRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     FluidIngredient.LOADABLE.requiredField("fluid", r -> r.fluid),
     IntLoadable.FROM_ZERO.requiredField("temperature", r -> r.temperature),
     MaterialVariantId.LOADABLE.nullableField("input", r -> r.input != null ? r.input.getVariant() : null),

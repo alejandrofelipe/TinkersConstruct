@@ -27,7 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AlloyRecipe implements ICustomOutputRecipe<IAlloyTank> {
   public static final RecordLoadable<AlloyRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     AlloyIngredient.LOADABLE.list(2).requiredField("inputs", (AlloyRecipe r) -> r.inputs),
     FluidOutput.Loadable.REQUIRED.requiredField("result", (AlloyRecipe r) -> r.output),
     IntLoadable.FROM_ONE.requiredField("temperature", (AlloyRecipe r) -> r.temperature),

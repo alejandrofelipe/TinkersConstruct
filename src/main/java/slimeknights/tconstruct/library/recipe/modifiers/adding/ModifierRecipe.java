@@ -34,7 +34,7 @@ import java.util.List;
  */
 public class ModifierRecipe extends AbstractModifierRecipe {
   protected static final LoadableField<List<SizedIngredient>,ModifierRecipe> INPUTS_FIELD = SizedIngredient.LOADABLE.list(1).requiredField("inputs", r -> r.inputs);
-  public static final RecordLoadable<ModifierRecipe> LOADER = RecordLoadable.create(ContextKey.ID.requiredField(), INPUTS_FIELD, TOOLS_FIELD, MAX_TOOL_SIZE_FIELD, RESULT_FIELD, LEVEL_FIELD, SLOTS_FIELD, ALLOW_CRYSTAL_FIELD, CHECK_TRAIT_LEVEL_FIELD, ModifierRecipe::new);
+  public static final RecordLoadable<ModifierRecipe> LOADER = RecordLoadable.create(ContextKey.ID.nullableField(), INPUTS_FIELD, TOOLS_FIELD, MAX_TOOL_SIZE_FIELD, RESULT_FIELD, LEVEL_FIELD, SLOTS_FIELD, ALLOW_CRYSTAL_FIELD, CHECK_TRAIT_LEVEL_FIELD, ModifierRecipe::new);
 
   /**
    * List of input ingredients.

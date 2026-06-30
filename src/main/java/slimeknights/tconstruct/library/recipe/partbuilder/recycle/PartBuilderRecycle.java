@@ -46,7 +46,7 @@ public class PartBuilderRecycle implements IPartBuilderRecipe, IMultiRecipe<Disp
 
   /** Loader instance */
   public static final RecordLoadable<PartBuilderRecycle> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     IngredientLoadable.DISALLOW_EMPTY.requiredField("tool", r -> r.tool),
     IngredientLoadable.DISALLOW_EMPTY.requiredField("pattern", r -> r.pattern),
     Pattern.PARSER.mapWithValues(ItemOutput.Loadable.REQUIRED_STACK).requiredField("results", r -> r.results),

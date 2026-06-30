@@ -66,7 +66,7 @@ public class ToolBuildingRecipe implements ITinkerStationRecipe {
   protected static final LoadableField<ResourceLocation,ToolBuildingRecipe> LAYOUT_FIELD = Loadables.RESOURCE_LOCATION.nullableField("slot_layout",  r -> r.layoutSlot);
   /** Loader instance */
   public static final RecordLoadable<ToolBuildingRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(), LoadableRecipeSerializer.RECIPE_GROUP, RESULT_FIELD,
+    ContextKey.ID.nullableField(), LoadableRecipeSerializer.RECIPE_GROUP, RESULT_FIELD,
     IntLoadable.FROM_ONE.defaultField("result_count", 1, true, (ToolBuildingRecipe r) -> r.outputCount),
     LAYOUT_FIELD,
     IngredientLoadable.DISALLOW_EMPTY.list(0).defaultField("extra_requirements", List.of(), (ToolBuildingRecipe r) -> r.ingredients),

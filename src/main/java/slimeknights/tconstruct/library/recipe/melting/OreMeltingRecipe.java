@@ -27,7 +27,7 @@ import java.util.stream.Stream;
  */
 public class OreMeltingRecipe extends MeltingRecipe {
   public static final RecordLoadable<OreMeltingRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(), LoadableRecipeSerializer.RECIPE_GROUP, INPUT, OUTPUT, TEMPERATURE, TIME, BYPRODUCTS,
+    ContextKey.ID.nullableField(), LoadableRecipeSerializer.RECIPE_GROUP, INPUT, OUTPUT, TEMPERATURE, TIME, BYPRODUCTS,
     TinkerLoadables.ORE_RATE_TYPE.requiredField("rate", OreMeltingRecipe::getOreType),
     new MergingListField<>(TinkerLoadables.ORE_RATE_TYPE.defaultField("rate", OreRateType.DEFAULT, Function.identity()), "byproducts", r -> r.byproductTypes),
     OreMeltingRecipe::new);

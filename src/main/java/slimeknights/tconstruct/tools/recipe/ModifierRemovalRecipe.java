@@ -48,7 +48,7 @@ public class ModifierRemovalRecipe extends AbstractWorktableRecipe {
   protected static final LoadableField<IJsonPredicate<ModifierId>,ModifierRemovalRecipe> MODIFIER_PREDICATE_FIELD = ModifierPredicate.LOADER.defaultField("modifier_predicate", false, r -> r.modifierPredicate);
 
   /** Recipe loadable */
-  public static final RecordLoadable<ModifierRemovalRecipe> LOADER = RecordLoadable.create(ContextKey.ID.requiredField(), NAME_FIELD, TOOLS_FIELD, INPUTS_FIELD, LEFTOVERS_FIELD, MODIFIER_PREDICATE_FIELD, ModifierRemovalRecipe::new);
+  public static final RecordLoadable<ModifierRemovalRecipe> LOADER = RecordLoadable.create(ContextKey.ID.nullableField(), NAME_FIELD, TOOLS_FIELD, INPUTS_FIELD, LEFTOVERS_FIELD, MODIFIER_PREDICATE_FIELD, ModifierRemovalRecipe::new);
 
   private final String name;
   @Getter

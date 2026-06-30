@@ -28,7 +28,7 @@ import slimeknights.tconstruct.tools.TinkerModifiers;
  */
 public class ModifierSalvage implements ICustomOutputRecipe<RecipeInput> {
   public static final RecordLoadable<ModifierSalvage> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     IngredientLoadable.DISALLOW_EMPTY.requiredField("tools", r -> r.toolIngredient),
     IntLoadable.FROM_ONE.defaultField("max_tool_size", ITinkerStationRecipe.DEFAULT_TOOL_STACK_SIZE, r -> r.maxToolSize), // TODO 1.20: max tool size is unused, remove it
     ModifierId.PARSER.requiredField("modifier", r -> r.modifier),

@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class ItemPartRecipe implements IDisplayPartBuilderRecipe {
   public static final RecordLoadable<ItemPartRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     MaterialVariantId.LOADABLE.defaultField("material", IMaterial.UNKNOWN_ID, r -> r.material.getVariant()),
     Pattern.PARSER.requiredField("pattern", ItemPartRecipe::getPattern),
     IngredientLoadable.DISALLOW_EMPTY.defaultField("pattern_item", DEFAULT_PATTERNS, r -> r.patternItem),

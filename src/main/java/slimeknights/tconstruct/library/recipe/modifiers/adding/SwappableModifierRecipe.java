@@ -47,7 +47,7 @@ public class SwappableModifierRecipe extends ModifierRecipe {
 
   private static final String ALREADY_PRESENT = TConstruct.makeTranslationKey("recipe", "swappable.already_present");
   public static final RecordLoadable<SwappableModifierRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     INPUTS_FIELD, TOOLS_FIELD, MAX_TOOL_SIZE_FIELD,
     new MergingField<>(ModifierId.PARSER.requiredField("name", r -> r.result.getId()), "result", MissingMode.DISALLOWED),
     new MergingField<>(StringLoadable.DEFAULT.requiredField("value", r -> r.value), "result", MissingMode.DISALLOWED),

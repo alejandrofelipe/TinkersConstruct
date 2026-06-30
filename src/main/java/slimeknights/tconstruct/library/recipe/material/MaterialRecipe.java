@@ -33,7 +33,7 @@ public class MaterialRecipe implements ICustomOutputRecipe<ISingleStackContainer
   @SuppressWarnings("removal")
   public static final MaterialRecipe EMPTY = new MaterialRecipe(ResourceLocation.parse("missingno"), "", Ingredient.EMPTY, 0, 0, IMaterial.UNKNOWN_ID, ItemOutput.EMPTY);
   public static final RecordLoadable<MaterialRecipe> LOADER = RecordLoadable.create(
-    ContextKey.ID.requiredField(),
+    ContextKey.ID.nullableField(),
     LoadableRecipeSerializer.RECIPE_GROUP,
     IngredientLoadable.DISALLOW_EMPTY.requiredField("ingredient", MaterialRecipe::getIngredient),
     IMaterialValue.VALUE_FIELD,
