@@ -41,7 +41,7 @@ public class MelterScreen extends AbstractContainerScreen<MelterContainerMenu> i
 
   @Override
   public void render(GuiGraphics graphics, int x, int y, float partialTicks) {
-    this.renderBackground(graphics, x, y, partialTicks);
+    // 1.21: super.render already runs renderBackground (which draws the container bg) — no explicit call
     super.render(graphics, x, y, partialTicks);
     this.renderTooltip(graphics, x, y);
   }

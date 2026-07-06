@@ -107,7 +107,7 @@ public class ToolContainerScreen extends AbstractContainerScreen<ToolContainerMe
 
   @Override
   public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-    this.renderBackground(graphics, mouseX, mouseY, partialTicks);
+    // 1.21: super.render already runs renderBackground (which draws the container bg) — no explicit call
     super.render(graphics, mouseX, mouseY, partialTicks);
     this.renderTooltip(graphics, mouseX, mouseY);
   }
