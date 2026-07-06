@@ -625,9 +625,8 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
       }
     }
     // only exists to be sent server to client in update packets
-    if (nbt.contains(TAG_ERROR_POS, Tag.TAG_COMPOUND)) {
-      NbtUtils.readBlockPos(nbt, TAG_ERROR_POS).ifPresent(pos -> this.errorPos = pos.offset(this.worldPosition));
-    }
+    // 1.21: writeBlockPos stores an INT_ARRAY, so no TAG_COMPOUND guard — readBlockPos's Optional handles missing keys
+    NbtUtils.readBlockPos(nbt, TAG_ERROR_POS).ifPresent(pos -> this.errorPos = pos.offset(this.worldPosition));
     fuelModule.readFromTag(nbt);
     if (nbt.contains(TAG_TEXTURE, Tag.TAG_STRING)) {
       texture = RetexturedHelper.getBlock(nbt.getString(TAG_TEXTURE));

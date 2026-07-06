@@ -23,11 +23,10 @@ public final class TagUtil {
    */
   @Nullable
   public static BlockPos readOptionalPos(CompoundTag parent, String key, BlockPos offset) {
-    if (parent.contains(key, Tag.TAG_COMPOUND)) {
-      // PORT 1.21.1: NbtUtils.readBlockPos now takes (CompoundTag, String key) and returns Optional<BlockPos>.
-      return NbtUtils.readBlockPos(parent, key).map(pos -> pos.offset(offset)).orElse(null);
-    }
-    return null;
+    // 1.21: NbtUtils.writeBlockPos stores an INT_ARRAY (no longer a compound), and readBlockPos(parent, key) already
+    // returns an empty Optional when the key is missing or mistyped — a TAG_COMPOUND guard here silently dropped every
+    // position (breaking multiblock structure loads on both sides), so rely on the Optional instead
+    return NbtUtils.readBlockPos(parent, key).map(pos -> pos.offset(offset)).orElse(null);
   }
 
   /**
