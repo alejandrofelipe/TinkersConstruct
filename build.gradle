@@ -82,7 +82,7 @@ runs {
     // JVM is forced below via javaLauncher toolchain override — see the top-level tasks.matching
     // block after this runs{} block for why a raw `executable` override doesn't work here.
     clientHotswap {
-        configure 'client'
+        runType 'client'
         jvmArgument '-XX:+AllowEnhancedClassRedefinition'
         jvmArgument '-javaagent:C:/Users/aleja/tools/hotswap-agent.jar=autoHotswap=true'
     }
