@@ -99,7 +99,8 @@ public class ScaledFluidTank extends FluidTank {
     if (!this.fluid.isEmpty()) {
       FluidStack fluid = this.fluid.copy();
       fluid.setAmount(fluid.getAmount() / scale);
-      fluid.save(lookupProvider, nbt);
+      // 1.21: FluidStack.save returns the encoded tag merged with the prefix instead of mutating it
+      return (CompoundTag) fluid.save(lookupProvider, nbt);
     }
     return nbt;
   }

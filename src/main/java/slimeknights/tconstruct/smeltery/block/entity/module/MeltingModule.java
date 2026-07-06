@@ -213,8 +213,9 @@ public class MeltingModule implements IMeltingContainer, ContainerData {
   public CompoundTag writeToTag(HolderLookup.Provider registries) {
     CompoundTag nbt = new CompoundTag();
     if (!stack.isEmpty()) {
-      // ItemStack.save writes the item fields directly onto the passed tag
-      stack.save(registries, nbt);
+      // 1.21: ItemStack.save no longer mutates the passed tag — it RETURNS the encoded tag merged with the prefix.
+      // Discarding the return saved a tag with no item id, so the stack failed to parse (and vanished) on world load.
+      nbt = (CompoundTag) stack.save(registries, nbt);
       nbt.putInt(TAG_CURRENT_TIME, currentTime);
       nbt.putInt(TAG_REQUIRED_TIME, requiredTime);
       nbt.putInt(TAG_REQUIRED_TEMP, requiredTemp);
