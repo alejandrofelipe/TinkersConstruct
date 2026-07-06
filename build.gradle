@@ -78,6 +78,14 @@ runs {
         modSource project.sourceSets.main
     }
     client { }
+    // long-lived client with live class reload: JBR 21 + HotswapAgent (external mode).
+    // JVM is forced below via javaLauncher toolchain override — see the top-level tasks.matching
+    // block after this runs{} block for why a raw `executable` override doesn't work here.
+    clientHotswap {
+        configure 'client'
+        jvmArgument '-XX:+AllowEnhancedClassRedefinition'
+        jvmArgument '-javaagent:C:/Users/aleja/tools/hotswap-agent.jar=autoHotswap=true'
+    }
     server { argument '--nogui' }
     data {
         arguments.addAll '--mod', 'tconstruct', '--all',
@@ -85,6 +93,24 @@ runs {
             '--existing', file('src/main/resources/').getAbsolutePath(),
             '--existing-mod', 'mantle'
     }
+}
+
+// NeoGradle run tasks use the toolchain launcher (Temurin); hotswap needs the JBR's DCEVM.
+// Gradle 8+ JavaExec always validates `executable` against `javaLauncher` (JavaExec.exec() calls
+// getJavaLauncher().get() unconditionally, even when executable is set directly) and throws
+// "Toolchain from `executable` property does not match toolchain from `javaLauncher` property"
+// if they disagree — setting javaLauncher to null does NOT help, since the property falls back
+// to its convention (the project toolchain) rather than skipping validation. The supported fix
+// (see https://github.com/gradle/gradle/issues/25345 — raw executable overrides outside the
+// toolchain system are no longer supported by design) is to select the JBR as a real toolchain
+// via javaLauncher instead of overriding executable. The JBR path is registered as a discoverable
+// toolchain via org.gradle.java.installations.paths in gradle.properties; it reports its vendor as
+// JetBrains (`java -version` -> "JBR-21.0.11+..."), matched here via JvmVendorSpec.JETBRAINS.
+tasks.matching { it.name == 'runClientHotswap' }.configureEach {
+    it.javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(21)
+        vendor = JvmVendorSpec.JETBRAINS
+    })
 }
 
 dependencies {
