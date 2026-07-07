@@ -23,6 +23,7 @@ import slimeknights.tconstruct.smeltery.block.entity.FaucetBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.AlloyerBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.SmelteryBlockEntity;
 
+/** Gametests for the smeltery subsystem: melting, casting, and alloying logic. */
 @PrefixGameTestTemplate(false)
 @GameTestHolder(TConstruct.MOD_ID)
 public class SmelteryGameTests {
@@ -54,6 +55,8 @@ public class SmelteryGameTests {
       // put the ingot cast on the table, then open the tap
       if (helper.getLevel().getBlockEntity(rig.table()) instanceof CastingBlockEntity table) {
         table.setItem(CastingBlockEntity.INPUT, new ItemStack(TinkerSmeltery.ingotCast.get()));
+      } else {
+        helper.fail("no casting table BE", helper.relativePos(rig.table()));
       }
       // helper.useBlock(faucet) did not result in pouring in this harness; the root cause is undiagnosed
       // (review verified FaucetBlock.useWithoutItem's override matches the 1.21.1 signature and that
