@@ -9,6 +9,6 @@
     "tag": "forge:molten_iron"
   },
   "result": {
-    "tag": "forge:ingots/iron"
+    "tag": "c:ingots/iron"
   }
 }
