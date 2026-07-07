@@ -54,6 +54,7 @@ import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.registration.CastItemObject;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.fluids.item.EmptyPotionTransfer;
+import slimeknights.tconstruct.gametest.GameTestStructureProvider;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.alloying.AlloyRecipe;
@@ -540,7 +541,7 @@ public final class TinkerSmeltery extends TinkerModule {
     PackOutput packOutput = generator.getPackOutput();
     generator.addProvider(server, new SmelteryRecipeProvider(packOutput, event.getLookupProvider()));
     generator.addProvider(server, new FluidContainerTransferProvider(packOutput));
-    generator.addProvider(server, new slimeknights.tconstruct.gametest.GameTestStructureProvider(packOutput));
+    generator.addProvider(server, new GameTestStructureProvider(packOutput));
   }
 
   /** Adds all relevant items to the creative tab */
