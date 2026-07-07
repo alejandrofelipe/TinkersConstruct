@@ -3,13 +3,13 @@
     {
       "type": "mantle:tag_combination_filled",
       "match": [
-        "forge:ores/uranium",
+        "c:ores/uranium",
         "c:ore_rates/dense"
       ]
     },
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:ingots/lead"
+      "tag": "c:ingots/lead"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -17,14 +17,14 @@
     {
       "amount": 540,
       "rate": "metal",
-      "tag": "forge:molten_lead"
+      "tag": "c:molten_lead"
     }
   ],
   "ingredient": {
     "type": "neoforge:intersection",
     "children": [
       {
-        "tag": "forge:ores/uranium"
+        "tag": "c:ores/uranium"
       },
       {
         "tag": "c:ore_rates/dense"
@@ -34,7 +34,7 @@
   "rate": "metal",
   "result": {
     "amount": 540,
-    "tag": "forge:molten_uranium"
+    "tag": "c:molten_uranium"
   },
   "temperature": 830,
   "time": 275

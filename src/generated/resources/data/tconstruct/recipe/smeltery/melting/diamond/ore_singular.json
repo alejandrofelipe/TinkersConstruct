@@ -4,7 +4,7 @@
       "type": "mantle:tag_combination_filled",
       "ignore": "tconstruct:non_singular_ore_rates",
       "match": [
-        "forge:ores/diamond"
+        "c:ores/diamond"
       ]
     }
   ],
@@ -19,7 +19,7 @@
   "ingredient": {
     "type": "neoforge:difference",
     "base": {
-      "tag": "forge:ores/diamond"
+      "tag": "c:ores/diamond"
     },
     "subtracted": {
       "tag": "tconstruct:non_singular_ore_rates"

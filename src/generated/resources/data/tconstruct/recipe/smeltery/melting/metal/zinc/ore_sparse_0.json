@@ -3,13 +3,13 @@
     {
       "type": "mantle:tag_combination_filled",
       "match": [
-        "forge:ores/zinc",
+        "c:ores/zinc",
         "c:ore_rates/sparse"
       ]
     },
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:ingots/tin"
+      "tag": "c:ingots/tin"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -17,14 +17,14 @@
     {
       "amount": 90,
       "rate": "metal",
-      "tag": "forge:molten_tin"
+      "tag": "c:molten_tin"
     }
   ],
   "ingredient": {
     "type": "neoforge:intersection",
     "children": [
       {
-        "tag": "forge:ores/zinc"
+        "tag": "c:ores/zinc"
       },
       {
         "tag": "c:ore_rates/sparse"
@@ -34,7 +34,7 @@
   "rate": "metal",
   "result": {
     "amount": 90,
-    "tag": "forge:molten_zinc"
+    "tag": "c:molten_zinc"
   },
   "temperature": 420,
   "time": 70

@@ -2,11 +2,11 @@
   "neoforge:conditions": [
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:raw_materials/tungsten"
+      "tag": "c:raw_materials/tungsten"
     },
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:ingots/platinum"
+      "tag": "c:ingots/platinum"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -14,16 +14,16 @@
     {
       "amount": 90,
       "rate": "metal",
-      "tag": "forge:molten_platinum"
+      "tag": "c:molten_platinum"
     }
   ],
   "ingredient": {
-    "tag": "forge:raw_materials/tungsten"
+    "tag": "c:raw_materials/tungsten"
   },
   "rate": "metal",
   "result": {
     "amount": 90,
-    "tag": "forge:molten_tungsten"
+    "tag": "c:molten_tungsten"
   },
   "temperature": 950,
   "time": 97

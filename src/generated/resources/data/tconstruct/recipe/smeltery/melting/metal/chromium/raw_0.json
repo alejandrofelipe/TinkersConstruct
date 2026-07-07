@@ -2,11 +2,11 @@
   "neoforge:conditions": [
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:raw_materials/chromium"
+      "tag": "c:raw_materials/chromium"
     },
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:ingots/aluminum"
+      "tag": "c:ingots/aluminum"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -14,16 +14,16 @@
     {
       "amount": 90,
       "rate": "metal",
-      "tag": "forge:molten_aluminum"
+      "tag": "c:molten_aluminum"
     }
   ],
   "ingredient": {
-    "tag": "forge:raw_materials/chromium"
+    "tag": "c:raw_materials/chromium"
   },
   "rate": "metal",
   "result": {
     "amount": 90,
-    "tag": "forge:molten_chromium"
+    "tag": "c:molten_chromium"
   },
   "temperature": 900,
   "time": 95

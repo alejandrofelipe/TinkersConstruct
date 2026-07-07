@@ -4,7 +4,7 @@
       "type": "mantle:tag_combination_filled",
       "ignore": "tconstruct:non_singular_ore_rates",
       "match": [
-        "forge:ores/emerald"
+        "c:ores/emerald"
       ]
     }
   ],
@@ -19,7 +19,7 @@
   "ingredient": {
     "type": "neoforge:difference",
     "base": {
-      "tag": "forge:ores/emerald"
+      "tag": "c:ores/emerald"
     },
     "subtracted": {
       "tag": "tconstruct:non_singular_ore_rates"

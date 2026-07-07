@@ -3,13 +3,13 @@
     {
       "type": "mantle:tag_combination_filled",
       "match": [
-        "forge:ores/nickel",
+        "c:ores/nickel",
         "c:ore_rates/dense"
       ]
     },
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:ingots/platinum"
+      "tag": "c:ingots/platinum"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -17,14 +17,14 @@
     {
       "amount": 540,
       "rate": "metal",
-      "tag": "forge:molten_platinum"
+      "tag": "c:molten_platinum"
     }
   ],
   "ingredient": {
     "type": "neoforge:intersection",
     "children": [
       {
-        "tag": "forge:ores/nickel"
+        "tag": "c:ores/nickel"
       },
       {
         "tag": "c:ore_rates/dense"
@@ -34,7 +34,7 @@
   "rate": "metal",
   "result": {
     "amount": 540,
-    "tag": "forge:molten_nickel"
+    "tag": "c:molten_nickel"
   },
   "temperature": 950,
   "time": 292

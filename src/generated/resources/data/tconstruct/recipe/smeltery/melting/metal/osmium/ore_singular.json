@@ -4,7 +4,7 @@
       "type": "mantle:tag_combination_filled",
       "ignore": "tconstruct:non_singular_ore_rates",
       "match": [
-        "forge:ores/osmium"
+        "c:ores/osmium"
       ]
     }
   ],
@@ -13,13 +13,13 @@
     {
       "amount": 180,
       "rate": "metal",
-      "tag": "forge:molten_iron"
+      "tag": "c:molten_iron"
     }
   ],
   "ingredient": {
     "type": "neoforge:difference",
     "base": {
-      "tag": "forge:ores/osmium"
+      "tag": "c:ores/osmium"
     },
     "subtracted": {
       "tag": "tconstruct:non_singular_ore_rates"
@@ -28,7 +28,7 @@
   "rate": "metal",
   "result": {
     "amount": 180,
-    "tag": "forge:molten_osmium"
+    "tag": "c:molten_osmium"
   },
   "temperature": 975,
   "time": 164

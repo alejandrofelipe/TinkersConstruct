@@ -3,13 +3,13 @@
     {
       "type": "mantle:tag_combination_filled",
       "match": [
-        "forge:ores/tin",
+        "c:ores/tin",
         "c:ore_rates/sparse"
       ]
     },
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:ingots/nickel"
+      "tag": "c:ingots/nickel"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -17,14 +17,14 @@
     {
       "amount": 90,
       "rate": "metal",
-      "tag": "forge:molten_nickel"
+      "tag": "c:molten_nickel"
     }
   ],
   "ingredient": {
     "type": "neoforge:intersection",
     "children": [
       {
-        "tag": "forge:ores/tin"
+        "tag": "c:ores/tin"
       },
       {
         "tag": "c:ore_rates/sparse"
@@ -34,7 +34,7 @@
   "rate": "metal",
   "result": {
     "amount": 90,
-    "tag": "forge:molten_tin"
+    "tag": "c:molten_tin"
   },
   "temperature": 225,
   "time": 59

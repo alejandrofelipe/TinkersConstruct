@@ -4,7 +4,7 @@
       "type": "mantle:tag_combination_filled",
       "ignore": "tconstruct:non_singular_ore_rates",
       "match": [
-        "forge:ores/nickel"
+        "c:ores/nickel"
       ]
     },
     {
@@ -16,13 +16,13 @@
     {
       "amount": 180,
       "rate": "metal",
-      "tag": "forge:molten_iron"
+      "tag": "c:molten_iron"
     }
   ],
   "ingredient": {
     "type": "neoforge:difference",
     "base": {
-      "tag": "forge:ores/nickel"
+      "tag": "c:ores/nickel"
     },
     "subtracted": {
       "tag": "tconstruct:non_singular_ore_rates"
@@ -31,7 +31,7 @@
   "rate": "metal",
   "result": {
     "amount": 180,
-    "tag": "forge:molten_nickel"
+    "tag": "c:molten_nickel"
   },
   "temperature": 950,
   "time": 162

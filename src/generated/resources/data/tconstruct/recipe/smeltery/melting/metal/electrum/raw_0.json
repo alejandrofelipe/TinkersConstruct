@@ -2,11 +2,11 @@
   "neoforge:conditions": [
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:raw_materials/electrum"
+      "tag": "c:raw_materials/electrum"
     },
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:ingots/silver"
+      "tag": "c:ingots/silver"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -14,16 +14,16 @@
     {
       "amount": 90,
       "rate": "metal",
-      "tag": "forge:molten_silver"
+      "tag": "c:molten_silver"
     }
   ],
   "ingredient": {
-    "tag": "forge:raw_materials/electrum"
+    "tag": "c:raw_materials/electrum"
   },
   "rate": "metal",
   "result": {
     "amount": 90,
-    "tag": "forge:molten_electrum"
+    "tag": "c:molten_electrum"
   },
   "temperature": 760,
   "time": 88

@@ -4,12 +4,12 @@
       "type": "mantle:tag_combination_filled",
       "ignore": "tconstruct:non_singular_ore_rates",
       "match": [
-        "forge:ores/zinc"
+        "c:ores/zinc"
       ]
     },
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:ingots/tin"
+      "tag": "c:ingots/tin"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -17,13 +17,13 @@
     {
       "amount": 180,
       "rate": "metal",
-      "tag": "forge:molten_tin"
+      "tag": "c:molten_tin"
     }
   ],
   "ingredient": {
     "type": "neoforge:difference",
     "base": {
-      "tag": "forge:ores/zinc"
+      "tag": "c:ores/zinc"
     },
     "subtracted": {
       "tag": "tconstruct:non_singular_ore_rates"
@@ -32,7 +32,7 @@
   "rate": "metal",
   "result": {
     "amount": 180,
-    "tag": "forge:molten_zinc"
+    "tag": "c:molten_zinc"
   },
   "temperature": 420,
   "time": 117

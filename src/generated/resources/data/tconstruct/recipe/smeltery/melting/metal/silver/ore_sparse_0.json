@@ -3,13 +3,13 @@
     {
       "type": "mantle:tag_combination_filled",
       "match": [
-        "forge:ores/silver",
+        "c:ores/silver",
         "c:ore_rates/sparse"
       ]
     },
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:ingots/lead"
+      "tag": "c:ingots/lead"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -17,14 +17,14 @@
     {
       "amount": 90,
       "rate": "metal",
-      "tag": "forge:molten_lead"
+      "tag": "c:molten_lead"
     }
   ],
   "ingredient": {
     "type": "neoforge:intersection",
     "children": [
       {
-        "tag": "forge:ores/silver"
+        "tag": "c:ores/silver"
       },
       {
         "tag": "c:ore_rates/sparse"
@@ -34,7 +34,7 @@
   "rate": "metal",
   "result": {
     "amount": 90,
-    "tag": "forge:molten_silver"
+    "tag": "c:molten_silver"
   },
   "temperature": 790,
   "time": 90

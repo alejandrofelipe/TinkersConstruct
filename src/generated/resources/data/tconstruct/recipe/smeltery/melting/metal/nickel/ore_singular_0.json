@@ -4,12 +4,12 @@
       "type": "mantle:tag_combination_filled",
       "ignore": "tconstruct:non_singular_ore_rates",
       "match": [
-        "forge:ores/nickel"
+        "c:ores/nickel"
       ]
     },
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:ingots/platinum"
+      "tag": "c:ingots/platinum"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -17,13 +17,13 @@
     {
       "amount": 180,
       "rate": "metal",
-      "tag": "forge:molten_platinum"
+      "tag": "c:molten_platinum"
     }
   ],
   "ingredient": {
     "type": "neoforge:difference",
     "base": {
-      "tag": "forge:ores/nickel"
+      "tag": "c:ores/nickel"
     },
     "subtracted": {
       "tag": "tconstruct:non_singular_ore_rates"
@@ -32,7 +32,7 @@
   "rate": "metal",
   "result": {
     "amount": 180,
-    "tag": "forge:molten_nickel"
+    "tag": "c:molten_nickel"
   },
   "temperature": 950,
   "time": 162

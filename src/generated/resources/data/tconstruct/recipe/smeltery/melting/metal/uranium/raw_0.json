@@ -2,11 +2,11 @@
   "neoforge:conditions": [
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:raw_materials/uranium"
+      "tag": "c:raw_materials/uranium"
     },
     {
       "type": "mantle:tag_filled",
-      "tag": "forge:ingots/lead"
+      "tag": "c:ingots/lead"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -14,16 +14,16 @@
     {
       "amount": 90,
       "rate": "metal",
-      "tag": "forge:molten_lead"
+      "tag": "c:molten_lead"
     }
   ],
   "ingredient": {
-    "tag": "forge:raw_materials/uranium"
+    "tag": "c:raw_materials/uranium"
   },
   "rate": "metal",
   "result": {
     "amount": 90,
-    "tag": "forge:molten_uranium"
+    "tag": "c:molten_uranium"
   },
   "temperature": 830,
   "time": 92
