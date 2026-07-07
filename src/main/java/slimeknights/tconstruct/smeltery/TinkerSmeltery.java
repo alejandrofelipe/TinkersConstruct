@@ -540,6 +540,7 @@ public final class TinkerSmeltery extends TinkerModule {
     PackOutput packOutput = generator.getPackOutput();
     generator.addProvider(server, new SmelteryRecipeProvider(packOutput, event.getLookupProvider()));
     generator.addProvider(server, new FluidContainerTransferProvider(packOutput));
+    generator.addProvider(server, new slimeknights.tconstruct.gametest.GameTestStructureProvider(packOutput));
   }
 
   /** Adds all relevant items to the creative tab */
