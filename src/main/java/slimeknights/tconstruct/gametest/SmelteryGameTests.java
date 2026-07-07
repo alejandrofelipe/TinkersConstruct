@@ -55,12 +55,13 @@ public class SmelteryGameTests {
       if (helper.getLevel().getBlockEntity(rig.table()) instanceof CastingBlockEntity table) {
         table.setItem(CastingBlockEntity.INPUT, new ItemStack(TinkerSmeltery.ingotCast.get()));
       }
-      // helper.useBlock(...) dispatches through the mock CREATIVE player's full interaction chain
-      // (BlockState.useItemOn -> useWithoutItem -> item useOn), which never reached
-      // FaucetBlock.useWithoutItem in practice (confirmed with a direct probe: the faucet's isPouring()
-      // stayed false at every tick after useBlock, while the casting table's own recipe match was proven
-      // valid via a direct initNewCasting() call at the same tick). Calling FaucetBlockEntity.activate()
-      // directly is what a successful right-click ultimately invokes, so it is used here instead.
+      // helper.useBlock(faucet) did not result in pouring in this harness; the root cause is undiagnosed
+      // (review verified FaucetBlock.useWithoutItem's override matches the 1.21.1 signature and that
+      // GameTestHelper.useBlock does dispatch to it via BlockState.useItemOn -> useWithoutItem, so the
+      // interaction path is NOT unreachable - probes just saw isPouring() stay false after useBlock while
+      // the table's recipe match was independently valid). Calling FaucetBlockEntity.activate() directly -
+      // exactly what useWithoutItem invokes - keeps the test covering faucet -> table pouring; real-player
+      // right-click coverage is deferred to the M5 manual smoke test.
       if (helper.getLevel().getBlockEntity(rig.faucet()) instanceof FaucetBlockEntity faucet) {
         faucet.activate();
       } else {
