@@ -77,7 +77,9 @@ runs {
         workingDirectory project.layout.projectDirectory.dir('run').dir(name)
         modSource project.sourceSets.main
     }
-    client { }
+    client {
+        systemProperty 'neoforge.enabledGameTestNamespaces', 'tconstruct'
+    }
     // long-lived client with live class reload: JBR 21 + HotswapAgent (external mode).
     // JVM is forced below via javaLauncher toolchain override — see the top-level tasks.matching
     // block after this runs{} block for why a raw `executable` override doesn't work here.
@@ -96,6 +98,9 @@ runs {
             '--output', file('src/generated/resources/').getAbsolutePath(),
             '--existing', file('src/main/resources/').getAbsolutePath(),
             '--existing-mod', 'mantle'
+    }
+    gameTestServer {
+        systemProperty 'neoforge.enabledGameTestNamespaces', 'tconstruct'
     }
 }
 
