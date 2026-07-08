@@ -66,8 +66,14 @@ public class TinkerUiTestScenarios {
     }
   }
 
+  /**
+   * Builds a small smeltery, melts an iron ingot, and opens the controller GUI. Unlike the melter,
+   * no IN_STRUCTURE handling is needed here: the controller's block entity structure scan forms the
+   * multiblock (updating the block state itself) during the 100-tick prepare settle.
+   */
   private static class SmelteryScenario implements UiTestScenario {
-    private BlockPos controller;
+    /** volatile: written on the server thread in prepare, read on the client thread in open */
+    private volatile BlockPos controller;
 
     @Override
     public ResourceLocation id() {
@@ -97,6 +103,7 @@ public class TinkerUiTestScenarios {
     }
   }
 
+  /** Places a melter on a filled fuel tank and opens its GUI. */
   private static class MelterScenario implements UiTestScenario {
     private final BlockPos pos = SITE.offset(20, 1, 0);
 
@@ -110,10 +117,12 @@ public class TinkerUiTestScenarios {
       ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + (pos.getY() - 1) + " " + pos.getZ());
       ctx.runOnServer(() -> {
         var level = ctx.serverLevel();
+        // tank placed after the melter so its neighbor shape update forms the melter (IN_STRUCTURE=true,
+        // which gates the GUI) — setBlockAndUpdate never runs getStateForPlacement; see SmelteryGameTests' alloyer note
+        level.setBlockAndUpdate(pos, TinkerSmeltery.searedMelter.get().defaultBlockState());
         BlockPos fuel = pos.below();
         level.setBlockAndUpdate(fuel, TinkerSmeltery.searedTank.get(TankType.FUEL_TANK).defaultBlockState());
         SmelteryRigs.fillTank(level, fuel, new FluidStack(Fluids.LAVA, 4000));
-        level.setBlockAndUpdate(pos, TinkerSmeltery.searedMelter.get().defaultBlockState());
       });
     }
 
@@ -125,7 +134,8 @@ public class TinkerUiTestScenarios {
 
   /** No menu: captures the in-world pour (validates FluidRenderer's world path). */
   private static class CastingPourScenario implements UiTestScenario {
-    private SmelteryRigs.CastingRig rig;
+    /** volatile: written on the server thread in prepare, read on the client thread in open */
+    private volatile SmelteryRigs.CastingRig rig;
 
     @Override
     public ResourceLocation id() {
@@ -144,6 +154,8 @@ public class TinkerUiTestScenarios {
       ctx.runOnServer(() -> {
         if (ctx.serverLevel().getBlockEntity(rig.table()) instanceof CastingBlockEntity table) {
           table.setItem(CastingBlockEntity.INPUT, new ItemStack(TinkerSmeltery.ingotCast.get()));
+        } else {
+          throw new IllegalStateException("Expected casting table at " + rig.table() + ", found " + ctx.serverLevel().getBlockEntity(rig.table()));
         }
       });
       ctx.useBlock(rig.faucet()); // opens the tap — pour starts
