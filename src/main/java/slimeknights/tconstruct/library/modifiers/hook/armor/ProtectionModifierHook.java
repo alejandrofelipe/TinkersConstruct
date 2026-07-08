@@ -40,12 +40,12 @@ public interface ProtectionModifierHook {
   /** Gets the maximum protection amount on the given entity */
   @Deprecated(forRemoval = true)
   static float getProtectionCap(@Nullable Holder capability) {
-    return Math.min(20 + (capability != null ? capability.get(TinkerDataKeys.PROTECTION_CAP) : 0f), 25 * 0.95f);
+    return Math.min(20 + (capability != null ? capability.get(TinkerDataKeys.PROTECTION_CAP, 0f) : 0f), 25 * 0.95f);
   }
 
   /** Gets the maximum protection amount on the given entity */
   static double getProtectionCap(LivingEntity living, @Nullable Holder capability) {
-    return Math.min(living.getAttributeValue(TinkerAttributes.PROTECTION_CAP) * 25f + (capability != null ? capability.get(TinkerDataKeys.PROTECTION_CAP) : 0f), 25 * 0.95f);
+    return Math.min(living.getAttributeValue(TinkerAttributes.PROTECTION_CAP) * 25f + (capability != null ? capability.get(TinkerDataKeys.PROTECTION_CAP, 0f) : 0f), 25 * 0.95f);
   }
 
   /** Gets the maximum protection amount on the given entity */
