@@ -92,6 +92,13 @@ runs {
         // ModLauncher/Windows (watcher registered but never delivered events in 2 of 3 sessions).
         jvmArgument '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:5005'
     }
+    // self-driving GUI screenshot suite: quick-plays into the committed UITest world, runs the
+    // registered scenarios, writes uitest-screenshots/ + uitest-results.json, exits on its own.
+    clientUiTest {
+        runType 'client'
+        systemProperty 'mantle.uitest', 'true'
+        arguments.addAll '--quickPlaySingleplayer', 'UITest', '--width', '1280', '--height', '720'
+    }
     server { argument '--nogui' }
     data {
         arguments.addAll '--mod', 'tconstruct', '--all',
@@ -121,6 +128,14 @@ tasks.matching { it.name == 'runClientHotswap' }.configureEach {
         vendor = JvmVendorSpec.JETBRAINS
     })
 }
+
+// extracts the committed uitest world into the clientUiTest run dir when absent
+tasks.register('prepareUiTestWorld', Copy) {
+    from zipTree(file('src/uitest/uitest-world.zip'))
+    into file('run/clientUiTest/saves')
+    onlyIf { !file('run/clientUiTest/saves/UITest/level.dat').exists() }
+}
+tasks.matching { it.name == 'runClientUiTest' }.configureEach { dependsOn 'prepareUiTestWorld' }
 
 dependencies {
     implementation "net.neoforged:neoforge:${neoforge_version}"
