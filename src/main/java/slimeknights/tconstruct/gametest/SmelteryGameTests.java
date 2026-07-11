@@ -47,6 +47,23 @@ public class SmelteryGameTests {
     });
   }
 
+  /** Amethyst blocks melt once c:storage_blocks/amethyst is defined (M6 Phase A). */
+  @GameTest(template = "gametest/empty_9x9x9", timeoutTicks = 1200)
+  public static void smeltery_melts_amethyst(GameTestHelper helper) {
+    BlockPos controller = SmelteryRigs.buildSmeltery(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)));
+    helper.runAfterDelay(60, () ->
+      SmelteryRigs.insertMeltable(helper.getLevel(), controller, new ItemStack(Items.AMETHYST_BLOCK)));
+    helper.succeedWhen(() -> {
+      if (!(helper.getLevel().getBlockEntity(controller) instanceof SmelteryBlockEntity smeltery)) {
+        helper.fail("no smeltery controller BE", helper.relativePos(controller));
+        return;
+      }
+      FluidStack contained = smeltery.getTank().getFluidInTank(0);
+      helper.assertTrue(contained.getFluid() == TinkerFluids.moltenAmethyst.get() && contained.getAmount() > 0,
+        "expected molten amethyst, got " + contained.getAmount());
+    });
+  }
+
   /** A faucet pours molten iron from a tank into a casting table holding an ingot cast. */
   @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 600)
   public static void smeltery_casts(GameTestHelper helper) {

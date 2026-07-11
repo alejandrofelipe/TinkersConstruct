@@ -416,6 +416,12 @@ public class BlockTagProvider extends BlockTagsProvider {
     // climb seared ladder
     this.tag(BlockTags.CLIMBABLE).add(TinkerSmeltery.searedLadder.get(), TinkerSmeltery.scorchedLadder.get());
     this.tag(BlockTags.DRAGON_IMMUNE).add(TinkerCommons.obsidianPane.get());
+
+    // M6: define the vanilla-backed common storage tags our melting/casting recipes reference.
+    // Raw steel's equivalents stay undefined on purpose: no vanilla raw steel — they bind when a
+    // steel mod defines them.
+    tag(BlockTags.create(commonResource("storage_blocks/amethyst"))).add(Blocks.AMETHYST_BLOCK);
+    tag(BlockTags.create(commonResource("storage_blocks/quartz"))).add(Blocks.QUARTZ_BLOCK);
   }
 
   private void addFluids() {

@@ -716,6 +716,10 @@ public class ItemTagProvider extends ItemTagsProvider {
     moltenTools(TinkerFluids.moltenSteeleaf)
       .optionalMetal(2, tf, "sword", "hoe")
       .optionalMetal(3, tf, "axe", "pickaxe");
+
+    // M6: mirror BlockTagProvider's vanilla-backed common storage tags for melting/casting recipes.
+    copy(BlockTags.create(commonResource("storage_blocks/amethyst")), ItemTags.create(commonResource("storage_blocks/amethyst")));
+    copy(BlockTags.create(commonResource("storage_blocks/quartz")), ItemTags.create(commonResource("storage_blocks/quartz")));
   }
 
   @Override
