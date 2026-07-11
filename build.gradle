@@ -129,11 +129,15 @@ tasks.matching { it.name == 'runClientHotswap' }.configureEach {
     })
 }
 
-// extracts the committed uitest world into the clientUiTest run dir when absent
+// extracts the committed uitest world into the clientUiTest run dir, wiping the previous copy so
+// every suite run starts from the same pristine state (scenarios are not idempotent across runs —
+// e.g. a leftover full fuel tank from the prior run trips SmelteryRigs.fillTank's fail-fast guard).
 tasks.register('prepareUiTestWorld', Copy) {
     from zipTree(file('src/uitest/uitest-world.zip'))
     into file('run/clientUiTest/saves')
-    onlyIf { !file('run/clientUiTest/saves/UITest/level.dat').exists() }
+    doFirst {
+        delete file('run/clientUiTest/saves/UITest')
+    }
 }
 tasks.matching { it.name == 'runClientUiTest' }.configureEach { dependsOn 'prepareUiTestWorld' }
 
