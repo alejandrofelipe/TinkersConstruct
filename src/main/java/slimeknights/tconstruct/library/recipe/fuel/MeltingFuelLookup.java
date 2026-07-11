@@ -60,8 +60,13 @@ public class MeltingFuelLookup {
       RECIPES.add(fuel);
     } else if (SOLID == EMPTY) {
       SOLID = fuel;
-    } else {
-      TConstruct.LOG.warn("Multiple fuel recipes for solid fuel. This usually indicates a datapack error and may cause desyncs. Original {}, latest {}", SOLID.getId(), fuel.getId());
+    } else if (SOLID.getTemperature() != fuel.getTemperature() || SOLID.getRate() != fuel.getRate()) {
+      // Recipe values carry no usable ID here: on 1.21 the ID lives on the external RecipeHolder, not the value
+      // (see LoadableRecipeSerializer), so MeltingFuel.getId() is always null for recipes built via codec/streamCodec.
+      // Every recipe is also reconstructed twice per boot under an integrated server (once from the datapack codec
+      // server-side, once from the client's update_recipes network resync), so a second solid-fuel registration is
+      // expected and must be compared by content, not identity, to tell a real datapack conflict from that resync.
+      TConstruct.LOG.warn("Multiple fuel recipes for solid fuel. This usually indicates a datapack error and may cause desyncs. Original temperature {} rate {}, latest temperature {} rate {}", SOLID.getTemperature(), SOLID.getRate(), fuel.getTemperature(), fuel.getRate());
     }
   }
 
