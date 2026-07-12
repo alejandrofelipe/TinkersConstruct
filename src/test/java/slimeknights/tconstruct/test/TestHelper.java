@@ -1,6 +1,10 @@
 package slimeknights.tconstruct.test;
 
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.tools.definition.ToolDefinition;
 import slimeknights.tconstruct.library.tools.definition.ToolDefinitionData;
@@ -14,11 +18,40 @@ import slimeknights.tconstruct.library.tools.nbt.StatsNBT;
 import slimeknights.tconstruct.library.tools.stat.INumericToolStat;
 import slimeknights.tconstruct.library.tools.stat.ModifierStatsBuilder;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /** Helpers for running tests */
 public class TestHelper {
   private TestHelper() {}
+
+  /**
+   * PORT M6: test-only equivalent of the old {@code ItemStack#getTag()}. 1.21 stacks no longer carry a
+   * free-form tag; the closest equivalent is the stack's {@link DataComponents#CUSTOM_DATA} component.
+   * Mirrors the private helper {@code ToolStack#getStackTag}.
+   * @return  The live mutable tag backing the component, or null if the component is absent.
+   */
+  @Nullable
+  public static CompoundTag getTag(ItemStack stack) {
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    return data == null ? null : data.getUnsafe();
+  }
+
+  /**
+   * PORT M6: test-only equivalent of the old {@code ItemStack#getOrCreateTag()}; attaches an empty
+   * custom-data component if the stack doesn't have one yet. Mirrors the private helper pair
+   * {@code ToolStack#getStackTag}/{@code ToolStack#setStackTag}.
+   */
+  public static CompoundTag getOrCreateTag(ItemStack stack) {
+    CompoundTag tag = getTag(stack);
+    if (tag == null) {
+      tag = new CompoundTag();
+      // CustomData.of(tag) copies the tag, so fetch the actually-stored instance back out
+      stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+      tag = getTag(stack);
+    }
+    return tag;
+  }
 
   /** Helper to fetch traits from the trait hook */
   public static List<ModifierEntry> getTraits(ToolDefinitionData data) {

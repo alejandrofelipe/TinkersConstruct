@@ -16,6 +16,7 @@ import slimeknights.tconstruct.library.tools.definition.ToolDefinition;
 import slimeknights.tconstruct.library.tools.helper.ToolDamageUtil;
 import slimeknights.tconstruct.library.tools.item.ToolItemTest;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
+import slimeknights.tconstruct.test.TestHelper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -94,7 +95,8 @@ class ToolStackTest extends ToolItemTest {
     ToolStack tool = ToolStack.from(Items.DIAMOND_PICKAXE, ToolDefinition.EMPTY, new CompoundTag());
     tool.setBrokenRaw(true);
     ItemStack stack = tool.createStack();
-    assertThat(stack.getTag()).isEqualTo(tool.getNbt());
+    // PORT M6: stack.getTag() removed in 1.21; TestHelper.getTag reads the CUSTOM_DATA component
+    assertThat(TestHelper.getTag(stack)).isEqualTo(tool.getNbt());
   }
 
   @Test
@@ -105,8 +107,8 @@ class ToolStackTest extends ToolItemTest {
     tool.setBrokenRaw(true);
 
     ItemStack stack = tool.updateStack(new ItemStack(Items.DIAMOND_PICKAXE));
-    assertThat(stack.getTag()).isEqualTo(tool.getNbt());
-    assertThat(stack.getTag()).isNotSameAs(tool.getNbt());
+    assertThat(TestHelper.getTag(stack)).isEqualTo(tool.getNbt());
+    assertThat(TestHelper.getTag(stack)).isNotSameAs(tool.getNbt());
   }
 
   @Test
@@ -147,7 +149,7 @@ class ToolStackTest extends ToolItemTest {
 
   @Test
   void damage_getDamageValidates() {
-    CompoundTag nbt = testItemStack.getTag();
+    CompoundTag nbt = TestHelper.getTag(testItemStack);
     assertThat(nbt).isNotNull();
     nbt.putInt(ToolStack.TAG_DAMAGE, 9999);
 
@@ -165,7 +167,7 @@ class ToolStackTest extends ToolItemTest {
 
   @Test
   void damage_setDamageUnbreaksTool() {
-    CompoundTag nbt = testItemStack.getTag();
+    CompoundTag nbt = TestHelper.getTag(testItemStack);
     assertThat(nbt).isNotNull();
     nbt.putBoolean(ToolStack.TAG_BROKEN, true);
 
@@ -226,7 +228,7 @@ class ToolStackTest extends ToolItemTest {
   void stats_serialize() {
     ToolStack tool = ToolStack.from(Items.DIAMOND_PICKAXE, ToolDefinition.EMPTY, new CompoundTag());
     tool.setStats(testStatsNBT);
-    CompoundTag nbt = tool.createStack().getTag();
+    CompoundTag nbt = TestHelper.getTag(tool.createStack());
 
     assertThat(nbt).isNotNull();
     assertThat(nbt.contains(ToolStack.TAG_STATS)).isTrue();
@@ -238,7 +240,7 @@ class ToolStackTest extends ToolItemTest {
   @Test
   void stats_deserialize() {
     ItemStack stack = new ItemStack(Items.DIAMOND_PICKAXE);
-    stack.getOrCreateTag().put(ToolStack.TAG_STATS, testStatsNBT.serializeToNBT());
+    TestHelper.getOrCreateTag(stack).put(ToolStack.TAG_STATS, testStatsNBT.serializeToNBT());
 
     ToolStack tool = ToolStack.from(stack);
     StatsNBT readStats = tool.getStats();
@@ -277,7 +279,7 @@ class ToolStackTest extends ToolItemTest {
   void materials_deserialize() {
     ItemStack stack = new ItemStack(tool);
     MaterialNBT setMaterials = MaterialNBT.of(MaterialFixture.MATERIAL_WITH_HEAD, MaterialFixture.MATERIAL_WITH_HANDLE, MaterialFixture.MATERIAL_WITH_EXTRA);
-    stack.getOrCreateTag().put(ToolStack.TAG_MATERIALS, setMaterials.serializeToNBT());
+    TestHelper.getOrCreateTag(stack).put(ToolStack.TAG_MATERIALS, setMaterials.serializeToNBT());
 
     ToolStack tool = ToolStack.from(stack);
     MaterialNBT readMaterials = tool.getMaterials();
@@ -327,7 +329,7 @@ class ToolStackTest extends ToolItemTest {
   @Test
   void modifiers_deserialize() {
     ModifierNBT setModifiers = ModifierNBT.EMPTY.withModifier(ModifierFixture.TEST_1, 1);
-    testItemStack.getOrCreateTag().put(ToolStack.TAG_UPGRADES, setModifiers.serializeToNBT());
+    TestHelper.getOrCreateTag(testItemStack).put(ToolStack.TAG_UPGRADES, setModifiers.serializeToNBT());
 
     ToolStack tool = ToolStack.from(testItemStack);
     ModifierNBT readModifiers = tool.getUpgrades();
@@ -351,7 +353,7 @@ class ToolStackTest extends ToolItemTest {
   @Test
   void allMods_deserialize() {
     ModifierNBT setModifiers = ModifierNBT.EMPTY.withModifier(ModifierFixture.TEST_1, 1);
-    testItemStack.getOrCreateTag().put(ToolStack.TAG_MODIFIERS, setModifiers.serializeToNBT());
+    TestHelper.getOrCreateTag(testItemStack).put(ToolStack.TAG_MODIFIERS, setModifiers.serializeToNBT());
 
     ToolStack tool = ToolStack.from(testItemStack);
     ModifierNBT readModifiers = tool.getModifiers();
@@ -378,7 +380,7 @@ class ToolStackTest extends ToolItemTest {
   void persistentModData_deserialize() {
     ToolDataNBT modData = new ToolDataNBT();
     modData.setSlots(SlotType.UPGRADE, 1);
-    testItemStack.getOrCreateTag().put(ToolStack.TAG_PERSISTENT_MOD_DATA, modData.getData());
+    TestHelper.getOrCreateTag(testItemStack).put(ToolStack.TAG_PERSISTENT_MOD_DATA, modData.getData());
 
     ToolStack toolStack = ToolStack.from(testItemStack);
     assertThat(toolStack.getPersistentData().getData()).isEqualTo(modData.getData());
@@ -399,7 +401,7 @@ class ToolStackTest extends ToolItemTest {
   void volatileModData_deserialize() {
     ToolDataNBT modData = new ToolDataNBT();
     modData.setSlots(SlotType.UPGRADE, 1);
-    testItemStack.getOrCreateTag().put(ToolStack.TAG_VOLATILE_MOD_DATA, modData.getData());
+    TestHelper.getOrCreateTag(testItemStack).put(ToolStack.TAG_VOLATILE_MOD_DATA, modData.getData());
 
     ToolStack toolStack = ToolStack.from(testItemStack);
     assertThat(toolStack.getVolatileData()).isEqualTo(modData);

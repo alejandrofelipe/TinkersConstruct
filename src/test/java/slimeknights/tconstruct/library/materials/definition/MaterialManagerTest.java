@@ -3,13 +3,15 @@ package slimeknights.tconstruct.library.materials.definition;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.common.crafting.conditions.FalseCondition;
-import net.minecraftforge.common.crafting.conditions.IConditionSerializer;
-import net.minecraftforge.common.crafting.conditions.TrueCondition;
+import net.neoforged.neoforge.common.conditions.FalseCondition;
+import net.neoforged.neoforge.common.conditions.ICondition;
+import net.neoforged.neoforge.common.conditions.TrueCondition;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.TConstruct;
@@ -27,20 +29,27 @@ class MaterialManagerTest extends BaseMcTest {
   private static MaterialManager materialManager;
   private final JsonFileLoader fileLoader = new JsonFileLoader(MaterialManager.GSON, MaterialManager.FOLDER);
 
-  /** Ensures the given condition serializer is registered */
-  private static void ensureSerializerRegistered(IConditionSerializer<?> serializer) {
+  /** Ensures the given condition codec is registered */
+  private static void ensureSerializerRegistered(ResourceLocation id, MapCodec<? extends ICondition> codec) {
     try {
-      CraftingHelper.register(serializer);
+      Registry.register(NeoForgeRegistries.CONDITION_SERIALIZERS, id, codec);
     } catch (Exception e) {
       // NO-OP
     }
   }
 
+  // PORT M6: IConditionSerializer was removed; NeoForge conditions now register a MapCodec directly
+  // into NeoForgeRegistries.CONDITION_SERIALIZERS. In a real run NeoForgeMod registers "true"/"false"
+  // under its own mod id via a DeferredRegister, but that only fires through FML's RegisterEvent, which
+  // a bare JUnit run never triggers - so this test registers them directly, same as the old
+  // CraftingHelper.register defensive call it replaces. Registered under "forge" to match this repo's
+  // existing fixtures (conditional_pass.json / conditional_fail.json use "forge:true" / "forge:false");
+  // flagged for Task 6 in case those fixtures get migrated to "neoforge:" instead.
   @BeforeAll
   static void setUp() {
     materialManager = new MaterialManager();
-    ensureSerializerRegistered(FalseCondition.Serializer.INSTANCE);
-    ensureSerializerRegistered(TrueCondition.Serializer.INSTANCE);
+    ensureSerializerRegistered(ResourceLocation.fromNamespaceAndPath("forge", "false"), FalseCondition.CODEC);
+    ensureSerializerRegistered(ResourceLocation.fromNamespaceAndPath("forge", "true"), TrueCondition.CODEC);
   }
 
   @Test

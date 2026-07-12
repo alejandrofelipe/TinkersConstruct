@@ -5,12 +5,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.Tiers;
-import net.minecraftforge.common.TierSortingRegistry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import slimeknights.tconstruct.library.materials.MaterialRegistryExtension;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
+import slimeknights.tconstruct.library.utils.HarvestTiers;
 import slimeknights.tconstruct.test.BaseMcTest;
 
 import java.util.Objects;
@@ -90,7 +90,7 @@ class StatsNBTTest extends BaseMcTest {
     CompoundTag nbt = testStatsNBT.serializeToNBT();
     
     assertThat(nbt.getInt(ToolStats.DURABILITY.getName().toString())).isEqualTo(1);
-    assertThat(nbt.getString(ToolStats.HARVEST_TIER.getName().toString())).isEqualTo(Objects.requireNonNull(TierSortingRegistry.getName(Tiers.NETHERITE)).toString());
+    assertThat(nbt.getString(ToolStats.HARVEST_TIER.getName().toString())).isEqualTo(Objects.requireNonNull(HarvestTiers.tierName(Tiers.NETHERITE)).toString());
     assertThat(nbt.getFloat(ToolStats.ATTACK_DAMAGE.getName().toString())).isEqualTo(3);
     assertThat(nbt.getFloat(ToolStats.MINING_SPEED.getName().toString())).isEqualTo(4);
     assertThat(nbt.getFloat(ToolStats.ATTACK_SPEED.getName().toString())).isEqualTo(5);
@@ -107,7 +107,7 @@ class StatsNBTTest extends BaseMcTest {
   void deserialize() {
     CompoundTag nbt = new CompoundTag();
     nbt.putInt(ToolStats.DURABILITY.getName().toString(), 6);
-    nbt.putString(ToolStats.HARVEST_TIER.getName().toString(), Objects.requireNonNull(TierSortingRegistry.getName(Tiers.GOLD)).toString());
+    nbt.putString(ToolStats.HARVEST_TIER.getName().toString(), Objects.requireNonNull(HarvestTiers.tierName(Tiers.GOLD)).toString());
     nbt.putFloat(ToolStats.ATTACK_DAMAGE.getName().toString(), 4);
     nbt.putFloat(ToolStats.MINING_SPEED.getName().toString(), 3.5f);
     nbt.putFloat(ToolStats.ATTACK_SPEED.getName().toString(), 2);

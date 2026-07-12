@@ -14,6 +14,7 @@ import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
 import slimeknights.tconstruct.library.tools.layout.LayoutIcon.ItemStackIcon;
 import slimeknights.tconstruct.library.tools.layout.LayoutIcon.PatternIcon;
 import slimeknights.tconstruct.test.BaseMcTest;
+import slimeknights.tconstruct.test.TestHelper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -83,8 +84,11 @@ class LayoutIconTest extends BaseMcTest {
     JsonObject json = itemIcon.toJson();
     assertThat(json.entrySet()).hasSize(2);
     assertThat(GsonHelper.getAsString(json, "item")).isEqualTo(BuiltInRegistries.ITEM.getKey(Items.DIAMOND_PICKAXE).toString());
-    assert original.getTag() != null;
-    assertThat(GsonHelper.getAsString(json, "nbt")).isEqualTo(original.getTag().toString());
+    // PORT M6: stack.getTag() removed in 1.21; TestHelper.getTag reads the CUSTOM_DATA component.
+    // Note main's LayoutIcon now serializes via ItemStack.CODEC (id/count/components) instead of the old
+    // item/nbt pair, so these assertions likely need reshaping in Task 6.
+    assert TestHelper.getTag(original) != null;
+    assertThat(GsonHelper.getAsString(json, "nbt")).isEqualTo(TestHelper.getTag(original).toString());
   }
 
   @Test
@@ -97,7 +101,7 @@ class LayoutIconTest extends BaseMcTest {
     ItemStack stack = icon.getValue(ItemStack.class);
     assertThat(stack).isNotNull();
     assertThat(stack.getItem()).isEqualTo(Items.DIAMOND);
-    CompoundTag nbt = stack.getTag();
+    CompoundTag nbt = TestHelper.getTag(stack);
     assertThat(nbt).isNotNull();
     assertThat(nbt.getInt("test")).isEqualTo(1);
   }

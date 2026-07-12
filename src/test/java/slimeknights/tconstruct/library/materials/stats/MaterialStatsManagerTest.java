@@ -24,7 +24,7 @@ class MaterialStatsManagerTest extends BaseMcTest {
     materialStatsManager.registerStatType(STATS_TYPE_SIMPLE);
 
     MaterialId material = new MaterialId(TConstruct.getResource("teststat"));
-    fileLoader.loadAndParseFiles(null, material);
+    fileLoader.loadAndParseFiles(null, material.getLocation());
 
     Optional<IMaterialStats> optionalStats = materialStatsManager.getStats(material, STATS_ID_SIMPLE);
     assertThat(optionalStats).isPresent();
@@ -35,7 +35,7 @@ class MaterialStatsManagerTest extends BaseMcTest {
     materialStatsManager.registerStatType(STATS_TYPE_SIMPLE);
 
     MaterialId material = new MaterialId(TConstruct.getResource("teststat"));
-    fileLoader.loadAndParseFiles(null, material);
+    fileLoader.loadAndParseFiles(null, material.getLocation());
 
     Optional<ComplexTestStats> optionalStats = materialStatsManager.getStats(material, STATS_ID_SIMPLE);
     assertThat(optionalStats).isPresent();
@@ -53,7 +53,7 @@ class MaterialStatsManagerTest extends BaseMcTest {
     MaterialStatsId statId2 = new MaterialStatsId("test", "stat2");
     materialStatsManager.registerStatType(ComplexTestStats.makeType(statId2, 2, 2f, "two"));
 
-    fileLoader.loadAndParseFiles(null, material);
+    fileLoader.loadAndParseFiles(null, material.getLocation());
 
     assertThat(materialStatsManager.getStats(material, statId1)).isPresent();
     assertThat(materialStatsManager.getStats(material, statId2)).isPresent();
@@ -62,7 +62,7 @@ class MaterialStatsManagerTest extends BaseMcTest {
   @Test
   void testLoadFileWithEmptyStats_ok() {
     MaterialId material = new MaterialId(TConstruct.getResource("empty"));
-    fileLoader.loadAndParseFiles(null, material);
+    fileLoader.loadAndParseFiles(null, material.getLocation());
 
     // ensure that we get this far and that querying the missing material causes no errors
     Optional<ComplexTestStats> optionalStats = materialStatsManager.getStats(material, STATS_ID_DONT_CARE);
@@ -72,7 +72,7 @@ class MaterialStatsManagerTest extends BaseMcTest {
   @Test
   void testLoadFileWithoutStats_ok() {
     MaterialId material = new MaterialId(TConstruct.getResource("missing_stats"));
-    fileLoader.loadAndParseFiles(null, material);
+    fileLoader.loadAndParseFiles(null, material.getLocation());
 
     // ensure that we get this far and that querying the missing material causes no errors
     Optional<ComplexTestStats> optionalStats = materialStatsManager.getStats(material, STATS_ID_DONT_CARE);
@@ -86,7 +86,7 @@ class MaterialStatsManagerTest extends BaseMcTest {
     materialStatsManager.registerStatType(ComplexTestStats.makeType(otherStatId, 5, 8, "other"));
 
     MaterialId material = new MaterialId(TConstruct.getResource("teststat"));
-    fileLoader.loadAndParseFiles("extrastats", material);
+    fileLoader.loadAndParseFiles("extrastats", material.getLocation());
 
     assertThat(materialStatsManager.getStats(material, STATS_ID_SIMPLE)).isNotEmpty();
     assertThat(materialStatsManager.getStats(material, otherStatId)).isNotEmpty();
@@ -99,7 +99,7 @@ class MaterialStatsManagerTest extends BaseMcTest {
     materialStatsManager.registerStatType(STATS_TYPE_SIMPLE);
 
     MaterialId material = new MaterialId(TConstruct.getResource("teststat"));
-    fileLoader.loadAndParseFiles("duplicate", material);
+    fileLoader.loadAndParseFiles("duplicate", material.getLocation());
 
     Optional<ComplexTestStats> stats = materialStatsManager.getStats(material, STATS_ID_SIMPLE);
     assertThat(stats).isNotEmpty();
@@ -124,7 +124,7 @@ class MaterialStatsManagerTest extends BaseMcTest {
   @Test
   void loadFileWithOnlyUnregisteredStats_doNothing() {
     MaterialId material = new MaterialId(TConstruct.getResource("invalid"));
-    fileLoader.loadAndParseFiles(null, material);
+    fileLoader.loadAndParseFiles(null, material.getLocation());
 
     Optional<ComplexTestStats> optionalStats = materialStatsManager.getStats(material, new MaterialStatsId("test", "fails"));
     assertThat(optionalStats).isEmpty();
@@ -138,7 +138,7 @@ class MaterialStatsManagerTest extends BaseMcTest {
     MaterialStatsId statId2 = new MaterialStatsId("test", "stat2");
     materialStatsManager.registerStatType(ComplexTestStats.makeType(statId2, 2, 2f, "two"));
 
-    fileLoader.loadAndParseFiles("remove", material);
+    fileLoader.loadAndParseFiles("remove", material.getLocation());
 
     assertThat(materialStatsManager.getStats(material, statId1)).isPresent();
     assertThat(materialStatsManager.getStats(material, statId2)).isNotPresent();

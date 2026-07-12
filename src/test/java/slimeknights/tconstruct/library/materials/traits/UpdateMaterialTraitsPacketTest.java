@@ -1,7 +1,9 @@
 package slimeknights.tconstruct.library.materials.traits;
 
 import io.netty.buffer.Unpooled;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.neoforged.neoforge.network.connection.ConnectionType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.fixture.MaterialFixture;
@@ -46,13 +48,14 @@ class UpdateMaterialTraitsPacketTest extends BaseMcTest {
     map.put(MATERIAL_ID_2, materialTraits2);
 
     // send a packet over the buffer
-    FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+    // PORT M6: packets are records with STREAM_CODEC over RegistryFriendlyByteBuf now
+    RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY, ConnectionType.OTHER);
     UpdateMaterialTraitsPacket packetToEncode = new UpdateMaterialTraitsPacket(map);
-    packetToEncode.encode(buffer);
-    UpdateMaterialTraitsPacket decoded = new UpdateMaterialTraitsPacket(buffer);
+    UpdateMaterialTraitsPacket.STREAM_CODEC.encode(buffer, packetToEncode);
+    UpdateMaterialTraitsPacket decoded = UpdateMaterialTraitsPacket.STREAM_CODEC.decode(buffer);
 
     // parse results
-    Map<MaterialId, MaterialTraits> parsed = decoded.getMaterialToTraits();
+    Map<MaterialId, MaterialTraits> parsed = decoded.materialToTraits();
     assertThat(parsed).hasSize(2);
 
     // material traits 1

@@ -36,7 +36,7 @@ class MaterialTraitsManagerTest extends BaseMcTest {
   @Test
   void empty() {
     MaterialId empty = new MaterialId(TConstruct.getResource("empty"));
-    fileLoader.loadAndParseFiles(null, empty);
+    fileLoader.loadAndParseFiles(null, empty.getLocation());
 
     // ensure we got this far and there were no errors
     List<ModifierEntry> defaultTraits = traitsManager.getDefaultTraits(DEFAULT_TRAITS);
@@ -46,7 +46,7 @@ class MaterialTraitsManagerTest extends BaseMcTest {
 
   @Test
   void defaultTraitsOnlyAreLoaded() {
-    fileLoader.loadAndParseFiles(null, DEFAULT_TRAITS);
+    fileLoader.loadAndParseFiles(null, DEFAULT_TRAITS.getLocation());
 
     // ensure the default trait list is correct
     List<ModifierEntry> defaultTraits = traitsManager.getDefaultTraits(DEFAULT_TRAITS);
@@ -69,7 +69,7 @@ class MaterialTraitsManagerTest extends BaseMcTest {
 
   @Test
   void perStatsTraitsOnlyAreLoaded() {
-    fileLoader.loadAndParseFiles(null, PER_STAT_TRAITS);
+    fileLoader.loadAndParseFiles(null, PER_STAT_TRAITS.getLocation());
 
     // ensure the default trait list is correct
     List<ModifierEntry> defaultTraits = traitsManager.getDefaultTraits(PER_STAT_TRAITS);
@@ -93,7 +93,7 @@ class MaterialTraitsManagerTest extends BaseMcTest {
 
   @Test
   void multipleTraitsWithDefault() {
-    fileLoader.loadAndParseFiles(null, MULTIPLE_TRAITS);
+    fileLoader.loadAndParseFiles(null, MULTIPLE_TRAITS.getLocation());
 
     // ensure the default trait list is correct
     List<ModifierEntry> defaultTraits = traitsManager.getDefaultTraits(MULTIPLE_TRAITS);
@@ -139,7 +139,7 @@ class MaterialTraitsManagerTest extends BaseMcTest {
 
   @Test
   void optionalTraits() {
-    fileLoader.loadAndParseFiles(null, OPTIONAL_TRAITS);
+    fileLoader.loadAndParseFiles(null, OPTIONAL_TRAITS.getLocation());
 
     // ensure the default trait list is correct
     List<ModifierEntry> defaultTraits = traitsManager.getDefaultTraits(OPTIONAL_TRAITS);
@@ -173,7 +173,7 @@ class MaterialTraitsManagerTest extends BaseMcTest {
 
   @Test
   void merging_addStatType() {
-    fileLoader.loadAndParseFiles("merge_stat_type", MULTIPLE_TRAITS);
+    fileLoader.loadAndParseFiles("merge_stat_type", MULTIPLE_TRAITS.getLocation());
 
     // ensure the default trait list is unchanged
     List<ModifierEntry> defaultTraits = traitsManager.getDefaultTraits(MULTIPLE_TRAITS);
@@ -212,7 +212,7 @@ class MaterialTraitsManagerTest extends BaseMcTest {
 
   @Test
   void merging_replaceDefault() {
-    fileLoader.loadAndParseFiles("merge_default", MULTIPLE_TRAITS);
+    fileLoader.loadAndParseFiles("merge_default", MULTIPLE_TRAITS.getLocation());
 
     // ensure the default trait list is replaced
     List<ModifierEntry> defaultTraits = traitsManager.getDefaultTraits(MULTIPLE_TRAITS);

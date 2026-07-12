@@ -1,7 +1,9 @@
 package slimeknights.tconstruct.library.materials.stats;
 
 import io.netty.buffer.Unpooled;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.neoforged.neoforge.network.connection.ConnectionType;
 import org.junit.jupiter.api.Test;
 import slimeknights.mantle.data.registry.IdAwareComponentRegistry;
 import slimeknights.tconstruct.fixture.MaterialFixture;
@@ -36,11 +38,11 @@ class UpdateMaterialStatsPacketTest extends BaseMcTest {
     );
 
     UpdateMaterialStatsPacket packetToDecode = sendAndReceivePacket(materialToStats);
-    assertThat(packetToDecode.materialToStats).hasSize(1);
-    assertThat(packetToDecode.materialToStats).containsKey(MATERIAL_ID);
-    assertThat(packetToDecode.materialToStats.get(MATERIAL_ID)).hasSize(1);
+    assertThat(packetToDecode.materialToStats()).hasSize(1);
+    assertThat(packetToDecode.materialToStats()).containsKey(MATERIAL_ID);
+    assertThat(packetToDecode.materialToStats().get(MATERIAL_ID)).hasSize(1);
 
-    IMaterialStats materialStats = packetToDecode.materialToStats.get(MATERIAL_ID).iterator().next();
+    IMaterialStats materialStats = packetToDecode.materialToStats().get(MATERIAL_ID).iterator().next();
     assertThat(materialStats).isExactlyInstanceOf(ComplexTestStats.class);
     // ensure the loadable is passed the context field for the proper type
     assertThat(materialStats.getType()).isEqualTo(MaterialStatsFixture.COMPLEX_TYPE);
@@ -60,15 +62,17 @@ class UpdateMaterialStatsPacketTest extends BaseMcTest {
 
     UpdateMaterialStatsPacket packet = sendAndReceivePacket(materialToStats);
 
-    assertThat(packet.materialToStats.get(MATERIAL_ID)).isEqualTo(stats);
+    assertThat(packet.materialToStats().get(MATERIAL_ID)).isEqualTo(stats);
   }
 
   private UpdateMaterialStatsPacket sendAndReceivePacket(Map<MaterialId, Collection<IMaterialStats>> materialToStats) {
-    FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+    // PORT M6: packets are records with STREAM_CODEC over RegistryFriendlyByteBuf now; the packet still
+    // exposes a public decode(buffer, loader) overload for testing with a custom stat type loader
+    RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY, ConnectionType.OTHER);
 
     UpdateMaterialStatsPacket packetToEncode = new UpdateMaterialStatsPacket(materialToStats);
-    packetToEncode.encode(buffer);
+    UpdateMaterialStatsPacket.STREAM_CODEC.encode(buffer, packetToEncode);
 
-    return new UpdateMaterialStatsPacket(buffer, LOADER);
+    return UpdateMaterialStatsPacket.decode(buffer, LOADER);
   }
 }

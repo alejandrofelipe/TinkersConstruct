@@ -2,7 +2,9 @@ package slimeknights.tconstruct.library.materials.definition;
 
 import com.google.common.collect.ImmutableMap;
 import io.netty.buffer.Unpooled;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.neoforged.neoforge.network.connection.ConnectionType;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.fixture.MaterialFixture;
 import slimeknights.tconstruct.test.BaseMcTest;
@@ -21,19 +23,21 @@ class UpdateMaterialPacketTest extends BaseMcTest {
 
   @Test
   void testGenericEncodeDecode() {
-    IMaterial material1 = new Material(MATERIAL_ID_1, 1, 2, true, false);
-    IMaterial material2 = new Material(MATERIAL_ID_2, 3, 4, false, true);
+    // PORT M6: MaterialId no longer IS-A ResourceLocation; Material's ctor takes the wrapped location
+    IMaterial material1 = new Material(MATERIAL_ID_1.getLocation(), 1, 2, true, false);
+    IMaterial material2 = new Material(MATERIAL_ID_2.getLocation(), 3, 4, false, true);
     Map<MaterialId,IMaterial> materials = ImmutableMap.of(MATERIAL_ID_1, material1, MATERIAL_ID_2, material2);
     Map<MaterialId,MaterialId> redirects = ImmutableMap.of(REDIRECT_ID, MATERIAL_ID_1);
 
     // send a packet over the buffer
-    FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+    // PORT M6: packets are records with STREAM_CODEC over RegistryFriendlyByteBuf now
+    RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY, ConnectionType.OTHER);
     UpdateMaterialsPacket packetToEncode = new UpdateMaterialsPacket(materials, redirects, Collections.emptyMap());
-    packetToEncode.encode(buffer);
-    UpdateMaterialsPacket decoded = new UpdateMaterialsPacket(buffer);
+    UpdateMaterialsPacket.STREAM_CODEC.encode(buffer, packetToEncode);
+    UpdateMaterialsPacket decoded = UpdateMaterialsPacket.STREAM_CODEC.decode(buffer);
 
     // parse results
-    Map<MaterialId,IMaterial> parsed = decoded.getMaterials();
+    Map<MaterialId,IMaterial> parsed = decoded.materials();
     assertThat(parsed).hasSize(2);
 
     // material 1
@@ -54,7 +58,7 @@ class UpdateMaterialPacketTest extends BaseMcTest {
     assertThat(parsedMat.isHidden()).isTrue();
 
     // redirects not included
-    Map<MaterialId,MaterialId> decodedRedirects = decoded.getRedirects();
+    Map<MaterialId,MaterialId> decodedRedirects = decoded.redirects();
     assertThat(decodedRedirects).hasSize(1);
     assertThat(decodedRedirects.get(REDIRECT_ID)).isEqualTo(MATERIAL_ID_1);
   }

@@ -9,13 +9,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.common.crafting.VanillaIngredientSerializer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.test.BaseMcTest;
 import slimeknights.tconstruct.test.JsonFileLoader;
+import slimeknights.tconstruct.test.TestHelper;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,13 +26,11 @@ import static org.mockito.Mockito.mock;
 class StationSlotLayoutLoaderTest extends BaseMcTest {
   private static final JsonFileLoader fileLoader = new JsonFileLoader(StationSlotLayoutLoader.GSON, StationSlotLayoutLoader.FOLDER);
 
+  // PORT M6: NeoForge dropped CraftingHelper's serializer registry and VanillaIngredientSerializer in
+  // 1.21; plain item ingredients are parsed natively by Ingredient's own codec now, so there is nothing
+  // left to register here.
   @BeforeAll
   static void setup() {
-    try {
-      CraftingHelper.register(new ResourceLocation("minecraft", "item"), VanillaIngredientSerializer.INSTANCE);
-    } catch (Exception e) {
-      // just need to ensure its registered
-    }
   }
 
   @Test
@@ -93,7 +90,7 @@ class StationSlotLayoutLoaderTest extends BaseMcTest {
     ItemStack[] stacks = ingredient.getItems();
     assertThat(stacks).hasSize(1);
     assertThat(stacks[0].getItem()).isEqualTo(item);
-    assertThat(stacks[0].getTag()).isNull();
+    assertThat(TestHelper.getTag(stacks[0])).isNull();
   }
 
   @Test
@@ -108,7 +105,7 @@ class StationSlotLayoutLoaderTest extends BaseMcTest {
     ItemStack stack = layout.getIcon().getValue(ItemStack.class);
     assertThat(stack).isNotNull();
     assertThat(stack.getItem()).isEqualTo(Items.IRON_INGOT);
-    CompoundTag nbt = stack.getTag();
+    CompoundTag nbt = TestHelper.getTag(stack);
     assertThat(nbt).isNotNull();
     assertThat(nbt.getAllKeys()).hasSize(1);
     assertThat(nbt.getInt("test")).isEqualTo(1);
