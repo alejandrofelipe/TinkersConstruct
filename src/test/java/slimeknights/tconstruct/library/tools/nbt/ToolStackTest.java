@@ -251,9 +251,14 @@ class ToolStackTest extends ToolItemTest {
   @Test
   void stats_lowDurabilityUpdatesDurability() {
     ItemStack stack = new ItemStack(Items.DIAMOND_PICKAXE);
-    stack.setDamageValue(100);
-
     ToolStack tool = ToolStack.from(stack);
+    // PORT M6: ToolStack.from() has never copied ItemStack#getDamageValue() into its own TAG_DAMAGE - Tinkers'
+    // durability is tracked independently of vanilla item damage (confirmed unchanged across this file's full
+    // git history, so this predates the 1.21 port; stack.setDamageValue(100) here was always a no-op). Seed
+    // TAG_DAMAGE directly via the raw NBT (same-package access) to reach the pre-setStats damage this test
+    // means to exercise; ToolStack#setDamage() can't be used here since it always clamps against the CURRENT
+    // stats, which are still unset (durability 0) at this point.
+    tool.getNbt().putInt(ToolStack.TAG_DAMAGE, 100);
     tool.setStats(StatsNBT.builder().set(ToolStats.DURABILITY, 50f).build());
     assertThat(tool.getDamageRaw()).isEqualTo(50);
     assertThat(tool.isBroken()).isTrue();
