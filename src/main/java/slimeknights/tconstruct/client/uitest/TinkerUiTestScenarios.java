@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.client.uitest;
 
+import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -20,11 +21,14 @@ import slimeknights.mantle.client.uitest.UiTestScenario;
 import slimeknights.mantle.client.uitest.UiTestScenarios;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.gametest.SmelteryRigs;
+import slimeknights.tconstruct.plugin.jei.JEIPlugin;
+import slimeknights.tconstruct.plugin.jei.TConstructJEIConstants;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 import slimeknights.tconstruct.tables.TinkerTables;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 /** Registers TConstruct's automated GUI screenshot scenarios (active only with -Dmantle.uitest=true). */
@@ -44,6 +48,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new MelterScenario());
     UiTestScenarios.register(new CastingPourScenario());
     UiTestScenarios.register(new BookScenario());
+    UiTestScenarios.register(new JeiCategoryScenario());
   }
 
   /** Places a single block and opens its GUI. */
@@ -209,6 +214,31 @@ public class TinkerUiTestScenarios {
     @Override
     public int settleTicks() {
       return 40; // book textures/pages lazy-load
+    }
+  }
+
+  /** Opens the JEI recipes GUI on the Tinkers melting category and captures it. */
+  private static class JeiCategoryScenario implements UiTestScenario {
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("jei_melting_category");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) { /* nothing to build; JEI's async indexing captures the runtime long before this 7th scenario */ }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      IJeiRuntime runtime = JEIPlugin.runtime;
+      if (runtime == null) {
+        throw new IllegalStateException("JEI runtime not captured - onRuntimeAvailable never fired");
+      }
+      runtime.getRecipesGui().showTypes(List.of(TConstructJEIConstants.MELTING));
+    }
+
+    @Override
+    public int settleTicks() {
+      return 40; // recipe layouts/item renders settle
     }
   }
 }
