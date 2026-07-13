@@ -27,6 +27,7 @@ import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 import slimeknights.tconstruct.tables.TinkerTables;
+import slimeknights.tconstruct.tools.TinkerModifiers;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -49,6 +50,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new CastingPourScenario());
     UiTestScenarios.register(new BookScenario());
     UiTestScenarios.register(new JeiCategoryScenario());
+    UiTestScenarios.register(new JeiItemListCleanupScenario());
   }
 
   /** Places a single block and opens its GUI. */
@@ -215,6 +217,37 @@ public class TinkerUiTestScenarios {
     public int settleTicks() {
       return 40; // book textures/pages lazy-load
     }
+  }
+
+  /** No GUI: asserts the JEI runtime cleanup left no modifier crystal / creative slot item entries. */
+  private static class JeiItemListCleanupScenario implements UiTestScenario {
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("jei_item_list_cleanup");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) { /* nothing to build */ }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      IJeiRuntime runtime = JEIPlugin.runtime;
+      if (runtime == null) {
+        throw new IllegalStateException("JEI runtime not captured - onRuntimeAvailable never fired");
+      }
+      // both items are shown through the modifier ingredient type instead of as item stacks, so the
+      // runtime cleanup must leave no entry of either item: filled variants come from the creative
+      // tabs, blank ones from JEI's ShowHiddenItems registry pass
+      List<ItemStack> leftovers = runtime.getIngredientManager().getAllItemStacks().stream()
+        .filter(stack -> stack.is(TinkerModifiers.modifierCrystal.asItem()) || stack.is(TinkerModifiers.creativeSlotItem.asItem()))
+        .toList();
+      if (!leftovers.isEmpty()) {
+        throw new IllegalStateException("JEI item list still contains " + leftovers.size() + " hidden-item entries, first: " + leftovers.get(0));
+      }
+    }
+
+    @Override
+    public void close(UiTestContext ctx) { /* nothing open */ }
   }
 
   /** Opens the JEI recipes GUI on the Tinkers melting category and captures it. */

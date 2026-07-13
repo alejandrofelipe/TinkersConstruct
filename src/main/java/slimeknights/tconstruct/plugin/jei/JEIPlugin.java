@@ -447,11 +447,18 @@ public class JEIPlugin implements IModPlugin {
     List<ItemStack> addItems = new ArrayList<>();
     Consumer<ItemStack> addItem = addItems::add;
     // shown via the modifiers
-    removeItems.add(new ItemStack(TinkerModifiers.modifierCrystal));
     ModifierCrystalItem.addVariants(removeItem);
     // shown via modifier slots
-    removeItems.add(new ItemStack(TinkerModifiers.creativeSlotItem));
     TinkerModifiers.creativeSlotItem.get().addVariants(removeItem);
+    // blank crystals/slot items are indexed only when JEI's ShowHiddenItems config pulls in registry
+    // items missing from creative tabs; asking JEI to remove a stack it never indexed logs an error,
+    // so remove just the blank stacks actually present
+    for (ItemStack stack : manager.getAllItemStacks()) {
+      if ((stack.is(TinkerModifiers.modifierCrystal.asItem()) && ModifierCrystalItem.getModifier(stack) == null)
+          || (stack.is(TinkerModifiers.creativeSlotItem.asItem()) && CreativeSlotItem.getSlot(stack) == null)) {
+        removeItems.add(stack);
+      }
+    }
 
     // fluids can be clutter so remove them by default
     if (!Config.CLIENT.showFilledFluidTanks.get()) {
