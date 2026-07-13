@@ -25,7 +25,7 @@ public class ModifierTagInjectorTransformer extends AbstractTagInjectingTransfor
 
   @Override
   protected ResourceLocation getId(Modifier modifier) {
-    return modifier.getId();
+    return modifier.getId().getLocation();
   }
 
   @Override

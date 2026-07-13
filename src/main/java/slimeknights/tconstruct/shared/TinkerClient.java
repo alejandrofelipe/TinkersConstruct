@@ -34,8 +34,7 @@ import slimeknights.tconstruct.library.client.armor.texture.FixedArmorTextureSup
 import slimeknights.tconstruct.library.client.armor.texture.MaterialArmorTextureSupplier;
 import slimeknights.tconstruct.library.client.armor.texture.MaterialHasFallbackTextureSupplier;
 import slimeknights.tconstruct.library.client.armor.texture.TrimArmorTextureSupplier;
-// PORT book: TinkerBook deferred until Mantle's book system is ported (M5+).
-//import slimeknights.tconstruct.library.client.book.TinkerBook;
+import slimeknights.tconstruct.library.client.book.TinkerBook;
 import slimeknights.tconstruct.library.client.data.spritetransformer.FramesSpriteTransformer;
 import slimeknights.tconstruct.library.client.data.spritetransformer.GreyToColorMapping;
 import slimeknights.tconstruct.library.client.data.spritetransformer.GreyToSpriteTransformer;
@@ -72,7 +71,7 @@ public class TinkerClient {
    * Called by TConstruct to handle any client side logic that needs to run during the constructor
    */
   public static void onConstruct() {
-    // PORT book: TinkerBook.initBook() deferred until Mantle's book system is ported (M5+).
+    TinkerBook.initBook();
     // needs to register listeners early enough for minecraft to load
     ModifierIconManager.init();
     MaterialRenderInfoLoader.init();

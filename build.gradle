@@ -64,8 +64,6 @@ sourceSets {
             // JEI plugin deferred to M6: JEI 19 API differs heavily from 15 (IShapedRecipe, ForgeTypes).
             // JEI stays a runtime dep (item viewer works); the Tinkers JEI categories return in M6.
             exclude 'slimeknights/tconstruct/plugin/jei/**'
-            // Book client deferred: depends on Mantle's not-yet-ported book system (M5+).
-            exclude 'slimeknights/tconstruct/library/client/book/**'
         }
     }
 }

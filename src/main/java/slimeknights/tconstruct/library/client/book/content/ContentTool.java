@@ -7,19 +7,19 @@ import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.locale.Language;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.neoforge.common.I18nExtension;
-import net.neoforged.neoforge.common.crafting.IShapedRecipe;
 import slimeknights.mantle.client.book.HTMLUtils;
 import slimeknights.mantle.client.book.data.BookData;
 import slimeknights.mantle.client.book.data.content.PageContent;
@@ -112,7 +112,7 @@ public class ContentTool extends PageContent {
   public ContentTool(IModifiableDisplay tool) {
     this.tool = tool;
     this.toolName = Loadables.ITEM.getKey(tool.asItem()).toString();
-    this.text = new TextData[] { new TextData(I18nExtension.parsePattern(tool.asItem().getDescriptionId() + ".description"))};
+    this.text = new TextData[] { new TextData(Language.getInstance().getOrDefault(tool.asItem().getDescriptionId() + ".description"))};
   }
 
   public ContentTool(Item item) {
@@ -122,7 +122,7 @@ public class ContentTool extends PageContent {
     } else {
       this.tool = new Fallback(item);
     }
-    this.text = new TextData[] { new TextData(I18nExtension.parsePattern(tool.asItem().getDescriptionId() + ".description"))};
+    this.text = new TextData[] { new TextData(Language.getInstance().getOrDefault(tool.asItem().getDescriptionId() + ".description"))};
   }
 
   public IModifiableDisplay getTool() {
@@ -157,10 +157,11 @@ public class ContentTool extends PageContent {
       List<IToolPart> required = ToolPartsHook.parts(tool.getToolDefinition());
 
       // get the stacks for the first crafting table recipe, prefer this option over parts as it may not be craftable with said parts
-      Recipe<CraftingContainer> recipe = Optional.ofNullable(Minecraft.getInstance().level)
+      CraftingRecipe recipe = Optional.ofNullable(Minecraft.getInstance().level)
                                                  .flatMap(world -> {
                                                    RegistryAccess access = world.registryAccess();
-                                                   return world.getRecipeManager().byType(RecipeType.CRAFTING).values().stream()
+                                                   return world.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING).stream()
+                                                        .map(RecipeHolder::value)
                                                         .filter(r -> r.getResultItem(access).getItem() == tool.asItem())
                                                         .findFirst();
                                                  })
@@ -170,9 +171,9 @@ public class ContentTool extends PageContent {
         this.parts = recipe.getIngredients().stream().map(ingredient -> ItemStackList.of(ingredient.getItems())).collect(Collectors.toList());
 
         // if we have a shaped recipe, display slots in order
-        if (recipe instanceof IShapedRecipe<?> shaped) {
-          int width = Mth.clamp(shaped.getRecipeWidth() - 1, 0, 2);
-          this.imgSlots = IMG_SLOTS_SHAPED[Mth.clamp(shaped.getRecipeHeight() - 1, 0, 2)][width];
+        if (recipe instanceof ShapedRecipe shaped) {
+          int width = Mth.clamp(shaped.getWidth() - 1, 0, 2);
+          this.imgSlots = IMG_SLOTS_SHAPED[Mth.clamp(shaped.getHeight() - 1, 0, 2)][width];
           this.slotPos = SLOTS_WIDTH[width];
         }
       } else {
@@ -182,7 +183,8 @@ public class ContentTool extends PageContent {
         }
         // fetch the tool building recipe for extra ingredients
         List<Ingredient> extraRequirements = Optional.ofNullable(Minecraft.getInstance().level)
-                                                     .flatMap(world -> world.getRecipeManager().byType(TinkerRecipeTypes.TINKER_STATION.get()).values().stream()
+                                                     .flatMap(world -> world.getRecipeManager().getAllRecipesFor(TinkerRecipeTypes.TINKER_STATION.get()).stream()
+                                                                            .map(RecipeHolder::value)
                                                                             .filter(r -> r instanceof ToolBuildingRecipe toolRecipe && toolRecipe.getOutput() == tool)
                                                                             .map(r -> ((ToolBuildingRecipe)r).getExtraRequirements())
                                                                             .findFirst()).orElse(List.of());

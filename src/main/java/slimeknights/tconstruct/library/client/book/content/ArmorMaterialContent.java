@@ -60,11 +60,11 @@ public class ArmorMaterialContent extends AbstractMaterialContent {
   public static final ResourceLocation ID = TConstruct.getResource("armor_material");
   /** Supported stat type set */
   private static final Set<MaterialStatsId> SUPPORTED = Stream.concat(
-    PlatingMaterialStats.TYPES.stream().map(MaterialStatType::getId),
+    PlatingMaterialStats.TYPES.stream().map(MaterialStatType::getStatId),
     Stream.of(StatlessMaterialStats.MAILLE, StatlessMaterialStats.SHIELD_CORE, StatlessMaterialStats.CUIRASS).map(IMaterialStats::getIdentifier)
   ).collect(Collectors.toSet());
   /** Plating stat types in top down order */
-  private static final List<MaterialStatsId> TOP_DOWN_STATS = List.of(HELMET.getId(), CHESTPLATE.getId(), LEGGINGS.getId(), BOOTS.getId(), SHIELD.getId());
+  private static final List<MaterialStatsId> TOP_DOWN_STATS = List.of(HELMET.getStatId(), CHESTPLATE.getStatId(), LEGGINGS.getStatId(), BOOTS.getStatId(), SHIELD.getStatId());
 
   private static final Component PLATING_LABEL = TConstruct.makeTranslation("stat", "plating").withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE);
   private static final Component ARMOR_PLATING_LABEL = TConstruct.makeTranslation("stat", "plating_armor").withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE);
@@ -167,8 +167,8 @@ public class ArmorMaterialContent extends AbstractMaterialContent {
     // note we don't add separate traits for each plating type, we take a shortcut adding just helmet and shield
     // while this may be inaccurate if someone does weird stuff, we just don't have space for more
     y = Math.max(
-      this.addTraits(x - 3,          y, list, ARMOR_PLATING_LABEL, HELMET.getId()),
-      this.addTraits(x + STAT_WIDTH, y, list, SHIELD_LABEL,        SHIELD.getId()));
+      this.addTraits(x - 3,          y, list, ARMOR_PLATING_LABEL, HELMET.getStatId()),
+      this.addTraits(x + STAT_WIDTH, y, list, SHIELD_LABEL,        SHIELD.getStatId()));
     y = addAllMaterialStats(x, y, list, 2, false);
 
     // material description
@@ -243,10 +243,10 @@ public class ArmorMaterialContent extends AbstractMaterialContent {
     // add traits
     group.add(HtmlElement.div().classes("row-material-stats")
       .add(HtmlElement.div().classes("column").style("gap", 12)
-        .add(makeStatHtml(HELMET.getId(), ARMOR_PLATING_LABEL.getString(), false, false))
+        .add(makeStatHtml(HELMET.getStatId(), ARMOR_PLATING_LABEL.getString(), false, false))
         .add(makeStatHtml(StatlessMaterialStats.MAILLE.getIdentifier(), false, true))
         .add(makeStatHtml(StatlessMaterialStats.SHIELD_CORE.getIdentifier(), false, true)))
-      .add(makeStatHtml(SHIELD.getId(), SHIELD_LABEL.getString(), false, false)));
+      .add(makeStatHtml(SHIELD.getStatId(), SHIELD_LABEL.getString(), false, false)));
     return group;
   }
 }
