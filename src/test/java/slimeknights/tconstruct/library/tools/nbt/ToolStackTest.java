@@ -252,12 +252,12 @@ class ToolStackTest extends ToolItemTest {
   void stats_lowDurabilityUpdatesDurability() {
     ItemStack stack = new ItemStack(Items.DIAMOND_PICKAXE);
     ToolStack tool = ToolStack.from(stack);
-    // PORT M6: ToolStack.from() has never copied ItemStack#getDamageValue() into its own TAG_DAMAGE - Tinkers'
-    // durability is tracked independently of vanilla item damage (confirmed unchanged across this file's full
-    // git history, so this predates the 1.21 port; stack.setDamageValue(100) here was always a no-op). Seed
-    // TAG_DAMAGE directly via the raw NBT (same-package access) to reach the pre-setStats damage this test
-    // means to exercise; ToolStack#setDamage() can't be used here since it always clamps against the CURRENT
-    // stats, which are still unset (durability 0) at this point.
+    // PORT M6: ToolStack.from() has never read ItemStack#getDamageValue() itself - but on 1.20,
+    // setDamageValue(100) landed in the shared free-form tag under the same vanilla "Damage" key that
+    // TAG_DAMAGE aliases, so the old seeding WAS effective via that key aliasing; 1.21's component split
+    // (DAMAGE component vs CUSTOM_DATA) is what severed it. Seed TAG_DAMAGE directly via the raw NBT
+    // (same-package access) to reproduce the 1.20-effective state; ToolStack#setDamage() can't be used
+    // here since it always clamps against the CURRENT stats, which are still unset (durability 0).
     tool.getNbt().putInt(ToolStack.TAG_DAMAGE, 100);
     tool.setStats(StatsNBT.builder().set(ToolStats.DURABILITY, 50f).build());
     assertThat(tool.getDamageRaw()).isEqualTo(50);
