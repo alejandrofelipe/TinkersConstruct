@@ -2,6 +2,9 @@ package slimeknights.tconstruct.client.uitest;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
@@ -40,6 +43,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new SmelteryScenario());
     UiTestScenarios.register(new MelterScenario());
     UiTestScenarios.register(new CastingPourScenario());
+    UiTestScenarios.register(new BookScenario());
   }
 
   /** Places a single block and opens its GUI. */
@@ -169,5 +173,42 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) { /* nothing open */ }
+  }
+
+  /** Opens "Materials and You" and captures the rendered page (first real run of Mantle's book system). */
+  private static class BookScenario implements UiTestScenario {
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("book_materials_and_you");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      // hotbar.0 (not /give) so the book lands in a known slot deterministically: /give places into
+      // the first free slot, which is only hotbar 0 for a *totally* empty inventory, and the saved
+      // uitest world persists across repeated local runs, so a prior run's leftovers could push a
+      // /give'd book into a later slot. MAIN_HAND reads inventory.selected, which defaults to 0 and
+      // nothing earlier in the suite touches the player's inventory.
+      ctx.sendCommand("item replace entity @s hotbar.0 with tconstruct:materials_and_you");
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      InteractionResultHolder<ItemStack> result = ctx.player().getItemInHand(InteractionHand.MAIN_HAND)
+        .getItem().use(ctx.mc().level, ctx.player(), InteractionHand.MAIN_HAND);
+      if (result.getResult() == InteractionResult.PASS) {
+        throw new IllegalStateException("book item use() passed - book screen did not open");
+      }
+    }
+
+    @Override
+    public int settleTicks() {
+      return 40; // book textures/pages lazy-load
+    }
   }
 }
