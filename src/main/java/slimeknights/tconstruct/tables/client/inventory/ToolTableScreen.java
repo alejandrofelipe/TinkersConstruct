@@ -96,8 +96,8 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
    */
   protected void renderArmorStand(GuiGraphics graphics) {
     if (this.armorStandPreview != null) {
-      // matches vanilla SmithingScreen.ARMOR_STAND_ANGLE (X rotation 25 degrees), then animate around Y
-      Quaternionf pose = new Quaternionf().rotateX(25.0F * ((float) Math.PI / 180F));
+      // matches vanilla SmithingScreen.ARMOR_STAND_ANGLE (X 25 degrees plus the Z 180 flip renderEntityInInventory expects in the pose since 1.21), then animate around Y
+      Quaternionf pose = new Quaternionf().rotationXYZ(0.43633232F, 0.0F, (float) Math.PI);
       pose.rotateY(this.armorStandAngle);
       InventoryScreen.renderEntityInInventory(graphics, this.armorStandX, this.armorStandY, this.armorStandScale, ARMOR_STAND_TRANSLATION, pose, null, this.armorStandPreview);
 
