@@ -16,6 +16,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
+import slimeknights.mantle.client.screen.book.BookScreen;
 import slimeknights.mantle.client.uitest.UiTestContext;
 import slimeknights.mantle.client.uitest.UiTestScenario;
 import slimeknights.mantle.client.uitest.UiTestScenarios;
@@ -51,6 +52,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new BookScenario());
     UiTestScenarios.register(new JeiCategoryScenario());
     UiTestScenarios.register(new JeiItemListCleanupScenario());
+    UiTestScenarios.register(new BookInteriorScenario());
   }
 
   /** Places a single block and opens its GUI. */
@@ -211,6 +213,45 @@ public class TinkerUiTestScenarios {
       if (result.getResult() == InteractionResult.PASS) {
         throw new IllegalStateException("book item use() passed - book screen did not open");
       }
+    }
+
+    @Override
+    public int settleTicks() {
+      return 40; // book textures/pages lazy-load
+    }
+  }
+
+  /** Opens the book and advances past the cover to a two-page spread (guards interior pages against the 1.21 blur pass). */
+  private static class BookInteriorScenario implements UiTestScenario {
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("book_interior");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      // same deterministic hotbar.0 placement as book_materials_and_you (see its comment)
+      ctx.sendCommand("item replace entity @s hotbar.0 with tconstruct:materials_and_you");
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      InteractionResultHolder<ItemStack> result = ctx.player().getItemInHand(InteractionHand.MAIN_HAND)
+        .getItem().use(ctx.mc().level, ctx.player(), InteractionHand.MAIN_HAND);
+      if (result.getResult() == InteractionResult.PASS) {
+        throw new IllegalStateException("book item use() passed - book screen did not open");
+      }
+      if (!(ctx.mc().screen instanceof BookScreen book)) {
+        throw new IllegalStateException("expected BookScreen after use(), found " + ctx.mc().screen);
+      }
+      // advance cover -> index -> first full spread; same logic the next-page arrow button runs
+      book.nextPage();
+      book.nextPage();
     }
 
     @Override
