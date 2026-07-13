@@ -93,9 +93,4 @@ public class PartBuilderCategory implements IRecipeCategory<IDisplayPartBuilderR
       builder.createFocusLink(materialSlot, resultSlot);
     }
   }
-
-  @Override
-  public ResourceLocation getRegistryName(IDisplayPartBuilderRecipe recipe) {
-    return recipe.getId();
-  }
 }

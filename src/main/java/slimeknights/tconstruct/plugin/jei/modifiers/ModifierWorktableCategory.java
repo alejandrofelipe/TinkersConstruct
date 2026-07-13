@@ -100,9 +100,4 @@ public class ModifierWorktableCategory implements IRecipeCategory<IModifierWorkt
       builder.createFocusLink(toolSlot, modifierSlot);
     }
   }
-
-  @Override
-  public ResourceLocation getRegistryName(IModifierWorktableRecipe recipe) {
-    return recipe.getId();
-  }
 }

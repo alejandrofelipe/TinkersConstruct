@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.plugin.jei.util;
 
-import mezz.jei.api.forge.ForgeTypes;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotRichTooltipCallback;
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
@@ -30,7 +30,7 @@ public interface FluidTooltipCallback extends IRecipeSlotRichTooltipCallback {
     for (Component component : current) {
       if (component.getContents() instanceof TranslatableContents translatable && AMOUNT_KEY.equals(translatable.getKey())) {
         tooltip.removeAll(List.of(component));
-        FluidStack fluid = recipeSlotView.getDisplayedIngredient(ForgeTypes.FLUID_STACK).orElse(FluidStack.EMPTY);
+        FluidStack fluid = recipeSlotView.getDisplayedIngredient(NeoForgeTypes.FLUID_STACK).orElse(FluidStack.EMPTY);
         List<Component> newTooltip = new ArrayList<>();
         onFluidTooltip(fluid, recipeSlotView, newTooltip);
         tooltip.addAll(newTooltip);
@@ -38,7 +38,7 @@ public interface FluidTooltipCallback extends IRecipeSlotRichTooltipCallback {
       }
     }
     // failed to find the tooltip to replace, so just append our stuff at the end
-    FluidStack fluid = recipeSlotView.getDisplayedIngredient(ForgeTypes.FLUID_STACK).orElse(FluidStack.EMPTY);
+    FluidStack fluid = recipeSlotView.getDisplayedIngredient(NeoForgeTypes.FLUID_STACK).orElse(FluidStack.EMPTY);
     List<Component> newTooltip = new ArrayList<>();
     onFluidTooltip(fluid, recipeSlotView, newTooltip);
     tooltip.addAll(newTooltip);

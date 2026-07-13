@@ -61,9 +61,6 @@ sourceSets {
             exclude 'slimeknights/tconstruct/plugin/ImmersiveEngineeringPlugin.java'
             exclude 'slimeknights/tconstruct/plugin/DietPlugin.java'
             exclude 'slimeknights/tconstruct/plugin/DummmmmmyPlugin.java'
-            // JEI plugin deferred to M6: JEI 19 API differs heavily from 15 (IShapedRecipe, ForgeTypes).
-            // JEI stays a runtime dep (item viewer works); the Tinkers JEI categories return in M6.
-            exclude 'slimeknights/tconstruct/plugin/jei/**'
         }
     }
 }
