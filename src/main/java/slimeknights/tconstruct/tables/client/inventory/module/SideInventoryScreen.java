@@ -87,6 +87,11 @@ public class SideInventoryScreen<P extends MultiModuleScreen<?>, C extends Abstr
     this.updateSlots();
   }
 
+  /** Which side of the parent this inventory hangs on; {@code right} is protected in Mantle's ModuleScreen, so layout probes need this accessor */
+  public boolean onRightSide() {
+    return this.right;
+  }
+
   protected boolean shouldDrawName() {
     return this.menu instanceof BaseContainerMenu<?>;
   }

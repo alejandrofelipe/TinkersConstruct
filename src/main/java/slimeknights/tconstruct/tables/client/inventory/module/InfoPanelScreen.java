@@ -17,6 +17,7 @@ import slimeknights.mantle.client.screen.MultiModuleScreen;
 import slimeknights.mantle.client.screen.ScalableElementScreen;
 import slimeknights.mantle.client.screen.SliderWidget;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.tables.client.inventory.ResponsiveLayout;
 import slimeknights.tconstruct.tables.client.inventory.widget.BorderWidget;
 
 import javax.annotation.Nullable;
@@ -83,6 +84,14 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
     this.caption = DEFAULT_CAPTION;
     this.text = Lists.newLinkedList();
+  }
+
+  /** Sets the panel width; text wrapping and the slider re-derive from imageWidth (getTotalLines/updateSliderParameters). */
+  public void setPanelWidth(int width) {
+    this.imageWidth = Mth.clamp(width, ResponsiveLayout.INFO_MIN, resW + 8);
+    if (this.hasInitialized()) {
+      this.updateSliderParameters();
+    }
   }
 
   /** Gets the height to render fonts scaled by the text scale */

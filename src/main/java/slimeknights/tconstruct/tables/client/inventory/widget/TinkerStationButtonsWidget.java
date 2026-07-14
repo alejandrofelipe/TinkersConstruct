@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.tables.client.inventory.widget;
 
+import lombok.Getter;
 import net.minecraft.client.gui.components.Button;
 import slimeknights.tconstruct.library.client.Icons;
 import slimeknights.tconstruct.library.tools.layout.StationSlotLayout;
@@ -12,9 +13,14 @@ public class TinkerStationButtonsWidget extends SideButtonsWidgetPaged<SlotButto
   public static final int WOOD_STYLE = 2;
   public static final int METAL_STYLE = 1;
 
-  public TinkerStationButtonsWidget(TinkerStationScreen parent, int leftPos, int topPos, List<StationSlotLayout> layouts, int style) {
-    super(parent, leftPos, topPos, TinkerStationScreen.COLUMN_COUNT, rowsForCount(TinkerStationScreen.COLUMN_COUNT, layouts.size()),
+  /** Number of button columns this widget was built with, for row-aware callers like the button decorations */
+  @Getter
+  private final int columns;
+
+  public TinkerStationButtonsWidget(TinkerStationScreen parent, int leftPos, int topPos, int columns, List<StationSlotLayout> layouts, int style) {
+    super(parent, leftPos, topPos, columns, rowsForCount(columns, layouts.size()),
       SlotButtonItem.WIDTH, SlotButtonItem.HEIGHT);
+    this.columns = columns;
 
     // Logic to run when a button is pressed
     Button.OnPress onButtonPressed = self -> {
@@ -50,12 +56,5 @@ public class TinkerStationButtonsWidget extends SideButtonsWidgetPaged<SlotButto
 
   public List<SlotButtonItem> getButtons() {
     return this.buttons;
-  }
-
-  /**
-   * Calculates the width of this widget given the number of columns.
-   */
-  public static int width(int columns) {
-    return size(columns, SlotButtonItem.WIDTH);
   }
 }

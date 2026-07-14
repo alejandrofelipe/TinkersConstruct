@@ -32,6 +32,7 @@ import slimeknights.tconstruct.library.tools.layout.StationSlotLayoutLoader;
 import slimeknights.tconstruct.library.tools.nbt.LazyToolStack;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.tables.block.entity.table.TinkerStationBlockEntity;
+import slimeknights.tconstruct.tables.client.inventory.widget.SideButtonsWidget;
 import slimeknights.tconstruct.tables.client.inventory.widget.SlotButtonItem;
 import slimeknights.tconstruct.tables.client.inventory.widget.TinkerStationButtonsWidget;
 import slimeknights.tconstruct.tables.menu.TinkerStationContainerMenu;
@@ -80,14 +81,6 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   private static final ScalableElementScreen CENTER_BEAM = new ScalableElementScreen(TINKER_TEXTURE, 2, 202, 129, 7, 256, 256);
   // text boxes
   private static final ElementScreen TEXT_BOX = ACTIVE_TEXT_FIELD.move(0, 244, 90, 12);
-
-  /** Number of button columns in the UI */
-  public static final int COLUMN_COUNT = 6;
-  // TODO: a scrollbar for this instead would be good
-  /** If we have more than this many buttons, offset the armor stand down slightly */
-  private static final int OFFSET_ARMOR_STAND_AFTER = COLUMN_COUNT * 5;
-  /** If we have more than this many buttons, disable the armor stand preview */
-  private static final int DISABLE_ARMOR_STAND_AFTER = COLUMN_COUNT * 6;
 
   // configurable elements
   protected ElementScreen buttonDecorationTop = SLOT_SPACE_TOP;
@@ -191,20 +184,33 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     layouts.addAll(StationSlotLayoutLoader.getInstance().getSortedSlots().stream()
       .filter(layout -> layout.getInputSlots().size() <= this.maxInputs).toList());
 
+    this.layoutSpec = ResponsiveLayout.computeLayout(this.width, this.height, this.imageWidth, sideInventoryWidth());
+    int columns = Math.max(1, this.layoutSpec.selectorColumns()); // Phase 1: degrade collapsed selector to 1 column; Phase 2 replaces with the tab
+    int infoWidth = this.layoutSpec.infoPanelWidth() > 0 ? this.layoutSpec.infoPanelWidth() : ResponsiveLayout.INFO_MIN; // Phase 2 replaces with tabs
+    this.tinkerInfo.setPanelWidth(infoWidth);
+    this.modifierInfo.setPanelWidth(infoWidth);
+
     // if we have more than 5 rows of buttons, offset armor stand down a bit
     // more than 6 rows causes us to just disable it fully
+    // same semantics as the old COLUMN_COUNT*5/6 constants, expressed in rows; recomputed every init as columns follow the window size
     int size = layouts.size();
+    int rows = SideButtonsWidget.rowsForCount(columns, size);
     int armorY = 195;
-    if (size > DISABLE_ARMOR_STAND_AFTER) {
+    enableArmorStandPreview = true;
+    if (rows > 6) {
       enableArmorStandPreview = false;
-    } else if (size > OFFSET_ARMOR_STAND_AFTER) {
+    } else if (rows > 5) {
       armorY = 210;
+    }
+    // the armor stand anchor (-55) sits inside the selector zone below 4 columns, so the stand would overlap the buttons
+    if (columns < 4) {
+      enableArmorStandPreview = false;
     }
 
     // init after we set the enable boolean
     super.init();
-    this.buttonsScreen = new TinkerStationButtonsWidget(this, this.cornerX - TinkerStationButtonsWidget.width(COLUMN_COUNT) - 2,
-      this.cornerY + this.centerBeam.h + this.buttonDecorationTop.h, layouts, buttonsStyle);
+    this.buttonsScreen = new TinkerStationButtonsWidget(this, this.cornerX - ResponsiveLayout.selectorWidth(columns) - 2,
+      this.cornerY + this.centerBeam.h + this.buttonDecorationTop.h, columns, layouts, buttonsStyle);
 
     this.setupArmorStandPreview(-55, armorY, 35);
 
@@ -400,7 +406,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     for (SlotButtonItem button : this.buttonsScreen.getButtons()) {
       this.buttonDecorationTop.draw(graphics, button.getX(), button.getY() - this.buttonDecorationTop.h);
       // don't draw the bottom for the buttons in the last row
-      if (button.buttonId < this.buttonsScreen.getButtons().size() - COLUMN_COUNT) {
+      if (button.buttonId < this.buttonsScreen.getButtons().size() - this.buttonsScreen.getColumns()) {
         this.buttonDecorationBot.draw(graphics, button.getX(), button.getY() + button.getHeight());
       }
     }

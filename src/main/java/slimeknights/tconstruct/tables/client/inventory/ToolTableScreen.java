@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import slimeknights.mantle.client.SafeClientAccess;
+import slimeknights.mantle.client.screen.ModuleScreen;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.GuiUtil;
 import slimeknights.tconstruct.library.modifiers.Modifier;
@@ -27,6 +28,7 @@ import slimeknights.tconstruct.library.tools.nbt.LazyToolStack;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.utils.TinkerTooltipFlags;
 import slimeknights.tconstruct.tables.client.inventory.module.InfoPanelScreen;
+import slimeknights.tconstruct.tables.client.inventory.module.SideInventoryScreen;
 import slimeknights.tconstruct.tables.menu.TabbedContainerMenu;
 
 import javax.annotation.Nullable;
@@ -48,6 +50,9 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
   /** Side panels, for tools and modifiers */
   protected final InfoPanelScreen<ToolTableScreen<T,C>,C> tinkerInfo;
   protected final InfoPanelScreen<ToolTableScreen<T,C>,C> modifierInfo;
+
+  /** Responsive layout decision for the current window size, recomputed every init() */
+  protected ResponsiveLayout.Spec layoutSpec = new ResponsiveLayout.Spec(ResponsiveLayout.Tier.FULL, ResponsiveLayout.MAX_COLUMNS, ResponsiveLayout.INFO_NATURAL);
 
   protected final Player player;
   @Nullable
@@ -87,7 +92,20 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
       this.armorStandPreview.setXRot(25.0F);
       this.armorStandPreview.yHeadRot = this.armorStandPreview.getYRot();
       this.armorStandPreview.yHeadRotO = this.armorStandPreview.getYRot();
+    } else {
+      // the flag is recomputed on window resizes; drop the stale preview so a disabled stand stops rendering
+      this.armorStandPreview = null;
     }
+  }
+
+  /** Width the chest side-inventory module occupies left of the window, 0 when absent */
+  protected int sideInventoryWidth() {
+    for (ModuleScreen<?,?> module : this.modules) {
+      if (module instanceof SideInventoryScreen<?,?> side && !side.onRightSide()) {
+        return side.getArea().getWidth();
+      }
+    }
+    return 0;
   }
 
   /**
