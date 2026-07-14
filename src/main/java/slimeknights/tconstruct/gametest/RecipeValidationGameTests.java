@@ -1,0 +1,201 @@
+package slimeknights.tconstruct.gametest;
+
+import net.minecraft.core.HolderLookup;
+import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
+import slimeknights.tconstruct.library.recipe.alloying.AlloyRecipe;
+import slimeknights.tconstruct.library.recipe.casting.ICastingRecipe;
+import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
+import slimeknights.tconstruct.library.recipe.casting.material.MaterialCastingLookup;
+import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer;
+import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
+
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Data-driven: every melting/casting/alloy recipe registered with the recipe manager is well-formed.
+ * Purely inspects recipe objects (ingredient/output/temperature/time getters) - no in-world ticking, no smeltery.
+ */
+@PrefixGameTestTemplate(false)
+@GameTestHolder(TConstruct.MOD_ID)
+public class RecipeValidationGameTests {
+
+  /** Recipe ids confirmed intentional-latent, each with a one-line justification comment. */
+  private static final Set<String> KNOWN_INTENTIONAL = Set.of(
+    // Water/milk-output melting recipes: temperature is computed as fluid.getFluidType().getTemperature() - 300
+    // (see IMeltingRecipe#getTemperature(Fluid)); water and milk both use the default room-temperature FluidType
+    // value of 300, so this is always exactly 0 by design (these melt passively, no smeltery heat tier required).
+    "tconstruct:smeltery/melting/water/ice",
+    "tconstruct:smeltery/melting/water/packed_ice",
+    "tconstruct:smeltery/melting/water/blue_ice",
+    "tconstruct:smeltery/melting/water/snowball",
+    "tconstruct:smeltery/melting/water/snow_block",
+    "tconstruct:smeltery/melting/water/snow_layer",
+    "tconstruct:smeltery/entity_melting/heads/skeleton", // skulls -> milk, same 0-temperature formula outcome
+    // SmelteryRecipeBuilder#rawOre() unconditionally emits a "raw_materials/<metal>" + "storage_blocks/raw_<metal>"
+    // tag-based melting recipe for every metal (see SmelteryRecipeProvider line ~2251, .rawOre(Byproduct.IRON) on
+    // moltenSteel). Steel has no vanilla/Tinkers raw ore item, so both c: tags are legitimately empty here; this is
+    // the same forward-compat-with-other-mods placeholder pattern used for bronze/brass/electrum/pewter/etc.
+    "tconstruct:smeltery/melting/metal/steel/raw",
+    "tconstruct:smeltery/melting/metal/steel/raw_block",
+    // TippingCastingRecipe/TipClearingCastingRecipe (tipped arrows/fishing rods) mutate the input tool's persistent
+    // NBT in place via assemble(); their PotionCastingRecipe result field is Items.AIR by construction since
+    // getResultItem() is not how they produce output - see TippingCastingRecipe/TipClearingCastingRecipe ctors.
+    "tconstruct:tools/modifiers/slotless/ammo_tipping",
+    "tconstruct:tools/modifiers/slotless/ammo_tip_clearing",
+    "tconstruct:tools/modifiers/slotless/fishing_rod_tipping",
+    "tconstruct:tools/modifiers/slotless/fishing_rod_tip_clearing"
+  );
+
+  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void all_melting_recipes_valid(GameTestHelper helper) {
+    RecipeManager recipeManager = helper.getLevel().getRecipeManager();
+
+    // MaterialMeltingRecipe ("melt any tool part of material X") has no item Ingredient of its own - getIngredients()
+    // is empty - and its getOutput(container)/getTime(container) scale the declared output by
+    // MaterialCastingLookup.getItemCost(container item), which is 0 (so output/time read as 0) for any stack that
+    // is not a registered tool-part item. Use any one real, registered part item as the fallback container stack so
+    // those recipes report their true declared output/time instead of an artifact of an empty dummy stack.
+    ItemStack fallbackStack = MaterialCastingLookup.getAllItemCosts().stream()
+      .filter(entry -> entry.getIntValue() > 0)
+      .findFirst()
+      .map(entry -> new ItemStack(entry.getKey()))
+      .orElse(ItemStack.EMPTY);
+
+    Map<String, String> failures = new LinkedHashMap<>();
+    for (RecipeHolder<IMeltingRecipe> holder : recipeManager.getAllRecipesFor(TinkerRecipeTypes.MELTING.get())) {
+      IMeltingRecipe recipe = holder.value();
+      String id = holder.id().toString();
+      try {
+        List<Ingredient> ingredients = recipe.getIngredients();
+        for (Ingredient ingredient : ingredients) {
+          // isEmpty() = deliberately no ingredient declared (fine); hasNoItems() catches a tag/item that is
+          // declared but resolves to nothing (NeoForge's Ingredient#getItems() returns a synthetic "Empty Tag: .."
+          // barrier stack for a dead tag rather than a zero-length array, so getItems().length == 0 never fires).
+          if (!ingredient.isEmpty() && ingredient.hasNoItems()) {
+            failures.merge(id, "input ingredient resolves to no items", (a, b) -> a + "; " + b);
+          }
+        }
+        ItemStack dummyStack = fallbackStack;
+        if (!ingredients.isEmpty() && !ingredients.get(0).isEmpty() && !ingredients.get(0).hasNoItems()) {
+          dummyStack = ingredients.get(0).getItems()[0];
+        }
+        IMeltingContainer container = new DummyMeltingContainer(dummyStack);
+        FluidStack output = recipe.getOutput(container);
+        if (output.isEmpty()) {
+          failures.merge(id, "output fluid is empty", (a, b) -> a + "; " + b);
+        }
+        if (recipe.getTemperature(container) <= 0) {
+          failures.merge(id, "non-positive temperature", (a, b) -> a + "; " + b);
+        }
+        if (recipe.getTime(container) <= 0) {
+          failures.merge(id, "non-positive time", (a, b) -> a + "; " + b);
+        }
+      } catch (Exception e) {
+        failures.merge(id, "threw " + e, (a, b) -> a + "; " + b);
+      }
+    }
+    reportResult(helper, "melting", failures);
+  }
+
+  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void all_casting_recipes_valid(GameTestHelper helper) {
+    RecipeManager recipeManager = helper.getLevel().getRecipeManager();
+    HolderLookup.Provider registryAccess = helper.getLevel().registryAccess();
+
+    Map<String, String> failures = new LinkedHashMap<>();
+    for (RecipeType<ICastingRecipe> type : List.of(TinkerRecipeTypes.CASTING_TABLE.get(), TinkerRecipeTypes.CASTING_BASIN.get())) {
+      for (RecipeHolder<ICastingRecipe> holder : recipeManager.getAllRecipesFor(type)) {
+        ICastingRecipe recipe = holder.value();
+        String id = holder.id().toString();
+        try {
+          for (Ingredient ingredient : recipe.getIngredients()) {
+            if (!ingredient.isEmpty() && ingredient.hasNoItems()) {
+              failures.merge(id, "cast ingredient resolves to no items", (a, b) -> a + "; " + b);
+            }
+          }
+          if (recipe.getResultItem(registryAccess).isEmpty()) {
+            failures.merge(id, "output item is empty", (a, b) -> a + "; " + b);
+          }
+          // A fixed, enumerable fluid ingredient only exists on the "simple" cast+fluid+item family
+          // (ItemCastingRecipe & co, marked by IDisplayableCastingRecipe). The material-casting family
+          // (MaterialCastingRecipe/ToolCastingRecipe/PartSwapCastingRecipe/...) accepts whatever fluid the global
+          // MaterialCastingLookup maps to an allowed material, and PotionCastingRecipe's fluid field isn't exposed
+          // by the common interface - neither has a per-recipe fluid ingredient this generic loop can validate.
+          if (recipe instanceof IDisplayableCastingRecipe displayable && displayable.getFluids().isEmpty()) {
+            failures.merge(id, "fluid ingredient resolves to no fluids", (a, b) -> a + "; " + b);
+          }
+        } catch (Exception e) {
+          failures.merge(id, "threw " + e, (a, b) -> a + "; " + b);
+        }
+      }
+    }
+    reportResult(helper, "casting", failures);
+  }
+
+  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void all_alloy_recipes_valid(GameTestHelper helper) {
+    RecipeManager recipeManager = helper.getLevel().getRecipeManager();
+
+    Map<String, String> failures = new LinkedHashMap<>();
+    for (RecipeHolder<AlloyRecipe> holder : recipeManager.getAllRecipesFor(TinkerRecipeTypes.ALLOYING.get())) {
+      AlloyRecipe recipe = holder.value();
+      String id = holder.id().toString();
+      try {
+        for (AlloyRecipe.AlloyIngredient ingredient : recipe.getInputs()) {
+          if (ingredient.fluid().getFluids().isEmpty()) {
+            failures.merge(id, "input fluid resolves to no fluids", (a, b) -> a + "; " + b);
+          }
+        }
+        if (recipe.getOutput().isEmpty()) {
+          failures.merge(id, "output fluid is empty", (a, b) -> a + "; " + b);
+        }
+        if (recipe.getTemperature() <= 0) {
+          failures.merge(id, "non-positive temperature", (a, b) -> a + "; " + b);
+        }
+      } catch (Exception e) {
+        failures.merge(id, "threw " + e, (a, b) -> a + "; " + b);
+      }
+    }
+    reportResult(helper, "alloy", failures);
+  }
+
+  /** Fails the test listing every non-triaged offender (id + reason), else succeeds. */
+  private static void reportResult(GameTestHelper helper, String kind, Map<String, String> failures) {
+    Set<String> bad = new LinkedHashSet<>(failures.keySet());
+    bad.removeAll(KNOWN_INTENTIONAL);
+    if (!bad.isEmpty()) {
+      List<String> details = bad.stream().map(id -> id + " (" + failures.get(id) + ")").toList();
+      helper.fail(bad.size() + " malformed " + kind + " recipe(s): " + details);
+    } else {
+      helper.succeed();
+    }
+  }
+
+  /** Minimal {@link IMeltingContainer} for probing container-dependent getters without a real smeltery. */
+  private record DummyMeltingContainer(ItemStack stack) implements IMeltingContainer {
+    @Override
+    public ItemStack getStack() {
+      return stack;
+    }
+
+    @Override
+    public IOreRate getOreRate() {
+      return (rate, amount) -> amount;
+    }
+  }
+}
