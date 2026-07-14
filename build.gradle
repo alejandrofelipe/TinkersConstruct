@@ -9,6 +9,7 @@ plugins {
     id 'maven-publish'
     id 'net.neoforged.gradle.userdev' version '7.1.38'
     id 'io.freefair.lombok' version '8.6'
+    id 'jacoco'
 }
 
 repositories {
@@ -160,7 +161,62 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.25.3'
 }
 
-test { useJUnitPlatform() }
+jacoco { toolVersion = '0.8.12' }
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+// Coverage TARGET is the pure-logic surface. Exclude code not unit-testable in isolation (covered by
+// uitest / runData / load, not unit tests): client render/screens, datagen providers, compat plugins,
+// registration holders, gametests, and generated/mixin.
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    def coverageExclusions = [
+        'slimeknights/tconstruct/**/client/**',
+        'slimeknights/tconstruct/**/*Screen*',
+        'slimeknights/tconstruct/**/*Renderer*',
+        'slimeknights/tconstruct/**/*Model*',
+        'slimeknights/tconstruct/**/data/**',
+        'slimeknights/tconstruct/**/*Provider*',
+        'slimeknights/tconstruct/plugin/**',
+        'slimeknights/tconstruct/gametest/**',
+        // "Tinker*" registration holders (DeferredRegister/DeferredHolder dumps), one per feature
+        // module. Scoped to everything OUTSIDE library/ -- see the library/-specific list below for
+        // why: the "Tinker*" prefix is the mod's naming convention, not a reliable holder signal.
+        'slimeknights/tconstruct/common/**/Tinker*',
+        'slimeknights/tconstruct/fluids/**/Tinker*',
+        'slimeknights/tconstruct/gadgets/**/Tinker*',
+        'slimeknights/tconstruct/shared/**/Tinker*',
+        'slimeknights/tconstruct/smeltery/**/Tinker*',
+        'slimeknights/tconstruct/tables/**/Tinker*',
+        'slimeknights/tconstruct/tools/**/Tinker*',
+        'slimeknights/tconstruct/world/**/Tinker*',
+        // library/ is the coverage baseline's seed package (see coverage task report), so a blanket
+        // "Tinker*" exclude was too coarse here: it also caught real logic, not just holders --
+        // TinkerDataCapability.Holder (a per-entity data map with put/add/remove/get) and
+        // TinkerPredicate (entity/damage/item match helpers). Listing the confirmed holders/dummy
+        // stubs explicitly instead keeps those two measured. classDirectories holds compiled .class
+        // files (not .java sources), and the trailing "*" also sweeps up nested/synthetic classes
+        // (e.g. lambda bodies) the top-level class compiles into.
+        'slimeknights/tconstruct/library/TinkerBookIDs*.class',
+        'slimeknights/tconstruct/library/TinkerItemDisplays*.class',
+        'slimeknights/tconstruct/library/json/TinkerLoadables*.class',
+        'slimeknights/tconstruct/library/recipe/TinkerRecipeTypes*.class',
+        'slimeknights/tconstruct/library/recipe/ingredient/TinkerIngredients*.class',
+        'slimeknights/tconstruct/library/tools/capability/TinkerDataKeys*.class',
+        'slimeknights/tconstruct/library/tools/item/TinkerTier*.class',
+        'slimeknights/tconstruct/library/utils/TinkerTooltipFlags*.class',
+    ]
+    classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it, exclude: coverageExclusions)
+    }))
+}
 
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
