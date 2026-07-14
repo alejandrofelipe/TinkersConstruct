@@ -28,6 +28,7 @@ import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 import slimeknights.tconstruct.tables.TinkerTables;
+import slimeknights.tconstruct.tables.client.inventory.TinkerStationScreen;
 import slimeknights.tconstruct.tools.TinkerModifiers;
 
 import java.util.List;
@@ -53,6 +54,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new JeiCategoryScenario());
     UiTestScenarios.register(new JeiItemListCleanupScenario());
     UiTestScenarios.register(new BookInteriorScenario());
+    UiTestScenarios.register(new StationReflowScenario());
   }
 
   /** Places a single block and opens its GUI. */
@@ -313,6 +315,59 @@ public class TinkerUiTestScenarios {
     @Override
     public int settleTicks() {
       return 40; // recipe layouts/item renders settle
+    }
+  }
+
+  /**
+   * Reflow tier: resizes the window to 760x480 (auto GUI scale 2 -> 380x240 GUI px) and opens a lone
+   * tinker station, which at 380 GUI resolves to REFLOW with 4 selector columns and narrowed (100px)
+   * info panels - guards acceptance #2.
+   *
+   * Chest-free by design: the tinker station never wires a chest side inventory (only the crafting
+   * station, modifier worktable and part builder call addChestSideInventory), so its
+   * sideInventoryWidth() is always 0 and an adjacent chest would render nothing here. Acceptance #4
+   * (side inventory + reflowed selector) is a modifier-worktable / crafting-station concern and is
+   * deferred to Phase 2 (Task 6), where the collapsed selector renders as a tab.
+   */
+  private static class StationReflowScenario implements UiTestScenario {
+    /** Fresh site clear of the other scenarios' rigs, which occupy SITE +0..+30 on X. */
+    private final BlockPos pos = SITE.offset(40, 0, 0);
+    private int restoreW = 1280, restoreH = 720;
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("station_reflow");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      restoreW = ctx.mc().getWindow().getWidth();
+      restoreH = ctx.mc().getWindow().getHeight();
+      ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(760, 480));
+      // place the station, mirroring BlockGuiScenario: tp beside it, then set the block on the server
+      ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + pos.getY() + " " + pos.getZ());
+      ctx.runOnServer(() -> ctx.serverLevel().setBlockAndUpdate(pos, TinkerTables.tinkerStation.get().defaultBlockState()));
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.useBlock(pos); // opens the real station menu via the server, exactly like BlockGuiScenario
+    }
+
+    @Override
+    public int settleTicks() {
+      return 30; // resize + reinit + panel reflow settle
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      // the menu opens through a server round-trip, so assert here (post-settle) rather than in open():
+      // fail loudly if the station screen never resolved instead of silently shipping a world screenshot
+      if (!(ctx.mc().screen instanceof TinkerStationScreen)) {
+        throw new IllegalStateException("station_reflow expected TinkerStationScreen at capture, found " + ctx.mc().screen);
+      }
+      ctx.mc().setScreen(null);
+      ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
     }
   }
 }
