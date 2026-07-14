@@ -145,6 +145,11 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
     this.applyOverlayState();
   }
 
+  /** The collapsed-tier panel currently shown as an on-demand overlay ({@link OverlayPanel#NONE} = none); read by uitest scenarios to assert the overlay opened before capture. */
+  public OverlayPanel getOpenOverlay() {
+    return this.overlayOpen;
+  }
+
   /** Pushes {@link #overlayOpen} onto the two info modules (overlay vs hidden vs docked) and repositions them. */
   protected void applyOverlayState() {
     boolean infoCollapsed = this.infoCollapsed();

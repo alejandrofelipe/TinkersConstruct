@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.client.uitest;
 
 import mezz.jei.api.runtime.IJeiRuntime;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -15,6 +16,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.client.screen.book.BookScreen;
 import slimeknights.mantle.client.uitest.UiTestContext;
@@ -29,9 +32,11 @@ import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.client.inventory.TinkerStationScreen;
+import slimeknights.tconstruct.tables.client.inventory.ToolTableScreen;
 import slimeknights.tconstruct.tools.TinkerModifiers;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /** Registers TConstruct's automated GUI screenshot scenarios (active only with -Dmantle.uitest=true). */
@@ -55,6 +60,8 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new JeiItemListCleanupScenario());
     UiTestScenarios.register(new BookInteriorScenario());
     UiTestScenarios.register(new StationReflowScenario());
+    UiTestScenarios.register(new StationCollapsedScenario());
+    UiTestScenarios.register(new StationCollapsedOverlayScenario());
   }
 
   /** Places a single block and opens its GUI. */
@@ -365,6 +372,126 @@ public class TinkerUiTestScenarios {
       // fail loudly if the station screen never resolved instead of silently shipping a world screenshot
       if (!(ctx.mc().screen instanceof TinkerStationScreen)) {
         throw new IllegalStateException("station_reflow expected TinkerStationScreen at capture, found " + ctx.mc().screen);
+      }
+      ctx.mc().setScreen(null);
+      ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
+    }
+  }
+
+  /**
+   * Collapsed tier: resizes the window to 640x480 (auto GUI scale 2 -> 320x240 GUI px) and opens a lone
+   * tinker station, which at 320 GUI resolves to COLLAPSED - the selector stays at 3 columns but the info
+   * panels collapse to two edge tabs (infoPanelWidth 0) and the armor stand is dropped - guards acceptance
+   * #3's first half. Same chest-free lone-station setup as {@link StationReflowScenario}, only smaller.
+   */
+  private static class StationCollapsedScenario implements UiTestScenario {
+    /** Fresh site clear of the other station scenarios (reflow sits at +40). */
+    private final BlockPos pos = SITE.offset(50, 0, 0);
+    private int restoreW = 1280, restoreH = 720;
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("station_collapsed");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      restoreW = ctx.mc().getWindow().getWidth();
+      restoreH = ctx.mc().getWindow().getHeight();
+      ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(640, 480));
+      ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + pos.getY() + " " + pos.getZ());
+      ctx.runOnServer(() -> ctx.serverLevel().setBlockAndUpdate(pos, TinkerTables.tinkerStation.get().defaultBlockState()));
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.useBlock(pos); // opens the real station menu via the server, exactly like StationReflowScenario
+    }
+
+    @Override
+    public int settleTicks() {
+      return 30; // resize + reinit + panel reflow settle
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      // same post-settle assert as station_reflow: the menu opens through a server round-trip, so fail loudly
+      // here rather than in open() if the station screen never resolved
+      if (!(ctx.mc().screen instanceof TinkerStationScreen)) {
+        throw new IllegalStateException("station_collapsed expected TinkerStationScreen at capture, found " + ctx.mc().screen);
+      }
+      ctx.mc().setScreen(null);
+      ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
+    }
+  }
+
+  /**
+   * Collapsed tier with an open panel overlay: same 640x480 lone station as {@link StationCollapsedScenario},
+   * then pops the tool-info panel as a centered on-demand overlay over the inventory area - guards acceptance
+   * #3's second half (the collapsed overlay is legible above the slots).
+   *
+   * The station menu opens asynchronously (server round-trip), so {@code screen.openOverlay(...)} can't run
+   * synchronously in open(); a self-removing {@link ClientTickEvent.Post} poller (mirroring how {@link
+   * slimeknights.mantle.client.uitest.UiTestSuite} itself is tick-driven) opens the overlay on the first tick
+   * the screen has resolved, well inside the settle window. Chosen over the plan's suggested self-rescheduling
+   * {@code mc().execute(...)}: Minecraft drains its whole task queue per frame, so a task that re-queues itself
+   * while the screen is still pending would spin within one frame instead of yielding to the network tick.
+   */
+  private static class StationCollapsedOverlayScenario implements UiTestScenario {
+    /** Fresh site clear of the other station scenarios (reflow +40, collapsed +50). */
+    private final BlockPos pos = SITE.offset(54, 0, 0);
+    private int restoreW = 1280, restoreH = 720;
+    /** Set once the resolved screen has had the overlay opened, so the poller stops and won't toggle it back shut. */
+    private boolean overlayOpened = false;
+    /** Retained so the poller can remove itself once it fires (and as a close() safety net). */
+    private final Consumer<ClientTickEvent.Post> overlayPoller = this::openOverlayWhenReady;
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("station_collapsed_overlay");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      restoreW = ctx.mc().getWindow().getWidth();
+      restoreH = ctx.mc().getWindow().getHeight();
+      ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(640, 480));
+      ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + pos.getY() + " " + pos.getZ());
+      ctx.runOnServer(() -> ctx.serverLevel().setBlockAndUpdate(pos, TinkerTables.tinkerStation.get().defaultBlockState()));
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.useBlock(pos); // async: the station menu resolves a few ticks later via the server round-trip
+      NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, this.overlayPoller); // so open the overlay from a client-tick poller, not here
+    }
+
+    /** Opens the tool-info overlay on the first tick the async station screen has resolved, then self-removes. */
+    private void openOverlayWhenReady(ClientTickEvent.Post event) {
+      if (this.overlayOpened) {
+        return;
+      }
+      if (Minecraft.getInstance().screen instanceof TinkerStationScreen station) {
+        station.openOverlay(ToolTableScreen.OverlayPanel.TOOL_INFO);
+        this.overlayOpened = true;
+        NeoForge.EVENT_BUS.unregister(this.overlayPoller);
+      }
+    }
+
+    @Override
+    public int settleTicks() {
+      return 30; // resize + reinit + panel reflow + overlay-open settle
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(this.overlayPoller); // safety net if the screen never resolved and it never fired
+      if (!(ctx.mc().screen instanceof TinkerStationScreen station)) {
+        throw new IllegalStateException("station_collapsed_overlay expected TinkerStationScreen at capture, found " + ctx.mc().screen);
+      }
+      // fail loudly if the overlay never opened - otherwise a collapsed-but-no-overlay PNG would still pass the run
+      if (station.getOpenOverlay() != ToolTableScreen.OverlayPanel.TOOL_INFO) {
+        throw new IllegalStateException("station_collapsed_overlay expected TOOL_INFO overlay open at capture, found " + station.getOpenOverlay());
       }
       ctx.mc().setScreen(null);
       ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
