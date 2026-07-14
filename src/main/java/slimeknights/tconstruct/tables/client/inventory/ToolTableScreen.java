@@ -200,6 +200,8 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
     InfoPanelScreen<?,?> overlay = this.activeInfoOverlay();
     if (overlay != null) {
       overlay.drawOverlay(graphics, partialTicks, mouseX, mouseY);
+      // the normal tooltip pass is gated off in overlayMode; run it here, above the overlay bg (help "?" + per-line entries)
+      overlay.drawOverlayTooltip(graphics, mouseX, mouseY);
     }
   }
 

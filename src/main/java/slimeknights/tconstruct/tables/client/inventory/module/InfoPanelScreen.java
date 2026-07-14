@@ -147,6 +147,11 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
     this.renderBg(graphics, partialTicks, mouseX, mouseY);
   }
 
+  /** Draws the panel's hover tooltips (help "?" and per-line entries) unconditionally; the overlay pass calls this after {@link #drawOverlay} so they sit above the panel, since the normal tooltip pass is gated off by {@link #overlayMode}. */
+  public void drawOverlayTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+    this.renderTooltip(graphics, mouseX, mouseY);
+  }
+
   public void setCaption(Component caption) {
     this.caption = caption.copy().withStyle(ChatFormatting.UNDERLINE);
     this.updateSliderParameters();
