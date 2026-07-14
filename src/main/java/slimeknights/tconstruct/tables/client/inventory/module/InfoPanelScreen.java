@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.tables.client.inventory.module;
 
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.Setter;
 import net.minecraft.ChatFormatting;
@@ -144,6 +145,14 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
   /** Draws the panel unconditionally at its current position; the collapsed-tier overlay pass calls this above the slots (the normal module pass is gated off by {@link #hidden}/{@link #overlayMode}). */
   public void drawOverlay(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+    // this pass runs manually after the parent's whole render(), so it establishes a clean opaque GUI blit state. The
+    // centered panel overlaps the station's faded tool icon, which renders at the high item z, so leaving the depth
+    // test on culls the panel there and the icon bleeds over the text; disable it (the same idiom
+    // TinkerStationScreen.renderBg uses to draw ITEM_COVER over that icon) so the opaque panel paints over it.
+    RenderSystem.enableBlend();
+    RenderSystem.defaultBlendFunc();
+    RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+    RenderSystem.disableDepthTest();
     this.renderBg(graphics, partialTicks, mouseX, mouseY);
   }
 
