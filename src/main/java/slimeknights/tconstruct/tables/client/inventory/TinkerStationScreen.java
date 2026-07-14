@@ -281,6 +281,12 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     super.render(graphics, mouseX, mouseY, partialTicks); // base render + the info-overlay pass
     // COLLAPSED tier: the centered selector overlay draws above the slots (its docked draw in renderBg is gated off)
     if (this.overlayOpen == OverlayPanel.SELECTOR) {
+      // same opaque-blit setup as InfoPanelScreen.drawOverlay: this overlay sits over the station's high item-z
+      // faded icon, so disable depth test (and reset color/blend) or the icon culls the panel and bleeds through
+      RenderSystem.enableBlend();
+      RenderSystem.defaultBlendFunc();
+      RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+      RenderSystem.disableDepthTest();
       this.buttonsScreen.render(graphics, mouseX, mouseY, partialTicks);
     }
   }
