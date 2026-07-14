@@ -325,9 +325,9 @@ public class TinkerUiTestScenarios {
    *
    * Chest-free by design: the tinker station never wires a chest side inventory (only the crafting
    * station, modifier worktable and part builder call addChestSideInventory), so its
-   * sideInventoryWidth() is always 0 and an adjacent chest would render nothing here. Acceptance #4
-   * (side inventory + reflowed selector) is a modifier-worktable / crafting-station concern and is
-   * deferred to Phase 2 (Task 6), where the collapsed selector renders as a tab.
+   * sideInventoryWidth() is always 0 and an adjacent chest would render nothing here. No screen has
+   * both the selector and a chest, so acceptance #4 ("selector reflows around a chest") is impossible
+   * as written; its computeLayout math stays covered by the doubleChestEatsSelectorSide unit test.
    */
   private static class StationReflowScenario implements UiTestScenario {
     /** Fresh site clear of the other scenarios' rigs, which occupy SITE +0..+30 on X. */

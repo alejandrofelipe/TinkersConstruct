@@ -318,6 +318,8 @@ Fill the two placement comments with real code copied from the sibling scenarios
 - [ ] **Step 5:** Phase-1 battery: `build` green, `test` (192/2/0), `runGameTestServer` (`All 5 required tests passed`).
 - [ ] **Step 6: Commit** — `test(uitest): station reflow scenario with window-resize harness`.
 
+*(Executed chest-free — commit `64c5fd8`. The double-chest instructions in Steps 2-4 do NOT apply: the Tinker Station never attaches a chest (only Crafting Station / Modifier Worktable / Part Builder call `addChestSideInventory`), so `sideInventoryWidth() ≡ 0` and an adjacent chest renders nothing here. No screen combines the selector with a chest, so acceptance #4 as written is impossible; its `computeLayout` math is already covered by the `doubleChestEatsSelectorSide` unit test. The scenario captures the clean 380 REFLOW (4 columns). Acceptance #4 corrected in the design spec — 2026-07-14, per user decision.)*
+
 ---
 
 ## Fase 2 — COLLAPSED (tabs + overlay)

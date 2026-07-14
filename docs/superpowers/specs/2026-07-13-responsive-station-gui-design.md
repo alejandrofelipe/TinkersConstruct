@@ -80,10 +80,13 @@ parameter instead of the `COLUMN_COUNT = 6` constant), `InfoPanelScreen` (variab
   module positions, so clicks/scroll/tooltips work unchanged.
 - **Armor stand preview**: existing rules stand (already auto-offsets/disables by button count);
   additionally hidden in COLLAPSED.
-- **Chest side-inventory module** (upstream's known worst case, #3736): it contains slots, so it
-  has priority — REFLOW computes selector columns from the space left after it; in COLLAPSED the
-  selector collapses to its tab while the side inventory stays (its own scrollbar already handles
-  vertical overflow). Slots are never hidden behind an overlay-only path.
+- **Chest side-inventory module** (upstream's known worst case, #3736): does **not** apply to the
+  Tinker Station — only the Crafting Station, Modifier Worktable and Part Builder attach a chest
+  (`addChestSideInventory`), and none of those carries the tool-type selector. The Station's
+  `sideInventoryWidth()` is therefore always 0. `computeLayout` still subtracts `sideInventoryWidth`
+  (kept for the shared base and unit-tested by `doubleChestEatsSelectorSide`), but the term is inert
+  for the only screen with a selector. Making a chest-attaching screen responsive is out of scope
+  (see Non-goals: only the Tinker Station is in the acceptance matrix).
 
 ## State & integration
 
@@ -133,7 +136,11 @@ parameter instead of the `COLUMN_COUNT = 6` constant), `InfoPanelScreen` (variab
 2. At GUI 380×240: no element clipped; selector ≥ 3 columns; info panels readable (REFLOW PNG).
 3. At GUI 320×240: no element clipped; tabs render; overlay opens, is legible, and closes
    (COLLAPSED PNGs).
-4. Double-chest-attached station at 380 GUI: side inventory intact, selector reflows around it.
+4. Chest interaction: **N/A for the Tinker Station** — it never attaches a chest, so no screen
+   combines the selector with a side inventory (verified: `addChestSideInventory` callers are Crafting
+   Station / Modifier Worktable / Part Builder only). The `computeLayout` chest math stays covered by
+   the `doubleChestEatsSelectorSide` unit test. *(Original premise — "double-chest station reflows the
+   selector around it" — was false; corrected 2026-07-14 per user decision.)*
 5. `computeLayout` unit tests green; full battery green; suite 12/12, zero FATAL.
 
 ## References
