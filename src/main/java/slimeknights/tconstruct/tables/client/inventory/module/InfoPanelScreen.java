@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.Setter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -66,6 +67,14 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
   @Setter
   protected float textScale = 1.0f;
+
+  /** COLLAPSED tier: when set, the panel centers over the parent window instead of docking to a side (the on-demand overlay). */
+  @Setter
+  private boolean overlayMode = false;
+  /** COLLAPSED tier: when set, the panel is a docked-but-invisible tab (not drawn, no JEI area, no mouse). Mutually exclusive with {@link #overlayMode}. */
+  @Setter
+  private boolean hidden = false;
+
   public InfoPanelScreen(P parent, C container, Inventory playerInventory, Component title) {
     super(parent, container, playerInventory, title, true, false);
 
@@ -101,6 +110,20 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
   @Override
   public void updatePosition(int parentX, int parentY, int parentSizeX, int parentSizeY) {
+    if (this.overlayMode) {
+      // center over the parent window, capped to fit within it; stays inside [parentX, parentX+parentSizeX] so
+      // MultiModuleScreen.updateSubmodule finds nothing to expand
+      this.imageWidth = Math.min(resW + 8, parentSizeX - 16);
+      this.leftPos = parentX + (parentSizeX - this.imageWidth) / 2;
+      this.topPos = parentY + 18;                                    // below the title/beam, over the inventory area
+      this.border.setPosition(this.leftPos, this.topPos);
+      this.border.setSize(this.imageWidth, this.imageHeight);
+      this.slider.setPosition(this.guiRight() - this.border.w - 2, this.topPos + this.border.h + 12);
+      this.slider.setSize(this.imageHeight - this.border.h * 2 - 2 - 12);
+      this.updateSliderParameters();
+      return;
+    }
+
     super.updatePosition(parentX, parentY, parentSizeX, parentSizeY);
 
     this.border.setPosition(this.leftPos, this.topPos);
@@ -108,6 +131,20 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
     this.slider.setPosition(this.guiRight() - this.border.w - 2, this.topPos + this.border.h + 12);
     this.slider.setSize(this.imageHeight - this.border.h * 2 - 2 - 12);
     this.updateSliderParameters();
+  }
+
+  /** JEI module area: collapsed tabs report nothing; the overlay reports its centered rect (leftPos/imageWidth already moved by {@link #updatePosition}). */
+  @Override
+  public Rect2i getArea() {
+    if (this.hidden) {
+      return new Rect2i(0, 0, 0, 0);
+    }
+    return super.getArea();
+  }
+
+  /** Draws the panel unconditionally at its current position; the collapsed-tier overlay pass calls this above the slots (the normal module pass is gated off by {@link #hidden}/{@link #overlayMode}). */
+  public void drawOverlay(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+    this.renderBg(graphics, partialTicks, mouseX, mouseY);
   }
 
   public void setCaption(Component caption) {
@@ -391,8 +428,29 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
     this.slider.draw(graphics);
   }
 
+  /** COLLAPSED tier: a hidden tab draws nothing; the open overlay is drawn above the slots by {@code ToolTableScreen.render} via {@link #drawOverlay}. */
+  @Override
+  public void handleDrawGuiContainerBackgroundLayer(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+    if (this.hidden || this.overlayMode) {
+      return;
+    }
+    super.handleDrawGuiContainerBackgroundLayer(graphics, partialTicks, mouseX, mouseY);
+  }
+
+  /** COLLAPSED tier: a hidden tab is inert; the overlay skips the normal tooltip pass (it would draw under the panel, which renders later). */
+  @Override
+  public void handleRenderHoveredTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+    if (this.hidden || this.overlayMode) {
+      return;
+    }
+    super.handleRenderHoveredTooltip(graphics, mouseX, mouseY);
+  }
+
   @Override
   public boolean handleMouseClicked(double mouseX, double mouseY, int mouseButton) {
+    if (this.hidden) {
+      return false; // collapsed tab: never intercept; the parent falls through to the tab button
+    }
     if (!this.slider.isEnabled()) {
       return false;
     }
@@ -409,6 +467,9 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
   @Override
   public boolean handleMouseReleased(double mouseX, double mouseY, int state) {
+    if (this.hidden) {
+      return false; // collapsed tab: never intercept
+    }
     if (!this.slider.isEnabled()) {
       return false;
     }
@@ -419,6 +480,9 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
   @Override
   public boolean handleMouseScrolled(double mouseX, double mouseY, double scrollData) {
+    if (this.hidden) {
+      return false; // collapsed tab: never intercept
+    }
     if (!this.slider.isEnabled() || !this.isMouseInModule((int) mouseX, (int) mouseY) || this.isMouseOverFullSlot(mouseX, mouseY)) {
       return false;
     }

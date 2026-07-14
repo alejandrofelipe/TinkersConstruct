@@ -32,6 +32,7 @@ import slimeknights.tconstruct.library.tools.layout.StationSlotLayoutLoader;
 import slimeknights.tconstruct.library.tools.nbt.LazyToolStack;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.tables.block.entity.table.TinkerStationBlockEntity;
+import slimeknights.tconstruct.tables.client.inventory.widget.PanelTabButton;
 import slimeknights.tconstruct.tables.client.inventory.widget.SideButtonsWidget;
 import slimeknights.tconstruct.tables.client.inventory.widget.SlotButtonItem;
 import slimeknights.tconstruct.tables.client.inventory.widget.TinkerStationButtonsWidget;
@@ -102,6 +103,8 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   // components
   protected EditBox textField;
   protected TinkerStationButtonsWidget buttonsScreen;
+  /** Tool layouts backing the selector; stored so the selector can be rebuilt (docked/centered) on overlay toggles */
+  private List<StationSlotLayout> layouts;
 
   /** Maximum available slots */
   @Getter
@@ -183,6 +186,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     // tool layouts
     layouts.addAll(StationSlotLayoutLoader.getInstance().getSortedSlots().stream()
       .filter(layout -> layout.getInputSlots().size() <= this.maxInputs).toList());
+    this.layouts = layouts;
 
     this.layoutSpec = ResponsiveLayout.computeLayout(this.width, this.height, this.imageWidth, sideInventoryWidth());
     int columns = Math.max(1, this.layoutSpec.selectorColumns()); // Phase 1: degrade collapsed selector to 1 column; Phase 2 replaces with the tab
@@ -206,15 +210,79 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     if (columns < 4) {
       enableArmorStandPreview = false;
     }
+    // no room for the stand once either side collapses to a tab
+    if (this.layoutSpec.tier() == ResponsiveLayout.Tier.COLLAPSED) {
+      enableArmorStandPreview = false;
+    }
 
-    // init after we set the enable boolean
+    // init after we set the enable boolean (super.init() resets overlayOpen + applies the info-panel overlay state)
     super.init();
-    this.buttonsScreen = new TinkerStationButtonsWidget(this, this.cornerX - ResponsiveLayout.selectorWidth(columns) - 2,
-      this.cornerY + this.centerBeam.h + this.buttonDecorationTop.h, columns, layouts, buttonsStyle);
+    this.rebuildSelector();
+
+    // left-edge tab standing in for the collapsed selector (super.init already added the right-edge info tabs)
+    if (this.selectorCollapsed()) {
+      this.panelTabs.add(this.addRenderableWidget(new PanelTabButton(
+        this.cornerX - PanelTabButton.WIDTH - 2, this.cornerY + this.centerBeam.h + this.buttonDecorationTop.h,
+        buttonsStyle, (g, ix, iy) -> renderIcon(g, this.currentLayout.getIcon(), ix, iy),
+        b -> this.openOverlay(OverlayPanel.SELECTOR))));
+    }
 
     this.setupArmorStandPreview(-55, armorY, 35);
 
     this.updateLayout();
+  }
+
+  /** True when the selector collapses to a tab in the current tier ({@code selectorColumns == 0}). */
+  private boolean selectorCollapsed() {
+    return this.layoutSpec.selectorColumns() == 0;
+  }
+
+  /** True when the selector grid should render/handle input: docked (FULL/REFLOW) or shown as the centered overlay. */
+  private boolean selectorVisible() {
+    return !this.selectorCollapsed() || this.overlayOpen == OverlayPanel.SELECTOR;
+  }
+
+  /**
+   * (Re)builds {@link #buttonsScreen} for the current tier and overlay state. The widget's position fields are
+   * final, so a move is a reconstruction; the selected layout is preserved via the constructor's pressed flag.
+   */
+  private void rebuildSelector() {
+    if (this.layouts == null) {
+      return; // pre-init guard; init() calls this again once layouts/corners exist
+    }
+    int style = this.maxInputs > 3 ? TinkerStationButtonsWidget.METAL_STYLE : TinkerStationButtonsWidget.WOOD_STYLE;
+    if (this.selectorCollapsed() && this.overlayOpen == OverlayPanel.SELECTOR) {
+      // centered overlay: a column count that fits the window width (selectorWidth(n) = 22n - 4 <= realWidth)
+      int cols = Math.max(ResponsiveLayout.MIN_COLUMNS, Math.min(ResponsiveLayout.MAX_COLUMNS, (this.realWidth + 4) / 22));
+      int width = ResponsiveLayout.selectorWidth(cols);
+      this.buttonsScreen = new TinkerStationButtonsWidget(this, this.cornerX + (this.realWidth - width) / 2,
+        this.cornerY + 18, cols, this.layouts, style);
+    } else {
+      // docked left of the window (FULL/REFLOW), or parked when collapsed+closed (never rendered/clicked)
+      int columns = Math.max(1, this.layoutSpec.selectorColumns());
+      this.buttonsScreen = new TinkerStationButtonsWidget(this, this.cornerX - ResponsiveLayout.selectorWidth(columns) - 2,
+        this.cornerY + this.centerBeam.h + this.buttonDecorationTop.h, columns, this.layouts, style);
+    }
+  }
+
+  @Override
+  public void openOverlay(OverlayPanel panel) {
+    super.openOverlay(panel);   // toggles overlayOpen + repositions the info panels
+    this.rebuildSelector();     // the selector position depends on overlayOpen (final position fields ⇒ rebuild)
+  }
+
+  @Override
+  protected int panelTabStyle() {
+    return this.maxInputs > 3 ? TinkerStationButtonsWidget.METAL_STYLE : TinkerStationButtonsWidget.WOOD_STYLE;
+  }
+
+  @Override
+  public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+    super.render(graphics, mouseX, mouseY, partialTicks); // base render + the info-overlay pass
+    // COLLAPSED tier: the centered selector overlay draws above the slots (its docked draw in renderBg is gated off)
+    if (this.overlayOpen == OverlayPanel.SELECTOR) {
+      this.buttonsScreen.render(graphics, mouseX, mouseY, partialTicks);
+    }
   }
 
   /** Updates all slots for the current slot layout */
@@ -388,34 +456,43 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     }
 
     // sidebar beams
-    x = this.buttonsScreen.getLeftPos() - this.leftBeam.w;
     y = this.cornerY;
-    // draw the beams at the top
-    this.leftBeam.draw(graphics, x, y);
-    x += this.leftBeam.w;
-    x += this.centerBeam.drawScaledX(graphics, x, y, this.buttonsScreen.getImageWidth());
-    this.rightBeam.draw(graphics, x, y);
+    // selector beams: docked selector only (skipped when collapsed to a tab / shown as the bare centered overlay)
+    if (!this.selectorCollapsed()) {
+      x = this.buttonsScreen.getLeftPos() - this.leftBeam.w;
+      this.leftBeam.draw(graphics, x, y);
+      x += this.leftBeam.w;
+      x += this.centerBeam.drawScaledX(graphics, x, y, this.buttonsScreen.getImageWidth());
+      this.rightBeam.draw(graphics, x, y);
+    }
 
-    x = tinkerInfo.leftPos - this.leftBeam.w;
-    this.leftBeam.draw(graphics, x, y);
-    x += this.leftBeam.w;
-    x += this.centerBeam.drawScaledX(graphics, x, y, this.tinkerInfo.imageWidth);
-    this.rightBeam.draw(graphics, x, y);
+    // info panel beams: only while the panels are docked (skipped when collapsed to tabs)
+    if (!this.infoCollapsed()) {
+      x = tinkerInfo.leftPos - this.leftBeam.w;
+      this.leftBeam.draw(graphics, x, y);
+      x += this.leftBeam.w;
+      x += this.centerBeam.drawScaledX(graphics, x, y, this.tinkerInfo.imageWidth);
+      this.rightBeam.draw(graphics, x, y);
+    }
 
-    // draw the decoration for the buttons
-    for (SlotButtonItem button : this.buttonsScreen.getButtons()) {
-      this.buttonDecorationTop.draw(graphics, button.getX(), button.getY() - this.buttonDecorationTop.h);
-      // don't draw the bottom for the buttons in the last row
-      if (button.buttonId < this.buttonsScreen.getButtons().size() - this.buttonsScreen.getColumns()) {
-        this.buttonDecorationBot.draw(graphics, button.getX(), button.getY() + button.getHeight());
+    // draw the decoration for the buttons (docked selector only)
+    if (!this.selectorCollapsed()) {
+      for (SlotButtonItem button : this.buttonsScreen.getButtons()) {
+        this.buttonDecorationTop.draw(graphics, button.getX(), button.getY() - this.buttonDecorationTop.h);
+        // don't draw the bottom for the buttons in the last row
+        if (button.buttonId < this.buttonsScreen.getButtons().size() - this.buttonsScreen.getColumns()) {
+          this.buttonDecorationBot.draw(graphics, button.getX(), button.getY() + button.getHeight());
+        }
       }
     }
 
-    // draw the decorations for the panels
-    this.panelDecorationL.draw(graphics, this.tinkerInfo.leftPos + 5, this.tinkerInfo.topPos - this.panelDecorationL.h);
-    this.panelDecorationR.draw(graphics, this.tinkerInfo.guiRight() - 5 - this.panelDecorationR.w, this.tinkerInfo.topPos - this.panelDecorationR.h);
-    this.panelDecorationL.draw(graphics, this.modifierInfo.leftPos + 5, this.modifierInfo.topPos - this.panelDecorationL.h);
-    this.panelDecorationR.draw(graphics, this.modifierInfo.guiRight() - 5 - this.panelDecorationR.w, this.modifierInfo.topPos - this.panelDecorationR.h);
+    // draw the decorations for the panels (docked panels only)
+    if (!this.infoCollapsed()) {
+      this.panelDecorationL.draw(graphics, this.tinkerInfo.leftPos + 5, this.tinkerInfo.topPos - this.panelDecorationL.h);
+      this.panelDecorationR.draw(graphics, this.tinkerInfo.guiRight() - 5 - this.panelDecorationR.w, this.tinkerInfo.topPos - this.panelDecorationR.h);
+      this.panelDecorationL.draw(graphics, this.modifierInfo.leftPos + 5, this.modifierInfo.topPos - this.panelDecorationL.h);
+      this.panelDecorationR.draw(graphics, this.modifierInfo.guiRight() - 5 - this.panelDecorationR.w, this.modifierInfo.topPos - this.panelDecorationR.h);
+    }
 
     // render slot background icons
     for (int i = 0; i <= maxInputs; i++) {
@@ -432,7 +509,10 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
 
     super.renderBg(graphics, partialTicks, mouseX, mouseY);
 
-    this.buttonsScreen.render(graphics, mouseX, mouseY, partialTicks);
+    // docked selector draws here (under the slots, to the window's left); the centered overlay draws above slots in render()
+    if (!this.selectorCollapsed()) {
+      this.buttonsScreen.render(graphics, mouseX, mouseY, partialTicks);
+    }
 
     // text field
     if (textField != null && textField.visible) {
@@ -447,6 +527,17 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
 
   @Override
   public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+    // COLLAPSED tier: the selector overlay is modal — route clicks to it, dismiss on a true outside (non-tab) click
+    if (this.overlayOpen == OverlayPanel.SELECTOR) {
+      if (this.buttonsScreen.isMouseOver(mouseX, mouseY)) {
+        this.buttonsScreen.handleMouseClicked(mouseX, mouseY, mouseButton);
+        return true;
+      }
+      if (!this.isOverPanelTab(mouseX, mouseY)) {
+        this.openOverlay(OverlayPanel.NONE);
+      }
+    }
+
     if (this.tinkerInfo.handleMouseClicked(mouseX, mouseY, mouseButton)) {
       return false;
     }
@@ -454,8 +545,8 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     if (this.modifierInfo.handleMouseClicked(mouseX, mouseY, mouseButton)) {
       return false;
     }
-    
-    if(this.buttonsScreen.handleMouseClicked(mouseX, mouseY, mouseButton)) {
+
+    if (this.selectorVisible() && this.buttonsScreen.handleMouseClicked(mouseX, mouseY, mouseButton)) {
       return false;
     }
 
@@ -498,7 +589,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
       return false;
     }
 
-    if (this.buttonsScreen.handleMouseReleased(mouseX, mouseY, state)) {
+    if (this.selectorVisible() && this.buttonsScreen.handleMouseReleased(mouseX, mouseY, state)) {
       return false;
     }
 
@@ -619,8 +710,9 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   public List<Rect2i> getModuleAreas() {
     List<Rect2i> list = super.getModuleAreas();
     // null before the first init(), like tabsScreen in the super method: recipe viewers may query
-    // extra areas early (super already logs that case), so degrade instead of crashing
-    if (this.buttonsScreen != null) {
+    // extra areas early (super already logs that case), so degrade instead of crashing.
+    // collapsed+closed: the selector is parked off-layout, so report the tab (added by super) instead of the parked grid
+    if (this.buttonsScreen != null && this.selectorVisible()) {
       list.add(this.buttonsScreen.getArea());
     }
     return list;

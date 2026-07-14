@@ -3,6 +3,7 @@ package slimeknights.tconstruct.tables.client.inventory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -21,6 +22,7 @@ import slimeknights.mantle.client.SafeClientAccess;
 import slimeknights.mantle.client.screen.ModuleScreen;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.GuiUtil;
+import slimeknights.tconstruct.library.client.Icons;
 import slimeknights.tconstruct.library.modifiers.Modifier;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.tools.item.ITinkerStationDisplay;
@@ -29,6 +31,7 @@ import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.utils.TinkerTooltipFlags;
 import slimeknights.tconstruct.tables.client.inventory.module.InfoPanelScreen;
 import slimeknights.tconstruct.tables.client.inventory.module.SideInventoryScreen;
+import slimeknights.tconstruct.tables.client.inventory.widget.PanelTabButton;
 import slimeknights.tconstruct.tables.menu.TabbedContainerMenu;
 
 import javax.annotation.Nullable;
@@ -53,6 +56,13 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
 
   /** Responsive layout decision for the current window size, recomputed every init() */
   protected ResponsiveLayout.Spec layoutSpec = new ResponsiveLayout.Spec(ResponsiveLayout.Tier.FULL, ResponsiveLayout.MAX_COLUMNS, ResponsiveLayout.INFO_NATURAL);
+
+  /** Which collapsed-tier panel is currently shown as an on-demand overlay ({@link OverlayPanel#NONE} = none). */
+  public enum OverlayPanel { NONE, SELECTOR, TOOL_INFO, MODIFIER_INFO }
+
+  protected OverlayPanel overlayOpen = OverlayPanel.NONE;
+  /** Edge tabs registered in {@link #init()} for whichever sides collapsed; empty in the FULL/REFLOW tiers. */
+  protected final List<PanelTabButton> panelTabs = new ArrayList<>();
 
   protected final Player player;
   @Nullable
@@ -95,6 +105,101 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
     } else {
       // the flag is recomputed on window resizes; drop the stale preview so a disabled stand stops rendering
       this.armorStandPreview = null;
+    }
+
+    // COLLAPSED tier: a resize out of COLLAPSED dissolves any open overlay, then re-dock/hide the info panels
+    if (this.layoutSpec.tier() != ResponsiveLayout.Tier.COLLAPSED) {
+      this.overlayOpen = OverlayPanel.NONE;
+    }
+    this.applyOverlayState();
+
+    // rebuild the info-panel edge tabs (Screen.init cleared the widgets); TinkerStationScreen adds the selector tab after this
+    this.panelTabs.clear();
+    if (this.infoCollapsed()) {
+      int style = this.panelTabStyle();
+      int tabX = this.cornerX + this.realWidth + 2;
+      int tabTop = this.cornerY + 20;
+      this.panelTabs.add(this.addRenderableWidget(new PanelTabButton(tabX, tabTop, style,
+        (g, ix, iy) -> Icons.PATTERN.draw(g, ix, iy), b -> this.openOverlay(OverlayPanel.TOOL_INFO))));
+      this.panelTabs.add(this.addRenderableWidget(new PanelTabButton(tabX, tabTop + PanelTabButton.HEIGHT + 2, style,
+        (g, ix, iy) -> Icons.INGOT.draw(g, ix, iy), b -> this.openOverlay(OverlayPanel.MODIFIER_INFO))));
+    }
+  }
+
+  /** True when the info panels collapse to tabs in the current tier ({@code infoPanelWidth == 0}). */
+  protected boolean infoCollapsed() {
+    return this.layoutSpec.infoPanelWidth() == 0;
+  }
+
+  /** Style row for the edge tabs' button art (2 = wood); {@link TinkerStationScreen} overrides for its metal frame. */
+  protected int panelTabStyle() {
+    return 2;
+  }
+
+  /**
+   * Opens or toggles a collapsed-tier panel overlay; safe to call from uitest scenarios and the tab buttons.
+   * Toggling the already-open panel closes it.
+   */
+  public void openOverlay(OverlayPanel panel) {
+    this.overlayOpen = (this.overlayOpen == panel) ? OverlayPanel.NONE : panel;
+    this.applyOverlayState();
+  }
+
+  /** Pushes {@link #overlayOpen} onto the two info modules (overlay vs hidden vs docked) and repositions them. */
+  protected void applyOverlayState() {
+    boolean infoCollapsed = this.infoCollapsed();
+    this.tinkerInfo.setOverlayMode(infoCollapsed && this.overlayOpen == OverlayPanel.TOOL_INFO);
+    this.tinkerInfo.setHidden(infoCollapsed && this.overlayOpen != OverlayPanel.TOOL_INFO);
+    this.modifierInfo.setOverlayMode(infoCollapsed && this.overlayOpen == OverlayPanel.MODIFIER_INFO);
+    this.modifierInfo.setHidden(infoCollapsed && this.overlayOpen != OverlayPanel.MODIFIER_INFO);
+    this.tinkerInfo.updatePosition(this.cornerX, this.cornerY, this.realWidth, this.realHeight);
+    this.modifierInfo.updatePosition(this.cornerX, this.cornerY, this.realWidth, this.realHeight);
+  }
+
+  /** The info panel currently shown as an overlay, or null (selector/none). */
+  @Nullable
+  protected InfoPanelScreen<?,?> activeInfoOverlay() {
+    return switch (this.overlayOpen) {
+      case TOOL_INFO -> this.tinkerInfo;
+      case MODIFIER_INFO -> this.modifierInfo;
+      default -> null;
+    };
+  }
+
+  /** True if the point is over any collapsed-tier edge tab (tabs toggle themselves, so an overlay must not dismiss on them). */
+  protected boolean isOverPanelTab(double mouseX, double mouseY) {
+    for (PanelTabButton tab : this.panelTabs) {
+      if (tab.isMouseOver(mouseX, mouseY)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public List<Rect2i> getModuleAreas() {
+    List<Rect2i> areas = super.getModuleAreas(); // modules (hidden info panels report an empty rect) + the tabs bar
+    for (PanelTabButton tab : this.panelTabs) {
+      areas.add(new Rect2i(tab.getX(), tab.getY(), tab.getWidth(), tab.getHeight()));
+    }
+    return areas;
+  }
+
+  @Override
+  protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop, int mouseButton) {
+    if (this.isOverPanelTab(mouseX, mouseY)) {
+      return false; // edge tabs sit outside imageWidth; a click on one must not drop the carried stack
+    }
+    return super.hasClickedOutside(mouseX, mouseY, guiLeft, guiTop, mouseButton);
+  }
+
+  @Override
+  public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+    super.render(graphics, mouseX, mouseY, partialTicks);
+    // COLLAPSED tier: the open info panel is skipped in the under-slots module pass; draw it here, above the slots/widgets
+    InfoPanelScreen<?,?> overlay = this.activeInfoOverlay();
+    if (overlay != null) {
+      overlay.drawOverlay(graphics, partialTicks, mouseX, mouseY);
     }
   }
 
@@ -218,6 +323,18 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
 
   @Override
   public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+    // COLLAPSED tier: the open info overlay is modal. The subclass already offered this click to the panel slider
+    // before calling super; here, swallow clicks over the overlay and dismiss it on a true outside (non-tab) click.
+    InfoPanelScreen<?,?> overlay = this.activeInfoOverlay();
+    if (overlay != null) {
+      if (overlay.isMouseInModule((int) mouseX, (int) mouseY)) {
+        return true;
+      }
+      if (!this.isOverPanelTab(mouseX, mouseY)) {
+        this.openOverlay(OverlayPanel.NONE);
+      }
+    }
+
     int armorStandBoxW = this.armorStandScale + 30;
     int armorStandBoxH = this.armorStandScale * 2;
     int armorStandBoxX = this.armorStandX - armorStandBoxW / 2;
@@ -225,6 +342,17 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
     this.clickedOnArmorStand = this.enableArmorStandPreview && GuiUtil.isHovered((int) mouseX, (int) mouseY, armorStandBoxX, armorStandBoxY, armorStandBoxW, armorStandBoxH);
 
     return super.mouseClicked(mouseX, mouseY, mouseButton);
+  }
+
+  @Override
+  public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    // COLLAPSED tier: consume scroll over the open info overlay (drives its slider; keeps slots/lists beneath still)
+    InfoPanelScreen<?,?> overlay = this.activeInfoOverlay();
+    if (overlay != null && overlay.isMouseInModule((int) mouseX, (int) mouseY)) {
+      overlay.handleMouseScrolled(mouseX, mouseY, scrollY);
+      return true;
+    }
+    return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
   }
 
   @Override
