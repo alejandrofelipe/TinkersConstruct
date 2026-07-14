@@ -263,6 +263,8 @@ Add a `@Getter` (or plain getter) for `buttonsScreen` on `TinkerStationScreen`; 
 - [ ] **Step 3:** Compile green; `runClientUiTest` 9/9 (the `jei_melting_category` + `tinker_station` scenarios both exercise JEI presence).
 - [ ] **Step 4: Commit** — `feat(jei): exclusion areas for tool table side modules and selector`.
 
+*(Executed correction: the planned handler is REDUNDANT — Mantle's own JEI plugin already registers `MultiModuleContainerHandler` for `MultiModuleScreen.class` returning live `getModuleAreas()`, JEI's lookup is instanceof-based, and `TinkerStationScreen.getModuleAreas()` already adds the selector (upstream #4990). The surviving delta was a pre-init null guard on `buttonsScreen` in that override — commit `218a8a4ce6`. This task's premise came from a research grep that only searched the Tinkers plugin package.)*
+
 ### Task 4: `station_reflow` uitest scenario (window-resize harness) + Phase-1 battery
 
 **Files:**
@@ -400,6 +402,7 @@ Fill the two placement comments with real code copied from the sibling scenarios
   }
 ```
 And suppress the normal side-draw of collapsed modules: in the same class, skip a module in the inherited bg/fg loops when it is collapsed-and-not-the-open-overlay (check `MultiModuleScreen.renderBg/renderLabels` — they loop `modules`; the cleanest Tinkers-side seam is a `protected boolean shouldRenderModule(ModuleScreen<?,?>)` hook... `MultiModuleScreen` has no such hook and Mantle is frozen — instead gate INSIDE `InfoPanelScreen.handleDrawGuiContainerBackgroundLayer/Foreground` with a `hidden` flag set by `applyOverlayState`; verify both loops route through those handle* methods — they do, lines 87-96 of `ModuleScreen`).
+**JEI phantom-area requirement (Task 3 finding):** Mantle's `MultiModuleContainerHandler` serves `getModuleAreas()` to JEI live — a hidden (collapsed, not-overlay-open) module must NOT report its docked rect, or JEI excludes phantom areas. Filter hidden modules in the `ToolTableScreen.getModuleAreas()` override (return the overlay rect when open instead); the hidden flag from `applyOverlayState` is the source of truth.
 The SELECTOR overlay (only when `selectorColumns == 0`): reposition `buttonsScreen` to the window center in `init()` when `overlayOpen == SELECTOR` — it is screen-owned (not a module), so just construct it at the centered position and render/click it only while open (it already renders via the screen's own hooks — grep `buttonsScreen` uses in `TinkerStationScreen.render/mouse*` and gate them).
 
 - [ ] **Step 4: Input** — clicks inside the open overlay's rect must not fall through to slots beneath: in `ToolTableScreen.mouseClicked`, BEFORE `super`, if overlay open and `overlay.isMouseInModule((int)mouseX, (int)mouseY)` → route to `overlay.handleMouseClicked` (and swallow: `return true` even on false — the overlay area is modal); clicking OUTSIDE the overlay closes it (`openOverlay(NONE)`) before normal handling. Mirror for `mouseScrolled` (route to `handleMouseScrolled` — the slider must work) and `mouseReleased`. Resize dissolves state: in `init()`, if `layoutSpec.tier() != COLLAPSED` force `overlayOpen = NONE` before `applyOverlayState()`. Armor stand: `enableArmorStandPreview = false` whenever `tier == COLLAPSED`.
