@@ -220,7 +220,7 @@ public final class ResponsiveLayout {
 ```
 `TinkerStationButtonsWidget` gains the `int columns` parameter (replace both `TinkerStationScreen.COLUMN_COUNT` uses inside it with the parameter; keep `COLUMN_COUNT` as the Phase-1 max in `ResponsiveLayout.MAX_COLUMNS`'s comment and delete the screen constant + `width(int)` helper if now unused — grep callers first). The armor stand `setupArmorStandPreview(-55, armorY, 35)` x-anchor sits inside the selector zone: when `columns < 4`, also `enableArmorStandPreview = false` (the stand would overlap buttons; note the rationale inline).
 
-- [ ] **Step 4: Compile + FULL regression** — canonical `compileJava` green, then `runClientUiTest`: 9/9 ok, zero FATAL; `tinker_station.png` must be pixel-equivalent to the pre-change run at 1280×720 (FULL tier — acceptance #1). Keep the pre-change PNG copy for comparison.
+- [ ] **Step 4: Compile + FULL regression** — canonical `compileJava` green, then `runClientUiTest`: 9/9 ok, zero FATAL; `tinker_station.png` must be pixel-equivalent to the pre-change run at 1280×720 (FULL tier — acceptance #1). Keep the pre-change PNG copy for comparison. *(Executed correction: 1280×720 at auto scale is 427 GUI = REFLOW, not FULL — the canonical PNG legitimately changed to the un-clipped 5-column layout; FULL equivalence was instead proven by a scale-2 retro-diff against stashed old code, 0 differing GUI pixels. Spec Testing section updated accordingly.)*
 - [ ] **Step 5: Commit** — `feat(tables): tinker station selector and info panels reflow to window size`.
 
 ### Task 3: JEI exclusion areas for the tool table screens

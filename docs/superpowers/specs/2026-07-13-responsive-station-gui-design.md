@@ -112,9 +112,13 @@ parameter instead of the `COLUMN_COUNT = 6` constant), `InfoPanelScreen` (variab
 - **uitest**: three new scenarios that resize the game window in `prepare` (via
   `Minecraft.getWindow()`, restored in `close`): `station_reflow` (760×480 @ scale 2 = GUI
   380×240), `station_collapsed` (640×480 @ scale 2 = GUI 320×240), `station_collapsed_overlay`
-  (same size, opens a tab, captures). The
-  existing `tinker_station` scenario keeps gating FULL at 1280×720. Suite 9 → 12; controller
-  gates each PNG (nothing clipped, selector paging visible, overlay legible).
+  (same size, opens a tab, captures). The existing `tinker_station` scenario runs at auto GUI
+  scale (1280×720 → 427 GUI px, which is REFLOW by this spec's own thresholds — a Task-2 finding
+  correcting this line's original "gates FULL" claim) and now gates the reflowed layout; FULL-tier
+  pixel-equivalence to the legacy layout was proven empirically in Task 2 (scale-2 retro-diff
+  against the pre-change code, 0 differing GUI pixels) and stays gated by the unit tests' FULL
+  case. Suite 9 → 12; controller gates each PNG (nothing clipped, selector paging visible, overlay
+  legible).
 - **Battery**: `test` and `runGameTestServer` must stay green (client-only change).
 
 ## Delivery — two independently shippable phases
