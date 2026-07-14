@@ -92,6 +92,11 @@ runs {
     clientUiTest {
         runType 'client'
         systemProperty 'mantle.uitest', 'true'
+        // focused runs: gradlew runClientUiTest -PuitestOnly=station_ keeps only scenarios whose id
+        // path contains the token(s) (comma-separated substrings). See UiTestSuite#filtered.
+        if (project.hasProperty('uitestOnly')) {
+            systemProperty 'mantle.uitest.only', project.property('uitestOnly')
+        }
         arguments.addAll '--quickPlaySingleplayer', 'UITest', '--width', '1280', '--height', '720'
     }
     server { argument '--nogui' }
