@@ -22,12 +22,14 @@ base { archivesName = 'TinkersConstruct' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 task buildInfo {
-    try {
-        def proc = "git rev-parse --short HEAD".execute()
-        proc.waitFor()
-        ext.revision = proc.exitValue() == 0 ? proc.text.trim() : "GITBORK"
-    } catch (all) { ext.revision = "gitgud" }
-    ext.buildNum = System.getenv().BUILD_NUMBER != null ? "${System.getenv().BUILD_NUMBER}" : "DEV.${project.buildInfo.revision}"
+    if (System.getenv().BUILD_NUMBER != null) {
+        ext.buildNum = "${System.getenv().BUILD_NUMBER}"
+    } else {
+        // stable dev version — mirrors Mantle (repo/build.gradle): the git-hash suffix was cwd-dependent
+        // (git ran from the workspace root, which is NOT a repo, and fell back to "GITBORK"), churning the
+        // version and rewriting the jar every compile
+        ext.buildNum = "DEV"
+    }
 }
 ext.artifact_version = 'NFG'
 if (System.getenv().ARTIFACT_VERSION == null) { artifact_version = "${mod_version}.${project.buildInfo.buildNum}" }
