@@ -618,7 +618,11 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   @Override
   public List<Rect2i> getModuleAreas() {
     List<Rect2i> list = super.getModuleAreas();
-    list.add(this.buttonsScreen.getArea());
+    // null before the first init(), like tabsScreen in the super method: recipe viewers may query
+    // extra areas early (super already logs that case), so degrade instead of crashing
+    if (this.buttonsScreen != null) {
+      list.add(this.buttonsScreen.getArea());
+    }
     return list;
   }
 
