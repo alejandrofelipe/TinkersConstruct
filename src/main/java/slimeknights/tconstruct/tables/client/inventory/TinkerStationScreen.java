@@ -32,6 +32,7 @@ import slimeknights.tconstruct.library.tools.layout.StationSlotLayoutLoader;
 import slimeknights.tconstruct.library.tools.nbt.LazyToolStack;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.tables.block.entity.table.TinkerStationBlockEntity;
+import slimeknights.tconstruct.tables.client.inventory.module.InfoPanelScreen;
 import slimeknights.tconstruct.tables.client.inventory.widget.PanelTabButton;
 import slimeknights.tconstruct.tables.client.inventory.widget.SideButtonsWidget;
 import slimeknights.tconstruct.tables.client.inventory.widget.SlotButtonItem;
@@ -281,12 +282,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     super.render(graphics, mouseX, mouseY, partialTicks); // base render + the info-overlay pass
     // COLLAPSED tier: the centered selector overlay draws above the slots (its docked draw in renderBg is gated off)
     if (this.overlayOpen == OverlayPanel.SELECTOR) {
-      // same opaque-blit setup as InfoPanelScreen.drawOverlay: this overlay sits over the station's high item-z
-      // faded icon, so disable depth test (and reset color/blend) or the icon culls the panel and bleeds through
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-      RenderSystem.disableDepthTest();
+      InfoPanelScreen.beginOpaqueOverlayBlit(); // shared opaque-blit setup, see InfoPanelScreen.drawOverlay
       this.buttonsScreen.render(graphics, mouseX, mouseY, partialTicks);
     }
   }
@@ -420,6 +416,9 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     int x = 0;
     int y = 0;
 
+    // an open overlay covers the crafting area: skip the faded layout icon and the dark ITEM_COVER fade beneath it,
+    // so the translucent overlay panel reads light (like the docked panels) instead of tinted by that dark fade
+    if (this.overlayOpen == OverlayPanel.NONE) {
     // draw the item background
     final float scale = 3.7f;
     final float xOff = 12.5f;
@@ -440,6 +439,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     //RenderHelper.turnOff();
     RenderSystem.disableDepthTest();
     ITEM_COVER.draw(graphics, this.cornerX + 7, this.cornerY + 18);
+    }
 
     // slot backgrounds, are transparent
     RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 0.28f);

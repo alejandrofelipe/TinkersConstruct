@@ -145,15 +145,21 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
   /** Draws the panel unconditionally at its current position; the collapsed-tier overlay pass calls this above the slots (the normal module pass is gated off by {@link #hidden}/{@link #overlayMode}). */
   public void drawOverlay(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
-    // this pass runs manually after the parent's whole render(), so it establishes a clean opaque GUI blit state. The
-    // centered panel overlaps the station's faded tool icon, which renders at the high item z, so leaving the depth
-    // test on culls the panel there and the icon bleeds over the text; disable it (the same idiom
-    // TinkerStationScreen.renderBg uses to draw ITEM_COVER over that icon) so the opaque panel paints over it.
+    beginOpaqueOverlayBlit();
+    this.renderBg(graphics, partialTicks, mouseX, mouseY);
+  }
+
+  /**
+   * Shared opaque-blit GL setup for the collapsed-tier overlays (this info panel and the station's selector overlay),
+   * which draw manually after the parent's whole render(). The centered overlay overlaps the station's faded tool icon
+   * rendered at the high item z, so leaving depth test on culls the overlay there and the icon bleeds through; disable
+   * it (the idiom TinkerStationScreen.renderBg uses for ITEM_COVER) and reset color/blend so it paints opaque.
+   */
+  public static void beginOpaqueOverlayBlit() {
     RenderSystem.enableBlend();
     RenderSystem.defaultBlendFunc();
     RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
     RenderSystem.disableDepthTest();
-    this.renderBg(graphics, partialTicks, mouseX, mouseY);
   }
 
   /** Draws the panel's hover tooltips (help "?" and per-line entries) unconditionally; the overlay pass calls this after {@link #drawOverlay} so they sit above the panel, since the normal tooltip pass is gated off by {@link #overlayMode}. */
@@ -387,7 +393,12 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
   @Override
   protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
     this.border.draw(graphics);
-    BACKGROUND.drawScaled(graphics, this.leftPos + 4, this.topPos + 4, this.imageWidth - 8, this.imageHeight - 8);
+    // overlay mode sits over the darkened crafting area (ITEM_COVER + faded icon) and panel.png is partly translucent,
+    // so blit it a few times to build opacity: keeps the tint near the docked panel and stops the slot patterns
+    // beneath from bleeding through at the edges. Docked panels (overlayMode false) blit once, unchanged.
+    for (int i = this.overlayMode ? 3 : 1; i > 0; i--) {
+      BACKGROUND.drawScaled(graphics, this.leftPos + 4, this.topPos + 4, this.imageWidth - 8, this.imageHeight - 8);
+    }
 
     float y = 5 + this.topPos;
     float x = 5 + this.leftPos;
