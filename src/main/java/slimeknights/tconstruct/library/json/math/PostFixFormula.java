@@ -248,7 +248,7 @@ public record PostFixFormula(List<StackOperation> operations, int numArguments) 
       return operation(PostFixOperator.EQUAL_EPS);
     }
     public T notEqualEpsilon() {
-      return operation(PostFixOperator.EQUAL_EPS);
+      return operation(PostFixOperator.NOT_EQUAL_EPS);
     }
 
     /** Validates and builds the formula */

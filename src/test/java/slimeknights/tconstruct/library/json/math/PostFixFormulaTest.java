@@ -16,10 +16,6 @@ import static org.assertj.core.api.Assertions.within;
  * Tests {@link PostFixFormula}: the expression engine tying together {@link PostFixOperator} and the push operations,
  * its {@link PostFixFormula.Builder}, and its JSON/network (de)serialization. Pure math + Gson + a plain
  * FriendlyByteBuf, no MC bootstrap required.
- *
- * <p>NOTE: {@code Builder#notEqualEpsilon()} is deliberately not exercised here - reading the source shows it wires
- * to {@code PostFixOperator.EQUAL_EPS} instead of {@code NOT_EQUAL_EPS} (copy/paste bug, pre-existing, unrelated to
- * this cluster). {@link PostFixOperatorTest} covers the {@code NOT_EQUAL_EPS} operator itself correctly.
  */
 class PostFixFormulaTest {
   private static final String[] ONE_VAR = {"a"};
@@ -196,6 +192,9 @@ class PostFixFormulaTest {
     assertThat(PostFixFormula.builder(TWO_VARS).variable(0).variable(1).lessThanOrEqual().buildFormula().apply(3, 3)).isEqualTo(1f);
 
     assertThat(PostFixFormula.builder(TWO_VARS).variable(0).variable(1).equalEpsilon().buildFormula().apply(1f, 1f + 1e-7f)).isEqualTo(1f);
+
+    assertThat(PostFixFormula.builder(TWO_VARS).variable(0).variable(1).notEqualEpsilon().buildFormula().apply(1f, 1f + 1e-7f)).isEqualTo(0f);
+    assertThat(PostFixFormula.builder(TWO_VARS).variable(0).variable(1).notEqualEpsilon().buildFormula().apply(1f, 1.5f)).isEqualTo(1f);
   }
 
 

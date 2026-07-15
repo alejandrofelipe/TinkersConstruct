@@ -13,15 +13,16 @@ import static org.mockito.Mockito.when;
 
 /**
  * Tests {@link ToolStackPredicate}.
- *
- * <p>NOTE: {@code ToolStackPredicate#NONE} is deliberately not exercised - same copy/paste bug as
- * {@link ToolContextPredicate#NONE} (wired to {@code simple(tool -> true)} instead of {@code false}); see that
- * class's javadoc and the P2-T2 report for details.
  */
 class ToolStackPredicateTest extends BaseMcTest {
   @Test
   void any_alwaysMatches() {
     assertThat(ToolStackPredicate.ANY.matches(mock(IToolStackView.class))).isTrue();
+  }
+
+  @Test
+  void none_neverMatches() {
+    assertThat(ToolStackPredicate.NONE.matches(mock(IToolStackView.class))).isFalse();
   }
 
   @Test

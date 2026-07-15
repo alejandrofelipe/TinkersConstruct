@@ -17,13 +17,6 @@ import static org.mockito.Mockito.when;
 
 /**
  * Tests {@link ToolContextPredicate}.
- *
- * <p>NOTE: {@code ToolContextPredicate#NONE} is deliberately not exercised here - reading the source shows it is
- * wired to {@code simple(tool -> true)}, identical to {@code ANY}, instead of {@code simple(tool -> false)} (a
- * copy/paste bug; the sibling {@code MaterialPredicate.NONE}/{@code ModifierPredicate.NONE} in the same predicate
- * family both correctly use {@code false}). Asserting either truth value here would either lock in the bug or fail
- * against current code, so it is skipped - see the P2-T2 report for the full writeup. The identical bug also exists
- * in {@link ToolStackPredicate#NONE}.
  */
 class ToolContextPredicateTest extends BaseMcTest {
   private static final ModifierId FOO = new ModifierId("test", "foo");
@@ -37,6 +30,11 @@ class ToolContextPredicateTest extends BaseMcTest {
   @Test
   void any_alwaysMatches() {
     assertThat(ToolContextPredicate.ANY.matches(mock(IToolContext.class))).isTrue();
+  }
+
+  @Test
+  void none_neverMatches() {
+    assertThat(ToolContextPredicate.NONE.matches(mock(IToolContext.class))).isFalse();
   }
 
   @Test
