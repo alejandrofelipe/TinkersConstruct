@@ -20,13 +20,11 @@ import static org.mockito.Mockito.when;
 /**
  * Tests {@link CapacityBarValidator}: display-name suffixing, removal cleanup, and {@code validate}.
  *
- * <p><b>Latent bug found (not fixed, test-only task; flagged with a {@code // FIXME} at the production site):</b>
- * {@code validate()} computes {@code cap} via {@code bar.getCapacity(tool, modifier)} and then re-checks
- * {@code bar.getCapacity(tool, modifier) > cap} - comparing that same (pure, side-effect-free for every bar
- * implementation in this package) call against itself. That condition can never be true, so the "clear excess
- * amount" cleanup the method's own comment describes is dead code; it was very likely meant to read
- * {@code bar.getAmount(tool) > cap}. Verified below as current, deterministic behavior (the clamp never fires,
- * regardless of the tool's actual amount) rather than asserting either polarity of the presumably-intended fix.
+ * <p><b>Latent bug found and fixed:</b> {@code validate()} computed {@code cap} via
+ * {@code bar.getCapacity(tool, modifier)} and then re-checked {@code bar.getCapacity(tool, modifier) > cap} -
+ * comparing that same call against itself, which can never be true, so the "clear excess amount" cleanup the
+ * method's own comment describes was dead code. Fixed to compare the current amount instead:
+ * {@code bar.getAmount(tool) > cap}. See {@link #validate_amountAboveCapacity_clampsDownToCapacity()}.
  */
 class CapacityBarValidatorTest extends BaseMcTest {
   @BeforeAll
@@ -62,17 +60,17 @@ class CapacityBarValidatorTest extends BaseMcTest {
   }
 
   @Test
-  void validate_amountAboveCapacity_stillNeverClamps_dueToSelfComparisonBug() {
-    // see class javadoc: "bar.getCapacity(tool, modifier) > cap" compares the same call against itself
+  void validate_amountAboveCapacity_clampsDownToCapacity() {
+    // see class javadoc: validate() now compares bar.getAmount(tool) against cap, not cap against itself
     CapacityBarHook bar = mock(CapacityBarHook.class);
     IToolStackView tool = mock(IToolStackView.class);
     ModifierEntry entry = new ModifierEntry(ModifierFixture.TEST_MODIFIER_1, 1);
     when(bar.getCapacity(tool, entry)).thenReturn(50);
-    when(bar.getAmount(tool)).thenReturn(999); // way above capacity; a fixed guard would clamp this
+    when(bar.getAmount(tool)).thenReturn(999); // way above capacity; the fixed guard clamps this down
 
     CapacityBarValidator validator = new CapacityBarValidator(bar);
     assertThat(validator.validate(tool, entry)).isNull();
-    verify(bar, never()).setAmount(any(IToolStackView.class), any(ModifierEntry.class), anyInt());
+    verify(bar).setAmount(tool, entry, 50);
   }
 
   @Test
