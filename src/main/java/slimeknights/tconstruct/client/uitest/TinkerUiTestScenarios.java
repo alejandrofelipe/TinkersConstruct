@@ -40,6 +40,10 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /** Registers TConstruct's automated GUI screenshot scenarios (active only with -Dmantle.uitest=true). */
+// EventBusSubscriber.bus() is deprecated-for-removal in NeoForge; bus = Bus.MOD is explicit and correct here
+// (clientSetup handles the mod-bus FMLClientSetupEvent). Suppressed rather than dropped, since inference behavior
+// in 21.1.234 is unconfirmed and a wrong bus would silently stop the uitest scenarios from registering.
+@SuppressWarnings("removal")
 @EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
 public class TinkerUiTestScenarios {
   /** Fixed build site in the committed superflat world, far from spawn interference. */

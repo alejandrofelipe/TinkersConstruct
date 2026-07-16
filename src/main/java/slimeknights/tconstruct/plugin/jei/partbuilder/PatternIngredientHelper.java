@@ -24,8 +24,16 @@ public class PatternIngredientHelper implements IIngredientHelper<Pattern> {
   }
 
   @Override
-  public String getUniqueId(Pattern pattern, UidContext context) {
+  public String getUid(Pattern pattern, UidContext context) {
     return pattern.toString();
+  }
+
+  /** @deprecated JEI's getUniqueId is abstract-for-removal; kept delegating to {@link #getUid} until JEI drops it. */
+  @Deprecated
+  @SuppressWarnings("removal")
+  @Override
+  public String getUniqueId(Pattern pattern, UidContext context) {
+    return getUid(pattern, context);
   }
 
   @Override

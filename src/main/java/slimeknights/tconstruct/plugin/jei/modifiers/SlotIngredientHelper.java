@@ -41,8 +41,16 @@ public class SlotIngredientHelper implements IIngredientHelper<SlotCount> {
   }
 
   @Override
-  public String getUniqueId(SlotCount slots, UidContext context) {
+  public String getUid(SlotCount slots, UidContext context) {
     return getName(slots);
+  }
+
+  /** @deprecated JEI's getUniqueId is abstract-for-removal; kept delegating to {@link #getUid} until JEI drops it. */
+  @Deprecated
+  @SuppressWarnings("removal")
+  @Override
+  public String getUniqueId(SlotCount slots, UidContext context) {
+    return getUid(slots, context);
   }
 
   @Override

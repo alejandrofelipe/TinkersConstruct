@@ -33,8 +33,16 @@ public class ModifierIngredientHelper implements IIngredientHelper<ModifierEntry
   }
 
   @Override
-  public String getUniqueId(ModifierEntry entry, UidContext context) {
+  public String getUid(ModifierEntry entry, UidContext context) {
     return entry.getId().toString();
+  }
+
+  /** @deprecated JEI's getUniqueId is abstract-for-removal; kept delegating to {@link #getUid} until JEI drops it. */
+  @Deprecated
+  @SuppressWarnings("removal")
+  @Override
+  public String getUniqueId(ModifierEntry entry, UidContext context) {
+    return getUid(entry, context);
   }
 
   @Override
