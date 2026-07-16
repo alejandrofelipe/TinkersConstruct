@@ -56,6 +56,8 @@ public class TinkerUiTestScenarios {
     }
     UiTestScenarios.register(new BlockGuiScenario("tinker_station", SITE.offset(0, 0, 0), () -> TinkerTables.tinkerStation.get().defaultBlockState()));
     UiTestScenarios.register(new BlockGuiScenario("part_builder", SITE.offset(4, 0, 0), () -> TinkerTables.partBuilder.get().defaultBlockState()));
+    // Crafting Tweaks pilot: opens the crafting station so its CT convenience buttons (rotate/balance/clear) render in the shot.
+    UiTestScenarios.register(new BlockGuiScenario("crafting_station", SITE.offset(70, 0, 0), () -> TinkerTables.craftingStation.get().defaultBlockState()));
     UiTestScenarios.register(new SmelteryScenario());
     UiTestScenarios.register(new MelterScenario());
     UiTestScenarios.register(new CastingPourScenario());

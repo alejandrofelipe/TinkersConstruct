@@ -56,7 +56,7 @@ import slimeknights.tconstruct.library.utils.Util;
 //import slimeknights.tconstruct.plugin.DietPlugin;
 //import slimeknights.tconstruct.plugin.DummmmmmyPlugin;
 //import slimeknights.tconstruct.plugin.ImmersiveEngineeringPlugin;
-//import slimeknights.tconstruct.plugin.craftingtweaks.CraftingTweaksPlugin;
+import slimeknights.tconstruct.plugin.craftingtweaks.CraftingTweaksPlugin;
 //import slimeknights.tconstruct.plugin.jsonthings.JsonThingsPlugin;
 import slimeknights.tconstruct.shared.TinkerAttributes;
 import slimeknights.tconstruct.shared.TinkerClient;
@@ -190,10 +190,10 @@ public class TConstruct {
 //    if (modList.isLoaded("diet")) {
 //      DietPlugin.onConstruct();
 //    }
-    // PORT M6: re-enable craftingtweaks compat
-//    if (modList.isLoaded("craftingtweaks")) {
-//      CraftingTweaksPlugin.onConstruct();
-//    }
+    // Crafting Tweaks: convenience buttons on the crafting station
+    if (modList.isLoaded("craftingtweaks")) {
+      CraftingTweaksPlugin.onConstruct();
+    }
     // PORT M6: re-enable dummmmmmy compat
 //    if (modList.isLoaded("dummmmmmy")) {
 //      bus.register(new DummmmmmyPlugin());

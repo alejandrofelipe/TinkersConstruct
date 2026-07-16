@@ -16,6 +16,7 @@ repositories {
     mavenCentral()
     maven { name "Prog's Maven"; url 'https://dvs1.progwml6.com/files/maven' }
     maven { name "Jared's maven"; url 'https://maven.blamejared.com/' }
+    maven { name "TwelveIterations"; url 'https://maven.twelveiterations.com/repository/maven-public/'; content { includeGroup 'net.blay09.mods' } }
 }
 
 group = 'slimeknights.tconstruct'
@@ -60,7 +61,6 @@ sourceSets {
         }
         java {
             exclude 'slimeknights/tconstruct/plugin/jsonthings/**'
-            exclude 'slimeknights/tconstruct/plugin/craftingtweaks/**'
             exclude 'slimeknights/tconstruct/plugin/ImmersiveEngineeringPlugin.java'
             exclude 'slimeknights/tconstruct/plugin/DietPlugin.java'
             exclude 'slimeknights/tconstruct/plugin/DummmmmmyPlugin.java'
@@ -151,6 +151,14 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+
+    // Crafting Tweaks compat (optional; Balm is its required library). compileOnly compiles the
+    // plugin without pulling the mods into every run; add runtimeOnly to smoke-test in dev.
+    compileOnly "net.blay09.mods:craftingtweaks-neoforge:${craftingtweaks_version}"
+    compileOnly "net.blay09.mods:balm-neoforge:${balm_version}"
+    // runtimeOnly so the compat actually loads in dev runs (smoke test / uitest); harmless in prod (dep only).
+    runtimeOnly "net.blay09.mods:craftingtweaks-neoforge:${craftingtweaks_version}"
+    runtimeOnly "net.blay09.mods:balm-neoforge:${balm_version}"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
