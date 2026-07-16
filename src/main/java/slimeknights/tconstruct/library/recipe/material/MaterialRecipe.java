@@ -15,6 +15,7 @@ import slimeknights.mantle.recipe.ICustomOutputRecipe;
 import slimeknights.mantle.recipe.container.ISingleStackContainer;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.mantle.recipe.helper.LoadableRecipeSerializer;
+import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 /**
  * Recipe to get the material from an ingredient
  */
-public class MaterialRecipe implements ICustomOutputRecipe<ISingleStackContainer>, IMaterialValue {
+public class MaterialRecipe implements ICustomOutputRecipe<ISingleStackContainer>, IMaterialValue, ILookupRegistrar {
   /** Empty material instance for the cache */
   @SuppressWarnings("removal")
   public static final MaterialRecipe EMPTY = new MaterialRecipe(ResourceLocation.parse("missingno"), "", Ingredient.EMPTY, 0, 0, IMaterial.UNKNOWN_ID, ItemOutput.EMPTY);
@@ -76,7 +77,10 @@ public class MaterialRecipe implements ICustomOutputRecipe<ISingleStackContainer
     this.material = MaterialVariant.of(materialId);
     // ignore leftover if the value is 1, its useless to us
     this.leftover = value > 1 ? leftover : ItemOutput.EMPTY;
+  }
 
+  @Override
+  public void registerLookups() {
     // save recipe into the cache
     MaterialRecipeCache.registerRecipe(this);
   }

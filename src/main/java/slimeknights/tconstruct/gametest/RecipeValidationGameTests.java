@@ -14,6 +14,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.alloying.AlloyRecipe;
@@ -22,7 +23,10 @@ import slimeknights.tconstruct.library.recipe.casting.ICastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.ItemCastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.material.MaterialCastingLookup;
+import slimeknights.tconstruct.library.recipe.casting.material.MaterialFluidRecipe;
 import slimeknights.tconstruct.library.recipe.fuel.MeltingFuelLookup;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipe;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipe;
@@ -282,6 +286,59 @@ public class RecipeValidationGameTests {
       helper.fail("ModifierRecipeLookup not populated: " + sample + " is added by a modifier recipe but the lookup does not resolve it");
     } else {
       helper.succeed();
+    }
+  }
+
+  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void material_casting_lookup_populated(GameTestHelper helper) {
+    // MaterialCastingLookup must be populated by the reload populator, not constructor side-effects. Assert both write
+    // paths ran: registerItemCost (getAllItemCosts non-empty) and registerFluid (a registered casting fluid exists).
+    // registerFluid also drives the coupling into MaterialRecipeCache, so spot-check a real casting fluid: its output
+    // variant must have been recorded as a known variant via registerFluid -> addKnownVariant.
+    if (MaterialCastingLookup.getAllItemCosts().isEmpty()) {
+      helper.fail("MaterialCastingLookup item costs not populated by the reload populator");
+      return;
+    }
+    MaterialFluidRecipe sample = null;
+    for (MaterialFluidRecipe recipe : MaterialCastingLookup.getAllCastingFluids()) {
+      if (!recipe.getOutput().isUnknown()) {
+        sample = recipe;
+        break;
+      }
+    }
+    if (sample == null) {
+      helper.fail("no casting fluids registered; MaterialCastingLookup.registerFluid path did not populate");
+    } else {
+      MaterialVariantId variant = sample.getOutput().getVariant();
+      if (!MaterialRecipeCache.getVariants(variant.getId()).contains(variant)) {
+        helper.fail("coupling broken: casting fluid output " + variant + " was not recorded as a known variant in MaterialRecipeCache");
+      } else {
+        helper.succeed();
+      }
+    }
+  }
+
+  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void material_recipe_cache_populated(GameTestHelper helper) {
+    // MaterialRecipeCache must be populated by the reload populator, not constructor side-effects. Sample a real material
+    // recipe (registerRecipe path, MATERIAL type) and assert its variant was recorded as a known variant (addKnownVariant
+    // path). Data-driven so it can't go stale on recipe-id changes.
+    MaterialRecipe sample = null;
+    for (MaterialRecipe recipe : MaterialRecipeCache.getAllRecipes()) {
+      if (!recipe.getMaterial().isUnknown()) {
+        sample = recipe;
+        break;
+      }
+    }
+    if (sample == null) {
+      helper.fail("MaterialRecipeCache has no known material recipes; the registerRecipe/MATERIAL populate path did not run");
+    } else {
+      MaterialVariantId variant = sample.getMaterial().getVariant();
+      if (!MaterialRecipeCache.getVariants(variant.getId()).contains(variant)) {
+        helper.fail("MaterialRecipeCache did not record variant " + variant + " from a loaded material recipe");
+      } else {
+        helper.succeed();
+      }
     }
   }
 

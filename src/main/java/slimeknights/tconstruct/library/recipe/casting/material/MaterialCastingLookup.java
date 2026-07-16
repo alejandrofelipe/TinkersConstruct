@@ -10,8 +10,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.material.Fluid;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.tconstruct.TConstruct;
-import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator;
-import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator.DuelSidedListener;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
@@ -69,8 +67,8 @@ public class MaterialCastingLookup {
       .filter(recipe -> material.matchesVariant(recipe.getOutput()))
       .collect(Collectors.toList()));
 
-  /** Listener for clearing the recipe cache on recipe reload */
-  private static final DuelSidedListener LISTENER = RecipeCacheInvalidator.addDuelSidedListener(() -> {
+  /** Clears the lookup; called by RecipeLookupPopulator before repopulating from the RecipeManager. */
+  public static void clear() {
     ITEM_COST_LOOKUP.clear();
     CASTING_FLUIDS.clear();
     CASTING_CACHE.clear();
@@ -78,11 +76,10 @@ public class MaterialCastingLookup {
     MATERIAL_COMPOSITE.clear();
     COMPOSITE_FLUIDS.clear();
     COMPOSITE_CACHE.clear();
-  });
+  }
 
   /** Shared logic to register parts */
   public static void registerItemCost(IMaterialItem item, int cost) {
-    LISTENER.checkClear();
     // if it already exists
     if (ITEM_COST_LOOKUP.containsKey(item)) {
       int original = ITEM_COST_LOOKUP.getInt(item);
@@ -100,7 +97,6 @@ public class MaterialCastingLookup {
    * @param recipe  Recipe to add
    */
   public static void registerFluid(MaterialFluidRecipe recipe) {
-    LISTENER.checkClear();
     if (recipe.getInput() == null) {
       CASTING_FLUIDS.add(recipe);
     } else {

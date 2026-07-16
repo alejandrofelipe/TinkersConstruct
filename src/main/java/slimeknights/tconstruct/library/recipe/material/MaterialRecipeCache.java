@@ -4,8 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator;
-import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator.DuelSidedListener;
 import slimeknights.tconstruct.library.materials.IMaterialRegistry;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
@@ -40,21 +38,19 @@ public class MaterialRecipeCache {
   @Nullable
   private static List<MaterialVariantId> SORTED_VARIANTS = null;
 
-  /** Listener for clearing the cache */
-  private static final DuelSidedListener LISTENER = RecipeCacheInvalidator.addDuelSidedListener(() -> {
+  /** Clears the cache; called by RecipeLookupPopulator before repopulating from the RecipeManager. */
+  public static void clear() {
     RECIPES.clear();
     RECIPE_BY_ITEM.clear();
     RECIPES_BY_MATERIAL.clear();
     ITEMS_BY_MATERIAL.clear();
     KNOWN_VARIANTS.clear();
     SORTED_VARIANTS = null;
-  });
+  }
 
   /** Registers a recipe with the cache */
   public static void registerRecipe(MaterialRecipe recipe) {
     if (recipe.getValue() > 0) {
-      // ensure c ache does not need to be cleared
-      LISTENER.checkClear();
       // add recipe for item lookup; too early to resolve ingredient
       RECIPES.add(recipe);
       // mark the variant as known
@@ -116,7 +112,6 @@ public class MaterialRecipeCache {
 
   /** Registers a material variant for the lookups. */
   public static void addKnownVariant(MaterialVariantId variant) {
-    LISTENER.checkClear();
     KNOWN_VARIANTS.put(variant.getId(), variant);
     // null cache of sorted variants as its outdated now
     SORTED_VARIANTS = null;

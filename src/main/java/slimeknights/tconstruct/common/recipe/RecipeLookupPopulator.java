@@ -10,7 +10,9 @@ import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.casting.CastingRecipeLookup;
+import slimeknights.tconstruct.library.recipe.casting.material.MaterialCastingLookup;
 import slimeknights.tconstruct.library.recipe.fuel.MeltingFuelLookup;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeLookup;
 import slimeknights.tconstruct.library.recipe.modifiers.ModifierRecipeLookup;
 
@@ -29,12 +31,15 @@ public final class RecipeLookupPopulator {
     MeltingRecipeLookup.clear();
     CastingRecipeLookup.clear();
     ModifierRecipeLookup.clear();
+    MaterialCastingLookup.clear();
+    MaterialRecipeCache.clear();
     registerFrom(manager, TinkerRecipeTypes.FUEL.get());
     registerFrom(manager, TinkerRecipeTypes.MELTING.get());
     registerFrom(manager, TinkerRecipeTypes.CASTING_TABLE.get());
     registerFrom(manager, TinkerRecipeTypes.CASTING_BASIN.get());
     registerFrom(manager, TinkerRecipeTypes.TINKER_STATION.get());
     registerFrom(manager, TinkerRecipeTypes.DATA.get());
+    registerFrom(manager, TinkerRecipeTypes.MATERIAL.get());
     // future lookups migrate here
   }
 

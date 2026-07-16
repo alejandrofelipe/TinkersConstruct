@@ -47,7 +47,6 @@ public class MaterialCastingRecipe extends AbstractMaterialCastingRecipe impleme
   public MaterialCastingRecipe(TypeAwareRecipeSerializer<?> serializer, ResourceLocation id, String group, Ingredient cast, int itemCost, IMaterialItem result, IJsonPredicate<MaterialVariantId> materials, boolean consumed, boolean switchSlots) {
     super(serializer, id, group, cast, itemCost, consumed, switchSlots, materials);
     this.result = result;
-    MaterialCastingLookup.registerItemCost(result, itemCost);
   }
 
   /** @deprecated use {@link #MaterialCastingRecipe(TypeAwareRecipeSerializer, ResourceLocation, String, Ingredient, int, IMaterialItem, IJsonPredicate, boolean, boolean)} */
@@ -59,6 +58,7 @@ public class MaterialCastingRecipe extends AbstractMaterialCastingRecipe impleme
   @Override
   public void registerLookups() {
     CastingRecipeLookup.registerCastable(result);
+    MaterialCastingLookup.registerItemCost(result, itemCost);
   }
 
   @Override
