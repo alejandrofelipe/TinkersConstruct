@@ -57,7 +57,7 @@ import slimeknights.tconstruct.library.utils.Util;
 //import slimeknights.tconstruct.plugin.DummmmmmyPlugin;
 //import slimeknights.tconstruct.plugin.ImmersiveEngineeringPlugin;
 import slimeknights.tconstruct.plugin.craftingtweaks.CraftingTweaksPlugin;
-//import slimeknights.tconstruct.plugin.jsonthings.JsonThingsPlugin;
+import slimeknights.tconstruct.plugin.jsonthings.JsonThingsPlugin;
 import slimeknights.tconstruct.shared.TinkerAttributes;
 import slimeknights.tconstruct.shared.TinkerClient;
 import slimeknights.tconstruct.shared.TinkerCommons;
@@ -182,10 +182,10 @@ public class TConstruct {
 //    if (modList.isLoaded("immersiveengineering")) {
 //      bus.register(new ImmersiveEngineeringPlugin());
 //    }
-    // PORT M6: re-enable jsonthings compat
-//    if (modList.isLoaded("jsonthings")) {
-//      JsonThingsPlugin.onConstruct();
-//    }
+    // JSON Things: data-driven Tinkers items/blocks via thingpacks
+    if (modList.isLoaded("jsonthings")) {
+      JsonThingsPlugin.onConstruct();
+    }
     // PORT M6: re-enable diet compat
 //    if (modList.isLoaded("diet")) {
 //      DietPlugin.onConstruct();

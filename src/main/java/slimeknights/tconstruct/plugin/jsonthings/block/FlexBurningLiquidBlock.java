@@ -17,15 +17,15 @@ public class FlexBurningLiquidBlock extends FlexLiquidBlock {
   private final int burnTime;
   private final float damage;
   public FlexBurningLiquidBlock(Properties properties, Map<Property<?>,Comparable<?>> propertyDefaultValues, Supplier<FlowingFluid> fluidSupplier, int burnTime, float damage) {
-    super(properties, propertyDefaultValues, fluidSupplier);
+    super(properties, propertyDefaultValues, fluidSupplier.get());
     this.burnTime = burnTime;
     this.damage = damage;
   }
 
   @Override
   public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-    if (!entity.fireImmune() && entity.getFluidTypeHeight(getFluid().getFluidType()) > 0) {
-      entity.setSecondsOnFire(burnTime);
+    if (!entity.fireImmune() && entity.getFluidTypeHeight(this.fluid.getFluidType()) > 0) {
+      entity.igniteForSeconds(burnTime);
       if (entity.hurt(level.damageSources().lava(), damage)) {
         entity.playSound(SoundEvents.GENERIC_BURN, 0.4F, 2.0F + level.random.nextFloat() * 0.4F);
       }
