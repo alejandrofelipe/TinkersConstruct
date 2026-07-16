@@ -120,9 +120,9 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
       int tabX = this.cornerX + this.realWidth + 2;
       int tabTop = this.cornerY + 20;
       this.panelTabs.add(this.addRenderableWidget(new PanelTabButton(tabX, tabTop, style,
-        (g, ix, iy) -> Icons.PATTERN.draw(g, ix, iy), b -> this.openOverlay(OverlayPanel.TOOL_INFO))));
+        (g, ix, iy) -> Icons.PICKAXE.draw(g, ix, iy), b -> this.openOverlay(OverlayPanel.TOOL_INFO))));
       this.panelTabs.add(this.addRenderableWidget(new PanelTabButton(tabX, tabTop + PanelTabButton.HEIGHT + 2, style,
-        (g, ix, iy) -> Icons.INGOT.draw(g, ix, iy), b -> this.openOverlay(OverlayPanel.MODIFIER_INFO))));
+        (g, ix, iy) -> Icons.GEM.draw(g, ix, iy), b -> this.openOverlay(OverlayPanel.MODIFIER_INFO))));
     }
   }
 

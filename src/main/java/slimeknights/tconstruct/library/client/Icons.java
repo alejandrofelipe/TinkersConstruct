@@ -12,11 +12,11 @@ public interface Icons {
   ElementScreen PATTERN = new ElementScreen(ICONS, 0, 18 * 12, 18, 18, 256, 256);
   //ElementScreen SHARD = new ElementScreen(18, 18 * 12, 18, 18);
   //ElementScreen BLOCK = new ElementScreen(18 * 2, 18 * 12, 18, 18);
-  //ElementScreen PICKAXE = new ElementScreen(0, 18 * 13, 18, 18);
+  ElementScreen PICKAXE = PATTERN.move(0, 18 * 13, 18, 18);
   //ElementScreen DUST = new ElementScreen(18, 18 * 13, 18, 18);
   //ElementScreen LAPIS = new ElementScreen(18 * 2, 18 * 13, 18, 18);
   ElementScreen INGOT = PATTERN.move(18 * 3, 18 * 13, 18, 18);
-  //ElementScreen GEM = new ElementScreen(18 * 4, 18 * 13, 18, 18);
+  ElementScreen GEM = PATTERN.move(18 * 4, 18 * 13, 18, 18);
   //ElementScreen QUARTZ = new ElementScreen(18 * 5, 18 * 13, 18, 18);
   ElementScreen BUTTON = PATTERN.move(180, 216, 18, 18);
   ElementScreen BUTTON_HOVERED = PATTERN.move(180 + 18 * 2, 216, 18, 18);
