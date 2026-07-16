@@ -8,8 +8,6 @@ import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import slimeknights.mantle.recipe.helper.FluidOutput;
-import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator;
-import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator.DuelSidedListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,18 +39,18 @@ public class MeltingRecipeLookup {
   private static final List<MeltingFluid> FLUIDS = new ArrayList<>();
   /** Cache of lookup by item, assumes no recipes vary by NBT. We mostly use this for blocks anyways */
   private static final Map<Item,MeltingFluid> LOOKUP = new HashMap<>();
-  /** Cache invalidator */
-  private static final DuelSidedListener CACHE = RecipeCacheInvalidator.addDuelSidedListener(() -> {
+
+  /** Clears the lookup; called by RecipeLookupPopulator before repopulating from the RecipeManager. */
+  public static void clear() {
     FLUIDS.clear();
     LOOKUP.clear();
-  });
+  }
 
   /** Adds a fluid to the lookup */
   public static void addMeltingFluid(Ingredient ingredient, FluidOutput result, int temperature) {
     if (meltingFrozen) {
       return;
     }
-    CACHE.checkClear();
     FLUIDS.add(new MeltingFluid(ingredient, result, temperature));
   }
 

@@ -130,7 +130,7 @@ public class MaterialMeltingRecipe implements IMeltingRecipe, IMultiRecipe<Melti
               }
             }
             return new MeltingRecipe(id, "", MaterialIngredient.of(entry.getKey(), inputId), output, temperature,
-                                     IMeltingRecipe.calcTimeForAmount(temperature, output.getAmount()), byproducts, false);
+                                     IMeltingRecipe.calcTimeForAmount(temperature, output.getAmount()), byproducts);
           }).collect(Collectors.toList());
       }
     }

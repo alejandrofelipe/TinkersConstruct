@@ -13,6 +13,7 @@ import slimeknights.mantle.data.loadable.primitive.IntLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.recipe.ICustomOutputRecipe;
 import slimeknights.mantle.recipe.ingredient.FluidIngredient;
+import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
@@ -23,7 +24,7 @@ import java.util.List;
  * Recipe for a fuel for the melter or smeltery
  */
 @Getter
-public class MeltingFuel implements ICustomOutputRecipe<IFluidContainer> {
+public class MeltingFuel implements ICustomOutputRecipe<IFluidContainer>, ILookupRegistrar {
   public static final RecordLoadable<MeltingFuel> LOADER = RecordLoadable.create(
     ContextKey.ID.nullableField(),
     FluidIngredient.LOADABLE.defaultField("fluid", FluidIngredient.EMPTY, (MeltingFuel r) -> r.input),
@@ -50,6 +51,11 @@ public class MeltingFuel implements ICustomOutputRecipe<IFluidContainer> {
     this.duration = duration;
     this.temperature = temperature;
     this.rate = rate;
+  }
+
+  @Override
+  public void registerLookups() {
+    MeltingFuelLookup.addFuel(this);
   }
 
   /* Recipe methods */

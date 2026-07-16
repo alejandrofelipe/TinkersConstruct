@@ -17,6 +17,7 @@ import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.recipe.helper.FluidOutput;
 import slimeknights.mantle.recipe.helper.LoadableRecipeSerializer;
 import slimeknights.tconstruct.common.config.Config;
+import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer.OreRateType;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
@@ -27,7 +28,7 @@ import java.util.stream.Stream;
 /**
  * Recipe to melt an ingredient into a specific fuel
  */
-public class MeltingRecipe implements IMeltingRecipe {
+public class MeltingRecipe implements IMeltingRecipe, ILookupRegistrar {
   /* Reusable fields */
   protected static final LoadableField<Ingredient, MeltingRecipe> INPUT = IngredientLoadable.DISALLOW_EMPTY.requiredField("ingredient", MeltingRecipe::getInput);
   protected static final LoadableField<FluidOutput, MeltingRecipe> OUTPUT = FluidOutput.Loadable.REQUIRED.requiredField("result", r -> r.output);
@@ -53,11 +54,6 @@ public class MeltingRecipe implements IMeltingRecipe {
   protected List<List<FluidStack>> outputWithByproducts;
 
   public MeltingRecipe(ResourceLocation id, String group, Ingredient input, FluidOutput output, int temperature, int time, List<FluidOutput> byproducts) {
-    this(id, group, input, output, temperature, time, byproducts, true);
-  }
-
-  /** Constructor that allows canceling the lookup addition, for generated recipes in JEI */
-  public MeltingRecipe(ResourceLocation id, String group, Ingredient input, FluidOutput output, int temperature, int time, List<FluidOutput> byproducts, boolean addLookup) {
     this.id = id;
     this.group = group;
     this.input = input;
@@ -65,9 +61,11 @@ public class MeltingRecipe implements IMeltingRecipe {
     this.temperature = temperature;
     this.time = time;
     this.byproducts = byproducts;
-    if (addLookup) {
-      MeltingRecipeLookup.addMeltingFluid(input, output, temperature);
-    }
+  }
+
+  @Override
+  public void registerLookups() {
+    MeltingRecipeLookup.addMeltingFluid(input, output, temperature);
   }
 
   @Override

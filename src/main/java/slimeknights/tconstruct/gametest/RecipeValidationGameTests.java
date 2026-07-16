@@ -21,6 +21,8 @@ import slimeknights.tconstruct.library.recipe.casting.material.MaterialCastingLo
 import slimeknights.tconstruct.library.recipe.fuel.MeltingFuelLookup;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
+import slimeknights.tconstruct.library.recipe.melting.MeltingRecipe;
+import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeLookup;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -186,6 +188,33 @@ public class RecipeValidationGameTests {
       helper.fail("findFuel(lava) returned null despite isFuel(lava)=true");
     } else if (MeltingFuelLookup.getSolid().getRate() <= 0) {
       helper.fail("no solid fuel registered (getSolid() returned the EMPTY sentinel)");
+    } else {
+      helper.succeed();
+    }
+  }
+
+  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void melting_recipe_lookup_populated(GameTestHelper helper) {
+    // MeltingRecipeLookup must be populated by the reload populator (RecipeLookupPopulator), not constructor side-effects.
+    // Data-driven so it can't go stale: pull a real static melting recipe (a MeltingRecipe with a concrete item
+    // ingredient) from the manager, then assert the lookup resolves that same input. If population never ran, the
+    // lookup is empty and canMelt returns false. MaterialMeltingRecipe is skipped as it has no item ingredient of its
+    // own and never feeds the lookup.
+    RecipeManager recipeManager = helper.getLevel().getRecipeManager();
+    ItemStack sample = ItemStack.EMPTY;
+    for (RecipeHolder<IMeltingRecipe> holder : recipeManager.getAllRecipesFor(TinkerRecipeTypes.MELTING.get())) {
+      if (holder.value() instanceof MeltingRecipe recipe) {
+        Ingredient input = recipe.getInput();
+        if (!input.isEmpty() && !input.hasNoItems()) {
+          sample = input.getItems()[0];
+          break;
+        }
+      }
+    }
+    if (sample.isEmpty()) {
+      helper.fail("no static MeltingRecipe with a concrete item ingredient found; cannot verify MeltingRecipeLookup population");
+    } else if (!MeltingRecipeLookup.canMelt(sample.getItem())) {
+      helper.fail("MeltingRecipeLookup not populated: " + sample.getItem() + " has a MeltingRecipe but the lookup does not resolve it");
     } else {
       helper.succeed();
     }
