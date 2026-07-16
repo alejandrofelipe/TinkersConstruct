@@ -15,6 +15,7 @@ import slimeknights.mantle.data.loadable.primitive.IntLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.modifiers.modules.capacity.OverslimeModule;
@@ -37,7 +38,7 @@ import static slimeknights.tconstruct.library.recipe.modifiers.adding.IDisplayMo
 /**
  * Recipe to add overslime to a tool
  */
-public class OverslimeModifierRecipe implements ITinkerStationRecipe, IDisplayModifierRecipe {
+public class OverslimeModifierRecipe implements ITinkerStationRecipe, IDisplayModifierRecipe, ILookupRegistrar {
   private static final RecipeResult<LazyToolStack> AT_CAPACITY = RecipeResult.failure(TConstruct.makeTranslationKey("recipe", "overslime.at_capacity"));
   private static final String KEY_AMOUNT = TConstruct.makeTranslationKey("recipe", "modifier.amount");
   public static final RecordLoadable<OverslimeModifierRecipe> LOADER = RecordLoadable.create(
@@ -59,13 +60,17 @@ public class OverslimeModifierRecipe implements ITinkerStationRecipe, IDisplayMo
     this.tools = tools;
     this.ingredient = ingredient;
     this.restoreAmount = restoreAmount;
-    ModifierRecipeLookup.addRecipeModifier(null, TinkerModifiers.overslime);
   }
 
   /** @deprecated use {@link #OverslimeModifierRecipe(ResourceLocation, Ingredient, Ingredient, int)} */
   @Deprecated(forRemoval = true)
   public OverslimeModifierRecipe(ResourceLocation id, Ingredient ingredient, int restoreAmount) {
     this(id, Ingredient.of(TinkerTags.Items.DURABILITY), ingredient, restoreAmount);
+  }
+
+  @Override
+  public void registerLookups() {
+    ModifierRecipeLookup.addRecipeModifier(null, TinkerModifiers.overslime);
   }
 
   @Override

@@ -17,6 +17,7 @@ import slimeknights.mantle.recipe.IMultiRecipe;
 import slimeknights.mantle.util.RegistryHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 import slimeknights.tconstruct.library.json.IntRange;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
@@ -39,12 +40,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /** Recipe to dye travelers gear */
-public class ArmorDyeingRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisplayModifierRecipe> {
+public class ArmorDyeingRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisplayModifierRecipe>, ILookupRegistrar {
   /** PORT M3 (recipes): 1.21 recipes no longer carry an id; retained for JEI display only. */
   @Getter
   private final ResourceLocation id = TConstruct.getResource("armor_dyeing_modifier");
 
-  public ArmorDyeingRecipe() {
+  public ArmorDyeingRecipe() {}
+
+  @Override
+  public void registerLookups() {
     ModifierRecipeLookup.addRecipeModifier(null, TinkerModifiers.dyed);
   }
 

@@ -20,6 +20,7 @@ import slimeknights.mantle.recipe.IMultiRecipe;
 import slimeknights.mantle.util.RegistryHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 import slimeknights.tconstruct.library.json.IntRange;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
@@ -41,12 +42,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /** Recipe to add a banner to a shield */
-public class BannerModifierRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisplayModifierRecipe> {
+public class BannerModifierRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisplayModifierRecipe>, ILookupRegistrar {
   /** PORT M3 (recipes): 1.21 recipes no longer carry an id; retained for JEI display only. */
   @Getter
   private final ResourceLocation id = TConstruct.getResource("banner_modifier");
 
-  public BannerModifierRecipe() {
+  public BannerModifierRecipe() {}
+
+  @Override
+  public void registerLookups() {
     ModifierRecipeLookup.addRecipeModifier(null, TinkerModifiers.banner);
   }
 

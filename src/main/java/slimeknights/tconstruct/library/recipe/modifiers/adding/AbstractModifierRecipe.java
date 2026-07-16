@@ -14,6 +14,7 @@ import slimeknights.mantle.data.loadable.field.LoadableField;
 import slimeknights.mantle.data.loadable.primitive.BooleanLoadable;
 import slimeknights.mantle.data.loadable.primitive.IntLoadable;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 import slimeknights.tconstruct.library.json.IntRange;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
@@ -45,7 +46,7 @@ import static slimeknights.tconstruct.library.recipe.modifiers.adding.IDisplayMo
 import static slimeknights.tconstruct.library.recipe.modifiers.adding.IDisplayModifierRecipe.withModifiers;
 
 /** Shared logic between modifier and incremental modifier recipes */
-public abstract class AbstractModifierRecipe implements ITinkerStationRecipe, IDisplayModifierRecipe {
+public abstract class AbstractModifierRecipe implements ITinkerStationRecipe, IDisplayModifierRecipe, ILookupRegistrar {
   /** Error for when the tool has does not have enough existing levels of this modifier, has a single parameter, modifier with level */
   protected static final String KEY_MIN_LEVEL = TConstruct.makeTranslationKey("recipe", "modifier.min_level");
   protected static final String KEY_MIN_LEVEL_TRAITS = KEY_MIN_LEVEL + ".traits";
@@ -97,6 +98,10 @@ public abstract class AbstractModifierRecipe implements ITinkerStationRecipe, ID
     this.slots = slots;
     this.allowCrystal = allowCrystal;
     this.checkTraitLevel = checkTraitLevel;
+  }
+
+  @Override
+  public void registerLookups() {
     ModifierRecipeLookup.addRecipeModifier(SlotCount.type(slots), this.result);
   }
 

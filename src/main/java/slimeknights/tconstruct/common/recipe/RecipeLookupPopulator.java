@@ -12,6 +12,7 @@ import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.casting.CastingRecipeLookup;
 import slimeknights.tconstruct.library.recipe.fuel.MeltingFuelLookup;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeLookup;
+import slimeknights.tconstruct.library.recipe.modifiers.ModifierRecipeLookup;
 
 /**
  * Populates static recipe lookups from the {@link RecipeManager} at reload, replacing recipe-constructor
@@ -27,16 +28,26 @@ public final class RecipeLookupPopulator {
     MeltingFuelLookup.clear();
     MeltingRecipeLookup.clear();
     CastingRecipeLookup.clear();
+    ModifierRecipeLookup.clear();
     registerFrom(manager, TinkerRecipeTypes.FUEL.get());
     registerFrom(manager, TinkerRecipeTypes.MELTING.get());
     registerFrom(manager, TinkerRecipeTypes.CASTING_TABLE.get());
     registerFrom(manager, TinkerRecipeTypes.CASTING_BASIN.get());
+    registerFrom(manager, TinkerRecipeTypes.TINKER_STATION.get());
+    registerFrom(manager, TinkerRecipeTypes.DATA.get());
     // future lookups migrate here
   }
 
-  /** Calls {@link ILookupRegistrar#registerLookups()} on every recipe of the given type that implements the interface. */
-  private static <I extends RecipeInput, R extends Recipe<I>> void registerFrom(RecipeManager manager, RecipeType<R> type) {
-    for (RecipeHolder<R> holder : manager.getAllRecipesFor(type)) {
+  /**
+   * Calls {@link ILookupRegistrar#registerLookups()} on every recipe of the given type that implements the interface.
+   * Takes a {@code RecipeType<?>} and casts to a concrete parameterization so it accepts both narrowly-typed recipe
+   * types and the generic {@code DATA} type ({@code RecipeType<Recipe<?>>}, whose nested wildcard can't satisfy
+   * {@link RecipeManager#getAllRecipesFor}'s {@code T extends Recipe<C>} bound). Only the interface is invoked on
+   * matching recipes, so the erased element type is irrelevant.
+   */
+  @SuppressWarnings("unchecked")
+  private static void registerFrom(RecipeManager manager, RecipeType<?> type) {
+    for (RecipeHolder<Recipe<RecipeInput>> holder : manager.getAllRecipesFor((RecipeType<Recipe<RecipeInput>>) type)) {
       if (holder.value() instanceof ILookupRegistrar registrar) {
         registrar.registerLookups();
       }

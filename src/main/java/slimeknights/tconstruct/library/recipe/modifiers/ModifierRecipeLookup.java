@@ -3,8 +3,6 @@ package slimeknights.tconstruct.library.recipe.modifiers;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.world.item.ItemStack;
-import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator;
-import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator.DuelSidedListener;
 import slimeknights.tconstruct.library.modifiers.Modifier;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
@@ -30,13 +28,13 @@ public class ModifierRecipeLookup {
   /** List of modifiers to show in JEI */
   private static List<ModifierEntry> RECIPE_MODIFIER_LIST = null;
 
-  /** Listener for clearing the caches on recipe reload */
-  private static final DuelSidedListener LISTENER = RecipeCacheInvalidator.addDuelSidedListener(() -> {
+  /** Clears the lookup; called by RecipeLookupPopulator before repopulating from the RecipeManager. */
+  public static void clear() {
     SALVAGE.clear();
     RECIPE_MODIFIERS.clear();
     RECIPE_MODIFIER_IDS.clear();
     RECIPE_MODIFIER_LIST = null;
-  });
+  }
 
 
   /* Salvage */
@@ -46,7 +44,6 @@ public class ModifierRecipeLookup {
    * @param salvage  Salvage recipe
    */
   public static void addSalvage(ModifierSalvage salvage) {
-    LISTENER.checkClear();
     SALVAGE.put(salvage.getModifier(), salvage);
   }
 
@@ -76,7 +73,6 @@ public class ModifierRecipeLookup {
    * @param modifier  Modifier in that slot
    */
   public static void addRecipeModifier(@Nullable SlotType slotType, LazyModifier modifier) {
-    LISTENER.checkClear();
     RECIPE_MODIFIERS.put(slotType, modifier);
     RECIPE_MODIFIER_IDS.put(slotType, modifier.getId());
   }

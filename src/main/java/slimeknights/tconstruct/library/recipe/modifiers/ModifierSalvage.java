@@ -13,6 +13,7 @@ import slimeknights.mantle.data.loadable.field.ContextKey;
 import slimeknights.mantle.data.loadable.primitive.IntLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.recipe.ICustomOutputRecipe;
+import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 import slimeknights.tconstruct.library.json.IntRange;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
@@ -26,7 +27,7 @@ import slimeknights.tconstruct.tools.TinkerModifiers;
 /**
  * Shared logic for main types of salvage recipes
  */
-public class ModifierSalvage implements ICustomOutputRecipe<RecipeInput> {
+public class ModifierSalvage implements ICustomOutputRecipe<RecipeInput>, ILookupRegistrar {
   public static final RecordLoadable<ModifierSalvage> LOADER = RecordLoadable.create(
     ContextKey.ID.nullableField(),
     IngredientLoadable.DISALLOW_EMPTY.requiredField("tools", r -> r.toolIngredient),
@@ -59,6 +60,10 @@ public class ModifierSalvage implements ICustomOutputRecipe<RecipeInput> {
     this.modifier = modifier;
     this.level = level;
     this.slots = slots;
+  }
+
+  @Override
+  public void registerLookups() {
     ModifierRecipeLookup.addSalvage(this);
   }
 

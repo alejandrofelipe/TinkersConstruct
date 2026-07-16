@@ -20,6 +20,7 @@ import slimeknights.mantle.recipe.IMultiRecipe;
 import slimeknights.mantle.util.RegistryHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 import slimeknights.tconstruct.library.json.IntRange;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
@@ -39,7 +40,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisplayModifierRecipe> {
+public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisplayModifierRecipe>, ILookupRegistrar {
   protected static final String KEY_INVALID_MATERIAL = TConstruct.makeTranslationKey("recipe", "modifier.armor_trim.invalid_material");
   protected static final String KEY_INVALID_PATTERN = TConstruct.makeTranslationKey("recipe", "modifier.armor_trim.invalid_pattern");
 
@@ -48,7 +49,10 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
   @Getter
   private final ResourceLocation id = TConstruct.getResource("armor_trim_modifier");
 
-  public ArmorTrimRecipe() {
+  public ArmorTrimRecipe() {}
+
+  @Override
+  public void registerLookups() {
     ModifierRecipeLookup.addRecipeModifier(null, TinkerModifiers.trim);
   }
 

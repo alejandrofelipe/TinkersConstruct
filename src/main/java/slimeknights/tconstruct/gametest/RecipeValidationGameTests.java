@@ -14,6 +14,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.alloying.AlloyRecipe;
 import slimeknights.tconstruct.library.recipe.casting.CastingRecipeLookup;
@@ -26,6 +27,9 @@ import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipe;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeLookup;
+import slimeknights.tconstruct.library.recipe.modifiers.ModifierRecipeLookup;
+import slimeknights.tconstruct.library.recipe.modifiers.adding.IDisplayModifierRecipe;
+import slimeknights.tconstruct.library.recipe.tinkerstation.ITinkerStationRecipe;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -251,6 +255,31 @@ public class RecipeValidationGameTests {
       helper.fail("no static ItemCastingRecipe with a concrete result output found; cannot verify CastingRecipeLookup population");
     } else if (!CastingRecipeLookup.isCastable(sample.getItem())) {
       helper.fail("CastingRecipeLookup not populated: " + sample.getItem() + " has a casting recipe but the lookup does not mark it castable");
+    } else {
+      helper.succeed();
+    }
+  }
+
+  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void modifier_recipe_lookup_populated(GameTestHelper helper) {
+    // ModifierRecipeLookup must be populated by the reload populator (RecipeLookupPopulator), not constructor side-effects.
+    // Data-driven so it can't go stale: pull a real modifier-adding recipe (any IDisplayModifierRecipe under the
+    // tinker_station type - ModifierRecipe, OverslimeModifierRecipe, etc.) from the manager, read the modifier it adds
+    // via getDisplayResult().getId() (which does not resolve the lazy modifier), then assert the lookup marks that same
+    // modifier as a recipe modifier. If the TINKER_STATION populate path never ran, the lookup is empty and
+    // isRecipeModifier returns false.
+    RecipeManager recipeManager = helper.getLevel().getRecipeManager();
+    ModifierId sample = null;
+    for (RecipeHolder<ITinkerStationRecipe> holder : recipeManager.getAllRecipesFor(TinkerRecipeTypes.TINKER_STATION.get())) {
+      if (holder.value() instanceof IDisplayModifierRecipe recipe) {
+        sample = recipe.getDisplayResult().getId();
+        break;
+      }
+    }
+    if (sample == null) {
+      helper.fail("no IDisplayModifierRecipe found under the tinker_station type; cannot verify ModifierRecipeLookup population");
+    } else if (!ModifierRecipeLookup.isRecipeModifier(sample)) {
+      helper.fail("ModifierRecipeLookup not populated: " + sample + " is added by a modifier recipe but the lookup does not resolve it");
     } else {
       helper.succeed();
     }
