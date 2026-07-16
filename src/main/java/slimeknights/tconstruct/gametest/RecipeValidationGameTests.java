@@ -40,6 +40,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Data-driven: every melting/casting/alloy recipe registered with the recipe manager is well-formed.
@@ -187,6 +188,28 @@ public class RecipeValidationGameTests {
       }
     }
     reportResult(helper, "alloy", failures);
+  }
+
+  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void all_material_fluid_recipes_valid(GameTestHelper helper) {
+    // The material-casting family (MaterialCastingRecipe/ToolCastingRecipe/PartSwapCastingRecipe) has no per-recipe
+    // fluid ingredient - its fluids come from the global MaterialCastingLookup (MaterialFluidRecipe, the data type),
+    // so all_casting_recipes_valid can't reach them (see its comment). Validate them at the source instead: every
+    // registered casting/composite fluid must resolve to real fluids and a known output material.
+    Map<String, String> failures = new LinkedHashMap<>();
+    Stream.concat(MaterialCastingLookup.getAllCastingFluids().stream(), MaterialCastingLookup.getAllCompositeFluids().stream())
+      .forEach(recipe -> {
+        // MaterialFluidRecipe carries no id in 1.21 (it lives on the RecipeHolder, unreachable from the lookup
+        // collection - getId() is null here), so describe the recipe by its input->output material for reporting.
+        String id = "material_fluid(" + (recipe.getInput() != null ? recipe.getInput().getVariant() + "->" : "") + recipe.getOutput().getVariant() + ")";
+        if (recipe.getFluids().isEmpty()) {
+          failures.merge(id, "fluid ingredient resolves to no fluids", (a, b) -> a + "; " + b);
+        }
+        if (recipe.getOutput().isUnknown()) {
+          failures.merge(id, "output material is unknown", (a, b) -> a + "; " + b);
+        }
+      });
+    reportResult(helper, "material fluid", failures);
   }
 
   @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
