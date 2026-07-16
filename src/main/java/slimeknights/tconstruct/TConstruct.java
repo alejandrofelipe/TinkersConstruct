@@ -55,7 +55,7 @@ import slimeknights.tconstruct.library.utils.Util;
 // PORT M6: re-enable disabled compat imports (DietPlugin, DummmmmmyPlugin, ImmersiveEngineeringPlugin, CraftingTweaksPlugin, JsonThingsPlugin)
 //import slimeknights.tconstruct.plugin.DietPlugin;
 //import slimeknights.tconstruct.plugin.DummmmmmyPlugin;
-//import slimeknights.tconstruct.plugin.ImmersiveEngineeringPlugin;
+import slimeknights.tconstruct.plugin.ImmersiveEngineeringPlugin;
 import slimeknights.tconstruct.plugin.craftingtweaks.CraftingTweaksPlugin;
 import slimeknights.tconstruct.plugin.jsonthings.JsonThingsPlugin;
 import slimeknights.tconstruct.shared.TinkerAttributes;
@@ -178,10 +178,10 @@ public class TConstruct {
 
     // compat
     ModList modList = ModList.get();
-    // PORT M6: re-enable immersiveengineering compat
-//    if (modList.isLoaded("immersiveengineering")) {
-//      bus.register(new ImmersiveEngineeringPlugin());
-//    }
+    // Immersive Engineering: chemthrower fluid effects + shield disabling
+    if (modList.isLoaded("immersiveengineering")) {
+      bus.register(new ImmersiveEngineeringPlugin());
+    }
     // JSON Things: data-driven Tinkers items/blocks via thingpacks
     if (modList.isLoaded("jsonthings")) {
       JsonThingsPlugin.onConstruct();

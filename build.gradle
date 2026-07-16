@@ -61,7 +61,6 @@ sourceSets {
             exclude 'assets/tconstruct/debug'
         }
         java {
-            exclude 'slimeknights/tconstruct/plugin/ImmersiveEngineeringPlugin.java'
             exclude 'slimeknights/tconstruct/plugin/DietPlugin.java'
             exclude 'slimeknights/tconstruct/plugin/DummmmmmyPlugin.java'
         }
@@ -163,6 +162,10 @@ dependencies {
     // JSON Things compat (optional, standalone). Artifact name embeds the MC version.
     compileOnly "dev.gigaherz.jsonthings:JsonThings-${minecraft_version}:${jsonthings_version}"
     runtimeOnly "dev.gigaherz.jsonthings:JsonThings-${minecraft_version}:${jsonthings_version}"
+
+    // Immersive Engineering compat (optional, standalone; Jared's maven).
+    compileOnly "blusunrize.immersiveengineering:ImmersiveEngineering:${ie_version}"
+    runtimeOnly "blusunrize.immersiveengineering:ImmersiveEngineering:${ie_version}"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
