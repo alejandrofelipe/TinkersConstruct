@@ -54,6 +54,7 @@ import slimeknights.tconstruct.common.data.render.RenderItemProvider;
 import slimeknights.tconstruct.common.json.BlockOrEntityCondition;
 import slimeknights.tconstruct.common.json.ConfigEnabledCondition;
 import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator;
+import slimeknights.tconstruct.common.recipe.RecipeLookupPopulator;
 import slimeknights.tconstruct.gadgets.TinkerGadgets;
 import slimeknights.tconstruct.library.json.condition.TagDifferencePresentCondition;
 import slimeknights.tconstruct.library.json.condition.TagIntersectionPresentCondition;
@@ -186,6 +187,9 @@ public final class TinkerCommons extends TinkerModule {
   public TinkerCommons() {
     TConstructCommand.init();
     NeoForge.EVENT_BUS.addListener(RecipeCacheInvalidator::onReloadListenerReload);
+    // populate static recipe lookups from the server recipe manager (initial load, /reload, player join)
+    NeoForge.EVENT_BUS.addListener(RecipeLookupPopulator::onServerStarted);
+    NeoForge.EVENT_BUS.addListener(RecipeLookupPopulator::onDatapackSync);
     // register the data-load condition codecs onto the mod bus (NeoForge replaces CraftingHelper.register with a codec registry)
     CONDITION_SERIALIZERS.register(TConstruct.modBus);
   }

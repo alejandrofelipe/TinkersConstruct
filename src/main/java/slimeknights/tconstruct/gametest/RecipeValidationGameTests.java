@@ -8,6 +8,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -17,6 +18,7 @@ import slimeknights.tconstruct.library.recipe.alloying.AlloyRecipe;
 import slimeknights.tconstruct.library.recipe.casting.ICastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.material.MaterialCastingLookup;
+import slimeknights.tconstruct.library.recipe.fuel.MeltingFuelLookup;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
 
@@ -172,6 +174,21 @@ public class RecipeValidationGameTests {
       }
     }
     reportResult(helper, "alloy", failures);
+  }
+
+  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void melting_fuel_lookup_populated(GameTestHelper helper) {
+    // MeltingFuelLookup must be populated by the reload populator (RecipeLookupPopulator), not constructor side-effects.
+    // Lava is a registered fuel and there is a registered solid fuel; assert both are present after load.
+    if (!MeltingFuelLookup.isFuel(Fluids.LAVA)) {
+      helper.fail("MeltingFuelLookup not populated: lava should be a registered fuel");
+    } else if (MeltingFuelLookup.findFuel(Fluids.LAVA) == null) {
+      helper.fail("findFuel(lava) returned null despite isFuel(lava)=true");
+    } else if (MeltingFuelLookup.getSolid().getRate() <= 0) {
+      helper.fail("no solid fuel registered (getSolid() returned the EMPTY sentinel)");
+    } else {
+      helper.succeed();
+    }
   }
 
   /** Fails the test listing every non-triaged offender (id + reason), else succeeds. */

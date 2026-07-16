@@ -50,8 +50,6 @@ public class MeltingFuel implements ICustomOutputRecipe<IFluidContainer> {
     this.duration = duration;
     this.temperature = temperature;
     this.rate = rate;
-    // register this recipe with the lookup
-    MeltingFuelLookup.addFuel(this);
   }
 
   /* Recipe methods */

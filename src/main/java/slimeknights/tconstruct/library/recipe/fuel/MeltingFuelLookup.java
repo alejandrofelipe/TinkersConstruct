@@ -6,8 +6,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
 import slimeknights.mantle.recipe.ingredient.FluidIngredient;
 import slimeknights.tconstruct.TConstruct;
-import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator;
-import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator.DuelSidedListener;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -39,15 +37,17 @@ public class MeltingFuelLookup {
     }
     return EMPTY;
   };
-  /** Listener to check when recipes reload */
-  private static final DuelSidedListener LISTENER = RecipeCacheInvalidator.addDuelSidedListener(() -> {
+
+  /** Clears the lookup; called by RecipeLookupPopulator before repopulating from the RecipeManager. */
+  public static void clear() {
     SOLID = EMPTY;
     RECIPES.clear();
     CACHE.clear();
-  });
+  }
 
   /**
-   * Adds a melting fuel to the lookup
+   * Adds a melting fuel to the lookup. Called by {@link slimeknights.tconstruct.common.recipe.RecipeLookupPopulator}
+   * once per FUEL recipe on each reload, after {@link #clear()} has emptied the lookup.
    * @param fuel   Fuel
    */
   public static void addFuel(MeltingFuel fuel) {
@@ -55,17 +55,14 @@ public class MeltingFuelLookup {
     if (fuel.getRate() == 0) {
       return;
     }
-    LISTENER.checkClear();
     if (fuel.getInput() != FluidIngredient.EMPTY) {
       RECIPES.add(fuel);
     } else if (SOLID == EMPTY) {
       SOLID = fuel;
     } else if (SOLID.getTemperature() != fuel.getTemperature() || SOLID.getRate() != fuel.getRate()) {
-      // Recipe values carry no usable ID here: on 1.21 the ID lives on the external RecipeHolder, not the value
-      // (see LoadableRecipeSerializer), so MeltingFuel.getId() is always null for recipes built via codec/streamCodec.
-      // Every recipe is also reconstructed twice per boot under an integrated server (once from the datapack codec
-      // server-side, once from the client's update_recipes network resync), so a second solid-fuel registration is
-      // expected and must be compared by content, not identity, to tell a real datapack conflict from that resync.
+      // Population is a single clear-then-populate pass (RecipeLookupPopulator clears before adding), so a second
+      // solid fuel with different values here is a genuine datapack conflict (two distinct solid-fuel recipes), not
+      // the historical integrated-server double-construction false positive.
       TConstruct.LOG.warn("Multiple fuel recipes for solid fuel. This usually indicates a datapack error and may cause desyncs. Original temperature {} rate {}, latest temperature {} rate {}", SOLID.getTemperature(), SOLID.getRate(), fuel.getTemperature(), fuel.getRate());
     }
   }
