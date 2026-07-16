@@ -81,7 +81,7 @@ public class TankItem extends BlockTooltipItem {
         FluidStack fluid = tank.getFluid();
         tooltip.add(fluid.getHoverName().plainCopy().withStyle(ChatFormatting.GRAY));
         if (flag.isAdvanced()) {
-          tooltip.add(Component.translatable(FLUID_ID, Loadables.FLUID.getKey(fluid.getFluid())).withStyle(ChatFormatting.DARK_GRAY));
+          tooltip.add(Component.translatable(FLUID_ID, Loadables.FLUID.getKey(fluid.getFluid()).toString()).withStyle(ChatFormatting.DARK_GRAY));
         }
         FluidTooltipHandler.appendMaterial(fluid, tooltip);
       }

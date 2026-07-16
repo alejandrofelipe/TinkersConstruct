@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor(staticName = "material")
 public class MaterialArgument implements ArgumentType<IMaterial> {
   static final Collection<String> EXAMPLES = Arrays.asList("tconstruct:wood", "tconstruct:iron");
-  private static final DynamicCommandExceptionType NOT_FOUND = new DynamicCommandExceptionType(name -> TConstruct.makeTranslation("command", "material.not_found", name));
+  private static final DynamicCommandExceptionType NOT_FOUND = new DynamicCommandExceptionType(name -> TConstruct.makeTranslation("command", "material.not_found", name.toString()));
 
   /** Gets the tool stat from the context */
   public static IMaterial getMaterial(CommandContext<CommandSourceStack> context, String name) {

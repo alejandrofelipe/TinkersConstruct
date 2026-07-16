@@ -95,9 +95,9 @@ public class ToolPartItem extends MaterialItem implements IToolPart {
         // is the material missing, or is it not valid for this stat type?
         IMaterial material = MaterialRegistry.getMaterial(id);
         if (material == IMaterial.UNKNOWN) {
-          tooltip.add(Component.translatable(MISSING_MATERIAL_KEY, id));
+          tooltip.add(Component.translatable(MISSING_MATERIAL_KEY, id.toString()));
         } else {
-          tooltip.add(Component.translatable(MISSING_STATS_KEY, self.getStatType()).withStyle(ChatFormatting.GRAY));
+          tooltip.add(Component.translatable(MISSING_STATS_KEY, self.getStatType().toString()).withStyle(ChatFormatting.GRAY));
         }
       }
     }

@@ -41,7 +41,7 @@ public class MaterialsCommand {
   private static final String ADD_SUCCESS = TConstruct.makeTranslationKey("command", "materials.success.set.single");
   private static final String ADD_SUCCESS_MULTIPLE = TConstruct.makeTranslationKey("command", "materials.success.set.multiple");
   private static final Dynamic2CommandExceptionType INVALID_INDEX = new Dynamic2CommandExceptionType((index, name) -> TConstruct.makeTranslation("command", "materials.failure.invalid_index", index, name));
-  private static final Dynamic2CommandExceptionType INVALID_STATS = new Dynamic2CommandExceptionType((statType, stats) -> TConstruct.makeTranslation("command", "materials.failure.invalid_stats", statType, stats));
+  private static final Dynamic2CommandExceptionType INVALID_STATS = new Dynamic2CommandExceptionType((statType, stats) -> TConstruct.makeTranslation("command", "materials.failure.invalid_stats", statType.toString(), stats));
   private static final Component NO_TRAITS = TConstruct.makeTranslation("command", "materials.failure.no_traits").withStyle(ChatFormatting.ITALIC);
 
   /**

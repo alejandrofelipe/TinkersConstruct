@@ -30,7 +30,7 @@ import java.util.List;
 
 /** Command generating the relevant tag to hide fluids related to unused materials. */
 public class GenerateHiddenFluidsCommand {
-  private static final DynamicCommandExceptionType ERROR_WRITING_TAG = new DynamicCommandExceptionType(tag -> Component.translatable("command.mantle.modify_tag.write_error", "fluid", tag));
+  private static final DynamicCommandExceptionType ERROR_WRITING_TAG = new DynamicCommandExceptionType(tag -> Component.translatable("command.mantle.modify_tag.write_error", "fluid", tag.toString()));
 
   /**
    * Registers this sub command with the root command

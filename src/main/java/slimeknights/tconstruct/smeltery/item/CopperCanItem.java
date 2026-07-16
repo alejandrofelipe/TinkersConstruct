@@ -52,7 +52,7 @@ public class CopperCanItem extends Item {
       MutableComponent text = contained.getHoverName().plainCopy();
       tooltip.add(Component.translatable(this.getDescriptionId() + ".contents", text).withStyle(ChatFormatting.GRAY));
       if (flag.isAdvanced()) {
-        tooltip.add(Component.translatable(TankItem.FLUID_ID, Loadables.FLUID.getKey(contained.getFluid())).withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.translatable(TankItem.FLUID_ID, Loadables.FLUID.getKey(contained.getFluid()).toString()).withStyle(ChatFormatting.DARK_GRAY));
       }
     } else {
       tooltip.add(Component.translatable(this.getDescriptionId() + ".tooltip").withStyle(ChatFormatting.GRAY));

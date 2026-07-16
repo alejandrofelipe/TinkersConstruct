@@ -66,7 +66,7 @@ public class AnvilBlockItem extends MaterialBlockItem {
       tooltip.add(this.matching.get().asItem().getName(stack).copy().withStyle(ChatFormatting.GRAY));
       // add ID if advanced
       if (flag.isAdvanced()) {
-        tooltip.add(Component.translatable(ToolPartItem.MATERIAL_KEY, material).withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.translatable(ToolPartItem.MATERIAL_KEY, material.toString()).withStyle(ChatFormatting.DARK_GRAY));
       }
     }
   }

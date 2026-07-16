@@ -41,7 +41,7 @@ public class StatsCommand {
   private static final String RESET_STAT_MULTIPLE = TConstruct.makeTranslationKey("command", "stats.success.reset.stat.multiple");
   private static final SimpleCommandExceptionType INVALID_ADD = new SimpleCommandExceptionType(TConstruct.makeTranslation("command", "stats.failure.invalid_add"));
   private static final SimpleCommandExceptionType INVALID_MULTIPLY = new SimpleCommandExceptionType(TConstruct.makeTranslation("command", "stats.failure.invalid_multiply"));
-  private static final Dynamic2CommandExceptionType FAILED_TO_PARSE = new Dynamic2CommandExceptionType((stat, tag) -> TConstruct.makeTranslation("command", "stats.success.bonus.set.parse_fail", stat, tag));
+  private static final Dynamic2CommandExceptionType FAILED_TO_PARSE = new Dynamic2CommandExceptionType((stat, tag) -> TConstruct.makeTranslation("command", "stats.success.bonus.set.parse_fail", stat, tag.toString()));
   private static final DynamicCommandExceptionType MODIFIER_ERROR = new DynamicCommandExceptionType(error -> (Component)error);
 
   /**
@@ -129,7 +129,8 @@ public class StatsCommand {
     if (op == Operation.SET && type == Type.BONUS) {
       Tag tag = NbtTagArgument.getNbtTag(context, "value");
       successes = setStat(context, stat, tag);
-      display = tag;
+      // display feeds Component.translatable below; a raw Tag is not an allowed arg in 1.21 (dev crash), so stringify
+      display = tag.toString();
     } else {
       float value = FloatArgumentType.getFloat(context, "value");
       if (op == Operation.MODIFY) {

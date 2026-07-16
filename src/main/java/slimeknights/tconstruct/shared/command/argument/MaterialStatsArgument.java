@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 @NoArgsConstructor(staticName = "stats")
 public class MaterialStatsArgument implements ArgumentType<MaterialStatType<?>> {
     private static final Collection<String> EXAMPLES = Arrays.asList("tconstruct:head", "tconstruct:limb");
-    private static final DynamicCommandExceptionType MODIFIER_NOT_FOUND = new DynamicCommandExceptionType(name -> TConstruct.makeTranslation("command", "material_stat.not_found", name));
+    private static final DynamicCommandExceptionType MODIFIER_NOT_FOUND = new DynamicCommandExceptionType(name -> TConstruct.makeTranslation("command", "material_stat.not_found", name.toString()));
 
     @Override
     public MaterialStatType<?> parse(StringReader reader) throws CommandSyntaxException {
