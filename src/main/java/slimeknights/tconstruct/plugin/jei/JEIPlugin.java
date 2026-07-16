@@ -201,6 +201,13 @@ public class JEIPlugin implements IModPlugin {
     assert level != null;
     RegistryAccess access = level.registryAccess();
     RecipeManager manager = level.getRecipeManager();
+    // NOTE (1.21 recipe id): recipes below are registered by value; since 1.21 the id lives in the RecipeHolder, not
+    // the recipe. Each category's getRegistryName(recipe) therefore returns recipe.getId() == null, which JEI
+    // explicitly permits (IRecipeCategory#getRegistryName is @Nullable, "or null if there is none"). It only degrades
+    // per-recipe bookmarking and the id line in advanced tooltips, and never crashes. Populating the id (via the
+    // holder) or switching categories to T=RecipeHolder was evaluated 2026-07-15 and judged disproportionate for those
+    // secondary features; the LopyLuna community port of the same code accepts the same null. See project memory
+    // tinkers-1211-neoforge-port for the full analysis and references.
     // casting
     List<IDisplayableCastingRecipe> castingBasinRecipes = RecipeHelper.getJEIRecipes(access, manager, TinkerRecipeTypes.CASTING_BASIN.get(), IDisplayableCastingRecipe.class);
     register.addRecipes(TConstructJEIConstants.CASTING_BASIN, castingBasinRecipes);
