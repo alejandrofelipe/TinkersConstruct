@@ -6,8 +6,6 @@ import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.recipe.data.ItemNameOutput;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.mantle.util.RegistryHelper;
-import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator;
-import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator.DuelSidedListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,23 +30,22 @@ public class CastingRecipeLookup {
     }
     return false;
   };
-  /** Cache invalidator */
-  private static final DuelSidedListener INVALIDATOR = RecipeCacheInvalidator.addDuelSidedListener(() -> {
-    CASTABLE_ITEMS.clear();
-    CASTABLE_TAGS.clear();
-  });
 
   private CastingRecipeLookup() {}
 
+  /** Clears the lookup; called by RecipeLookupPopulator before repopulating from the RecipeManager. */
+  public static void clear() {
+    CASTABLE_ITEMS.clear();
+    CASTABLE_TAGS.clear();
+  }
+
   /** Marks the given item as castable */
   public static void registerCastable(ItemLike item) {
-    INVALIDATOR.checkClear();
     CASTABLE_ITEMS.put(item.asItem(), true);
   }
 
   /** Marks the given tag as castable */
   public static void registerCastable(TagKey<Item> tag) {
-    INVALIDATOR.checkClear();
     CASTABLE_TAGS.add(tag);
   }
 

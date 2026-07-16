@@ -12,11 +12,14 @@ import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.alloying.AlloyRecipe;
+import slimeknights.tconstruct.library.recipe.casting.CastingRecipeLookup;
 import slimeknights.tconstruct.library.recipe.casting.ICastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
+import slimeknights.tconstruct.library.recipe.casting.ItemCastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.material.MaterialCastingLookup;
 import slimeknights.tconstruct.library.recipe.fuel.MeltingFuelLookup;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer;
@@ -215,6 +218,39 @@ public class RecipeValidationGameTests {
       helper.fail("no static MeltingRecipe with a concrete item ingredient found; cannot verify MeltingRecipeLookup population");
     } else if (!MeltingRecipeLookup.canMelt(sample.getItem())) {
       helper.fail("MeltingRecipeLookup not populated: " + sample.getItem() + " has a MeltingRecipe but the lookup does not resolve it");
+    } else {
+      helper.succeed();
+    }
+  }
+
+  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void casting_recipe_lookup_populated(GameTestHelper helper) {
+    // CastingRecipeLookup must be populated by the reload populator (RecipeLookupPopulator), not constructor side-effects.
+    // Data-driven so it can't go stale: pull a real static casting recipe (an ItemCastingRecipe with a concrete result
+    // output) from either casting type, then assert the lookup marks that same item castable. If population never ran,
+    // the lookup is empty and isCastable returns false. We read getResult() (the ItemOutput actually registered as
+    // castable) rather than getResultItem(): CastDuplicationRecipe extends ItemCastingRecipe but registers ItemOutput.EMPTY
+    // while overriding getResultItem() to return the cast, so it is skipped here via the isEmpty() check.
+    RecipeManager recipeManager = helper.getLevel().getRecipeManager();
+    ItemStack sample = ItemStack.EMPTY;
+    for (RecipeType<ICastingRecipe> type : List.of(TinkerRecipeTypes.CASTING_TABLE.get(), TinkerRecipeTypes.CASTING_BASIN.get())) {
+      for (RecipeHolder<ICastingRecipe> holder : recipeManager.getAllRecipesFor(type)) {
+        if (holder.value() instanceof ItemCastingRecipe recipe) {
+          ItemOutput result = recipe.getResult();
+          if (!result.isEmpty()) {
+            sample = result.get();
+            break;
+          }
+        }
+      }
+      if (!sample.isEmpty()) {
+        break;
+      }
+    }
+    if (sample.isEmpty()) {
+      helper.fail("no static ItemCastingRecipe with a concrete result output found; cannot verify CastingRecipeLookup population");
+    } else if (!CastingRecipeLookup.isCastable(sample.getItem())) {
+      helper.fail("CastingRecipeLookup not populated: " + sample.getItem() + " has a casting recipe but the lookup does not mark it castable");
     } else {
       helper.succeed();
     }

@@ -17,6 +17,7 @@ import slimeknights.mantle.recipe.IMultiRecipe;
 import slimeknights.mantle.recipe.helper.LoadableRecipeSerializer;
 import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 import slimeknights.tconstruct.library.json.TinkerLoadables;
 import slimeknights.tconstruct.library.json.predicate.material.MaterialPredicate;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
@@ -43,7 +44,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /** Recipe for casting a tool using molten metal on either a tool part or a non-tool part (2 materials or 1) */
-public class ToolCastingRecipe extends PartSwapCastingRecipe implements IMultiRecipe<IDisplayableCastingRecipe> {
+public class ToolCastingRecipe extends PartSwapCastingRecipe implements IMultiRecipe<IDisplayableCastingRecipe>, ILookupRegistrar {
   public static final RecordLoadable<ToolCastingRecipe> LOADER = RecordLoadable.create(
     LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(),
     ContextKey.ID.nullableField(), LoadableRecipeSerializer.RECIPE_GROUP, CAST_FIELD, ITEM_COST_FIELD,
@@ -62,7 +63,6 @@ public class ToolCastingRecipe extends PartSwapCastingRecipe implements IMultiRe
     super(serializer, id, group, cast, itemCost, castPurpose.swapIndex, allowedMaterials);
     this.result = result;
     this.extraMaterials = extraMaterials;
-    CastingRecipeLookup.registerCastable(result);
     if (castPurpose == CastPurpose.CONSUMED_OFFSET && extraMaterials.isEmpty()) {
       TConstruct.LOG.error("Error creating recipe {}: Cannot use cast purpose of consume offset for a tool casting recipe with no extra materials, subbing in consumed.", id);
       this.castPurpose = CastPurpose.CONSUMED;
@@ -75,6 +75,11 @@ public class ToolCastingRecipe extends PartSwapCastingRecipe implements IMultiRe
   @Deprecated(forRemoval = true)
   public ToolCastingRecipe(TypeAwareRecipeSerializer<?> serializer, ResourceLocation id, String group, Ingredient cast, int itemCost, IModifiable result) {
     this(serializer, id, group, cast, itemCost, CastPurpose.MAYBE_MATERIAL, result, MaterialPredicate.ANY, List.of());
+  }
+
+  @Override
+  public void registerLookups() {
+    CastingRecipeLookup.registerCastable(result);
   }
 
   @Override

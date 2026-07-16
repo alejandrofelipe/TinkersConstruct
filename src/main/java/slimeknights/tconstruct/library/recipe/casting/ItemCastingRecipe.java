@@ -15,13 +15,14 @@ import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.mantle.recipe.helper.LoadableRecipeSerializer;
 import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
 import slimeknights.mantle.recipe.ingredient.FluidIngredient;
+import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 
 import java.util.Arrays;
 import java.util.List;
 
 /** Casting recipe that takes a fluid and optional cast and outputs an item. */
 @Getter
-public class ItemCastingRecipe extends AbstractCastingRecipe implements IDisplayableCastingRecipe {
+public class ItemCastingRecipe extends AbstractCastingRecipe implements IDisplayableCastingRecipe, ILookupRegistrar {
   /* Shared fields */
   protected static final LoadableField<FluidIngredient,ItemCastingRecipe> FLUID_FIELD = FluidIngredient.LOADABLE.requiredField("fluid", ItemCastingRecipe::getFluid);
   protected static final LoadableField<ItemOutput,ItemCastingRecipe> RESULT_FIELD = ItemOutput.Loadable.REQUIRED_ITEM.requiredField("result", r -> r.result);
@@ -42,6 +43,10 @@ public class ItemCastingRecipe extends AbstractCastingRecipe implements IDisplay
     this.fluid = fluid;
     this.result = result;
     this.coolingTime = coolingTime;
+  }
+
+  @Override
+  public void registerLookups() {
     CastingRecipeLookup.registerCastable(result);
   }
 

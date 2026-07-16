@@ -15,6 +15,7 @@ import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.mantle.recipe.IMultiRecipe;
 import slimeknights.mantle.recipe.helper.LoadableRecipeSerializer;
 import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
+import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 import slimeknights.tconstruct.library.json.TinkerLoadables;
 import slimeknights.tconstruct.library.json.predicate.material.MaterialPredicate;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 /**
  * Casting recipe that takes an arbitrary fluid of a given amount and set the material on the output based on that fluid
  */
-public class MaterialCastingRecipe extends AbstractMaterialCastingRecipe implements IMultiRecipe<IDisplayableCastingRecipe> {
+public class MaterialCastingRecipe extends AbstractMaterialCastingRecipe implements IMultiRecipe<IDisplayableCastingRecipe>, ILookupRegistrar {
   protected static final LoadableField<IMaterialItem,MaterialCastingRecipe> RESULT_FIELD = TinkerLoadables.MATERIAL_ITEM.requiredField("result", r -> r.result);
   public static final RecordLoadable<MaterialCastingRecipe> LOADER = RecordLoadable.create(
     LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(),
@@ -46,7 +47,6 @@ public class MaterialCastingRecipe extends AbstractMaterialCastingRecipe impleme
   public MaterialCastingRecipe(TypeAwareRecipeSerializer<?> serializer, ResourceLocation id, String group, Ingredient cast, int itemCost, IMaterialItem result, IJsonPredicate<MaterialVariantId> materials, boolean consumed, boolean switchSlots) {
     super(serializer, id, group, cast, itemCost, consumed, switchSlots, materials);
     this.result = result;
-    CastingRecipeLookup.registerCastable(result);
     MaterialCastingLookup.registerItemCost(result, itemCost);
   }
 
@@ -54,6 +54,11 @@ public class MaterialCastingRecipe extends AbstractMaterialCastingRecipe impleme
   @Deprecated(forRemoval = true)
   public MaterialCastingRecipe(TypeAwareRecipeSerializer<?> serializer, ResourceLocation id, String group, Ingredient cast, int itemCost, IMaterialItem result, boolean consumed, boolean switchSlots) {
     this(serializer, id, group, cast, itemCost, result, MaterialPredicate.ANY, consumed, switchSlots);
+  }
+
+  @Override
+  public void registerLookups() {
+    CastingRecipeLookup.registerCastable(result);
   }
 
   @Override
