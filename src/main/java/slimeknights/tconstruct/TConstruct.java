@@ -52,9 +52,6 @@ import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability.Tin
 import slimeknights.tconstruct.library.tools.definition.ToolDefinitionLoader;
 import slimeknights.tconstruct.library.tools.layout.StationSlotLayoutLoader;
 import slimeknights.tconstruct.library.utils.Util;
-// PORT M6: re-enable disabled compat imports (DietPlugin, DummmmmmyPlugin, ImmersiveEngineeringPlugin, CraftingTweaksPlugin, JsonThingsPlugin)
-//import slimeknights.tconstruct.plugin.DietPlugin;
-//import slimeknights.tconstruct.plugin.DummmmmmyPlugin;
 import slimeknights.tconstruct.plugin.ImmersiveEngineeringPlugin;
 import slimeknights.tconstruct.plugin.craftingtweaks.CraftingTweaksPlugin;
 import slimeknights.tconstruct.plugin.jsonthings.JsonThingsPlugin;
@@ -186,18 +183,10 @@ public class TConstruct {
     if (modList.isLoaded("jsonthings")) {
       JsonThingsPlugin.onConstruct();
     }
-    // PORT M6: re-enable diet compat
-//    if (modList.isLoaded("diet")) {
-//      DietPlugin.onConstruct();
-//    }
     // Crafting Tweaks: convenience buttons on the crafting station
     if (modList.isLoaded("craftingtweaks")) {
       CraftingTweaksPlugin.onConstruct();
     }
-    // PORT M6: re-enable dummmmmmy compat
-//    if (modList.isLoaded("dummmmmmy")) {
-//      bus.register(new DummmmmmyPlugin());
-//    }
   }
 
   @SubscribeEvent

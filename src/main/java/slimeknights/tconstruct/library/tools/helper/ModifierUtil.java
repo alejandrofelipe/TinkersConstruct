@@ -36,7 +36,6 @@ import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import slimeknights.tconstruct.tools.TinkerTools;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
@@ -288,16 +287,6 @@ public final class ModifierUtil {
     }
     return null;
   }
-
-  /** Interface used for {@link #foodConsumer} */
-  public interface FoodConsumer {
-    /** Called when food is eaten to notify compat that food was eaten */
-    void onConsume(Player player, ItemStack stack, int hunger, float saturation);
-  }
-
-  /** Instance of the current food consumer, will be either no-op or an implementation calling the Diet API, never null. */
-  @Nonnull
-  public static FoodConsumer foodConsumer = (player, stack, hunger, saturation) -> {};
 
   /* Shield disabling */
   /** Map of how to disable shields for different targets */

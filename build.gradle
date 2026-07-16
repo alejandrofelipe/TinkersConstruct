@@ -60,10 +60,6 @@ sourceSets {
             exclude '.cache'
             exclude 'assets/tconstruct/debug'
         }
-        java {
-            exclude 'slimeknights/tconstruct/plugin/DietPlugin.java'
-            exclude 'slimeknights/tconstruct/plugin/DummmmmmyPlugin.java'
-        }
     }
 }
 

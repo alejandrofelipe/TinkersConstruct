@@ -4,7 +4,6 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 import slimeknights.mantle.data.loadable.primitive.BooleanLoadable;
@@ -16,7 +15,6 @@ import slimeknights.tconstruct.library.modifiers.fluid.EffectLevel;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffect;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext.Entity;
-import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
 
 /** Effect to restore hunger to the target */
 public record RestoreHungerFluidEffect(int hunger, float saturation, boolean canAlwaysEat, ItemOutput representative) implements FluidEffect<FluidEffectContext.Entity> {
@@ -41,10 +39,6 @@ public record RestoreHungerFluidEffect(int hunger, float saturation, boolean can
       if (action.execute()) {
         int finalHunger = (int)(hunger * value);
         player.getFoodData().eat(finalHunger, saturation);
-        ItemStack representative = this.representative.get();
-        if (!representative.isEmpty()) {
-          ModifierUtil.foodConsumer.onConsume(player, representative, finalHunger, saturation);
-        }
       }
       return value;
     }
