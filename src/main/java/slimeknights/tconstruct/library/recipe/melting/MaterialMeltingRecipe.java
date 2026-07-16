@@ -17,8 +17,8 @@ import slimeknights.mantle.recipe.IMultiRecipe;
 import slimeknights.mantle.recipe.helper.FluidOutput;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
-import slimeknights.tconstruct.library.recipe.casting.material.MaterialCastingLookup;
 import slimeknights.tconstruct.library.recipe.ingredient.MaterialIngredient;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
 import java.util.Collections;
@@ -64,7 +64,7 @@ public class MaterialMeltingRecipe implements IMeltingRecipe, IMultiRecipe<Melti
       return false;
     }
     ItemStack stack = inv.getStack();
-    if (stack.isEmpty() || MaterialCastingLookup.getItemCost(stack.getItem()) == 0) {
+    if (stack.isEmpty() || MaterialRecipeCache.getItemCost(stack.getItem()) == 0) {
       return false;
     }
     return input.matchesVariant(stack);
@@ -77,20 +77,20 @@ public class MaterialMeltingRecipe implements IMeltingRecipe, IMultiRecipe<Melti
 
   @Override
   public int getTime(IMeltingContainer inv) {
-    int cost = MaterialCastingLookup.getItemCost(inv.getStack().getItem());
+    int cost = MaterialRecipeCache.getItemCost(inv.getStack().getItem());
     return IMeltingRecipe.calcTimeForAmount(temperature, result.getAmount() * cost);
   }
 
   @Override
   public FluidStack getOutput(IMeltingContainer inv) {
-    int cost = MaterialCastingLookup.getItemCost(inv.getStack().getItem());
+    int cost = MaterialRecipeCache.getItemCost(inv.getStack().getItem());
     return result.get().copyWithAmount(result.getAmount() * cost);
   }
 
   @Override
   public void handleByproducts(IMeltingContainer inv, IFluidHandler handler) {
     if (!byproducts.isEmpty()) {
-      int cost = MaterialCastingLookup.getItemCost(inv.getStack().getItem());
+      int cost = MaterialRecipeCache.getItemCost(inv.getStack().getItem());
       for (FluidOutput byproduct : byproducts) {
         handler.fill(byproduct.get().copyWithAmount(byproduct.getAmount() * cost), FluidAction.EXECUTE);
       }
@@ -114,7 +114,7 @@ public class MaterialMeltingRecipe implements IMeltingRecipe, IMultiRecipe<Melti
       } else {
         // 1 recipe for each part
         MaterialVariantId inputId = input.getVariant();
-        multiRecipes = MaterialCastingLookup
+        multiRecipes = MaterialRecipeCache
           .getAllItemCosts().stream()
           .filter(entry -> entry.getKey().canUseMaterial(inputId.getId()))
           .map(entry -> {

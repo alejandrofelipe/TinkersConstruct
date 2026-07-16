@@ -22,7 +22,6 @@ import slimeknights.tconstruct.library.recipe.casting.CastingRecipeLookup;
 import slimeknights.tconstruct.library.recipe.casting.ICastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.ItemCastingRecipe;
-import slimeknights.tconstruct.library.recipe.casting.material.MaterialCastingLookup;
 import slimeknights.tconstruct.library.recipe.casting.material.MaterialFluidRecipe;
 import slimeknights.tconstruct.library.recipe.fuel.MeltingFuelLookup;
 import slimeknights.tconstruct.library.recipe.material.MaterialRecipe;
@@ -83,10 +82,10 @@ public class RecipeValidationGameTests {
 
     // MaterialMeltingRecipe ("melt any tool part of material X") has no item Ingredient of its own - getIngredients()
     // is empty - and its getOutput(container)/getTime(container) scale the declared output by
-    // MaterialCastingLookup.getItemCost(container item), which is 0 (so output/time read as 0) for any stack that
+    // MaterialRecipeCache.getItemCost(container item), which is 0 (so output/time read as 0) for any stack that
     // is not a registered tool-part item. Use any one real, registered part item as the fallback container stack so
     // those recipes report their true declared output/time instead of an artifact of an empty dummy stack.
-    ItemStack fallbackStack = MaterialCastingLookup.getAllItemCosts().stream()
+    ItemStack fallbackStack = MaterialRecipeCache.getAllItemCosts().stream()
       .filter(entry -> entry.getIntValue() > 0)
       .findFirst()
       .map(entry -> new ItemStack(entry.getKey()))
@@ -150,7 +149,7 @@ public class RecipeValidationGameTests {
           // A fixed, enumerable fluid ingredient only exists on the "simple" cast+fluid+item family
           // (ItemCastingRecipe & co, marked by IDisplayableCastingRecipe). The material-casting family
           // (MaterialCastingRecipe/ToolCastingRecipe/PartSwapCastingRecipe/...) accepts whatever fluid the global
-          // MaterialCastingLookup maps to an allowed material, and PotionCastingRecipe's fluid field isn't exposed
+          // MaterialRecipeCache maps to an allowed material, and PotionCastingRecipe's fluid field isn't exposed
           // by the common interface - neither has a per-recipe fluid ingredient this generic loop can validate.
           if (recipe instanceof IDisplayableCastingRecipe displayable && displayable.getFluids().isEmpty()) {
             failures.merge(id, "fluid ingredient resolves to no fluids", (a, b) -> a + "; " + b);
@@ -193,11 +192,11 @@ public class RecipeValidationGameTests {
   @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void all_material_fluid_recipes_valid(GameTestHelper helper) {
     // The material-casting family (MaterialCastingRecipe/ToolCastingRecipe/PartSwapCastingRecipe) has no per-recipe
-    // fluid ingredient - its fluids come from the global MaterialCastingLookup (MaterialFluidRecipe, the data type),
+    // fluid ingredient - its fluids come from the global MaterialRecipeCache (MaterialFluidRecipe, the data type),
     // so all_casting_recipes_valid can't reach them (see its comment). Validate them at the source instead: every
     // registered casting/composite fluid must resolve to real fluids and a known output material.
     Map<String, String> failures = new LinkedHashMap<>();
-    Stream.concat(MaterialCastingLookup.getAllCastingFluids().stream(), MaterialCastingLookup.getAllCompositeFluids().stream())
+    Stream.concat(MaterialRecipeCache.getAllCastingFluids().stream(), MaterialRecipeCache.getAllCompositeFluids().stream())
       .forEach(recipe -> {
         // MaterialFluidRecipe carries no id in 1.21 (it lives on the RecipeHolder, unreachable from the lookup
         // collection - getId() is null here), so describe the recipe by its input->output material for reporting.
@@ -314,23 +313,23 @@ public class RecipeValidationGameTests {
 
   @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void material_casting_lookup_populated(GameTestHelper helper) {
-    // MaterialCastingLookup must be populated by the reload populator, not constructor side-effects. Assert both write
+    // MaterialRecipeCache must be populated by the reload populator, not constructor side-effects. Assert both write
     // paths ran: registerItemCost (getAllItemCosts non-empty) and registerFluid (a registered casting fluid exists).
     // registerFluid also drives the coupling into MaterialRecipeCache, so spot-check a real casting fluid: its output
     // variant must have been recorded as a known variant via registerFluid -> addKnownVariant.
-    if (MaterialCastingLookup.getAllItemCosts().isEmpty()) {
-      helper.fail("MaterialCastingLookup item costs not populated by the reload populator");
+    if (MaterialRecipeCache.getAllItemCosts().isEmpty()) {
+      helper.fail("MaterialRecipeCache item costs not populated by the reload populator");
       return;
     }
     MaterialFluidRecipe sample = null;
-    for (MaterialFluidRecipe recipe : MaterialCastingLookup.getAllCastingFluids()) {
+    for (MaterialFluidRecipe recipe : MaterialRecipeCache.getAllCastingFluids()) {
       if (!recipe.getOutput().isUnknown()) {
         sample = recipe;
         break;
       }
     }
     if (sample == null) {
-      helper.fail("no casting fluids registered; MaterialCastingLookup.registerFluid path did not populate");
+      helper.fail("no casting fluids registered; MaterialRecipeCache.registerFluid path did not populate");
     } else {
       MaterialVariantId variant = sample.getOutput().getVariant();
       if (!MaterialRecipeCache.getVariants(variant.getId()).contains(variant)) {

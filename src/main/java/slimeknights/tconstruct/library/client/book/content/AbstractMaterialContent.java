@@ -44,9 +44,9 @@ import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
 import slimeknights.tconstruct.library.modifiers.Modifier;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
-import slimeknights.tconstruct.library.recipe.casting.material.MaterialCastingLookup;
 import slimeknights.tconstruct.library.recipe.casting.material.MaterialFluidRecipe;
 import slimeknights.tconstruct.library.recipe.material.MaterialRecipe;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.library.tools.definition.module.material.ToolMaterialHook;
 import slimeknights.tconstruct.library.tools.helper.ToolBuildHandler;
 import slimeknights.tconstruct.library.tools.item.IModifiable;
@@ -319,7 +319,7 @@ public abstract class AbstractMaterialContent extends PageContent {
     }
 
     // regular casting recipes
-    List<MaterialFluidRecipe> fluids = MaterialCastingLookup.getCastingFluids(materialId);
+    List<MaterialFluidRecipe> fluids = MaterialRecipeCache.getCastingFluids(materialId);
     if (!fluids.isEmpty()) {
       ItemElement elementItem = new TinkerItemElement(0, 0, 1, fluids.stream().flatMap(recipe -> recipe.getFluids().stream())
                                                                      .map(fluid -> new ItemStack(fluid.getFluid().getBucket()))
@@ -335,13 +335,13 @@ public abstract class AbstractMaterialContent extends PageContent {
     }
 
     // composite casting
-    List<MaterialFluidRecipe> composites = MaterialCastingLookup.getCompositeFluids(materialId);
+    List<MaterialFluidRecipe> composites = MaterialRecipeCache.getCompositeFluids(materialId);
     for (MaterialFluidRecipe composite : composites) {
       MaterialVariant input = composite.getInput();
       if (input != null && !materialVariant.matchesVariant(input.getVariant())) {
         MaterialVariantId inputId = input.getVariant();
         // TODO: filter out tool parts that cannot be casted due to a composite cast conflict
-        List<ItemStack> compositeParts = MaterialCastingLookup.getAllItemCosts().stream()
+        List<ItemStack> compositeParts = MaterialRecipeCache.getAllItemCosts().stream()
           .map(Entry::getKey)
           .filter(part -> part.canUseMaterial(inputId.getId()) && part.canUseMaterial(material) && (!(part instanceof IToolPart toolPart) || supportsStatType(toolPart.getStatType())))
           .map(part -> part.withMaterial(inputId))

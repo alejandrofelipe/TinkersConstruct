@@ -6,7 +6,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import slimeknights.tconstruct.TConstruct;
-import slimeknights.tconstruct.library.recipe.casting.material.MaterialCastingLookup;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -23,7 +23,7 @@ public class PartCastItem extends Item {
 
   @Override
   public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-    int cost = MaterialCastingLookup.getItemCost(part.get());
+    int cost = MaterialRecipeCache.getItemCost(part.get());
     if (cost > 0) {
       tooltip.add(Component.translatable(COST_KEY, cost).withStyle(ChatFormatting.GRAY));
     }

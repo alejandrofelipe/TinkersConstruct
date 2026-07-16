@@ -58,13 +58,13 @@ public class CompositeCastingRecipe extends MaterialCastingRecipe {
     if (castingStatConflict != null) {
       // if we have casting recipe that matches our fluid and is valid for the result, return no match
       // used to prevent conflicts between tool casting and composite part casting
-      MaterialFluidRecipe recipe = MaterialCastingLookup.getCastingFluid(fluid); // TODO: does this need a filter?
+      MaterialFluidRecipe recipe = MaterialRecipeCache.getCastingFluid(fluid); // TODO: does this need a filter?
       if (recipe != MaterialFluidRecipe.EMPTY && castingStatConflict.canUseMaterial(recipe.getOutput().getId())) {
         return MaterialFluidRecipe.EMPTY;
       }
     }
     // find a composite match, requires fetching the material ID but not a huge deal as we already validated the cast (won't be calling this for multiple fluids)
-    return MaterialCastingLookup.getCompositeFluid(fluid, IMaterialItem.getMaterialFromStack(inv.getStack()), materials);
+    return MaterialRecipeCache.getCompositeFluid(fluid, IMaterialItem.getMaterialFromStack(inv.getStack()), materials);
   }
 
   /* JEI display */
@@ -73,7 +73,7 @@ public class CompositeCastingRecipe extends MaterialCastingRecipe {
     if (multiRecipes == null) {
       RecipeType<?> type = getType();
       ImmutableList.Builder<IDisplayableCastingRecipe> recipes = ImmutableList.builder();
-      for (MaterialFluidRecipe recipe : MaterialCastingLookup.getAllCompositeFluids()) {
+      for (MaterialFluidRecipe recipe : MaterialRecipeCache.getAllCompositeFluids()) {
         MaterialVariant output = recipe.getOutput();
         MaterialVariant input = recipe.getInput();
         if (recipe.isVisible() && input != null
@@ -84,7 +84,7 @@ public class CompositeCastingRecipe extends MaterialCastingRecipe {
             // if we require non-casting, filter out all fluids that match a casting recipe
             fluids = fluids.stream()
                            .filter(fluid -> {
-                             MaterialFluidRecipe fluidRecipe = MaterialCastingLookup.getCastingFluid(fluid.getFluid());
+                             MaterialFluidRecipe fluidRecipe = MaterialRecipeCache.getCastingFluid(fluid.getFluid());
                              // its fine if we have a recipe as long as the material is not usable by this part
                              return fluidRecipe == MaterialFluidRecipe.EMPTY || !castingStatConflict.canUseMaterial(fluidRecipe.getOutput().getId());
                            })

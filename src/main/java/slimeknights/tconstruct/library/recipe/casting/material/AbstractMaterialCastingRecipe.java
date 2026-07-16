@@ -14,6 +14,7 @@ import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.recipe.casting.AbstractCastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.ICastingContainer;
 import slimeknights.tconstruct.library.recipe.casting.ICastingRecipe;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,7 +46,7 @@ public abstract class AbstractMaterialCastingRecipe extends AbstractCastingRecip
 
   /** Gets the material fluid recipe for the given recipe */
   protected MaterialFluidRecipe getFluidRecipe(ICastingContainer inv) {
-    return MaterialCastingLookup.getCastingFluid(inv.getFluid(), materials);
+    return MaterialRecipeCache.getCastingFluid(inv.getFluid(), materials);
   }
 
   @Override

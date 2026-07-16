@@ -30,6 +30,7 @@ import slimeknights.tconstruct.library.recipe.casting.ICastingContainer;
 import slimeknights.tconstruct.library.recipe.casting.ICastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
 import slimeknights.tconstruct.library.recipe.material.MaterialRecipe;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.library.tools.definition.module.material.MaterialRepairModule;
 import slimeknights.tconstruct.library.tools.definition.module.material.ToolMaterialHook;
 import slimeknights.tconstruct.library.tools.helper.ToolBuildHandler;
@@ -104,14 +105,14 @@ public class PartSwapCastingRecipe extends AbstractMaterialCastingRecipe impleme
     // cache did not match? try a casting recipe.
     // note its possible we have a valid casting material that is just not valid for this tool, hence the extra check
     // the casting recipe needs to match our stat type to be valid
-    MaterialFluidRecipe casting = MaterialCastingLookup.getCastingFluid(fluid, materials);
+    MaterialFluidRecipe casting = MaterialRecipeCache.getCastingFluid(fluid, materials);
     // need to validate the stat type, since the super call will not check stat type
     if (casting != MaterialFluidRecipe.EMPTY && !casting.getOutput().sameVariant(currentMaterial) && requirements.get(index).canUseMaterial(casting.getOutput().getId())) {
       cachedPartSwapping = casting;
       return casting;
     }
     // no casting? try composite.
-    MaterialFluidRecipe composite = MaterialCastingLookup.getCompositeFluid(fluid, currentMaterial, materials);
+    MaterialFluidRecipe composite = MaterialRecipeCache.getCompositeFluid(fluid, currentMaterial, materials);
     if (composite != MaterialFluidRecipe.EMPTY) {
       cachedPartSwapping = composite;
       return composite;
@@ -225,7 +226,7 @@ public class PartSwapCastingRecipe extends AbstractMaterialCastingRecipe impleme
       Predicate<MaterialFluidRecipe> validRecipe = recipe -> recipe.isVisible() && materials.matches(recipe.getOutput().getVariant());
       multiRecipes = Stream.concat(
           // show recipes for creating the tool from all castable fluids
-          MaterialCastingLookup.getAllCastingFluids().stream()
+          MaterialRecipeCache.getAllCastingFluids().stream()
             .filter(validRecipe)
             .flatMap(recipe -> {
               // map each cast item to contain the new material
@@ -253,7 +254,7 @@ public class PartSwapCastingRecipe extends AbstractMaterialCastingRecipe impleme
                 ICastingRecipe.calcCoolingTime(recipe.getTemperature(), itemCost * getFluidAmount(fluids)), isConsumed()));
             }),
           // all composite fluids become special composite swapping recipes
-          MaterialCastingLookup.getAllCompositeFluids().stream()
+          MaterialRecipeCache.getAllCompositeFluids().stream()
             .filter(validRecipe)
             .flatMap(recipe -> {
               // start creating our list of tools to display

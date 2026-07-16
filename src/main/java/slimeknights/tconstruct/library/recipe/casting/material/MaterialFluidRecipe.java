@@ -19,6 +19,7 @@ import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.casting.ICastingContainer;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
 import javax.annotation.Nullable;
@@ -58,7 +59,7 @@ public class MaterialFluidRecipe implements ICustomOutputRecipe<ICastingContaine
 
   @Override
   public void registerLookups() {
-    MaterialCastingLookup.registerFluid(this);
+    MaterialRecipeCache.registerFluid(this);
   }
 
   /** Checks if this recipe is valid for the given fluid and material */

@@ -25,6 +25,7 @@ import slimeknights.tconstruct.library.recipe.casting.DisplayCastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.ICastingContainer;
 import slimeknights.tconstruct.library.recipe.casting.ICastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 
 import java.util.Arrays;
@@ -58,7 +59,7 @@ public class MaterialCastingRecipe extends AbstractMaterialCastingRecipe impleme
   @Override
   public void registerLookups() {
     CastingRecipeLookup.registerCastable(result);
-    MaterialCastingLookup.registerItemCost(result, itemCost);
+    MaterialRecipeCache.registerItemCost(result, itemCost);
   }
 
   @Override
@@ -88,7 +89,7 @@ public class MaterialCastingRecipe extends AbstractMaterialCastingRecipe impleme
     if (multiRecipes == null) {
       RecipeType<?> type = getType();
       List<ItemStack> castItems = Arrays.asList(getCast().getItems());
-      multiRecipes = MaterialCastingLookup
+      multiRecipes = MaterialRecipeCache
         .getAllCastingFluids().stream()
         .filter(recipe -> {
           MaterialVariant output = recipe.getOutput();

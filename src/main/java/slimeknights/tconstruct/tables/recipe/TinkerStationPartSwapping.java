@@ -12,7 +12,7 @@ import slimeknights.mantle.recipe.ingredient.SizedIngredient;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.recipe.RecipeResult;
-import slimeknights.tconstruct.library.recipe.casting.material.MaterialCastingLookup;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.library.recipe.modifiers.adding.ModifierRecipe;
 import slimeknights.tconstruct.library.recipe.tinkerstation.IMutableTinkerStationContainer;
 import slimeknights.tconstruct.library.recipe.tinkerstation.ITinkerStationContainer;
@@ -106,7 +106,7 @@ public class TinkerStationPartSwapping extends MaterialSwappingRecipe {
             return RecipeResult.pass();
           }
         }
-        return swapMaterial(inv, partVariant, index, MaterialCastingLookup.getItemCost(part));
+        return swapMaterial(inv, partVariant, index, MaterialRecipeCache.getItemCost(part));
       }
     }
     // no item found, should never happen

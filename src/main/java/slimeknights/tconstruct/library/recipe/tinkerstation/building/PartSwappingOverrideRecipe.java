@@ -18,7 +18,7 @@ import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
 import slimeknights.tconstruct.library.recipe.RecipeResult;
-import slimeknights.tconstruct.library.recipe.casting.material.MaterialCastingLookup;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.library.recipe.modifiers.adding.ModifierRecipe;
 import slimeknights.tconstruct.library.recipe.tinkerstation.IMutableTinkerStationContainer;
 import slimeknights.tconstruct.library.recipe.tinkerstation.ITinkerStationContainer;
@@ -116,7 +116,7 @@ public class PartSwappingOverrideRecipe extends MaterialSwappingRecipe {
           return INVALID_MATERIAL;
         }
 
-        return swapMaterial(inv, partVariant, index, MaterialCastingLookup.getItemCost(part));
+        return swapMaterial(inv, partVariant, index, MaterialRecipeCache.getItemCost(part));
       }
     }
 

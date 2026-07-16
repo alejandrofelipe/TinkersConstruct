@@ -9,7 +9,7 @@ import slimeknights.tconstruct.library.json.TinkerLoadables;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
-import slimeknights.tconstruct.library.recipe.casting.material.MaterialCastingLookup;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -36,9 +36,9 @@ public interface MaterialPredicate extends IJsonPredicate<MaterialVariantId> {
   /* Singleton */
 
   /** Matches any materials that have a casting recipe */
-  MaterialPredicate CASTABLE = simple(material -> !MaterialCastingLookup.getCastingFluids(material).isEmpty());
+  MaterialPredicate CASTABLE = simple(material -> !MaterialRecipeCache.getCastingFluids(material).isEmpty());
   /** Matches any materials that have a composite recipe */
-  MaterialPredicate COMPOSITE = simple(material -> !MaterialCastingLookup.getCompositeFluids(material).isEmpty());
+  MaterialPredicate COMPOSITE = simple(material -> !MaterialRecipeCache.getCompositeFluids(material).isEmpty());
 
   /** Creates a new simple predicate */
   static MaterialPredicate simple(Predicate<MaterialVariantId> predicate) {

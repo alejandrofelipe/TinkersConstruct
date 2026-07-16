@@ -30,6 +30,7 @@ import slimeknights.tconstruct.library.recipe.casting.DisplayCastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.ICastingContainer;
 import slimeknights.tconstruct.library.recipe.casting.ICastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
+import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.library.tools.definition.module.material.ToolMaterialHook;
 import slimeknights.tconstruct.library.tools.helper.ToolBuildHandler;
 import slimeknights.tconstruct.library.tools.helper.TooltipUtil;
@@ -86,7 +87,7 @@ public class ToolCastingRecipe extends PartSwapCastingRecipe implements IMultiRe
   protected MaterialFluidRecipe getFluidRecipe(ICastingContainer inv) {
     // if its not part swapping, original lookup is best
     if (inv.getStack().getItem() != result.asItem()) {
-      return MaterialCastingLookup.getCastingFluid(inv.getFluid(), materials);
+      return MaterialRecipeCache.getCastingFluid(inv.getFluid(), materials);
     }
     return super.getFluidRecipe(inv);
   }
@@ -256,7 +257,7 @@ public class ToolCastingRecipe extends PartSwapCastingRecipe implements IMultiRe
         };
 
         // show recipes for creating the tool from all castable fluids
-        List<MaterialFluidRecipe> validCasting = MaterialCastingLookup.getAllCastingFluids().stream().filter(validRecipe).toList();
+        List<MaterialFluidRecipe> validCasting = MaterialRecipeCache.getAllCastingFluids().stream().filter(validRecipe).toList();
         for (MaterialFluidRecipe recipe : validCasting) {
           List<FluidStack> fluids = resizeFluids(recipe.getFluids());
           int amount = itemCost * getFluidAmount(fluids);
@@ -271,7 +272,7 @@ public class ToolCastingRecipe extends PartSwapCastingRecipe implements IMultiRe
         }
 
         // all composite fluids become special composite swapping recipes
-        MaterialCastingLookup.getAllCompositeFluids().stream()
+        MaterialRecipeCache.getAllCompositeFluids().stream()
           .filter(validRecipe)
           .map(recipe -> {
             List<FluidStack> fluids = resizeFluids(recipe.getFluids());
