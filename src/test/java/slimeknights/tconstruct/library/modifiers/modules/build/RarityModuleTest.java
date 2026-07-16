@@ -44,7 +44,9 @@ class RarityModuleTest extends BaseMcTest {
   @Test
   void setRarity_withHigherRarity_overwritesLowerExistingValue() {
     ModDataNBT data = new ModDataNBT();
-    RarityModule.setRarity(data, Rarity.COMMON);
+    // UNCOMMON (ordinal 1), not COMMON (0 = the empty-data default) - so the pre-existing value is
+    // genuinely distinguishable from unset and the overwrite is actually exercised
+    RarityModule.setRarity(data, Rarity.UNCOMMON);
     RarityModule.setRarity(data, Rarity.EPIC);
     assertThat(data.getInt(RarityModule.RARITY)).isEqualTo(Rarity.EPIC.ordinal());
   }
