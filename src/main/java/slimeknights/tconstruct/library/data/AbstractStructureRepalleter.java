@@ -42,7 +42,7 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
   private final ExistingFileHelper existingFileHelper;
   private final String modId;
   public AbstractStructureRepalleter(PackOutput packOutput, ExistingFileHelper existingFileHelper, String modId) {
-    super(packOutput, Target.DATA_PACK, "structures");
+    super(packOutput, Target.DATA_PACK, "structure");
     this.existingFileHelper = existingFileHelper;
     this.modId = modId;
   }
@@ -69,7 +69,7 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
     for (Entry<ResourceLocation,Collection<RepaletteTask>> entry : structures.asMap().entrySet()) {
       ResourceLocation original = entry.getKey();
 
-      try (InputStream io = existingFileHelper.getResource(original, PackType.SERVER_DATA, ".nbt", "structures").open()) {
+      try (InputStream io = existingFileHelper.getResource(original, PackType.SERVER_DATA, ".nbt", "structure").open()) {
         CompoundTag inputNBT = NbtIo.readCompressed(io, NbtAccounter.unlimitedHeap());
         for (RepaletteTask task : entry.getValue()) {
           // start by fetching the palette, we assume its not randomized
