@@ -17,6 +17,7 @@ import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import slimeknights.mantle.registration.object.EnumObject;
 import slimeknights.mantle.registration.object.ItemObject;
@@ -25,6 +26,7 @@ import slimeknights.tconstruct.gadgets.block.FoodCakeBlock;
 import slimeknights.tconstruct.gadgets.block.FoodCakeBlock.EffectCombination;
 import slimeknights.tconstruct.gadgets.block.InvertedCakeBlock;
 import slimeknights.tconstruct.gadgets.block.PunjiBlock;
+import slimeknights.tconstruct.gadgets.capability.PiggybackCapability;
 import slimeknights.tconstruct.gadgets.data.GadgetRecipeProvider;
 import slimeknights.tconstruct.gadgets.entity.EFLNEntity;
 import slimeknights.tconstruct.gadgets.entity.FancyItemFrameEntity;
@@ -140,10 +142,13 @@ public final class TinkerGadgets extends TinkerModule {
    * Events
    */
   @SubscribeEvent
+  void registerCapabilities(RegisterCapabilitiesEvent event) {
+    // piggyback handler for carrying passengers; the provider returns a handler only for players
+    event.registerEntity(PiggybackCapability.PIGGYBACK, EntityType.PLAYER, PiggybackCapability::provider);
+  }
+
+  @SubscribeEvent
   void commonSetup(final FMLCommonSetupEvent event) {
-    // PORT M3: PiggybackCapability is now an EntityCapability registered centrally in the mod's
-    // RegisterCapabilitiesEvent handler (event.registerEntity(PiggybackCapability.PIGGYBACK, ...,
-    // PiggybackCapability::provider)) — no per-setup capability registration here anymore.
     event.enqueueWork(() -> {
       cake.forEach(block -> ComposterBlock.add(1.0f, block));
       ComposterBlock.add(1.0f, magmaCake.get());

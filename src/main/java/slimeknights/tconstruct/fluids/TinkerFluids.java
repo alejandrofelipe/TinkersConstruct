@@ -281,6 +281,8 @@ public final class TinkerFluids extends TinkerModule {
     event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((FluidContainerFoodItem) stack.getItem()).getFluidHandler(stack), venomBottle.get());
     slimeBottle.forEach(item -> event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((FluidContainerFoodItem) stack.getItem()).getFluidHandler(stack), item));
     event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((PotionBucketItem) stack.getItem()).getFluidHandler(stack), potion.getBucket());
+    // vanilla powder snow bucket exposes powdered_snow so it can be drained/melted (PORT M3: handler existed but was never wired)
+    event.registerItem(Capabilities.FluidHandler.ITEM, FluidEvents::powderSnowHandler, net.minecraft.world.item.Items.POWDER_SNOW_BUCKET);
   }
 
   @SubscribeEvent
