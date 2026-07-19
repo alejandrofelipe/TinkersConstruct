@@ -10,9 +10,8 @@ public class HolyModifier extends Modifier {
   @Override
   protected void registerHooks(Builder hookBuilder) {
     super.registerHooks(hookBuilder);
-    // PORT M3: net.minecraft.world.entity.MobType was removed in 1.21 (undead is now EntityTypeTags.UNDEAD);
-    // Mantle's MobTypePredicate is a deferred stub (loader registration commented out in Mantle.java).
-    // Re-enable once ConditionalPowerModule.Builder#target and a tag-based entity predicate are available.
-    // hookBuilder.addModule(ConditionalPowerModule.builder().target(new MobTypePredicate(MobType.UNDEAD)).eachLevel(0.75f));
+    // Superseded by the data-driven ConditionalPowerModule; this @Deprecated modifier is kept only for data
+    // back-compat and intentionally adds no hooks. (MobType was removed in 1.21 — undead is now
+    // EntityTypeTags.UNDEAD — and Mantle's MobTypePredicate is registered and tag-based, no longer a stub.)
   }
 }
