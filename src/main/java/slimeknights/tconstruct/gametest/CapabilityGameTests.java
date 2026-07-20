@@ -53,6 +53,13 @@ public class CapabilityGameTests {
       helper.fail("player exposes no piggyback capability");
       return;
     }
+    // the handler must be a single cached instance per entity: entity caps are not memoized by NeoForge, so
+    // without the backing attachment a fresh handler would be built each lookup, resetting lastPassengers and
+    // re-broadcasting the set-passengers packet every tick while carrying a passenger
+    if (player.getCapability(PiggybackCapability.PIGGYBACK, null) != handler) {
+      helper.fail("piggyback handler is rebuilt per lookup; carried-passenger sync would spam every tick");
+      return;
+    }
     helper.succeed();
   }
 }

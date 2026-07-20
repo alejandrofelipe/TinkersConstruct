@@ -45,6 +45,7 @@ import slimeknights.tconstruct.common.data.tags.PotionTagProvider;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.gadgets.TinkerGadgets;
+import slimeknights.tconstruct.gadgets.capability.PiggybackCapability;
 import slimeknights.tconstruct.library.TinkerItemDisplays;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
 import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability.ComputableDataKey;
@@ -162,6 +163,7 @@ public class TConstruct {
 
     // init deferred registers
     TinkerModule.initRegisters();
+    PiggybackCapability.init(bus);
     TinkerNetwork.setup();
     // wire payload registration onto the mod bus (RegisterPayloadHandlersEvent); without this no Tinkers packet is
     // registered and any send throws "Payload ... may not be sent to the client"
