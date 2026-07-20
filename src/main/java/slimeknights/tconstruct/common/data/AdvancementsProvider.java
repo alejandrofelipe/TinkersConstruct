@@ -12,6 +12,7 @@ import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
@@ -19,17 +20,35 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Tiers;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.data.GenericDataProvider;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.library.json.predicate.tool.HasMaterialPredicate;
+import slimeknights.tconstruct.library.json.predicate.tool.HasModifierPredicate;
+import slimeknights.tconstruct.library.json.predicate.tool.StatInRangePredicate;
+import slimeknights.tconstruct.library.json.predicate.tool.StatInSetPredicate;
 import slimeknights.tconstruct.library.json.predicate.tool.TinkerItemPredicates;
+import slimeknights.tconstruct.library.json.predicate.tool.ToolContextPredicate;
 import slimeknights.tconstruct.library.json.predicate.tool.ToolItemSubPredicate;
+import slimeknights.tconstruct.library.json.predicate.tool.ToolStackPredicate;
+import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.tools.nbt.IToolContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
+import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import slimeknights.tconstruct.shared.TinkerCommons;
+import slimeknights.tconstruct.shared.TinkerMaterials;
+import slimeknights.tconstruct.tables.TinkerTables;
+import slimeknights.tconstruct.tools.TinkerToolParts;
+import slimeknights.tconstruct.tools.TinkerTools;
+import slimeknights.tconstruct.tools.data.ModifierIds;
+import slimeknights.tconstruct.tools.data.material.MaterialIds;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -63,8 +82,92 @@ public class AdvancementsProvider extends GenericDataProvider {
   /** Generates all advancements into {@link #advancements} */
   protected void generate() {
     // tinkering path
-    builder(TinkerCommons.materialsAndYou, resource("tools/materials_and_you"), resource("textures/gui/advancement_background.png"), AdvancementType.TASK, builder ->
+    AdvancementHolder materialsAndYou = builder(TinkerCommons.materialsAndYou, resource("tools/materials_and_you"), resource("textures/gui/advancement_background.png"), AdvancementType.TASK, builder ->
       builder.addCriterion("crafted_book", hasItem(TinkerCommons.materialsAndYou)));
+    AdvancementHolder partBuilder = builder(TinkerTables.partBuilder, resource("tools/part_builder"), materialsAndYou, AdvancementType.TASK, builder ->
+      builder.addCriterion("crafted_block", hasItem(TinkerTables.partBuilder)));
+    builder(TinkerToolParts.pickHead.get().withMaterialForDisplay(MaterialIds.wood), resource("tools/make_part"), partBuilder, AdvancementType.TASK, builder ->
+      builder.addCriterion("crafted_part", hasTag(TinkerTags.Items.TOOL_PARTS)));
+    AdvancementHolder tinkerStation = builder(TinkerTables.tinkerStation, resource("tools/tinker_station"), partBuilder, AdvancementType.TASK, builder ->
+      builder.addCriterion("crafted_block", hasItem(TinkerTables.tinkerStation)));
+    AdvancementHolder tinkerTool = builder(TinkerTools.pickaxe.get().getRenderTool(), resource("tools/tinker_tool"), tinkerStation, AdvancementType.TASK, builder ->
+      builder.addCriterion("crafted_tool", hasTag(TinkerTags.Items.MULTIPART_TOOL)));
+    AdvancementHolder harvestLevel = builder(Items.NETHERITE_INGOT, resource("tools/netherite_tier"), tinkerTool, AdvancementType.GOAL, builder ->
+      builder.addCriterion("harvest_level", toolCriterion(new StatInSetPredicate<>(ToolStats.HARVEST_TIER, Tiers.NETHERITE))));
+    builder(Items.TARGET, resource("tools/perfect_aim"), tinkerTool, AdvancementType.GOAL, builder ->
+      builder.addCriterion("accuracy", toolCriterion(ToolStackPredicate.and(
+        ToolStackPredicate.tag(TinkerTags.Items.BOWS),
+        StatInRangePredicate.match(ToolStats.ACCURACY, 1)))));
+    // note that attack damage gets +1 from player attributes, so 20 is actually 21 damage with the tool
+    builder(Items.ZOMBIE_HEAD, resource("tools/one_shot"), tinkerTool, AdvancementType.GOAL, builder ->
+      builder.addCriterion("damage", toolCriterion(StatInRangePredicate.min(ToolStats.ATTACK_DAMAGE, 20))));
+    builder(TinkerMaterials.manyullyn.getIngot(), resource("tools/material_master"), harvestLevel, AdvancementType.CHALLENGE, builder -> {
+      Consumer<MaterialId> with = id -> builder.addCriterion(id.getPath(), toolContextCriterion(new HasMaterialPredicate(id)));
+      // tier 1
+      with.accept(MaterialIds.wood);
+      with.accept(MaterialIds.flint);
+      with.accept(MaterialIds.rock);
+      with.accept(MaterialIds.bone);
+      with.accept(MaterialIds.necroticBone);
+      with.accept(MaterialIds.leather);
+      with.accept(MaterialIds.string);
+      with.accept(MaterialIds.vine);
+      with.accept(MaterialIds.bamboo);
+      with.accept(MaterialIds.chorus);
+      // tier 2
+      with.accept(MaterialIds.iron);
+      with.accept(MaterialIds.searedStone);
+      with.accept(MaterialIds.scorchedStone);
+      with.accept(MaterialIds.copper);
+      with.accept(MaterialIds.slimewood);
+      with.accept(MaterialIds.slimeskin);
+      with.accept(MaterialIds.skyslimeVine);
+      with.accept(MaterialIds.weepingVine);
+      with.accept(MaterialIds.twistingVine);
+      with.accept(MaterialIds.whitestone);
+      // tier 3
+      with.accept(MaterialIds.roseGold);
+      with.accept(MaterialIds.slimesteel);
+      with.accept(MaterialIds.nahuatl);
+      with.accept(MaterialIds.amethystBronze);
+      with.accept(MaterialIds.pigIron);
+      with.accept(MaterialIds.cobalt);
+      with.accept(MaterialIds.darkthread);
+      with.accept(MaterialIds.ichorskin);
+      // tier 4
+      with.accept(MaterialIds.manyullyn);
+      with.accept(MaterialIds.hepatizon);
+      with.accept(MaterialIds.cinderslime);
+      with.accept(MaterialIds.queensSlime);
+      with.accept(MaterialIds.blazingBone);
+      with.accept(MaterialIds.blazewood);
+      with.accept(MaterialIds.jeweledHide);
+      with.accept(MaterialIds.knightmetal);
+      with.accept(MaterialIds.knightslime);
+      with.accept(MaterialIds.enderslimeVine);
+    });
+    builder(TinkerTools.travelersGear.get(ArmorItem.Type.HELMET).getRenderTool(), resource("tools/travelers_gear"), tinkerStation, AdvancementType.TASK, builder ->
+      TinkerTools.travelersGear.forEach((type, armor) -> builder.addCriterion("crafted_" + type.getName(), hasItem(armor))));
+    builder(TinkerTools.pickaxe.get().getRenderTool(), resource("tools/tool_smith"), tinkerTool, AdvancementType.CHALLENGE, builder -> {
+      Consumer<Item> with = item -> builder.addCriterion(BuiltInRegistries.ITEM.getKey(item).getPath(), hasItem(item));
+      with.accept(TinkerTools.pickaxe.get());
+      with.accept(TinkerTools.mattock.get());
+      with.accept(TinkerTools.pickadze.get());
+      with.accept(TinkerTools.handAxe.get());
+      with.accept(TinkerTools.kama.get());
+      with.accept(TinkerTools.dagger.get());
+      with.accept(TinkerTools.sword.get());
+    });
+    AdvancementHolder modified = builder(Items.REDSTONE, resource("tools/modified"), tinkerTool, AdvancementType.TASK, builder ->
+      builder.addCriterion("crafted_tool", toolContextCriterion(ToolContextPredicate.HAS_UPGRADES)));
+    builder(Items.WRITABLE_BOOK, resource("tools/upgrade_slots"), modified, AdvancementType.CHALLENGE, builder ->
+      builder.addCriterion("has_modified", toolContextCriterion(
+        ToolContextPredicate.and(
+          HasModifierPredicate.hasUpgrade(ModifierIds.writable, 1),
+          HasModifierPredicate.hasUpgrade(ModifierIds.recapitated, 1),
+          HasModifierPredicate.hasUpgrade(ModifierIds.harmonious, 1),
+          HasModifierPredicate.hasUpgrade(ModifierIds.forecast, 1),
+          HasModifierPredicate.hasUpgrade(ModifierIds.gilded, 1)))));
   }
 
   @Override

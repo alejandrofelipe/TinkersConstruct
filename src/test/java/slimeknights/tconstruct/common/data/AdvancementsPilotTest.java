@@ -21,4 +21,22 @@ class AdvancementsPilotTest {
     assertThat(display.getAsJsonObject("icon").get("id").getAsString()).isEqualTo("tconstruct:materials_and_you");
     assertThat(display.get("announce_to_chat").getAsBoolean()).isFalse();
   }
+
+  @Test
+  void netheriteTier_usesToolSubPredicate() {
+    JsonObject json = loader.loadJson("tconstruct", "tools/netherite_tier");
+    JsonObject criteria = json.getAsJsonObject("criteria");
+    // the harvest_level criterion must carry an item predicate with a tconstruct:tool sub-predicate
+    assertThat(criteria.toString()).contains("tconstruct:tool");
+    assertThat(json.get("parent").getAsString()).isEqualTo("tconstruct:tools/tinker_tool");
+  }
+
+  @Test
+  void treeParentsResolve() {
+    for (String id : new String[]{"tools/part_builder", "tools/make_part", "tools/tinker_station",
+        "tools/tinker_tool", "tools/perfect_aim", "tools/one_shot", "tools/material_master",
+        "tools/travelers_gear", "tools/tool_smith", "tools/modified", "tools/upgrade_slots"}) {
+      assertThat(loader.loadJson("tconstruct", id).has("parent")).as(id).isTrue();
+    }
+  }
 }
