@@ -96,4 +96,24 @@ class AdvancementsPilotTest {
     assertThat(json.getAsJsonObject("criteria").toString()).contains("tconstruct:tool");
     assertThat(json.get("parent").getAsString()).isEqualTo("tconstruct:world/slimesuit");
   }
+
+  @Test
+  void foundry_blazeUsesTankFluidComponent() {
+    JsonObject json = loader.loadJson("tconstruct", "foundry/blaze");
+    assertThat(json.get("parent").getAsString()).isEqualTo("tconstruct:foundry/structure");
+    assertThat(json.getAsJsonObject("criteria").toString()).contains("tconstruct:tank_fluid");
+    assertThat(json.getAsJsonArray("requirements").size()).isEqualTo(1); // OR strategy: one group
+  }
+
+  @Test
+  void foundry_lanternsUseCountAndTankFluid() {
+    String criteria = loader.loadJson("tconstruct", "foundry/manyullyn_lanterns").getAsJsonObject("criteria").toString();
+    assertThat(criteria).contains("tconstruct:tank_fluid");
+    assertThat(criteria).contains("count"); // the >=64 bound (blaze passes ANY, which is omitted)
+  }
+
+  @Test
+  void foundry_plateArmorParentsToBlaze() {
+    assertThat(loader.loadJson("tconstruct", "foundry/plate_armor").get("parent").getAsString()).isEqualTo("tconstruct:foundry/blaze");
+  }
 }

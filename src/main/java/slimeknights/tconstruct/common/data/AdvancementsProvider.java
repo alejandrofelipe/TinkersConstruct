@@ -16,10 +16,12 @@ import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.ItemUsedOnLocationTrigger;
 import net.minecraft.advancements.critereon.LocationPredicate;
+import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.PlayerInteractTrigger;
 import net.minecraft.advancements.critereon.PlayerTrigger;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
@@ -40,8 +42,11 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.neoforged.neoforge.common.conditions.ICondition;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.SimpleFluidContent;
 import slimeknights.mantle.data.GenericDataProvider;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.mantle.registration.object.ItemObject;
@@ -49,6 +54,7 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.json.ConfigEnabledCondition;
 import slimeknights.tconstruct.common.registration.CastItemObject;
+import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.gadgets.TinkerGadgets;
 import slimeknights.tconstruct.library.json.predicate.tool.HasMaterialPredicate;
 import slimeknights.tconstruct.library.json.predicate.tool.HasModifierPredicate;
@@ -70,7 +76,9 @@ import slimeknights.tconstruct.shared.TinkerMaterials;
 import slimeknights.tconstruct.shared.block.SlimeType;
 import slimeknights.tconstruct.shared.inventory.BlockContainerOpenedTrigger;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
+import slimeknights.tconstruct.smeltery.block.SearedLanternBlock;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock;
+import slimeknights.tconstruct.smeltery.item.TankItem;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tools.TinkerModifiers;
 import slimeknights.tconstruct.tools.TinkerToolParts;
@@ -365,8 +373,28 @@ public class AdvancementsProvider extends GenericDataProvider {
       }
       builder.requirements(new CountRequirementsStrategy(1, 1, 1, 1, 2, 2));
     });
-    builder(TinkerSmeltery.foundryController, resource("foundry/structure"), alloyer, AdvancementType.TASK, builder ->
+    AdvancementHolder foundry = builder(TinkerSmeltery.foundryController, resource("foundry/structure"), alloyer, AdvancementType.TASK, builder ->
       builder.addCriterion("open_foundry", containerCriterion(TinkerSmeltery.foundry.get())));
+
+    // foundry: blaze subtree (tank fluid content matching via DataComponentPredicate)
+    AdvancementHolder blazingBlood = builder(TankItem.setTank(new ItemStack(TinkerSmeltery.scorchedTank.get(SearedTankBlock.TankType.FUEL_GAUGE)), new FluidStack(TinkerFluids.blazingBlood.get(), SearedTankBlock.TankType.FUEL_GAUGE.getCapacity())),
+        resource("foundry/blaze"), foundry, AdvancementType.GOAL, builder -> {
+      Consumer<SearedTankBlock> with = block ->
+        builder.addCriterion(BuiltInRegistries.BLOCK.getKey(block).getPath(), tankFluidCriterion(block, TinkerFluids.blazingBlood.get(), block.getCapacity(), MinMaxBounds.Ints.ANY));
+      TinkerSmeltery.searedTank.forEach(with);
+      TinkerSmeltery.scorchedTank.forEach(with);
+      builder.requirements(AdvancementRequirements.Strategy.OR);
+    });
+    builder(TinkerTools.plateArmor.get(ArmorItem.Type.CHESTPLATE).getRenderTool(), resource("foundry/plate_armor"), blazingBlood, AdvancementType.GOAL, builder ->
+      TinkerTools.plateArmor.forEach((type, armor) -> builder.addCriterion("crafted_" + type.getName(), hasItem(armor))));
+    builder(TankItem.setTank(new ItemStack(TinkerSmeltery.scorchedLantern), new FluidStack(TinkerFluids.moltenManyullyn.get(), TinkerSmeltery.scorchedLantern.get().getCapacity())),
+        resource("foundry/manyullyn_lanterns"), foundry, AdvancementType.CHALLENGE, builder -> {
+      Consumer<SearedLanternBlock> with = block ->
+        builder.addCriterion(BuiltInRegistries.BLOCK.getKey(block).getPath(), tankFluidCriterion(block, TinkerFluids.moltenManyullyn.get(), block.getCapacity(), MinMaxBounds.Ints.atLeast(64)));
+      with.accept(TinkerSmeltery.searedLantern.get());
+      with.accept(TinkerSmeltery.scorchedLantern.get());
+      builder.requirements(AdvancementRequirements.Strategy.OR);
+    });
 
     // exploration path
     AdvancementHolder tinkersGadgetry = builder(TinkerCommons.tinkersGadgetry, resource("world/tinkers_gadgetry"), materialsAndYou, AdvancementType.TASK, builder ->
@@ -558,6 +586,14 @@ public class AdvancementsProvider extends GenericDataProvider {
     return PlayerInteractTrigger.TriggerInstance.itemUsedOnEntity(
       ItemPredicate.Builder.item().of(item),
       Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().of(entity).build())));
+  }
+
+  /** Criterion matching an item whose tank is filled to capacity with the given fluid (exact DataComponentPredicate). */
+  protected static Criterion<?> tankFluidCriterion(ItemLike block, Fluid fluid, int capacity, MinMaxBounds.Ints count) {
+    return inventoryTrigger(ItemPredicate.Builder.item().of(block).withCount(count).hasComponents(
+      DataComponentPredicate.builder()
+        .expect(TinkerSmeltery.TANK_FLUID.get(), SimpleFluidContent.copyOf(new FluidStack(fluid, capacity)))
+        .build()));
   }
 
 
