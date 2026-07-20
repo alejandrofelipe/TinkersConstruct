@@ -51,4 +51,26 @@ class AdvancementsPilotTest {
     assertThat(json.getAsJsonObject("criteria").has("tick")).isTrue();
     assertThat(json.getAsJsonObject("rewards").has("loot")).isTrue();
   }
+
+  @Test
+  void smeltery_structureUsesContainerTrigger() {
+    JsonObject json = loader.loadJson("tconstruct", "smeltery/structure");
+    assertThat(json.get("parent").getAsString()).isEqualTo("tconstruct:smeltery/mighty_smelting");
+    assertThat(json.getAsJsonObject("criteria").toString()).contains("tconstruct:block_container_opened");
+  }
+
+  @Test
+  void smeltery_anvilUsesOrRequirements() {
+    JsonObject json = loader.loadJson("tconstruct", "smeltery/tinkers_anvil");
+    // OR strategy => the two criteria share one requirements group
+    assertThat(json.getAsJsonArray("requirements").size()).isEqualTo(1);
+    assertThat(json.getAsJsonArray("requirements").get(0).getAsJsonArray().size()).isEqualTo(2);
+  }
+
+  @Test
+  void smeltery_melterUsesCountRequirements() {
+    JsonObject json = loader.loadJson("tconstruct", "smeltery/melter");
+    // CountRequirementsStrategy => several requirement groups (not a single AND flattening)
+    assertThat(json.getAsJsonArray("requirements").size()).isGreaterThan(1);
+  }
 }
