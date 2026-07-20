@@ -230,7 +230,8 @@ public class TConstruct {
 
     // other datagen
     generator.addProvider(server, new TConstructLootTableProvider(packOutput, lookupProvider));
-    generator.addProvider(server, new AdvancementsProvider(packOutput, lookupProvider));
+    // uses the datapack registry provider (not the base lookupProvider) so world-structure advancements resolve Tinkers structures
+    generator.addProvider(server, new AdvancementsProvider(packOutput, datapackRegistryProvider.getRegistryProvider()));
     generator.addProvider(server, new GlobalLootModifiersProvider(packOutput, lookupProvider));
     generator.addProvider(server, new LootTableInjectionProvider(packOutput));
     generator.addProvider(server, new ConfigurationDataProvider(packOutput));

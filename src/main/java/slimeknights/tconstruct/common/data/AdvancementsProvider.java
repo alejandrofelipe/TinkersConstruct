@@ -11,10 +11,14 @@ import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.DisplayInfo;
+import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.ItemUsedOnLocationTrigger;
+import net.minecraft.advancements.critereon.LocationPredicate;
+import net.minecraft.advancements.critereon.PlayerInteractTrigger;
 import net.minecraft.advancements.critereon.PlayerTrigger;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -26,6 +30,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -34,6 +39,7 @@ import net.minecraft.world.item.Tiers;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import slimeknights.mantle.data.GenericDataProvider;
@@ -43,6 +49,7 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.json.ConfigEnabledCondition;
 import slimeknights.tconstruct.common.registration.CastItemObject;
+import slimeknights.tconstruct.gadgets.TinkerGadgets;
 import slimeknights.tconstruct.library.json.predicate.tool.HasMaterialPredicate;
 import slimeknights.tconstruct.library.json.predicate.tool.HasModifierPredicate;
 import slimeknights.tconstruct.library.json.predicate.tool.StatInRangePredicate;
@@ -56,9 +63,11 @@ import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.modifiers.util.LazyModifier;
 import slimeknights.tconstruct.library.tools.nbt.IToolContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
+import slimeknights.tconstruct.library.tools.nbt.MaterialIdNBT;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.shared.TinkerMaterials;
+import slimeknights.tconstruct.shared.block.SlimeType;
 import slimeknights.tconstruct.shared.inventory.BlockContainerOpenedTrigger;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock;
@@ -68,6 +77,9 @@ import slimeknights.tconstruct.tools.TinkerToolParts;
 import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
+import slimeknights.tconstruct.world.TinkerStructures;
+import slimeknights.tconstruct.world.TinkerWorld;
+import slimeknights.tconstruct.world.block.FoliageType;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -91,6 +103,8 @@ public class AdvancementsProvider extends GenericDataProvider {
   private final List<AdvancementHolder> advancements = new ArrayList<>();
   /** Config-gating: conditions to attach to an advancement id via {@code neoforge:conditions} (replaces ConditionalAdvancement). */
   private final Map<ResourceLocation, List<ICondition>> conditions = new HashMap<>();
+  /** Structure holder getter from the datagen registry set (island advancements resolve ResourceKey→Holder here). */
+  private HolderGetter<Structure> structures;
 
   public AdvancementsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
     super(output, Target.DATA_PACK, "advancement");
@@ -354,6 +368,67 @@ public class AdvancementsProvider extends GenericDataProvider {
     builder(TinkerSmeltery.foundryController, resource("foundry/structure"), alloyer, AdvancementType.TASK, builder ->
       builder.addCriterion("open_foundry", containerCriterion(TinkerSmeltery.foundry.get())));
 
+    // exploration path
+    AdvancementHolder tinkersGadgetry = builder(TinkerCommons.tinkersGadgetry, resource("world/tinkers_gadgetry"), materialsAndYou, AdvancementType.TASK, builder ->
+      builder.addCriterion("crafted_book", hasItem(TinkerCommons.tinkersGadgetry)));
+    builder(TinkerWorld.slimeSapling.get(FoliageType.EARTH), resource("world/earth_island"), tinkersGadgetry, AdvancementType.GOAL, builder ->
+      builder.addCriterion("found_island", locatedCriterion(TinkerStructures.earthSlimeIsland)));
+    AdvancementHolder skyslimeIsland = builder(TinkerWorld.slimeSapling.get(FoliageType.SKY), resource("world/sky_island"), tinkersGadgetry, AdvancementType.GOAL, builder ->
+      builder.addCriterion("found_island", locatedCriterion(TinkerStructures.skySlimeIsland)));
+    builder(TinkerWorld.slimeSapling.get(FoliageType.BLOOD), resource("world/blood_island"), tinkersGadgetry, AdvancementType.GOAL, builder ->
+      builder.addCriterion("found_island", locatedCriterion(TinkerStructures.bloodIsland)));
+    builder(TinkerWorld.slimeSapling.get(FoliageType.ENDER), resource("world/ender_island"), tinkersGadgetry, AdvancementType.GOAL, builder ->
+      builder.addCriterion("found_island", locatedCriterion(TinkerStructures.endSlimeIsland)));
+    builder(Items.CLAY_BALL, resource("world/clay_island"), tinkersGadgetry, AdvancementType.GOAL, builder ->
+      builder.addCriterion("found_island", locatedCriterion(TinkerStructures.clayIsland)));
+    builder(TinkerCommons.slimeball.get(SlimeType.ICHOR), resource("world/slime_collector"), tinkersGadgetry, AdvancementType.TASK, builder -> {
+      for (SlimeType type : SlimeType.values()) {
+        builder.addCriterion(type.getSerializedName(), hasTag(type.getSlimeballTag()));
+      }
+      builder.addCriterion("magma_cream", hasItem(Items.MAGMA_CREAM));
+    });
+    builder(TinkerGadgets.piggyBackpack, resource("world/piggybackpack"), tinkersGadgetry, AdvancementType.GOAL, builder ->
+      builder.addCriterion("used_pack", itemUsedOnEntityCriterion(TinkerGadgets.piggyBackpack, EntityType.PIG)));
+    AdvancementHolder slimesuit = builder(new MaterialIdNBT(List.of(MaterialIds.bone, MaterialIds.skyslime)).updateStack(new ItemStack(TinkerTools.slimesuit.get(ArmorItem.Type.CHESTPLATE))), resource("world/slimesuit"), skyslimeIsland, AdvancementType.GOAL, builder ->
+      TinkerTools.slimesuit.forEach((type, armor) -> builder.addCriterion("crafted_" + type.getName(), hasItem(armor))));
+    builder(new MaterialIdNBT(List.of(MaterialIds.glass, MaterialIds.enderslime)).updateStack(new ItemStack(TinkerTools.slimesuit.get(ArmorItem.Type.HELMET))),
+            resource("world/slimeskull"), slimesuit, AdvancementType.CHALLENGE, builder -> {
+      Item helmet = TinkerTools.slimesuit.get(ArmorItem.Type.HELMET);
+      Consumer<MaterialId> with = mat -> builder.addCriterion(mat.getPath(), toolContextCriterion(
+        ToolContextPredicate.and(ToolContextPredicate.set(helmet), new HasMaterialPredicate(mat, 0))));
+      with.accept(MaterialIds.glass);
+      with.accept(MaterialIds.blaze);
+      // zombie
+      with.accept(MaterialIds.leather);
+      with.accept(MaterialIds.iron);
+      with.accept(MaterialIds.copper);
+      // spider
+      with.accept(MaterialIds.string);
+      with.accept(MaterialIds.darkthread);
+      // skeleton
+      with.accept(MaterialIds.bone);
+      with.accept(MaterialIds.ice);
+      with.accept(MaterialIds.necroticBone);
+      // piglin
+      with.accept(MaterialIds.gold);
+      with.accept(MaterialIds.roseGold);
+      with.accept(MaterialIds.pigIron);
+      // end
+      with.accept(MaterialIds.enderPearl);
+      with.accept(MaterialIds.dragonScale);
+      // crafted
+      with.accept(MaterialIds.venombone);
+      with.accept(MaterialIds.blazingBone);
+      with.accept(MaterialIds.knightmetal);
+    });
+    builder(TinkerTools.battlesign.get().getRenderTool(), resource("world/ancient_tools"), tinkersGadgetry, AdvancementType.CHALLENGE, builder -> {
+      Consumer<ItemObject<?>> with = item -> builder.addCriterion(item.getId().getPath(), hasItem(item));
+      with.accept(TinkerTools.meltingPan);
+      with.accept(TinkerTools.warPick);
+      with.accept(TinkerTools.battlesign);
+      with.accept(TinkerTools.swasher);
+    });
+
     // internal advancements
     hiddenBuilder(resource("internal/starting_book"), ConfigEnabledCondition.SPAWN_WITH_BOOK, builder -> {
       builder.addCriterion("tick", tickCriterion());
@@ -366,6 +441,7 @@ public class AdvancementsProvider extends GenericDataProvider {
     return this.registries.thenCompose(provider -> {
       this.advancements.clear();
       this.conditions.clear();
+      this.structures = provider.lookupOrThrow(Registries.STRUCTURE);
       generate();
       // NeoForge's datagen provider overrides createSerializationContext to recognise built-in (mod) item
       // holders; RegistryOps.create(..) would not, failing HolderSet serialization ("not valid in registry set").
@@ -470,6 +546,18 @@ public class AdvancementsProvider extends GenericDataProvider {
   /** Criterion for opening a Tinkers container (smeltery/foundry structure). */
   protected static Criterion<?> containerCriterion(BlockEntityType<?> type) {
     return BlockContainerOpenedTrigger.Instance.container(type);
+  }
+
+  /** Criterion firing when the player is inside the given structure (island advancements). */
+  protected Criterion<?> locatedCriterion(ResourceKey<Structure> structure) {
+    return PlayerTrigger.TriggerInstance.located(LocationPredicate.Builder.inStructure(this.structures.getOrThrow(structure)));
+  }
+
+  /** Criterion firing when an item is used on the given entity type (piggybackpack). */
+  protected static Criterion<?> itemUsedOnEntityCriterion(ItemLike item, EntityType<?> entity) {
+    return PlayerInteractTrigger.TriggerInstance.itemUsedOnEntity(
+      ItemPredicate.Builder.item().of(item),
+      Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().of(entity).build())));
   }
 
 

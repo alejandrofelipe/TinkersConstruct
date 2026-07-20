@@ -82,4 +82,18 @@ class AdvancementsPilotTest {
     assertThat(structure.get("parent").getAsString()).isEqualTo("tconstruct:foundry/alloyer");
     assertThat(structure.getAsJsonObject("criteria").toString()).contains("tconstruct:block_container_opened");
   }
+
+  @Test
+  void world_islandUsesLocatedTrigger() {
+    JsonObject json = loader.loadJson("tconstruct", "world/sky_island");
+    assertThat(json.get("parent").getAsString()).isEqualTo("tconstruct:world/tinkers_gadgetry");
+    assertThat(json.getAsJsonObject("criteria").toString()).contains("minecraft:location");
+  }
+
+  @Test
+  void world_slimeskullUsesToolSubPredicate() {
+    JsonObject json = loader.loadJson("tconstruct", "world/slimeskull");
+    assertThat(json.getAsJsonObject("criteria").toString()).contains("tconstruct:tool");
+    assertThat(json.get("parent").getAsString()).isEqualTo("tconstruct:world/slimesuit");
+  }
 }
