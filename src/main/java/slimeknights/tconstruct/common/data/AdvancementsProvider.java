@@ -1,23 +1,28 @@
 package slimeknights.tconstruct.common.data;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementRequirements;
+import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.critereon.PlayerTrigger;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ArmorItem;
@@ -26,10 +31,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.neoforged.neoforge.common.conditions.ICondition;
 import slimeknights.mantle.data.GenericDataProvider;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.common.json.ConfigEnabledCondition;
 import slimeknights.tconstruct.library.json.predicate.tool.HasMaterialPredicate;
 import slimeknights.tconstruct.library.json.predicate.tool.HasModifierPredicate;
 import slimeknights.tconstruct.library.json.predicate.tool.StatInRangePredicate;
@@ -52,7 +60,9 @@ import slimeknights.tconstruct.tools.data.material.MaterialIds;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -68,6 +78,8 @@ import java.util.function.Consumer;
 public class AdvancementsProvider extends GenericDataProvider {
   private final CompletableFuture<HolderLookup.Provider> registries;
   private final List<AdvancementHolder> advancements = new ArrayList<>();
+  /** Config-gating: conditions to attach to an advancement id via {@code neoforge:conditions} (replaces ConditionalAdvancement). */
+  private final Map<ResourceLocation, List<ICondition>> conditions = new HashMap<>();
 
   public AdvancementsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
     super(output, Target.DATA_PACK, "advancement");
@@ -168,18 +180,31 @@ public class AdvancementsProvider extends GenericDataProvider {
           HasModifierPredicate.hasUpgrade(ModifierIds.harmonious, 1),
           HasModifierPredicate.hasUpgrade(ModifierIds.forecast, 1),
           HasModifierPredicate.hasUpgrade(ModifierIds.gilded, 1)))));
+
+    // internal advancements
+    hiddenBuilder(resource("internal/starting_book"), ConfigEnabledCondition.SPAWN_WITH_BOOK, builder -> {
+      builder.addCriterion("tick", tickCriterion());
+      builder.rewards(AdvancementRewards.Builder.loot(ResourceKey.create(Registries.LOOT_TABLE, resource("gameplay/starting_book"))));
+    });
   }
 
   @Override
   public CompletableFuture<?> run(CachedOutput cache) {
     return this.registries.thenCompose(provider -> {
       this.advancements.clear();
+      this.conditions.clear();
       generate();
       // NeoForge's datagen provider overrides createSerializationContext to recognise built-in (mod) item
       // holders; RegistryOps.create(..) would not, failing HolderSet serialization ("not valid in registry set").
       RegistryOps<JsonElement> ops = provider.createSerializationContext(JsonOps.INSTANCE);
-      return allOf(this.advancements.stream().map(holder ->
-        saveJson(cache, holder.id(), Advancement.CODEC.encodeStart(ops, holder.value()).getOrThrow())));
+      return allOf(this.advancements.stream().map(holder -> {
+        JsonObject json = Advancement.CODEC.encodeStart(ops, holder.value()).getOrThrow().getAsJsonObject();
+        List<ICondition> conds = this.conditions.get(holder.id());
+        if (conds != null && !conds.isEmpty()) {
+          json.add("neoforge:conditions", ICondition.LIST_CODEC.encodeStart(ops, conds).getOrThrow());
+        }
+        return saveJson(cache, holder.id(), json);
+      }));
     });
   }
 
@@ -218,6 +243,17 @@ public class AdvancementsProvider extends GenericDataProvider {
     return holder;
   }
 
+  /** Hidden, config-gated advancement (replaces the removed ConditionalAdvancement): no display, no parent. */
+  protected AdvancementHolder hiddenBuilder(ResourceLocation name, ICondition condition, Consumer<Advancement.Builder> consumer) {
+    Advancement.Builder builder = Advancement.Builder.advancement();
+    builder.requirements(AdvancementRequirements.Strategy.AND);
+    consumer.accept(builder);
+    AdvancementHolder holder = builder.build(name);
+    this.advancements.add(holder);
+    this.conditions.put(name, List.of(condition));
+    return holder;
+  }
+
 
   /* Criterion helpers */
 
@@ -245,6 +281,11 @@ public class AdvancementsProvider extends GenericDataProvider {
   /** Criterion matching a Tinker tool against a tool-context predicate */
   protected static Criterion<?> toolContextCriterion(IJsonPredicate<IToolContext> predicate) {
     return inventoryTrigger(ItemPredicate.Builder.item().withSubPredicate(TinkerItemPredicates.TOOL.get(), ToolItemSubPredicate.ofContext(predicate)));
+  }
+
+  /** Criterion firing every player tick (hidden reward advancements). */
+  protected static Criterion<?> tickCriterion() {
+    return CriteriaTriggers.TICK.createCriterion(new PlayerTrigger.TriggerInstance(Optional.empty()));
   }
 
 

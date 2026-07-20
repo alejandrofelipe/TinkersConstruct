@@ -39,4 +39,16 @@ class AdvancementsPilotTest {
       assertThat(loader.loadJson("tconstruct", id).has("parent")).as(id).isTrue();
     }
   }
+
+  @Test
+  void startingBook_isConfigGatedHidden() {
+    JsonObject json = loader.loadJson("tconstruct", "internal/starting_book");
+    // config-gated via neoforge:conditions (replaces the removed ConditionalAdvancement)
+    assertThat(json.has("neoforge:conditions")).isTrue();
+    assertThat(json.getAsJsonArray("neoforge:conditions").toString()).contains("tconstruct:config");
+    // hidden internal advancement: no display, has the tick criterion + a loot reward
+    assertThat(json.has("display")).isFalse();
+    assertThat(json.getAsJsonObject("criteria").has("tick")).isTrue();
+    assertThat(json.getAsJsonObject("rewards").has("loot")).isTrue();
+  }
 }
