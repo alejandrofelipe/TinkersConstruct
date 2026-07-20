@@ -73,4 +73,13 @@ class AdvancementsPilotTest {
     // CountRequirementsStrategy => several requirement groups (not a single AND flattening)
     assertThat(json.getAsJsonArray("requirements").size()).isGreaterThan(1);
   }
+
+  @Test
+  void foundry_structureAndAlloyer() {
+    // alloyer uses CountRequirementsStrategy => several requirement groups
+    assertThat(loader.loadJson("tconstruct", "foundry/alloyer").getAsJsonArray("requirements").size()).isGreaterThan(1);
+    JsonObject structure = loader.loadJson("tconstruct", "foundry/structure");
+    assertThat(structure.get("parent").getAsString()).isEqualTo("tconstruct:foundry/alloyer");
+    assertThat(structure.getAsJsonObject("criteria").toString()).contains("tconstruct:block_container_opened");
+  }
 }

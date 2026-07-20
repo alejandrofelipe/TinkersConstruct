@@ -335,6 +335,25 @@ public class AdvancementsProvider extends GenericDataProvider {
       with.accept(ModifierIds.reflecting);
     });
 
+    // foundry path (the blaze subtree — blaze/plate_armor/manyullyn_lanterns — is deferred to Plan B)
+    AdvancementHolder fantasticFoundry = builder(TinkerCommons.fantasticFoundry, resource("foundry/fantastic_foundry"), materialsAndYou, AdvancementType.TASK, builder ->
+      builder.addCriterion("crafted_book", hasItem(TinkerCommons.fantasticFoundry)));
+    builder(TinkerCommons.encyclopedia, resource("foundry/encyclopedia"), fantasticFoundry, AdvancementType.GOAL, builder ->
+      builder.addCriterion("crafted_book", hasItem(TinkerCommons.encyclopedia)));
+    AdvancementHolder alloyer = builder(TinkerSmeltery.scorchedAlloyer, resource("foundry/alloyer"), fantasticFoundry, AdvancementType.TASK, builder -> {
+      Consumer<Block> with = block -> builder.addCriterion(BuiltInRegistries.BLOCK.getKey(block).getPath(), placedBlockCriterion(block));
+      with.accept(TinkerSmeltery.scorchedAlloyer.get());
+      with.accept(TinkerSmeltery.scorchedFaucet.get());
+      with.accept(TinkerSmeltery.scorchedTable.get());
+      with.accept(TinkerSmeltery.scorchedBasin.get());
+      for (SearedTankBlock.TankType type : SearedTankBlock.TankType.values()) {
+        with.accept(TinkerSmeltery.scorchedTank.get(type));
+      }
+      builder.requirements(new CountRequirementsStrategy(1, 1, 1, 1, 2, 2));
+    });
+    builder(TinkerSmeltery.foundryController, resource("foundry/structure"), alloyer, AdvancementType.TASK, builder ->
+      builder.addCriterion("open_foundry", containerCriterion(TinkerSmeltery.foundry.get())));
+
     // internal advancements
     hiddenBuilder(resource("internal/starting_book"), ConfigEnabledCondition.SPAWN_WITH_BOOK, builder -> {
       builder.addCriterion("tick", tickCriterion());
