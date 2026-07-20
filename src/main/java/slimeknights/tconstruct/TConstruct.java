@@ -46,6 +46,7 @@ import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.gadgets.TinkerGadgets;
 import slimeknights.tconstruct.gadgets.capability.PiggybackCapability;
+import slimeknights.tconstruct.library.json.predicate.tool.TinkerItemPredicates;
 import slimeknights.tconstruct.library.TinkerItemDisplays;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
 import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability.ComputableDataKey;
@@ -140,6 +141,7 @@ public class TConstruct {
 
     // PORT M3: central capability + ingredient-type registration
     TinkerIngredients.init(bus);
+    TinkerItemPredicates.init(bus);
 
     // initialize modules, done this way rather than with annotations to give us control over the order
     // PORT: MissingMappingsEvent removed in NeoForge (no legacy remap)
