@@ -68,6 +68,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new StationReflowScenario());
     UiTestScenarios.register(new StationCollapsedScenario());
     UiTestScenarios.register(new StationCollapsedOverlayScenario());
+    UiTestScenarios.register(new ExtraHeartsScenario());
   }
 
   /** Places a single block and opens its GUI. */
@@ -502,5 +503,36 @@ public class TinkerUiTestScenarios {
       ctx.mc().setScreen(null);
       ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
     }
+  }
+
+  /** No menu: boosts the player past 20 HP and captures the in-world HUD to verify Mantle's custom extra-heart renderer. */
+  private static class ExtraHeartsScenario implements UiTestScenario {
+    private final BlockPos pos = SITE.offset(60, 0, 0);
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("extra_hearts");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      ctx.sendCommand("tp @s " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
+      // 40 max HP -> a full extra heart row, so the custom multi-color rows render; heal to full so all show filled
+      ctx.sendCommand("effect give @s minecraft:health_boost 600 4 true");
+      ctx.sendCommand("effect give @s minecraft:instant_health 1 20 true");
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      // no screen — the in-world HUD health bar is the capture target
+    }
+
+    @Override
+    public void close(UiTestContext ctx) { /* nothing open */ }
   }
 }
