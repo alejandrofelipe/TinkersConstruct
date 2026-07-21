@@ -12,7 +12,7 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
-import slimeknights.mantle.fluid.transfer.EmptyFluidWithNBTTransfer;
+import slimeknights.mantle.fluid.transfer.EmptyFluidContainerTransfer;
 import slimeknights.mantle.recipe.helper.FluidOutput;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.tconstruct.TConstruct;
@@ -22,7 +22,7 @@ import slimeknights.tconstruct.TConstruct;
  * @deprecated use {@link slimeknights.mantle.fluid.transfer.EmptyPotionTransfer}
  */
 @Deprecated(forRemoval = true)
-public class EmptyPotionTransfer extends EmptyFluidWithNBTTransfer {
+public class EmptyPotionTransfer extends EmptyFluidContainerTransfer {
   public static final ResourceLocation ID = TConstruct.getResource("empty_potion");
   public EmptyPotionTransfer(Ingredient input, ItemOutput filled, FluidOutput fluid) {
     super(input, filled, fluid);
