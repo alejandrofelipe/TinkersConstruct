@@ -1,6 +1,4 @@
 package slimeknights.tconstruct.smeltery;
-
-import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.ItemTags;
@@ -36,11 +34,7 @@ import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.SimpleFluidContent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.RegisterEvent;
-import slimeknights.mantle.block.GaugeBlock;
-import slimeknights.mantle.fluid.transfer.FluidContainerTransferManager;
-import slimeknights.mantle.recipe.helper.LoadableRecipeSerializer;
+import net.neoforged.neoforge.registries.DeferredRegister;import slimeknights.mantle.block.GaugeBlock;import slimeknights.mantle.recipe.helper.LoadableRecipeSerializer;
 import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
 import slimeknights.mantle.registration.object.BuildingBlockObject;
 import slimeknights.mantle.registration.object.EnumObject;
@@ -52,9 +46,7 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerModule;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.registration.CastItemObject;
-import slimeknights.tconstruct.fluids.TinkerFluids;
-import slimeknights.tconstruct.fluids.item.EmptyPotionTransfer;
-import slimeknights.tconstruct.gametest.GameTestStructureProvider;
+import slimeknights.tconstruct.fluids.TinkerFluids;import slimeknights.tconstruct.gametest.GameTestStructureProvider;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.alloying.AlloyRecipe;
@@ -523,15 +515,6 @@ public final class TinkerSmeltery extends TinkerModule {
       searedTank.forEach(dispenserBehavior);
       scorchedTank.forEach(dispenserBehavior);
     });
-  }
-
-  // PORT M3: Mantle's FluidContainerTransferManager GSON loader registration; keep on RegisterEvent until the transfer system is confirmed ported.
-  @SuppressWarnings("removal")
-  @SubscribeEvent
-  void registerSerializers(RegisterEvent event) {
-    if (event.getRegistryKey() == Registries.RECIPE_SERIALIZER) {
-      FluidContainerTransferManager.TRANSFER_LOADERS.registerDeserializer(EmptyPotionTransfer.ID, EmptyPotionTransfer.DESERIALIZER);
-    }
   }
 
   @SubscribeEvent
