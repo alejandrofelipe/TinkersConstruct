@@ -13,13 +13,16 @@ releases piggyback onto the next checkpoint), gating each with the full test bat
 **Decision log (2026-10-21):**
 - Target = **26.2** — most mod support in the ecosystem today; **26.3 is NeoForge-beta-only**, so not yet.
 - Strategy = **milestone-incremental** (not jump-to-target, not every point release).
-- **M1 lands on 1.21.3 / NF 21.3.100, not 1.21.2 (user decision).** NeoForge for 1.21.2 never left beta
-  (only `21.2.0-beta` / `21.2.1-beta`); the first stable line of this checkpoint is 21.3.x (betas end at
-  21.3.55, stable from 21.3.56, latest `21.3.100`). 1.21.3 is a vanilla bugfix over 1.21.2 with ~identical
-  mod breaks (ChampionAsh's primer is "1.21.1 → 1.21.2" and covers both). So the **1.21.3 piggyback moves
-  from M2 into M1**, keeping each tagged checkpoint on a stable base. Exact pins: MC `1.21.3`, NeoForge
-  `21.3.100`, Parchment `1.21.3 / 2024.12.07`, Java 21 (unchanged). Detailed plan:
-  [`2026-10-21-m1-1.21.3-port.md`](2026-10-21-m1-1.21.3-port.md).
+- **M1 lands on 1.21.4 / NF 21.4.161 (user decision, 2026-10-21) — folds the old M1 (1.21.2) + M2 (1.21.4).**
+  Two findings drove it: (1) NeoForge for 1.21.2 never left beta (`21.2.0/1-beta`); (2) **JEI and Immersive
+  Engineering skipped 1.21.2 AND 1.21.3 entirely** — JEI goes `jei-1.21.1` → `jei-1.21.4` (`20.0.0.4`), IE
+  stayed on 1.21.1. So 1.21.3 is a dead version in the mod ecosystem (a tagged/deployed checkpoint there
+  would have no JEI). 1.21.4 is the first stable, JEI-supported step. The 1.21.2/1.21.3 breaks are a subset,
+  done on the way. **Consequence: the old M1 and M2 merge into one milestone** (adds the `GatherDataEvent` →
+  `.Client`/`.Server` split + model-loading rewrite on top of the recipe/item/interaction walls); IE is
+  re-excluded (was already an accepted known-issue crash). Exact pins: MC `1.21.4`, NeoForge `21.4.161`,
+  Parchment `1.21.4 / 2025.03.23`, JEI `20.0.0.4` (new major → plugin API port), Java 21 (unchanged).
+  Detailed plan: [`2026-10-21-m1-1.21.4-port.md`](2026-10-21-m1-1.21.4-port.md).
 
 ## Global constraints (apply to every milestone)
 
@@ -35,16 +38,17 @@ releases piggyback onto the next checkpoint), gating each with the full test bat
 
 ## The ladder & milestones
 
-> **M1 scope note (2026-10-21):** M1 now lands on **1.21.3** (NF `21.3.100`) with 1.21.2 folded in —
-> see the decision log above. The headline/impact for M1/M2 in the table reflects this.
+> **M1 scope note (2026-10-21):** M1 now lands on **1.21.4** (NF `21.4.161`) with 1.21.2 + 1.21.3 folded in
+> **and the old M2 merged in** (JEI/IE skipped 1.21.3) — see the decision log above. Milestones renumber
+> implicitly from here: old M3 (1.21.5) is the next after this merged M1+M2.
 
 Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 → 1.21.8 → 1.21.9 → 1.21.10 →
 1.21.11 → 26.1 → 26.2 (→ 26.3)`. The **2026 numbering change** moved MC from `1.21.x` to year-based `26.x`.
 
 | # | Checkpoint (MC / NeoForge) | Piggyback | Headline breaks | Tinkers impact |
 |---|---|---|---|---|
-| **M1** | 1.21.3 / NF 21.3.100 | 1.21.2 | 🔴 **Recipes → datapack registry** (`display()`/`PlacementInfo`, `RecipeHolder`→`ResourceKey`); **item/block `setId` required**; `InteractionResultHolder` removed; `GuiGraphics.blit`+`CoreShaders`; **EntityRenderState**; model `bake`/`resolveDependencies`; `Tier`→`ToolMaterial`, `ArmorItem.Type`→`ArmorType`; `FoodProperties`→`Consumable`; registry/holder renames; `getMaxY` off-by-one; `hurt`→`hurtServer` | 🟠 **Médio-Alto** — recipes + InteractionResult (~73 files) + item/block ID (~200 sites) + client-render rewrite are the walls (see M1 plan) |
-| **M2** | 1.21.4 / NF 21.4 | — | `GatherDataEvent` → `.Client`/`.Server` split; model loading | **Médio** — datagen (single `clientData` run), models |
+| **M1** | 1.21.4 / NF 21.4.161 | 1.21.2, 1.21.3 | 🔴 **Recipes → datapack registry** (`display()`/`PlacementInfo`, `RecipeHolder`→`ResourceKey`); **item/block `setId` required**; `InteractionResultHolder` removed; `GuiGraphics.blit`+`CoreShaders`; **EntityRenderState**; model `bake`/`resolveDependencies`; `Tier`→`ToolMaterial`, `ArmorItem.Type`→`ArmorType`; `FoodProperties`→`Consumable`; registry/holder renames; `getMaxY` off-by-one; `hurt`→`hurtServer`; **+ folded M2:** `GatherDataEvent`→`.Client`/`.Server`, model loading, **JEI 19→20** | 🔴 **Alto** (M1+M2 merged) — recipes + InteractionResult (~73 files) + item/block ID (~200 sites) + client-render rewrite + JEI-20 port (see M1 plan) |
+| ~~**M2**~~ | ~~1.21.4 / NF 21.4~~ | — | **Merged into M1** (2026-10-21) — JEI/IE skipped 1.21.3, so M1 lands directly on 1.21.4 | — |
 | **M3** | 1.21.5 / NF 21.5 | — | 🔴 **Data components for weapons/tools/armor**; model-loading rewrite; `@Mod` constructed before MC | 🔴 **ENORME** — the core tool/armor/stat system |
 | **M4** | 1.21.6 / NF 21.6 | — | 🔴 Serialization `CompoundTag` → **`ValueInput`/`ValueOutput`**; `RenderPipelines.GUI_TEXTURE` blitting | 🔴 **ENORME** — ToolStack/materials/modifiers (de)serialization + GUIs |
 | **M5** | 1.21.9 / NF 21.9 | 1.21.7, 1.21.8 | Keybind categories string-based; `SkinTextures`/`PlayerSkin` relocation; waypoint API; `YawProvider` | **Baixo/médio** — client/keybinds |
@@ -85,8 +89,8 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
 
 ## Progress
 
-- [ ] **M1** — 1.21.3 / NF 21.3.100 (1.21.2 folded in) 🟠 — plan written 2026-10-21, execution pending
-- [ ] **M2** — 1.21.4 / NF 21.4
+- [ ] **M1** — 1.21.4 / NF 21.4.161 (1.21.2 + 1.21.3 + old M2 folded in) 🔴 — plan written 2026-10-21; Phase 0 done (branch + bump + deps green), execution in progress
+- [x] ~~**M2**~~ — merged into M1
 - [ ] **M3** — 1.21.5 / NF 21.5 🔴
 - [ ] **M4** — 1.21.6 / NF 21.6 🔴
 - [ ] **M5** — 1.21.9 / NF 21.9
