@@ -256,6 +256,8 @@ tasks.named('jar', Jar).configure {
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
+    // MIT (SlimeKnights): the copyright + permission notice must ship in every copy; bundle LICENSE at the jar root.
+    from("LICENSE")
 }
 
 java { withSourcesJar() }
