@@ -1,13 +1,13 @@
 /*
  * Tinkers' Construct — master build file
- * Ported to NeoGradle 7.1.38 / NeoForge 21.1.234 / MC 1.21.1 / JDK 21.
+ * Ported to NeoGradle 7.1.39 / NeoForge 21.4.161 / MC 1.21.4 / JDK 21 (M1).
  */
 
 plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.1.38'
+    id 'net.neoforged.gradle.userdev' version '7.1.39'
     id 'io.freefair.lombok' version '8.6'
     id 'jacoco'
 }
@@ -99,6 +99,11 @@ runs {
     }
     server { argument '--nogui' }
     data {
+        // 1.21.4: NeoForge replaced the vanilla `data` run type with `clientData`/`serverData`
+        // (the GatherDataEvent -> .Client/.Server split). Keep the block named `data` so the Gradle
+        // task stays `runData`; point it at the `clientData` run type. `--all` still drives every
+        // registered provider. (Phase 3 revisits whether a separate serverData run is also needed.)
+        runType 'clientData'
         arguments.addAll '--mod', 'tconstruct', '--all',
             '--output', file('src/generated/resources/').getAbsolutePath(),
             '--existing', file('src/main/resources/').getAbsolutePath(),
