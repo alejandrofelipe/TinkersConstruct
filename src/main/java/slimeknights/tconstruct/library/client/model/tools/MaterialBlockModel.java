@@ -6,41 +6,38 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.math.Transformation;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.model.TextureSlots;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.resources.model.ResolvableModel.Resolver;
 import net.minecraft.client.resources.model.SimpleBakedModel;
-import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.RenderTypeGroup;
+import net.neoforged.neoforge.client.model.AbstractUnbakedModel;
 import net.neoforged.neoforge.client.model.IQuadTransformer;
+import net.neoforged.neoforge.client.model.NeoForgeModelProperties;
+import net.neoforged.neoforge.client.model.QuadTransformers;
+import net.neoforged.neoforge.client.model.UnbakedElementsHelper;
+import net.neoforged.neoforge.client.model.UnbakedModelLoader;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
-import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
-import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
-import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
 import org.jetbrains.annotations.NotNull;
-import slimeknights.mantle.Mantle;
 import slimeknights.mantle.client.model.RetexturedModel;
-import slimeknights.mantle.client.model.RetexturedModel.RetexturedContext;
 import slimeknights.mantle.client.model.util.ColoredBlockModel;
-import slimeknights.mantle.client.model.util.DynamicBakedWrapper;
-import slimeknights.mantle.client.model.util.ExtraTextureContext;
 import slimeknights.mantle.client.model.util.ModelHelper;
 import slimeknights.mantle.client.model.util.SimpleBlockModel;
 import slimeknights.mantle.data.loadable.Loadable;
@@ -55,7 +52,6 @@ import slimeknights.tconstruct.library.client.model.ModelProperties;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.tools.nbt.MaterialIdNBT;
-import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -71,19 +67,22 @@ import java.util.function.Function;
 /**
  * Model that handles dynamic materials using the block model elements style.
  * When used for tools, notably does not handle modifier models, just materials are considered.
+ * <p>
+ * PORT 1.21.4: ported to {@link AbstractUnbakedModel}. Dynamic retexturing rebakes through the Mantle replacement-map
+ * primitive ({@link SimpleBlockModel#bakeReplaced} / the {@code bakePart} replacement overloads) instead of the removed
+ * ExtraTextureContext/RetexturedContext. The block-side ({@link ModelData}) path lives here; the item-display override
+ * (reading the material/block from the stack) moves to the item-model system, which wraps the {@link AbstractBaked} and
+ * calls {@link AbstractBaked#getCachedModel} from {@code ItemModel.update}.
  * @see MaterialModel
  * @see ToolModel
  */
-@RequiredArgsConstructor
-public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> {
-  /** Location for dynamic baking */
-  private static final ResourceLocation BAKE_LOCATION = Mantle.getResource("material_block_dynamic");
+public class MaterialBlockModel extends AbstractUnbakedModel {
   /** Loadable for the list of material textures */
   private static final Loadable<Set<String>> MATERIAL = StringLoadable.DEFAULT.set(ArrayLoadable.COMPACT);
   /** Loadable for the list of parts, each a list of material textures */
   private static final Loadable<List<Set<String>>> PARTS = StringLoadable.DEFAULT.set(ArrayLoadable.COMPACT_OR_EMPTY).list(1);
   /** Shared loader instance */
-  public static final IGeometryLoader<MaterialBlockModel> LOADER = MaterialBlockModel::deserialize;
+  public static final UnbakedModelLoader<MaterialBlockModel> LOADER = MaterialBlockModel::deserialize;
 
   public enum ModelType { TOOL, PART, ANVIL }
 
@@ -93,6 +92,13 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
   private final List<Set<String>> parts;
   /** Type of model to create. */
   private final ModelType type;
+
+  public MaterialBlockModel(SimpleBlockModel model, List<Set<String>> parts, ModelType type) {
+    super(model.getParameters());
+    this.model = model;
+    this.parts = parts;
+    this.type = type;
+  }
 
   /** Loads a material block model from JSON */
   public static MaterialBlockModel deserialize(JsonObject json, JsonDeserializationContext context) {
@@ -111,45 +117,49 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
   }
 
   @Override
-  public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context) {
-    model.resolveParents(modelGetter, context);
+  public void resolveDependencies(Resolver resolver) {
+    super.resolveDependencies(resolver);
+    model.resolveDependencies(resolver);
   }
 
   @Override
-  public BakedModel bake(IGeometryBakingContext owner, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState transform, ItemOverrides overrides) {
-    BakedModel baked = model.bake(owner, baker, spriteGetter, transform, overrides);
-    List<Set<String>> parts = this.parts.stream().map(part -> RetexturedModel.getAllRetextured(owner, model, part)).toList();
+  public BakedModel bake(TextureSlots textures, ModelBaker baker, ModelState transform, boolean useAmbientOcclusion, boolean useBlockLight, ItemTransforms itemTransforms, ContextMap additionalProperties) {
+    BakedModel baked = model.bake(textures, baker, transform, useAmbientOcclusion, useBlockLight, itemTransforms, additionalProperties);
+    Transformation rootTransform = additionalProperties.getOrDefault(NeoForgeModelProperties.TRANSFORM, Transformation.identity());
+    RenderTypeGroup renderType = additionalProperties.getOrDefault(NeoForgeModelProperties.RENDER_TYPE, RenderTypeGroup.EMPTY);
+    List<Set<String>> parts = this.parts.stream().map(part -> RetexturedModel.getAllRetextured(model, part)).toList();
+    BakeContext ctx = new BakeContext(model, textures, transform, useAmbientOcclusion, useBlockLight, itemTransforms, rootTransform, renderType);
 
     // part model - fetches material from NBT field
     if (type == ModelType.PART) {
-      return new BakedPart(baked, owner, model, transform, parts.get(0));
+      return new BakedPart(baked, ctx, parts.get(0));
     }
     // anvil model - fetches material from NBT field, but can also choose block texture
     if (type == ModelType.ANVIL) {
-      return new BakedAnvil(baked, owner, model, transform, parts.get(0));
+      return new BakedAnvil(baked, ctx, parts.get(0));
     }
     // for tools with just one material, use simpler tool model
     if (parts.size() == 1) {
-      return new SimpleBakedTool(baked, owner, model, transform, parts.get(0));
+      return new SimpleBakedTool(baked, ctx, parts.get(0));
     }
     // standard tool with multiple materials
     boolean particleRetextured = parts.stream().anyMatch(set -> set.contains("particle"));
-    return new BakedTool(baked, owner, model, transform, parts, particleRetextured);
+    return new BakedTool(baked, ctx, parts, particleRetextured);
   }
 
+  /** Captures everything needed to dynamically rebake the model at runtime (replaces the old IGeometryBakingContext) */
+  public record BakeContext(SimpleBlockModel model, TextureSlots textures, ModelState transform, boolean useAmbientOcclusion,
+                            boolean useBlockLight, ItemTransforms itemTransforms, Transformation rootTransform, RenderTypeGroup renderType) {}
+
   /** Common logic between all variants of baking */
-  private static abstract class AbstractBaked<T,P> extends DynamicBakedWrapper<BakedModel> {
-    protected final IGeometryBakingContext owner;
-    protected final SimpleBlockModel model;
-    protected final ModelState transform;
+  public static abstract class AbstractBaked<T,P> extends slimeknights.mantle.client.model.util.DynamicBakedWrapper<BakedModel> {
+    protected final BakeContext ctx;
     protected final boolean particleRetextured;
     protected final ModelProperty<P> property;
 
-    private AbstractBaked(BakedModel original, IGeometryBakingContext owner, SimpleBlockModel model, ModelState transform, boolean particleRetextured, ModelProperty<P> property) {
+    private AbstractBaked(BakedModel original, BakeContext ctx, boolean particleRetextured, ModelProperty<P> property) {
       super(original);
-      this.owner = owner;
-      this.model = model;
-      this.transform = transform;
+      this.ctx = ctx;
       this.particleRetextured = particleRetextured;
       this.property = property;
     }
@@ -167,7 +177,10 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
         // may have multiple names going to the same texture
         Map<Material, TintedSprite> seen = new HashMap<>();
         for (String name : retextured) {
-          Material texture = owner.getMaterial(name);
+          Material texture = ctx.textures().getMaterial(name);
+          if (texture == null) {
+            continue;
+          }
           TintedSprite tinted = seen.get(texture);
           if (tinted == null) {
             tinted = info.getSprite(texture, spriteGetter);
@@ -197,25 +210,22 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
 
       // quick exit in case we found nothing, should never happen
       if (replacements.isEmpty()) {
-        return originalModel;
+        return parent;
       }
 
-      // create context to swap the textures
-      IGeometryBakingContext retextureContext = new ExtraTextureContext(owner, replacements);
-
-      // if no parts need colors, we can just use standard baking
+      // if no parts need colors, we can just use standard replacement baking
       if (tints.isEmpty()) {
-        return model.bakeDynamic(retextureContext, transform);
+        return ctx.model().bakeReplaced(ctx.textures(), replacements, ctx.transform(), ctx.useAmbientOcclusion(), ctx.useBlockLight(), ctx.itemTransforms(), ctx.rootTransform(), ctx.renderType());
       }
 
-      // need to tint or apply light to some textures
-      TextureAtlasSprite particle = spriteGetter.apply(owner.getMaterial("particle"));
-      SimpleBakedModel.Builder builder = SimpleBlockModel.bakedBuilder(owner, originalModel.getOverrides()).particle(particle);
-      List<BlockElement> elements = model.getElements();
+      // need to tint or apply light to some textures: manual per-part bake
+      ModelState state = ctx.rootTransform().isIdentity() ? ctx.transform() : UnbakedElementsHelper.composeRootTransformIntoModelState(ctx.transform(), ctx.rootTransform());
+      Transformation rotation = state.getRotation();
+      boolean uvlock = state.isUvLocked();
+      TextureAtlasSprite particle = SimpleBlockModel.findSprite(spriteGetter, ctx.textures(), replacements, "particle");
+      SimpleBakedModel.Builder builder = SimpleBlockModel.bakedBuilder(ctx.useAmbientOcclusion(), ctx.useBlockLight(), ctx.itemTransforms()).particle(particle);
+      List<BlockElement> elements = ctx.model().getElements();
       int size = elements.size();
-      IQuadTransformer quadTransformer = SimpleBlockModel.applyTransform(transform, owner.getRootTransform());
-      Transformation transformation = transform.getRotation();
-      boolean uvlock = transform.isUvLocked();
       for (int i = 0; i < size; i++) {
         BlockElement part = elements.get(i);
         // determine if any of the faces needs a tint
@@ -230,17 +240,17 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
         }
         // apply color if we have it
         if (tint != null) {
-          IQuadTransformer partTransformer = tint.color() == -1 ? quadTransformer : quadTransformer.andThen(ColoredBlockModel.applyColorQuadTransformer(tint.color()));
-          ColoredBlockModel.bakePart(builder, retextureContext, part, tint.emissivity(), spriteGetter, transformation, partTransformer, uvlock, BAKE_LOCATION);
+          IQuadTransformer partTransformer = tint.color() == -1 ? QuadTransformers.empty() : ColoredBlockModel.applyColorQuadTransformer(tint.color());
+          ColoredBlockModel.bakePart(builder, ctx.textures(), replacements, part, tint.emissivity(), spriteGetter, rotation, partTransformer, uvlock);
         } else {
-          SimpleBlockModel.bakePart(builder, retextureContext, part, spriteGetter, transform, quadTransformer, BAKE_LOCATION);
+          SimpleBlockModel.bakePart(builder, ctx.textures(), replacements, part, spriteGetter, state, QuadTransformers.empty());
         }
       }
-      return builder.build(SimpleBlockModel.getRenderTypeGroup(owner));
+      return builder.build(ctx.renderType());
     }
 
     /** Gets the cached model for the given materials. */
-    protected abstract BakedModel getCachedModel(P materials);
+    public abstract BakedModel getCachedModel(P materials);
 
     @Override
     public TextureAtlasSprite getParticleIcon(@NotNull ModelData data) {
@@ -250,7 +260,7 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
           return getCachedModel(materials).getParticleIcon(data);
         }
       }
-      return originalModel.getParticleIcon(data);
+      return parent.getParticleIcon(data);
     }
 
     @Nonnull
@@ -260,34 +270,12 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
       if (materials != null) {
         return getCachedModel(materials).getQuads(state, side, rand, extraData, renderType);
       }
-      return originalModel.getQuads(state, side, rand, extraData, renderType);
-    }
-  }
-
-  /** Custom overrides logic to sub in materials from NBT. */
-  private static class MaterialsOverrides extends NestedOverrides {
-    private final AbstractBaked<?, MaterialIdNBT> baked;
-    public MaterialsOverrides(AbstractBaked<?,MaterialIdNBT> baked, ItemOverrides nested) {
-      super(nested);
-      this.baked = baked;
-    }
-
-    @Nullable
-    @Override
-    public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel world, @Nullable LivingEntity entity, int seed) {
-      BakedModel resolved = super.resolve(originalModel, stack, world, entity, seed);
-      if (resolved != originalModel) {
-        return resolved;
-      }
-      if (stack.isEmpty() || stack.isComponentsPatchEmpty()) {
-        return originalModel;
-      }
-      return baked.getCachedModel(MaterialIdNBT.from(stack));
+      return parent.getQuads(state, side, rand, extraData, renderType);
     }
   }
 
   /** Baked model for tools with multiple materials. */
-  private static class BakedTool extends AbstractBaked<MaterialIdNBT,MaterialIdNBT> {
+  public static class BakedTool extends AbstractBaked<MaterialIdNBT,MaterialIdNBT> {
     /** Cache of texture name to baked model */
     private final Cache<MaterialIdNBT, BakedModel> cache = CacheBuilder
       .newBuilder()
@@ -296,12 +284,9 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
       .build();
 
     private final List<Set<String>> parts;
-    @Getter
-    private final ItemOverrides overrides;
-    private BakedTool(BakedModel original, IGeometryBakingContext owner, SimpleBlockModel model, ModelState transform, List<Set<String>> parts, boolean particleRetextured) {
-      super(original, owner, model, transform, particleRetextured, ModelProperties.MATERIALS);
+    private BakedTool(BakedModel original, BakeContext ctx, List<Set<String>> parts, boolean particleRetextured) {
+      super(original, ctx, particleRetextured, ModelProperties.MATERIALS);
       this.parts = parts;
-      this.overrides = new MaterialsOverrides(this, original.getOverrides());
     }
 
     @Override
@@ -312,7 +297,7 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
     }
 
     @Override
-    protected BakedModel getCachedModel(MaterialIdNBT materials) {
+    public BakedModel getCachedModel(MaterialIdNBT materials) {
       if (!materials.getMaterials().isEmpty()) {
         try {
           return cache.get(materials, () -> bakeWith(materials));
@@ -320,27 +305,27 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
           TConstruct.LOG.error("Failed to get tool model from cache", e);
         }
       }
-      return originalModel;
+      return parent;
     }
   }
 
   /** Common logic between tool parts and tools with just 1 material. */
-  private static abstract class BakedSingleMaterial<P> extends AbstractBaked<MaterialVariantId,P> {
+  public static abstract class BakedSingleMaterial<P> extends AbstractBaked<MaterialVariantId,P> {
     /** Cache of texture name to baked model */
     private final Map<MaterialVariantId, BakedModel> cache = new ConcurrentHashMap<>();
 
     protected final Set<String> retexture;
     private final Function<MaterialVariantId, BakedModel> baker = this::bakeWith;
 
-    private BakedSingleMaterial(BakedModel original, IGeometryBakingContext owner, SimpleBlockModel model, ModelState transform, Set<String> retexture, ModelProperty<P> property) {
-      super(original, owner, model, transform, retexture.contains("particle"), property);
+    private BakedSingleMaterial(BakedModel original, BakeContext ctx, Set<String> retexture, ModelProperty<P> property) {
+      super(original, ctx, retexture.contains("particle"), property);
       this.retexture = retexture;
     }
 
     /** Gets the model for the given material */
     public BakedModel getCachedModel(MaterialVariantId material) {
       if (IMaterial.UNKNOWN_ID.equals(material)) {
-        return originalModel;
+        return parent;
       }
       return cache.computeIfAbsent(material, baker);
     }
@@ -352,68 +337,44 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
   }
 
   /** Baked model for tools with just 1 material. */
-  private static class SimpleBakedTool extends BakedSingleMaterial<MaterialIdNBT> {
-    @Getter
-    private final ItemOverrides overrides;
-    private SimpleBakedTool(BakedModel original, IGeometryBakingContext owner, SimpleBlockModel model, ModelState transform, Set<String> retexture) {
-      super(original, owner, model, transform, retexture, ModelProperties.MATERIALS);
-      this.overrides = new MaterialsOverrides(this, original.getOverrides());
+  public static class SimpleBakedTool extends BakedSingleMaterial<MaterialIdNBT> {
+    private SimpleBakedTool(BakedModel original, BakeContext ctx, Set<String> retexture) {
+      super(original, ctx, retexture, ModelProperties.MATERIALS);
     }
 
     @Override
-    protected BakedModel getCachedModel(MaterialIdNBT materials) {
+    public BakedModel getCachedModel(MaterialIdNBT materials) {
       return getCachedModel(materials.getMaterial(0));
     }
   }
 
   /** Baked model for tool parts. */
-  private static class BakedPart extends BakedSingleMaterial<MaterialVariantId> {
-    @Getter
-    private final ItemOverrides overrides;
-    private BakedPart(BakedModel original, IGeometryBakingContext owner, SimpleBlockModel model, ModelState transform, Set<String> retexture) {
-      super(original, owner, model, transform, retexture, ModelProperties.MATERIAL);
-      this.overrides = new MaterialOverrides(original.getOverrides());
-    }
-
-    /** Custom overrides logic to sub in materials from NBT. */
-    private class MaterialOverrides extends NestedOverrides {
-      public MaterialOverrides(ItemOverrides nested) {
-        super(nested);
-      }
-
-      @Nullable
-      @Override
-      public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel world, @Nullable LivingEntity entity, int seed) {
-        BakedModel resolved = super.resolve(originalModel, stack, world, entity, seed);
-        if (resolved != originalModel) {
-          return resolved;
-        }
-        if (stack.isEmpty() || stack.isComponentsPatchEmpty()) {
-          return originalModel;
-        }
-        return getCachedModel(IMaterialItem.getMaterialFromStack(stack));
-      }
+  public static class BakedPart extends BakedSingleMaterial<MaterialVariantId> {
+    private BakedPart(BakedModel original, BakeContext ctx, Set<String> retexture) {
+      super(original, ctx, retexture, ModelProperties.MATERIAL);
     }
   }
 
   /** Model that supports both block and material textures. */
-  private static class BakedAnvil extends BakedSingleMaterial<MaterialVariantId> {
+  public static class BakedAnvil extends BakedSingleMaterial<MaterialVariantId> {
     private final Map<ResourceLocation, BakedModel> blockCache = new ConcurrentHashMap<>();
     private final Function<ResourceLocation, BakedModel> blockBaker = this::bakeWithBlock;
-    @Getter
-    private final MaterialBlockOverrides overrides;
-    private BakedAnvil(BakedModel original, IGeometryBakingContext owner, SimpleBlockModel model, ModelState transform, Set<String> retexture) {
-      super(original, owner, model, transform, retexture, ModelProperties.MATERIAL);
-      this.overrides = new MaterialBlockOverrides();
+    private BakedAnvil(BakedModel original, BakeContext ctx, Set<String> retexture) {
+      super(original, ctx, retexture, ModelProperties.MATERIAL);
     }
 
-    /** Rebakes the model with a specific texture. See also {@link RetexturedModel} */
+    /** Rebakes the model with a specific block texture. See also {@link RetexturedModel} */
     private BakedModel bakeWithBlock(ResourceLocation texture) {
-      return this.model.bakeDynamic(new RetexturedContext(this.owner, this.retexture, texture), this.transform);
+      Material material = new Material(TextureAtlas.LOCATION_BLOCKS, texture);
+      Map<String,Material> replacements = new HashMap<>();
+      for (String name : retexture) {
+        replacements.put(name, material);
+      }
+      return ctx.model().bakeReplaced(ctx.textures(), replacements, ctx.transform(), ctx.useAmbientOcclusion(), ctx.useBlockLight(), ctx.itemTransforms(), ctx.rootTransform(), ctx.renderType());
     }
 
     /** Gets the cached model for the given block. */
-    private BakedModel getCachedModel(Block block) {
+    public BakedModel getCachedModel(Block block) {
       return this.blockCache.computeIfAbsent(ModelHelper.getParticleTexture(block), blockBaker);
     }
 
@@ -437,22 +398,6 @@ public class MaterialBlockModel implements IUnbakedGeometry<MaterialBlockModel> 
         return getCachedModel(block).getQuads(state, side, rand, extraData, renderType);
       }
       return super.getQuads(state, side, rand, extraData, renderType);
-    }
-
-    /** Custom overrides logic to sub in materials from NBT. */
-    private class MaterialBlockOverrides extends ItemOverrides {
-      @Nullable
-      @Override
-      public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel world, @Nullable LivingEntity entity, int seed) {
-        if (stack.isEmpty() || stack.isComponentsPatchEmpty()) {
-          return originalModel;
-        }
-        Block block = RetexturedHelper.getTexture(stack);
-        if (block != Blocks.AIR) {
-          return getCachedModel(block);
-        }
-        return getCachedModel(IMaterialItem.getMaterialFromStack(stack));
-      }
     }
   }
 }
