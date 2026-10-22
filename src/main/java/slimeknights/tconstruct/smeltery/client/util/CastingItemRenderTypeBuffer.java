@@ -5,9 +5,9 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard.TextureStateShard;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.inventory.InventoryMenu;
 
 import java.util.Set;
 
@@ -42,8 +42,8 @@ public class CastingItemRenderTypeBuffer implements MultiBufferSource {
   @Override
   public VertexConsumer getBuffer(RenderType type) {
     if (alpha < 255 && MAKE_TRANSPARENT.contains(type.name) && type instanceof RenderType.CompositeRenderType composite && composite.state.textureState instanceof TextureStateShard textureState) {
-      ResourceLocation texture = textureState.texture.orElse(InventoryMenu.BLOCK_ATLAS);
-      type = RenderType.entityTranslucentCull(texture);
+      ResourceLocation texture = textureState.texture.orElse(TextureAtlas.LOCATION_BLOCKS);
+      type = RenderType.itemEntityTranslucentCull(texture);
     }
 
     return new TintedVertexBuilder(inner.getBuffer(type), red, green, blue, alpha);
