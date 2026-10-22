@@ -54,9 +54,7 @@ import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability.Tin
 import slimeknights.tconstruct.library.tools.definition.ToolDefinitionLoader;
 import slimeknights.tconstruct.library.tools.layout.StationSlotLayoutLoader;
 import slimeknights.tconstruct.library.utils.Util;
-import slimeknights.tconstruct.plugin.ImmersiveEngineeringPlugin;
 import slimeknights.tconstruct.plugin.craftingtweaks.CraftingTweaksPlugin;
-import slimeknights.tconstruct.plugin.jsonthings.JsonThingsPlugin;
 import slimeknights.tconstruct.shared.TinkerAttributes;
 import slimeknights.tconstruct.shared.TinkerClient;
 import slimeknights.tconstruct.shared.TinkerCommons;
@@ -179,14 +177,15 @@ public class TConstruct {
 
     // compat
     ModList modList = ModList.get();
+    // EXCLUDED on 1.21.4 (no IE build / JSON Things maven down) — re-add in compat phase:
     // Immersive Engineering: chemthrower fluid effects + shield disabling
-    if (modList.isLoaded("immersiveengineering")) {
-      bus.register(new ImmersiveEngineeringPlugin());
-    }
+    // if (modList.isLoaded("immersiveengineering")) {
+    //   bus.register(new ImmersiveEngineeringPlugin());
+    // }
     // JSON Things: data-driven Tinkers items/blocks via thingpacks
-    if (modList.isLoaded("jsonthings")) {
-      JsonThingsPlugin.onConstruct();
-    }
+    // if (modList.isLoaded("jsonthings")) {
+    //   JsonThingsPlugin.onConstruct();
+    // }
     // Crafting Tweaks: convenience buttons on the crafting station
     if (modList.isLoaded("craftingtweaks")) {
       CraftingTweaksPlugin.onConstruct();

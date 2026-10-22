@@ -17,7 +17,8 @@ repositories {
     maven { name "Prog's Maven"; url 'https://dvs1.progwml6.com/files/maven' }
     maven { name "Jared's maven"; url 'https://maven.blamejared.com/' }
     maven { name "TwelveIterations"; url 'https://maven.twelveiterations.com/repository/maven-public/'; content { includeGroup 'net.blay09.mods' } }
-    maven { name "Dogforce Games"; url 'https://www.dogforce-games.com/maven/'; content { includeGroupByRegex 'dev\\.gigaherz.*' } }
+    // (JSON Things excluded on 1.21.4 — maven unreachable; re-enable with the dep in the compat phase)
+    // maven { name "Dogforce Games"; url 'https://www.dogforce-games.com/maven/'; content { includeGroupByRegex 'dev\\.gigaherz.*' } }
 }
 
 group = 'slimeknights.tconstruct'
@@ -55,6 +56,11 @@ subsystems {
 
 sourceSets {
     main {
+        java {
+            // EXCLUDED on 1.21.4 (no IE build / JSON Things maven down) — re-add in compat phase
+            exclude 'slimeknights/tconstruct/plugin/ImmersiveEngineeringPlugin.java'
+            exclude 'slimeknights/tconstruct/plugin/jsonthings/**'
+        }
         resources {
             srcDirs "src/generated/resources"
             exclude '.cache'
@@ -160,13 +166,15 @@ dependencies {
     runtimeOnly "net.blay09.mods:craftingtweaks-neoforge:${craftingtweaks_version}"
     runtimeOnly "net.blay09.mods:balm-neoforge:${balm_version}"
 
+    // EXCLUDED on 1.21.4 (JSON Things: dogforce-games maven unreachable; Immersive Engineering: no 1.21.4 build).
+    // Plugin sources are excluded in sourceSets above — re-add both deps + sources in the compat phase.
     // JSON Things compat (optional, standalone). Artifact name embeds the MC version.
-    compileOnly "dev.gigaherz.jsonthings:JsonThings-${minecraft_version}:${jsonthings_version}"
-    runtimeOnly "dev.gigaherz.jsonthings:JsonThings-${minecraft_version}:${jsonthings_version}"
+    // compileOnly "dev.gigaherz.jsonthings:JsonThings-${minecraft_version}:${jsonthings_version}"
+    // runtimeOnly "dev.gigaherz.jsonthings:JsonThings-${minecraft_version}:${jsonthings_version}"
 
     // Immersive Engineering compat (optional, standalone; Jared's maven).
-    compileOnly "blusunrize.immersiveengineering:ImmersiveEngineering:${ie_version}"
-    runtimeOnly "blusunrize.immersiveengineering:ImmersiveEngineering:${ie_version}"
+    // compileOnly "blusunrize.immersiveengineering:ImmersiveEngineering:${ie_version}"
+    // runtimeOnly "blusunrize.immersiveengineering:ImmersiveEngineering:${ie_version}"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
