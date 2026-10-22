@@ -12,9 +12,8 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.armortrim.TrimMaterial;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
@@ -80,7 +79,7 @@ public interface TrimModifierModel extends ModifierModel {
           Level level = Minecraft.getInstance().level;
           if (level != null) {
             // find the material, if missing we use the base texture
-            TrimMaterial material = level.registryAccess().registryOrThrow(Registries.TRIM_MATERIAL).get(ResourceLocation.tryParse(materialId));
+            TrimMaterial material = level.registryAccess().lookupOrThrow(Registries.TRIM_MATERIAL).getValue(ResourceLocation.tryParse(materialId));
             if (material != null) {
               // base location is based on the armor type
               ResourceLocation root = getRoot(isLarge);
@@ -93,7 +92,7 @@ public interface TrimModifierModel extends ModifierModel {
               if (MissingTextureAtlasSprite.getLocation().equals(sprite.contents().name())) {
                 // if the sprite doesn't exist, will tint the base sprite, assuming we have a component color
                 // helps for mods that don't properly provide all sprites
-                sprite = spriteGetter.apply(new Material(InventoryMenu.BLOCK_ATLAS, root));
+                sprite = spriteGetter.apply(ModifierModel.blockAtlas(root));
                 TextColor textColor = material.description().getStyle().getColor();
                 if (textColor != null) {
                   color = textColor.getValue() | 0xFF000000;

@@ -14,11 +14,11 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.armortrim.TrimMaterial;
-import net.minecraft.world.item.armortrim.TrimPattern;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
+import net.minecraft.world.item.equipment.trim.TrimPattern;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import slimeknights.mantle.data.loadable.common.ColorLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
@@ -67,8 +67,8 @@ public record TrimArmorTextureSupplier(ModifierId modifier, ResourceLocation pat
         if (texture != null) {
           return texture;
         }
-        TrimPattern pattern = access.registryOrThrow(Registries.TRIM_PATTERN).get(ResourceLocation.tryParse(patternId));
-        TrimMaterial material = access.registryOrThrow(Registries.TRIM_MATERIAL).get(ResourceLocation.tryParse(materialId));
+        TrimPattern pattern = access.lookupOrThrow(Registries.TRIM_PATTERN).getValue(ResourceLocation.tryParse(patternId));
+        TrimMaterial material = access.lookupOrThrow(Registries.TRIM_MATERIAL).getValue(ResourceLocation.tryParse(materialId));
         texture = ArmorTexture.EMPTY;
         if (pattern != null && material != null) {
           ResourceLocation patternAsset = pattern.assetId();
@@ -123,7 +123,7 @@ public record TrimArmorTextureSupplier(ModifierId modifier, ResourceLocation pat
       // ignoring glint as odds are very low trim texture is the first one
       VertexConsumer buffer = trimSprite.wrap(bufferSource.getBuffer(Sheets.armorTrimsSheet(false)));
       // 1.21 renderToBuffer takes a single packed ARGB int rather than four floats
-      model.renderToBuffer(matrices, buffer, packedLight, packedOverlay, FastColor.ARGB32.colorFromFloat(alpha, red, green, blue));
+      model.renderToBuffer(matrices, buffer, packedLight, packedOverlay, ARGB.colorFromFloat(alpha, red, green, blue));
     }
   }
 }

@@ -98,6 +98,11 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
     return type.getSlot();
   }
 
+  /** Gets the armor type for this armor item. PORT 1.21.4: replaces the removed {@code ArmorItem#getType()}. */
+  public ArmorType getArmorType() {
+    return type;
+  }
+
   /* Basic properties */
 
   @Override
