@@ -10,18 +10,16 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.Shapes;
-import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Quaternionf;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.client.TinkerRenderTypes;
@@ -87,7 +85,10 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
     Quaternionf itemRotation = Axis.YP.rotationDegrees(-90.0F * (float)facing.get2DDataValue());
     MeltingModuleInventory inventory = smeltery.getMeltingInventory();
     Minecraft mc = Minecraft.getInstance();
-    ItemRenderer itemRenderer = mc.getItemRenderer();
+    // PORT 1.21.4: item rendering moved from ItemRenderer#getModel/#render(BakedModel) to the ItemStackRenderState
+    // pipeline. We populate a reusable render state per stack via the ItemModelResolver and render it directly.
+    ItemModelResolver itemModelResolver = mc.getItemModelResolver();
+    ItemStackRenderState itemRenderState = new ItemStackRenderState();
     int max = Config.CLIENT.maxSmelteryItemQuads.get();
     if (max != 0) {
       int quadsRendered = 0;
@@ -106,23 +107,18 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
           matrices.translate(offsetX + 0.5f, height + 0.5f, offsetZ + 0.5f);
           matrices.mulPose(itemRotation);
           matrices.scale(ITEM_SCALE, ITEM_SCALE, ITEM_SCALE);
-          BakedModel model = itemRenderer.getModel(stack, world, null, 0);
-          itemRenderer.render(stack, TinkerItemDisplays.MELTER, false, matrices, buffer, LevelRenderer.getLightColor(world, itemPos), OverlayTexture.NO_OVERLAY, model);
+          // updateForTopItem clears the state first, so the single instance is safe to reuse across the loop
+          itemModelResolver.updateForTopItem(itemRenderState, stack, TinkerItemDisplays.MELTER, false, world, null, 0);
+          itemRenderState.render(matrices, buffer, LevelRenderer.getLightColor(world, itemPos), OverlayTexture.NO_OVERLAY);
           matrices.popPose();
 
           // done as quads rather than items as its not that expensive to draw blocks, items are the problem
           if (max != -1) {
-            // builtin has no quads, lets pretend its 100 as they are more expensive
-            if (model.isCustomRenderer()) {
-              quadsRendered += 100;
-            } else {
-              RandomSource random = smeltery.getLevel().getRandom();
-              // not setting the seed on the random and ignoring the forge layered model stuff means this is just an estimate, but since this is for the sake of performance its not a huge deal for it to be exact
-              for (Direction direction : Direction.values()) {
-                quadsRendered += model.getQuads(null, direction, random, ModelData.EMPTY, null).size();
-              }
-              quadsRendered += model.getQuads(null, null, random, ModelData.EMPTY, null).size();
-            }
+            // PORT 1.21.4: BakedModel#isCustomRenderer and #getQuads were removed with the item-model redesign and
+            // ItemStackRenderState exposes no quad count, so the exact per-model quad estimate is gone. Charge a flat
+            // conservative cost per rendered stack to keep the performance cap meaningful; a Phase-4 pass can refine
+            // this by inspecting the populated ItemStackRenderState layers.
+            quadsRendered += 100;
             if (quadsRendered > max) {
               break;
             }
