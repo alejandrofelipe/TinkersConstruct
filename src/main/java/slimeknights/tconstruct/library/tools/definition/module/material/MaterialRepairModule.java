@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.tools.definition.module.material;
 
+import net.minecraft.world.item.equipment.ArmorType;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +54,7 @@ public class MaterialRepairModule implements MaterialRepairToolHook, ToolModule,
   }
 
   /** Creates a new module using a constant durability */
-  public static MaterialRepairModule of(MaterialId material, ArmorItem.Type slot, float durabilityFactor) {
+  public static MaterialRepairModule of(MaterialId material, ArmorType slot, float durabilityFactor) {
     return new MaterialRepairModule(material, (int)(ArmorModuleBuilder.MAX_DAMAGE_ARRAY[slot.ordinal()] * durabilityFactor));
   }
 
@@ -148,7 +150,7 @@ public class MaterialRepairModule implements MaterialRepairToolHook, ToolModule,
 
     /** Sets the durability for the piece based on the given factor */
     public ArmorBuilder durabilityFactor(float maxDamageFactor) {
-      for (ArmorItem.Type slotType : ModifiableArmorMaterial.ARMOR_SLOTS) {
+      for (ArmorType slotType : ModifiableArmorMaterial.ARMOR_SLOTS) {
         int index = slotType.ordinal();
         durability[index] = (int)(ArmorModuleBuilder.MAX_DAMAGE_ARRAY[index] * maxDamageFactor);
       }
@@ -156,7 +158,7 @@ public class MaterialRepairModule implements MaterialRepairToolHook, ToolModule,
     }
 
     @Override
-    public MaterialRepairModule build(ArmorItem.Type slot) {
+    public MaterialRepairModule build(ArmorType slot) {
       return new MaterialRepairModule(material, durability[slot.ordinal()]);
     }
   }

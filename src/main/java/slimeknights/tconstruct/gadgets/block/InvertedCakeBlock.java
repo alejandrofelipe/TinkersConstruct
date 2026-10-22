@@ -2,7 +2,6 @@ package slimeknights.tconstruct.gadgets.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -11,6 +10,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import slimeknights.tconstruct.shared.TinkerFood;
 
 /** Implementation of ichor cake, which is inverted and provides a rocket effect */
 public class InvertedCakeBlock extends FoodCakeBlock {
@@ -24,8 +24,8 @@ public class InvertedCakeBlock extends FoodCakeBlock {
     Block.box(13, 8, 1, 15, 16, 15)
   };
 
-  public InvertedCakeBlock(Properties properties, FoodProperties food, EffectCombination combination) {
-    super(properties, food, combination);
+  public InvertedCakeBlock(Properties properties, TinkerFood.Meal meal, EffectCombination combination) {
+    super(properties, meal, combination);
   }
 
   @Override

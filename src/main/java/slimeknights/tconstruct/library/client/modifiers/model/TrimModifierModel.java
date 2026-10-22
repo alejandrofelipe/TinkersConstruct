@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.client.modifiers.model;
 
+import net.minecraft.world.item.equipment.ArmorType;
+
 import com.mojang.math.Transformation;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
@@ -114,17 +116,17 @@ public interface TrimModifierModel extends ModifierModel {
   }
 
   enum Armor implements TrimModifierModel {
-    HELMET(ArmorItem.Type.HELMET),
-    CHESTPLATE(ArmorItem.Type.CHESTPLATE),
-    LEGGINGS(ArmorItem.Type.LEGGINGS),
-    BOOTS(ArmorItem.Type.BOOTS);
+    HELMET(ArmorType.HELMET),
+    CHESTPLATE(ArmorType.CHESTPLATE),
+    LEGGINGS(ArmorType.LEGGINGS),
+    BOOTS(ArmorType.BOOTS);
 
     public static final RecordLoadable<Armor> LOADER = new SimpleRecordLoadable<>(new EnumLoadable<>(Armor.class), "slot", null, false);
 
     @Getter
     private final ResourceLocation root;
     private final Map<String, TrimTexture> cache;
-    Armor(ArmorItem.Type type) {
+    Armor(ArmorType type) {
       root = ResourceLocation.parse("trims/items/" + type.getName() + "_trim");
       cache = new HashMap<>();
     }

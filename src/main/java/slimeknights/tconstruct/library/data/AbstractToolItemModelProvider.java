@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.data;
 
+import net.minecraft.world.item.equipment.ArmorType;
+
 import com.google.common.collect.Streams;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -252,19 +254,19 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
   }
 
   /** Adds broken and blocking models for the armor item */
-  protected void armor(String name, EnumObject<ArmorItem.Type,? extends Item> armor, ArmorItem.Type slot, String... textures) throws IOException {
+  protected void armor(String name, EnumObject<ArmorType,? extends Item> armor, ArmorType slot, String... textures) throws IOException {
     armor(name + '/' + slot.getName(), Loadables.ITEM.getKey(armor.get(slot)), textures);
   }
 
   /** Adds broken and blocking models for the armor set */
-  protected void armor(String name, EnumObject<ArmorItem.Type,? extends Item> armor, ArmorItem.Type[] types, String... textures) throws IOException {
-    for (ArmorItem.Type slot : types) {
+  protected void armor(String name, EnumObject<ArmorType,? extends Item> armor, ArmorType[] types, String... textures) throws IOException {
+    for (ArmorType slot : types) {
       armor(name, armor, slot, textures);
     }
   }
 
   /** Adds broken and blocking models for the armor set */
-  protected void armor(String name, EnumObject<ArmorItem.Type,? extends Item> armor, String... textures) throws IOException {
+  protected void armor(String name, EnumObject<ArmorType,? extends Item> armor, String... textures) throws IOException {
     armor(name, armor, ModifiableArmorMaterial.ARMOR_SLOTS, textures);
   }
 

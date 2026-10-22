@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.tools.definition.module.material;
 
+import net.minecraft.world.item.equipment.ArmorType;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
@@ -170,7 +172,7 @@ public class MaterialStatsModule implements ToolStatsHook, ToolTraitHook, ToolMa
   }
 
   /** Starts a builder for armor stats */
-  public static ArmorBuilder armorStats(List<ArmorItem.Type> slots) {
+  public static ArmorBuilder armorStats(List<ArmorType> slots) {
     return new ArmorBuilder(slots);
   }
 
@@ -234,18 +236,18 @@ public class MaterialStatsModule implements ToolStatsHook, ToolTraitHook, ToolMa
 
   /** Builder for armor */
   public static class ArmorBuilder implements ArmorModuleBuilder<MaterialStatsModule> {
-    private final List<ArmorItem.Type> slotTypes;
+    private final List<ArmorType> slotTypes;
     private final Builder[] builders = new Builder[4];
 
-    private ArmorBuilder(List<ArmorItem.Type> slotTypes) {
+    private ArmorBuilder(List<ArmorType> slotTypes) {
       this.slotTypes = slotTypes;
-      for (ArmorItem.Type slotType : slotTypes) {
+      for (ArmorType slotType : slotTypes) {
         builders[slotType.ordinal()] = new MaterialStatsModule.Builder();
       }
     }
 
     /** Gets the builder for the given slot */
-    protected Builder getBuilder(ArmorItem.Type slotType) {
+    protected Builder getBuilder(ArmorType slotType) {
       Builder builder = builders[slotType.ordinal()];
       if (builder == null) {
         throw new IllegalArgumentException("Unsupported slot type " + slotType);
@@ -254,14 +256,14 @@ public class MaterialStatsModule implements ToolStatsHook, ToolTraitHook, ToolMa
     }
 
     /** Adds a stat to the given slot */
-    public ArmorBuilder part(ArmorItem.Type slotType, MaterialStatsId stat, float scale) {
+    public ArmorBuilder part(ArmorType slotType, MaterialStatsId stat, float scale) {
       getBuilder(slotType).stat(stat, scale);
       return this;
     }
 
     /** Adds a stat to all slots */
     public ArmorBuilder stat(MaterialStatsId stat, float scale) {
-      for (ArmorItem.Type slotType : slotTypes) {
+      for (ArmorType slotType : slotTypes) {
         getBuilder(slotType).stat(stat, scale);
       }
       return this;
@@ -274,7 +276,7 @@ public class MaterialStatsModule implements ToolStatsHook, ToolTraitHook, ToolMa
 
     /** Adds a stat to all slots from the given stat type list */
     public ArmorBuilder stat(List<? extends MaterialStatType<?>> stats, float scale) {
-      for (ArmorItem.Type slotType : slotTypes) {
+      for (ArmorType slotType : slotTypes) {
         getBuilder(slotType).stat(stats.get(slotType.ordinal()).getStatId(), scale);
       }
       return this;
@@ -287,14 +289,14 @@ public class MaterialStatsModule implements ToolStatsHook, ToolTraitHook, ToolMa
 
     /** Sets the primary part for all slots, assuming its the same index as you defined the parts using this builder. */
     public ArmorBuilder primaryPart(int index) {
-      for (ArmorItem.Type slotType : slotTypes) {
+      for (ArmorType slotType : slotTypes) {
         getBuilder(slotType).primaryPart(index);
       }
       return this;
     }
 
     @Override
-    public MaterialStatsModule build(ArmorItem.Type slot) {
+    public MaterialStatsModule build(ArmorType slot) {
       return getBuilder(slot).build();
     }
   }

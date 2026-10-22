@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.tools.data;
 
+import net.minecraft.world.item.equipment.ArmorType;
+
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.data.PackOutput;
 import net.minecraft.sounds.SoundEvents;
@@ -1622,7 +1624,7 @@ public class ModifierProvider extends AbstractModifierProvider {
       .addModule(ModifierSlotModule.slot(SlotType.UPGRADE).toolContext(notSlimelytra).flat(1))
       .addModule(ModifierSlotModule.slot(SlotType.ABILITY).toolContext(notSlimelytra).flat(-1))
       // slimeshell gets +3 slots
-      .addModule(new ModifierTraitModule(ModifierIds.pocket, 1, true, ToolContextPredicate.set(TinkerTools.slimesuit.get(ArmorItem.Type.LEGGINGS))));
+      .addModule(new ModifierTraitModule(ModifierIds.pocket, 1, true, ToolContextPredicate.set(TinkerTools.slimesuit.get(ArmorType.LEGGINGS))));
 
     // mob disguise
     buildModifier(ModifierIds.creeperDisguise        ).levelDisplay(ModifierLevelDisplay.SINGLE_LEVEL).addModule(new MobDisguiseModule(EntityType.CREEPER));

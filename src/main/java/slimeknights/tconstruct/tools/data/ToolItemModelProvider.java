@@ -2,7 +2,7 @@ package slimeknights.tconstruct.tools.data;
 
 import com.google.gson.JsonObject;
 import net.minecraft.data.PackOutput;
-import net.minecraft.world.item.ArmorItem.Type;
+import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.phys.Vec2;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import slimeknights.tconstruct.TConstruct;
@@ -49,13 +49,13 @@ public class ToolItemModelProvider extends AbstractToolItemModelProvider {
     tool(TinkerTools.scythe, toolBlocking, "head");
     // armor
     // travelers goggles use a base texture for the glass
-    armor("travelers", TinkerTools.travelersGear, Type.HELMET,"base", "cuirass", "metal");
-    armor("travelers", TinkerTools.travelersGear, new Type[] {Type.CHESTPLATE, Type.LEGGINGS, Type.BOOTS}, "cuirass", "metal");
+    armor("travelers", TinkerTools.travelersGear, ArmorType.HELMET,"base", "cuirass", "metal");
+    armor("travelers", TinkerTools.travelersGear, new ArmorType[] {ArmorType.CHESTPLATE, ArmorType.LEGGINGS, ArmorType.BOOTS}, "cuirass", "metal");
     armor("plate", TinkerTools.plateArmor, "plating", "maille");
-    armor("slime", TinkerTools.slimesuit, Type.HELMET,     "slime");
-    armor("slime", TinkerTools.slimesuit, Type.CHESTPLATE, "slime", "ribcage");
-    armor("slime", TinkerTools.slimesuit, Type.LEGGINGS,   "slime", "shell");
-    armor("slime", TinkerTools.slimesuit, Type.BOOTS,      "slime", "laces");
+    armor("slime", TinkerTools.slimesuit, ArmorType.HELMET,     "slime");
+    armor("slime", TinkerTools.slimesuit, ArmorType.CHESTPLATE, "slime", "ribcage");
+    armor("slime", TinkerTools.slimesuit, ArmorType.LEGGINGS,   "slime", "shell");
+    armor("slime", TinkerTools.slimesuit, ArmorType.BOOTS,      "slime", "laces");
     armor("slime/wings", TinkerTools.slimeWings, "slime");
     // shield
     shield("travelers", TinkerTools.travelersShield, shieldBlocking, "cuirass", "wood");

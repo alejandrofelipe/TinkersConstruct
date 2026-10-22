@@ -66,7 +66,7 @@ public enum SleevesModule implements ModifierModule, GeneralInteractionModifierH
         ItemStack ammo = inventory.getStack(tool, modifier, selected);
         // if we have nothing, fallback to the slot toggle
         if (!ammo.isEmpty()) {
-          if (!player.getCooldowns().isOnCooldown(ammo.getItem())) {
+          if (!player.getCooldowns().isOnCooldown(ammo)) {
             // to use the item, we need it in the hand, but something else might be there, so temporarily swap
             ItemStack held = player.getItemInHand(hand);
             player.setItemInHand(hand, ammo);

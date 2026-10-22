@@ -151,7 +151,7 @@ public enum BlockInteractFluidEffect implements FluidEffect<FluidEffectContext.B
       }
 
       // post block item usage
-      if (useItem == TriState.TRUE || (useItem == TriState.DEFAULT && !heldItem.isEmpty() && (player == null || !player.getCooldowns().isOnCooldown(heldItem.getItem())))) {
+      if (useItem == TriState.TRUE || (useItem == TriState.DEFAULT && !heldItem.isEmpty() && (player == null || !player.getCooldowns().isOnCooldown(heldItem)))) {
         InteractionResult result;
         if (player != null && player.isCreative()) {
           int oldCount = heldItem.getCount();

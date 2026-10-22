@@ -79,7 +79,7 @@ public class ModifiableArrowItem extends ArrowItem implements IModifiableDisplay
     // only throw arrows if they have the throwable tool action. Useful for the other style of projectile in addons, or a really weird arrow modifier.
     if (stack.is(TinkerTags.Items.THROWN_AMMO)) {
       level.playSound(null, player.getX(), player.getY(), player.getZ(), Sounds.SHURIKEN_THROW.getSound(), SoundSource.NEUTRAL, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
-      player.getCooldowns().addCooldown(stack.getItem(), 10);
+      player.getCooldowns().addCooldown(stack, 10);
       if (!level.isClientSide()) {
         ModifiableArrow arrow = new ModifiableArrow(level, player);
         IToolStackView tool = arrow.onCreate(stack, player);

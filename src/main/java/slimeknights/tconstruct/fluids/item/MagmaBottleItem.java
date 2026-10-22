@@ -9,8 +9,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -51,14 +51,14 @@ public class MagmaBottleItem extends Item {
   }
 
   @Override
-  public UseAnim getUseAnimation(ItemStack pStack) {
-    return UseAnim.DRINK;
+  public ItemUseAnimation getUseAnimation(ItemStack pStack) {
+    return ItemUseAnimation.DRINK;
   }
 
   @Override
   public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity living) {
     living.igniteForSeconds(fireTime);
-    ItemStack container = stack.getCraftingRemainingItem();
+    ItemStack container = stack.getCraftingRemainder();
     Player player = living instanceof Player p ? p : null;
     if (player == null || !player.getAbilities().instabuild) {
       stack.shrink(1);

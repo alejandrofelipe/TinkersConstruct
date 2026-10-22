@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.tools.modules.interaction.sling;
 
+import net.minecraft.world.item.ItemStack;
+
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -97,7 +99,7 @@ public record SlingLeapModule(LevelingValue forceMultiplier, boolean leaveGround
         if (entity instanceof Player player) {
           if (!level.isClientSide) {
             player.causeFoodExhaustion(0.2F);
-            player.getCooldowns().addCooldown(tool.getItem(), 3);
+            player.getCooldowns().addCooldown(new ItemStack(tool.getItem()), 3);
           }
           // if supported, perform drill attack if the modifier is available
           if (ModifierManager.isInTag(modifier.getId(), TinkerTags.Modifiers.DRILL_ATTACKS) && ModifierUtil.canPerformAction(tool, TinkerToolActions.DRILL_ATTACK)) {

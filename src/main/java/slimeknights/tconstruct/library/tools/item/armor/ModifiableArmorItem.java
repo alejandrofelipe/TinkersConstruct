@@ -20,8 +20,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.equipment.ArmorMaterials;
+import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
@@ -73,19 +74,28 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
 
   @Getter
   private final ToolDefinition toolDefinition;
+  /** Armor slot this item occupies. PORT 1.21.4: vanilla ArmorItem no longer exposes a {@code type} field, so we store it. */
+  protected final ArmorType type;
   /** Cache of the tool built for rendering */
   private ItemStack toolForRendering = null;
   // PORT M3 (armor materials): vanilla ArmorMaterial is now a record behind Holder<ArmorMaterial> and Tinkers'
   // ModifiableArmorMaterial no longer extends it (see DummyArmorMaterial). The real Holder<ArmorMaterial> (defense
   // values + layers) is deferred to the armor-layer port; we pass a vanilla placeholder holder to the super ctor so
   // construction compiles, while Tinkers drives armor stats through ToolStats/attributes instead.
-  public ModifiableArmorItem(DummyArmorMaterial materialIn, ArmorItem.Type type, Properties builderIn, ToolDefinition toolDefinition) {
+  // PORT 1.21.4: ArmorType became net.minecraft.world.item.equipment.ArmorType.
+  public ModifiableArmorItem(DummyArmorMaterial materialIn, ArmorType type, Properties builderIn, ToolDefinition toolDefinition) {
     super(ArmorMaterials.IRON, type, builderIn);
+    this.type = type;
     this.toolDefinition = toolDefinition;
   }
 
-  public ModifiableArmorItem(ModifiableArmorMaterial material, ArmorItem.Type type, Properties properties) {
+  public ModifiableArmorItem(ModifiableArmorMaterial material, ArmorType type, Properties properties) {
     this(material, type, properties, Objects.requireNonNull(material.getArmorDefinition(type), "Missing tool definition for " + type.getName()));
+  }
+
+  /** Gets the equipment slot for this armor item. PORT 1.21.4: replaces the removed {@code ArmorItem#getEquipmentSlot()}. */
+  public EquipmentSlot getEquipmentSlot() {
+    return type.getSlot();
   }
 
   /* Basic properties */
@@ -102,12 +112,13 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
 
   @Override
   public boolean canWalkOnPowderedSnow(ItemStack stack, LivingEntity wearer) {
-    return type == Type.BOOTS && ModifierUtil.checkVolatileFlag(stack, SNOW_BOOTS);
+    return type == ArmorType.BOOTS && ModifierUtil.checkVolatileFlag(stack, SNOW_BOOTS);
   }
 
-  @Override
+  // PORT 1.21.4: IItemExtension#isEnderMask was removed; enderman aggro is now data-driven. Kept as a plain helper
+  // until that is rewired.
   public boolean isEnderMask(ItemStack stack, Player player, EnderMan endermanEntity) {
-    return type == Type.HELMET && ModifierUtil.checkVolatileFlag(stack, ENDERMASK);
+    return type == ArmorType.HELMET && ModifierUtil.checkVolatileFlag(stack, ENDERMASK);
   }
 
   @Override
@@ -123,7 +134,7 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
 
   /* Enchantments */
 
-  @Override
+  // PORT 1.21.4: IItemExtension#isEnchantable(ItemStack) was removed (DataComponents.ENCHANTABLE). Kept as a plain helper.
   public boolean isEnchantable(ItemStack stack) {
     return false;
   }
@@ -199,7 +210,7 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
 
   /* Damage/Durability */
 
-  @Override
+  // PORT 1.21.4: IItemExtension#isRepairable(ItemStack) was removed. Kept as a plain helper; repair is handled in the tinker station.
   public boolean isRepairable(ItemStack stack) {
     // handle in the tinker station
     return false;
@@ -263,7 +274,7 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
 
   /* Armor properties */
 
-  @Override
+  // PORT 1.21.4: IItemExtension#isValidRepairItem was removed. Kept as a plain helper.
   public boolean isValidRepairItem(ItemStack toRepair, ItemStack repair) {
     return false;
   }
@@ -318,12 +329,12 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
 
   /* Elytra */
 
-  @Override
+  // PORT 1.21.4: IItemExtension#canElytraFly/elytraFlightTick were removed; gliding is now the Equippable/glider
+  // component (net-new). Kept as plain helpers until the glider port wires them up.
   public boolean canElytraFly(ItemStack stack, LivingEntity entity) {
-    return type == Type.CHESTPLATE && !ToolDamageUtil.isBroken(stack) && ModifierUtil.checkVolatileFlag(stack, ELYTRA);
+    return type == ArmorType.CHESTPLATE && !ToolDamageUtil.isBroken(stack) && ModifierUtil.checkVolatileFlag(stack, ELYTRA);
   }
 
-  @Override
   public boolean elytraFlightTick(ItemStack stack, LivingEntity entity, int flightTicks) {
     if (getEquipmentSlot() == EquipmentSlot.CHEST) {
       ToolStack tool = ToolStack.from(stack);

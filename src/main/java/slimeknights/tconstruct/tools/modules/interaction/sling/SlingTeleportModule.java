@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.tools.modules.interaction.sling;
 
+import net.minecraft.world.item.ItemStack;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
@@ -97,7 +99,7 @@ public record SlingTeleportModule(LevelingValue forceMultiplier, float drawtimeM
               }
               level.playSound(null, player.getX(), player.getY(), player.getZ(), Sounds.SLIME_SLING_TELEPORT.getSound(), player.getSoundSource(), 1f, 1f);
               player.causeFoodExhaustion(0.2F);
-              player.getCooldowns().addCooldown(tool.getItem(), 3);
+              player.getCooldowns().addCooldown(new ItemStack(tool.getItem()), 3);
               ToolDamageUtil.damageAnimated(tool, 1, entity, entity.getUsedItemHand(), modifier.getId());
               return;
             }

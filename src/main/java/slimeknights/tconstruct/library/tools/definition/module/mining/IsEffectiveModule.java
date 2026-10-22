@@ -47,6 +47,6 @@ public record IsEffectiveModule(IJsonPredicate<BlockState> predicate, boolean ig
   public boolean isToolEffective(IToolStackView tool, BlockState state) {
     // 1.21 removed TierSortingRegistry.isCorrectTierForDrops; a tier is correct for drops when the block is not in its
     // incorrect-blocks tag (Tier.getIncorrectBlocksForDrops), matching vanilla's DiggerItem behavior.
-    return predicate.matches(state) && (ignoreTier || !state.is(MiningTierToolHook.getTier(tool).getIncorrectBlocksForDrops()));
+    return predicate.matches(state) && (ignoreTier || !state.is(MiningTierToolHook.getTier(tool).incorrectBlocksForDrops()));
   }
 }

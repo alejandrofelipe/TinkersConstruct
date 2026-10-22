@@ -3,6 +3,7 @@ package slimeknights.tconstruct.tools.recipe;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.Getter;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -114,9 +115,9 @@ public class EnchantmentConvertingRecipe extends AbstractWorktableRecipe {
       if (!tool.is(Items.ENCHANTED_BOOK)) {
         return false;
       }
-      // call the method directly on item as the method on itemstack conisiders if its current enchanted
-      // we want to match even unenchanted items, better error
-    } else if (!tool.getItem().isEnchantable(tool)) {
+      // PORT 1.21.4: Item#isEnchantable was removed; enchantability is the DataComponents.ENCHANTABLE component.
+      // Checking the component (rather than ItemStack enchantability helpers) matches even unenchanted items.
+    } else if (!tool.has(DataComponents.ENCHANTABLE)) {
       return false;
     }
     return ModifierRecipe.checkMatch(inv, inputs);

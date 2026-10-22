@@ -6,7 +6,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.Level;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -89,8 +90,8 @@ public interface GeneralInteractionModifierHook {
    * @param modifier   Modifier instance
    * @return  Use action to be performed
    */
-  default UseAnim getUseAction(IToolStackView tool, ModifierEntry modifier) {
-    return UseAnim.NONE;
+  default ItemUseAnimation getUseAction(IToolStackView tool, ModifierEntry modifier) {
+    return ItemUseAnimation.NONE;
   }
 
 
@@ -120,7 +121,8 @@ public interface GeneralInteractionModifierHook {
 
   /** Causes cooldown on the given tool based on its draw speed stat. */
   static void addCooldown(IToolStackView tool, Player player, float speedFactor) {
-    player.getCooldowns().addCooldown(tool.getItem(), getDrawtime(tool, player, speedFactor));
+    // 1.21.4: ItemCooldowns#addCooldown now takes an ItemStack (grouped by item); wrap the tool's item in a stack
+    player.getCooldowns().addCooldown(new ItemStack(tool.getItem()), getDrawtime(tool, player, speedFactor));
   }
 
   /**
@@ -238,14 +240,14 @@ public interface GeneralInteractionModifierHook {
     }
 
     @Override
-    public UseAnim getUseAction(IToolStackView tool, ModifierEntry modifier) {
+    public ItemUseAnimation getUseAction(IToolStackView tool, ModifierEntry modifier) {
       for (GeneralInteractionModifierHook module : modules) {
-        UseAnim anim = module.getUseAction(tool, modifier);
-        if (anim != UseAnim.NONE) {
+        ItemUseAnimation anim = module.getUseAction(tool, modifier);
+        if (anim != ItemUseAnimation.NONE) {
           return anim;
         }
       }
-      return UseAnim.NONE;
+      return ItemUseAnimation.NONE;
     }
   }
 }

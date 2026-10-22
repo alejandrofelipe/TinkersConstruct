@@ -33,7 +33,7 @@ public class ShurikenItem extends SnowballItem {
   public InteractionResult use(Level level, Player player, InteractionHand hand) {
     ItemStack stack = player.getItemInHand(hand);
     level.playSound(null, player.getX(), player.getY(), player.getZ(), Sounds.SHURIKEN_THROW.getSound(), SoundSource.NEUTRAL, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
-    player.getCooldowns().addCooldown(stack.getItem(), 4);
+    player.getCooldowns().addCooldown(stack, 4);
     if(!level.isClientSide()) {
       ShurikenEntityBase entity = this.entity.apply(level, player);
       entity.setItem(stack);

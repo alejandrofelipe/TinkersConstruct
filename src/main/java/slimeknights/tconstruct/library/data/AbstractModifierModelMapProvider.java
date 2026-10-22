@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.data;
 
+import net.minecraft.world.item.equipment.ArmorType;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -288,7 +290,7 @@ public abstract class AbstractModifierModelMapProvider extends GenericDataProvid
     /* Cosmetic */
 
     /** Adds the trim model to the tool */
-    public Builder trim(ArmorItem.Type type) {
+    public Builder trim(ArmorType type) {
       return modifier(TinkerModifiers.trim.getId(), TrimModifierModel.Armor.values()[type.ordinal()]);
     }
 

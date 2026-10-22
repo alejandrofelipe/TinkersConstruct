@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.tools.modules.interaction.sling;
 
+import net.minecraft.world.item.ItemStack;
+
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -178,7 +180,7 @@ public record SlingKnockbackModule(LevelingValue forceMultiplier, float drawtime
                 // cooldowns and stuff
                 level.playSound(null, player.getX(), player.getY(), player.getZ(), Sounds.BONK.getSound(), player.getSoundSource(), 1, 0.5f);
                 player.causeFoodExhaustion(0.2F);
-                player.getCooldowns().addCooldown(tool.getItem(), 3);
+                player.getCooldowns().addCooldown(new ItemStack(tool.getItem()), 3);
                 ToolDamageUtil.damageAnimated(tool, 1, entity, entity.getUsedItemHand(), modifier.getId());
                 return;
               }

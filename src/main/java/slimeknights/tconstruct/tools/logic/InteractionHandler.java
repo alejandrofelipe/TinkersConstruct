@@ -84,7 +84,7 @@ public class InteractionHandler {
         return;
       }
     }
-    if (!player.getCooldowns().isOnCooldown(stack.getItem())) {
+    if (!player.getCooldowns().isOnCooldown(stack)) {
       // actual interaction hook
       ToolStack tool = ToolStack.from(stack);
       Entity target = event.getTarget();
@@ -106,7 +106,7 @@ public class InteractionHandler {
     Player player = event.getEntity();
     if (event.getItemStack().isEmpty() && !player.isSpectator()) {
       ItemStack chestplate = player.getItemBySlot(EquipmentSlot.CHEST);
-      if (chestplate.is(TinkerTags.Items.INTERACTABLE_ARMOR) && !player.getCooldowns().isOnCooldown(chestplate.getItem())) {
+      if (chestplate.is(TinkerTags.Items.INTERACTABLE_ARMOR) && !player.getCooldowns().isOnCooldown(chestplate)) {
         // from this point on, we are taking over interaction logic, to ensure chestplate hooks run in the right order
         event.setCanceled(true);
 
@@ -173,7 +173,7 @@ public class InteractionHandler {
       // item must be a chestplate
       // TODO 1.21: add a modifier tag so we only perform the cancellation if a modifier needs it
       ItemStack chestplate = player.getItemBySlot(EquipmentSlot.CHEST);
-      if (chestplate.is(TinkerTags.Items.INTERACTABLE_ARMOR) && !player.getCooldowns().isOnCooldown(chestplate.getItem())) {
+      if (chestplate.is(TinkerTags.Items.INTERACTABLE_ARMOR) && !player.getCooldowns().isOnCooldown(chestplate)) {
         // no turning back, from this point we are fully in charge of interaction logic (since we need to ensure order of the hooks)
 
         // begin interaction
@@ -214,7 +214,7 @@ public class InteractionHandler {
         // regular item interaction: must not be deny, and either be allow or not have a cooldown
         TriState useItem = event.getUseItem();
         event.setCancellationResult(InteractionResult.PASS);
-        if (useItem != TriState.FALSE && (useItem == TriState.TRUE || !player.getCooldowns().isOnCooldown(chestplate.getItem()))) {
+        if (useItem != TriState.FALSE && (useItem == TriState.TRUE || !player.getCooldowns().isOnCooldown(chestplate))) {
           // finally, after block use (in forge, onItemUse)
           InteractionResult result = onBlockUse(context, tool, chestplate, entry -> entry.getHook(ModifierHooks.BLOCK_INTERACT).afterBlockUse(tool, entry, context, InteractionSource.ARMOR));
           if (result.consumesAction()) {
@@ -238,7 +238,7 @@ public class InteractionHandler {
 
   /** Implements {@link GeneralInteractionModifierHook#onToolUse(IToolStackView, ModifierEntry, Player, InteractionHand, InteractionSource)}, called differently on client and server */
   public static InteractionResult onChestplateUse(Player player, ItemStack chestplate, InteractionHand hand) {
-    if (player.getCooldowns().isOnCooldown(chestplate.getItem())) {
+    if (player.getCooldowns().isOnCooldown(chestplate)) {
       return InteractionResult.PASS;
     }
 
@@ -355,7 +355,7 @@ public class InteractionHandler {
 
   /** Runs the left click interaction for left click */
   public static InteractionResult onLeftClickInteraction(Player player, ItemStack held, InteractionHand hand) {
-    if (player.getCooldowns().isOnCooldown(held.getItem())) {
+    if (player.getCooldowns().isOnCooldown(held)) {
       return InteractionResult.PASS;
     }
     return onLeftClickInteraction(ToolStack.from(held), player, hand);
@@ -410,7 +410,7 @@ public class InteractionHandler {
     }
     // must support interaction
     ItemStack stack = event.getItemStack();
-    if (!stack.is(TinkerTags.Items.INTERACTABLE_LEFT) || player.getCooldowns().isOnCooldown(stack.getItem())) {
+    if (!stack.is(TinkerTags.Items.INTERACTABLE_LEFT) || player.getCooldowns().isOnCooldown(stack)) {
       return;
     }
 

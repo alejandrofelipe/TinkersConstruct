@@ -24,9 +24,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.ClipContext;
@@ -75,7 +74,7 @@ import java.util.function.Consumer;
  * A standard modifiable item which implements melee hooks
  * This class handles how all the modifier hooks and display data for items made out of different materials
  */
-public class ModifiableItem extends TieredItem implements IModifiableDisplay {
+public class ModifiableItem extends Item implements IModifiableDisplay {
   /** Tool definition for the given tool */
   @Getter
   private final ToolDefinition toolDefinition;
@@ -91,7 +90,8 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
   }
 
   public ModifiableItem(Properties properties, ToolDefinition toolDefinition, int maxStackSize) {
-    super(TinkerTier.INSTANCE, properties);
+    // 1.21.4: vanilla TieredItem was removed; Tinkers tools don't use vanilla tier mechanics, so extend Item directly
+    super(properties);
     this.toolDefinition = toolDefinition;
     this.maxStackSize = maxStackSize;
   }
@@ -119,7 +119,8 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
 
   /* Enchanting */
 
-  @Override
+  // PORT 1.21.4: IItemExtension#isEnchantable(ItemStack) was removed; enchantability is now the
+  // DataComponents.ENCHANTABLE component (absent here, so these tools are not enchantable). Kept as a plain helper.
   public boolean isEnchantable(ItemStack stack) {
     return false;
   }
@@ -188,13 +189,14 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
 
   /* Damage/Durability */
 
-  @Override
+  // PORT 1.21.4: IItemExtension#isRepairable(ItemStack) was removed; anvil repair is now data-driven. Kept as a
+  // plain helper; repair is handled in the tinker station regardless.
   public boolean isRepairable(ItemStack stack) {
     // handle in the tinker station
     return false;
   }
 
-  @Override
+  // PORT 1.21.4: IItemExtension#isValidRepairItem was removed. Kept as a plain helper.
   public boolean isValidRepairItem(ItemStack pToRepair, ItemStack pRepair) {
     return false;
   }
@@ -441,8 +443,9 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
     return stack;
   }
 
+  // 1.21.4: releaseUsing now returns boolean (true when the release was handled)
   @Override
-  public void releaseUsing(ItemStack stack, Level worldIn, LivingEntity entityLiving, int timeLeft) {
+  public boolean releaseUsing(ItemStack stack, Level worldIn, LivingEntity entityLiving, int timeLeft) {
     ToolStack tool = ToolStack.from(stack);
     ModifierEntry activeModifier = GeneralInteractionModifierHook.getActiveModifier(tool);
     GeneralInteractionModifierHook hook = activeModifier.getHook(ModifierHooks.GENERAL_INTERACT);
@@ -451,6 +454,7 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
       entry.getHook(ModifierHooks.TOOL_USING).beforeReleaseUsing(tool, entry, entityLiving, duration, timeLeft, activeModifier);
     }
     hook.onStoppedUsing(tool, activeModifier, entityLiving, timeLeft);
+    return true;
   }
 
   @Override
@@ -472,13 +476,13 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
   }
 
   @Override
-  public UseAnim getUseAnimation(ItemStack stack) {
+  public ItemUseAnimation getUseAnimation(ItemStack stack) {
     ToolStack tool = ToolStack.from(stack);
     ModifierEntry activeModifier = GeneralInteractionModifierHook.getActiveModifier(tool);
     if (activeModifier != ModifierEntry.EMPTY) {
       return activeModifier.getHook(ModifierHooks.GENERAL_INTERACT).getUseAction(tool, activeModifier);
     }
-    return UseAnim.NONE;
+    return ItemUseAnimation.NONE;
   }
 
   @Override
@@ -516,7 +520,8 @@ public class ModifiableItem extends TieredItem implements IModifiableDisplay {
     return toolForRendering;
   }
 
-  @Override
+  // PORT 1.21.4: IItemExtension#initializeClient was removed; client item extensions now register via
+  // RegisterClientExtensionsEvent. Kept as a plain helper until the client phase rewires it.
   public void initializeClient(Consumer<IClientItemExtensions> consumer) {
     consumer.accept(ModifiableItemClientExtension.INSTANCE);
   }

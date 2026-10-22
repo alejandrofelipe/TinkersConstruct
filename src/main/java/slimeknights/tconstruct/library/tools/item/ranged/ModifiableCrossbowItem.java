@@ -26,7 +26,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
@@ -102,9 +102,9 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
   }
 
   @Override
-  public UseAnim getUseAnimation(ItemStack stack) {
+  public ItemUseAnimation getUseAnimation(ItemStack stack) {
     // crossbow is superhardcoded to crossbows, so use none and rely on the model
-    return ModifierUtil.blockWhileCharging(ToolStack.from(stack), UseAnim.CROSSBOW);
+    return ModifierUtil.blockWhileCharging(ToolStack.from(stack), ItemUseAnimation.CROSSBOW);
   }
 
   @Override
@@ -299,8 +299,9 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
     }
   }
 
+  // 1.21.4: releaseUsing now returns boolean (true when the release was handled)
   @Override
-  public void releaseUsing(ItemStack bow, Level level, LivingEntity living, int chargeRemaining) {
+  public boolean releaseUsing(ItemStack bow, Level level, LivingEntity living, int chargeRemaining) {
     ToolStack tool = ToolStack.from(bow);
 
     // call the stop using modifier hook
@@ -313,7 +314,7 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
     // specifically: broken, not fully charged, already have ammo
     ModDataNBT persistentData = tool.getPersistentData();
     if (tool.isBroken() || getUseDuration(bow, living) - chargeRemaining < persistentData.getInt(KEY_DRAWTIME) || persistentData.contains(KEY_CROSSBOW_AMMO, Tag.TAG_COMPOUND)) {
-      return;
+      return false;
     }
 
     // find ammo and store it on the bow
@@ -330,6 +331,7 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
         }
       }
     }
+    return true;
   }
 
   @Override

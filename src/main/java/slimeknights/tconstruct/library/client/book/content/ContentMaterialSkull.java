@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.client.book.content;
 
+import net.minecraft.world.item.equipment.ArmorType;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -73,7 +75,7 @@ public class ContentMaterialSkull extends AbstractMaterialContent {
 												 .map(recipe -> (IDisplayableCastingRecipe)recipe)
 												 .filter(recipe -> {
                            ItemStack output = recipe.getOutput();
-                           return output.getItem() == TinkerTools.slimesuit.get(ArmorItem.Type.HELMET) && MaterialIdNBT.from(output).getMaterial(0).getId().toString().equals(materialName);
+                           return output.getItem() == TinkerTools.slimesuit.get(ArmorType.HELMET) && MaterialIdNBT.from(output).getMaterial(0).getId().toString().equals(materialName);
                          })
 												 .findFirst()
 												 .orElse(null);

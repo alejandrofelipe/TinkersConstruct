@@ -17,7 +17,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.phys.Vec3;
@@ -209,8 +209,8 @@ public final class ModifierUtil {
    * Makes the tool use the blocking animation if the blocking modifier is installed, falling back to the given animation.
    * Allows your tool to block while charging up.
    */
-  public static UseAnim blockWhileCharging(IToolStackView tool, UseAnim fallback) {
-    return canPerformAction(tool, ItemAbilities.SHIELD_BLOCK) ? UseAnim.BLOCK : fallback;
+  public static ItemUseAnimation blockWhileCharging(IToolStackView tool, ItemUseAnimation fallback) {
+    return canPerformAction(tool, ItemAbilities.SHIELD_BLOCK) ? ItemUseAnimation.BLOCK : fallback;
   }
 
   /** Calculates inaccuracy from the conditional tool stat. */

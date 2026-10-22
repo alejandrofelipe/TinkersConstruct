@@ -6,8 +6,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.ArmorType;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.armor.ArmorModelManager.ArmorModelDispatcher;
@@ -28,7 +28,7 @@ public class SlimeskullItem extends ModifiableArmorItem {
   private final ResourceLocation name;
 
   public SlimeskullItem(ModifiableArmorMaterial material, ResourceLocation name, Properties properties) {
-    super(material, ArmorItem.Type.HELMET, properties);
+    super(material, ArmorType.HELMET, properties);
     this.name = name;
   }
 
@@ -44,7 +44,8 @@ public class SlimeskullItem extends ModifiableArmorItem {
     return ArmorUtil.getDummyArmorTexture(slot);
   }
 
-  @Override
+  // PORT 1.21.4: IItemExtension#initializeClient was removed (client extensions now register via
+  // RegisterClientExtensionsEvent). Kept as a plain helper until the client phase rewires it.
   public void initializeClient(Consumer<IClientItemExtensions> consumer) {
     consumer.accept(new ArmorModelDispatcher() {
       @Override

@@ -82,7 +82,7 @@ public record SplashingModule(LevelingValue strength) implements ModifierModule,
 
           // cooldown based on attack speed/draw speed. both are on the same scale and default to 1, we don't care which one the tool uses
           // applied before we do the effect to block recursive calls, notably ender might cause that
-          player.getCooldowns().addCooldown(tool.getItem(), (int)(20 / ConditionalStatModifierHook.getModifiedStat(tool, player, ToolStats.DRAW_SPEED)));
+          player.getCooldowns().addCooldown(new ItemStack(tool.getItem()), (int)(20 / ConditionalStatModifierHook.getModifiedStat(tool, player, ToolStats.DRAW_SPEED)));
 
           if (!world.isClientSide) {
             // for the main target, consume fluids
@@ -154,7 +154,7 @@ public record SplashingModule(LevelingValue strength) implements ModifierModule,
           // cooldown based on draw speed, works similarly enough to attack speed
           // applied before we do the effect to block recursive calls, notably ender might cause that
           if (player != null) {
-            player.getCooldowns().addCooldown(tool.getItem(), (int)(20 / ConditionalStatModifierHook.getModifiedStat(tool, player, ToolStats.DRAW_SPEED)));
+            player.getCooldowns().addCooldown(new ItemStack(tool.getItem()), (int)(20 / ConditionalStatModifierHook.getModifiedStat(tool, player, ToolStats.DRAW_SPEED)));
           }
 
           if (!world.isClientSide) {

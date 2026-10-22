@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.data.material;
 
+import net.minecraft.world.item.equipment.ArmorType;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.data.CachedOutput;
@@ -91,7 +93,7 @@ public abstract class AbstractMaterialStatsDataProvider extends GenericDataProvi
    */
   protected void addArmorStats(MaterialId location, ArmorModuleBuilder<? extends IMaterialStats> statBuilder, IMaterialStats... otherStats) {
     IMaterialStats[] stats = new IMaterialStats[4];
-    for (ArmorItem.Type slotType : ModifiableArmorMaterial.ARMOR_SLOTS) {
+    for (ArmorType slotType : ModifiableArmorMaterial.ARMOR_SLOTS) {
       stats[slotType.ordinal()] = statBuilder.build(slotType);
     }
     addMaterialStats(location, stats);

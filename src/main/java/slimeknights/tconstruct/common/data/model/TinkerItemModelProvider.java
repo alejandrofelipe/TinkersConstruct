@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.common.data.model;
 
+import net.minecraft.world.item.equipment.ArmorType;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -59,9 +61,9 @@ public class TinkerItemModelProvider extends ItemModelProvider {
     // armor
     TinkerToolParts.plating.forEach((slot, item) -> {
       MaterialModelBuilder<ItemModelBuilder> b = this.part(item, "armor/plate/" + slot.getName() + "/plating");
-      if (slot == ArmorItem.Type.HELMET) {
+      if (slot == ArmorType.HELMET) {
         b.offset(0, 2);
-      } else if (slot == ArmorItem.Type.LEGGINGS) {
+      } else if (slot == ArmorType.LEGGINGS) {
         b.offset(0, 1);
       }
     });

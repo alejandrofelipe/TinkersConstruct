@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.world.client;
 
+import net.minecraft.world.item.equipment.ArmorType;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -69,7 +71,7 @@ public class SlimeArmorLayer<T extends Slime, M extends HierarchicalModel<T>, A 
 
       Item item = helmet.getItem();
       // helmet renderer, based on humanoid armor layer
-      if (item instanceof ArmorItem armor && armor.getType() == ArmorItem.Type.HELMET) {
+      if (item instanceof ArmorItem armor && armor.getType() == ArmorType.HELMET) {
         this.getParentModel().copyPropertiesTo(armorModel);
         armorModel.setAllVisible(false);
         armorModel.head.visible = true;

@@ -28,7 +28,7 @@ import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -400,7 +400,7 @@ public class ModifierEvents {
               GeneralInteractionModifierHook hook = activeModifier.getHook(ModifierHooks.GENERAL_INTERACT);
               int time = hook.getUseDuration(tool, activeModifier) - target.getUseItemRemainingTicks();
               // must be blocking, started blocking within the last 2*level seconds, and be within the block angle
-              if (hook.getUseAction(tool, activeModifier) == UseAnim.BLOCK
+              if (hook.getUseAction(tool, activeModifier) == ItemUseAnimation.BLOCK
                 && (time >= 5 && time < reflectingTime)
                 && InteractionHandler.canBlock(target, projectile.position(), tool)) {
 

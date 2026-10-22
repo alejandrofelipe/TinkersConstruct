@@ -25,7 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -108,7 +108,7 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
 
   /* Enchanting */
 
-  @Override
+  // PORT 1.21.4: IItemExtension#isEnchantable(ItemStack) was removed (DataComponents.ENCHANTABLE). Kept as a plain helper.
   public boolean isEnchantable(ItemStack stack) {
     return false;
   }
@@ -121,7 +121,7 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
   // PORT M3 (enchantments): Item#canApplyAtEnchantingTable and Enchantment#isCurse were removed in 1.21 (enchantments are
   // now data-driven Holder<Enchantment> with tag-based table support). Override removed; revisit with the enchantment port.
 
-  @Override
+  // PORT 1.21.4: Item#getEnchantmentValue() was removed (DataComponents.ENCHANTABLE carries the value). Kept as a plain helper.
   public int getEnchantmentValue() {
     return 0;
   }
@@ -183,7 +183,7 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
 
   /* Damage/Durability */
 
-  @Override
+  // PORT 1.21.4: IItemExtension#isRepairable(ItemStack) was removed. Kept as a plain helper; repair is handled in the tinker station.
   public boolean isRepairable(ItemStack stack) {
     // handle in the tinker station
     return false;
@@ -297,7 +297,7 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
   }
 
   @Override
-  public abstract UseAnim getUseAnimation(ItemStack pStack);
+  public abstract ItemUseAnimation getUseAnimation(ItemStack pStack);
 
   @Override
   public ItemStack finishUsingItem(ItemStack stack, Level pLevel, LivingEntity living) {
@@ -366,7 +366,8 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
     return toolForRendering;
   }
 
-  @Override
+  // PORT 1.21.4: IItemExtension#initializeClient was removed; client extensions now register via
+  // RegisterClientExtensionsEvent. Kept as a plain helper until the client phase rewires it.
   public void initializeClient(Consumer<IClientItemExtensions> consumer) {
     consumer.accept(ModifiableItemClientExtension.INSTANCE);
   }

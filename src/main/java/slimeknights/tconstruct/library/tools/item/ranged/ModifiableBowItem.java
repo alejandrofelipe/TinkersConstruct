@@ -17,7 +17,7 @@ import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.EventHooks;
 import slimeknights.tconstruct.TConstruct;
@@ -88,8 +88,8 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
   }
 
   @Override
-  public UseAnim getUseAnimation(ItemStack stack) {
-    return ModifierUtil.blockWhileCharging(ToolStack.from(stack), UseAnim.BOW);
+  public ItemUseAnimation getUseAnimation(ItemStack stack) {
+    return ModifierUtil.blockWhileCharging(ToolStack.from(stack), ItemUseAnimation.BOW);
   }
 
 
@@ -154,8 +154,9 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
     return InteractionResult.CONSUME;
   }
 
+  // 1.21.4: releaseUsing now returns boolean (true when the release was handled)
   @Override
-  public void releaseUsing(ItemStack bow, Level level, LivingEntity living, int timeLeft) {
+  public boolean releaseUsing(ItemStack bow, Level level, LivingEntity living, int timeLeft) {
     // call the stop using hook
     ToolStack tool = ToolStack.from(bow);
     int duration = getUseDuration(bow, living);
@@ -165,7 +166,7 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
 
     // no broken
     if (tool.isBroken()) {
-      return;
+      return false;
     }
 
     // just not handling vanilla infinity at all, we have our own hooks which someone could use to mimic infinity if they wish with a bit of effort
@@ -190,7 +191,7 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
 
     // no ammo? no charge? nothing to do
     if (!hasAmmo || chargeTime < 0) {
-      return;
+      return false;
     }
 
     // calculate arrow power
@@ -198,7 +199,7 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
     float velocity = ConditionalStatModifierHook.getModifiedStat(tool, living, ToolStats.VELOCITY);
     float power = charge * velocity;
     if (power < 0.1f) {
-      return;
+      return false;
     }
 
     // launch the arrow
@@ -308,6 +309,7 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
     if (player != null) {
       player.awardStat(Stats.ITEM_USED.get(this));
     }
+    return true;
   }
 
   @Override
