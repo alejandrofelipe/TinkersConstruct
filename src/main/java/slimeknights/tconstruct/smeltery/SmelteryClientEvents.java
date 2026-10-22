@@ -3,7 +3,7 @@ package slimeknights.tconstruct.smeltery;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -72,8 +72,10 @@ public class SmelteryClientEvents extends ClientEventBase {
     ToolModel.registerSmallTool(TinkerItemDisplays.CASTING_TABLE);
   }
 
+  // PORT 1.21.4: tank/fluid_texture are block models now (UnbakedModelLoader on ModelEvent.RegisterLoaders).
+  // Their block items render via the block model; dynamic fluid-in-item display is deferred (Phase-4).
   @SubscribeEvent
-  static void registerModelLoaders(RegisterGeometryLoaders event) {
+  static void registerBlockModelLoaders(ModelEvent.RegisterLoaders event) {
     event.register(TConstruct.getResource("tank"), TankModel.LOADER);
     event.register(TConstruct.getResource("fluid_texture"), FluidTextureModel.LOADER);
   }

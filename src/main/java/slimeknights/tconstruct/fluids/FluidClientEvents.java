@@ -2,11 +2,8 @@ package slimeknights.tconstruct.fluids;
 
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.alchemy.PotionContents;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.EventBusSubscriber.Bus;
@@ -35,14 +32,13 @@ public class FluidClientEvents extends ClientEventBase {
     setTranslucent(TinkerFluids.moltenAmethyst);
   }
 
-  @SubscribeEvent
-  static void itemColors(final RegisterColorHandlersEvent.Item event) {
-    event.register((stack, index) -> index > 0 ? -1 : stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).getColor(), TinkerFluids.potion.asItem());
-  }
+  // PORT 1.21.4: RegisterColorHandlersEvent.Item was removed; the potion fluid item's tint should move to a registered
+  // ItemTintSource referenced from its item JSON (deferred to the item-tint batch).
 
+  // PORT 1.21.4: FluidContainerModel is an item model now (ItemModel.Unbaked MapCodec on RegisterItemModelsEvent)
   @SubscribeEvent
-  static void registerModelLoaders(RegisterGeometryLoaders event) {
-    event.register(TConstruct.getResource("fluid_container"), FluidContainerModel.LOADER);
+  static void registerItemModels(RegisterItemModelsEvent event) {
+    event.register(TConstruct.getResource("fluid_container"), FluidContainerModel.Unbaked.MAP_CODEC);
   }
 
   private static void setTranslucent(FlowingFluidObject<?> fluid) {

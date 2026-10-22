@@ -131,7 +131,6 @@ public class ToolClientEvents extends ClientEventBase {
     event.register(getResource("material"), MaterialModel.Unbaked.MAP_CODEC);
     event.register(getResource("tool"), ToolModel.Unbaked.MAP_CODEC);
     event.register(getResource("material_block"), MaterialBlockModel.ItemUnbaked.MAP_CODEC);
-    event.register(getResource("fluid_container"), FluidContainerModel.Unbaked.MAP_CODEC);
   }
 
   @SubscribeEvent

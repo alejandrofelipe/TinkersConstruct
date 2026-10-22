@@ -1,17 +1,15 @@
 package slimeknights.tconstruct.plugin.jsonthings;
 
-import dev.gigaherz.jsonthings.things.client.ItemColorHandler;
 import net.minecraft.world.item.Item;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.model.TinkerItemProperties;
-import slimeknights.tconstruct.library.client.model.tools.ToolModel;
 
 /** Handles anything that requires clientside class loading */
 public class PluginClient {
   public static void init() {
-    ItemColorHandler.register(TConstruct.resourceString("tool"), block -> ToolModel.COLOR_HANDLER);
+    // PORT 1.21.4: tool item colors are baked into the quads now (decision #2); no ItemColorHandler needed
     TConstruct.modBus.addListener(PluginClient::clientSetup);
   }
 
