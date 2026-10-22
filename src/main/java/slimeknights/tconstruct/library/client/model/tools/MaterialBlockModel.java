@@ -5,8 +5,13 @@ import com.google.common.cache.CacheBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.math.Transformation;
-import lombok.Getter;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.item.ItemModel;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
@@ -24,7 +29,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.context.ContextMap;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.RenderTypeGroup;
 import net.neoforged.neoforge.client.model.AbstractUnbakedModel;
@@ -49,9 +58,11 @@ import slimeknights.tconstruct.library.client.materials.MaterialRenderInfo;
 import slimeknights.tconstruct.library.client.materials.MaterialRenderInfo.TintedSprite;
 import slimeknights.tconstruct.library.client.materials.MaterialRenderInfoLoader;
 import slimeknights.tconstruct.library.client.model.ModelProperties;
+import slimeknights.tconstruct.library.client.model.ItemModelUtil;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.tools.nbt.MaterialIdNBT;
+import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -252,6 +263,9 @@ public class MaterialBlockModel extends AbstractUnbakedModel {
     /** Gets the cached model for the given materials. */
     public abstract BakedModel getCachedModel(P materials);
 
+    /** Resolves the baked model for the given item stack; drives the item-model system (replaces the old ItemOverrides). */
+    public abstract BakedModel resolveForStack(ItemStack stack);
+
     @Override
     public TextureAtlasSprite getParticleIcon(@NotNull ModelData data) {
       if (particleRetextured) {
@@ -307,6 +321,14 @@ public class MaterialBlockModel extends AbstractUnbakedModel {
       }
       return parent;
     }
+
+    @Override
+    public BakedModel resolveForStack(ItemStack stack) {
+      if (stack.isEmpty() || stack.isComponentsPatchEmpty()) {
+        return parent;
+      }
+      return getCachedModel(MaterialIdNBT.from(stack));
+    }
   }
 
   /** Common logic between tool parts and tools with just 1 material. */
@@ -346,12 +368,28 @@ public class MaterialBlockModel extends AbstractUnbakedModel {
     public BakedModel getCachedModel(MaterialIdNBT materials) {
       return getCachedModel(materials.getMaterial(0));
     }
+
+    @Override
+    public BakedModel resolveForStack(ItemStack stack) {
+      if (stack.isEmpty() || stack.isComponentsPatchEmpty()) {
+        return parent;
+      }
+      return getCachedModel(MaterialIdNBT.from(stack));
+    }
   }
 
   /** Baked model for tool parts. */
   public static class BakedPart extends BakedSingleMaterial<MaterialVariantId> {
     private BakedPart(BakedModel original, BakeContext ctx, Set<String> retexture) {
       super(original, ctx, retexture, ModelProperties.MATERIAL);
+    }
+
+    @Override
+    public BakedModel resolveForStack(ItemStack stack) {
+      if (stack.isEmpty() || stack.isComponentsPatchEmpty()) {
+        return parent;
+      }
+      return getCachedModel(IMaterialItem.getMaterialFromStack(stack));
     }
   }
 
@@ -379,6 +417,19 @@ public class MaterialBlockModel extends AbstractUnbakedModel {
     }
 
     @Override
+    public BakedModel resolveForStack(ItemStack stack) {
+      if (stack.isEmpty() || stack.isComponentsPatchEmpty()) {
+        return parent;
+      }
+      // block takes priority over material
+      Block block = RetexturedHelper.getTexture(stack);
+      if (block != Blocks.AIR) {
+        return getCachedModel(block);
+      }
+      return getCachedModel(IMaterialItem.getMaterialFromStack(stack));
+    }
+
+    @Override
     public TextureAtlasSprite getParticleIcon(ModelData data) {
       // block takes priority if present
       if (particleRetextured) {
@@ -398,6 +449,43 @@ public class MaterialBlockModel extends AbstractUnbakedModel {
         return getCachedModel(block).getQuads(state, side, rand, extraData, renderType);
       }
       return super.getQuads(state, side, rand, extraData, renderType);
+    }
+  }
+
+  /**
+   * Item model that renders a {@link MaterialBlockModel}-baked block model, resolving the per-stack material/block
+   * variant from the baked {@link AbstractBaked} and attaching its render passes.
+   * <p>
+   * PORT 1.21.4: replaces the item-side {@code ItemOverrides}. Registered via {@code RegisterItemModelsEvent}; the item
+   * JSON is {@code {"model":{"type":"tconstruct:material_block","model":"<block model>"}}}.
+   */
+  public record ItemUnbaked(ResourceLocation model) implements ItemModel.Unbaked {
+    public static final MapCodec<ItemUnbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
+      ResourceLocation.CODEC.fieldOf("model").forGetter(ItemUnbaked::model)
+    ).apply(inst, ItemUnbaked::new));
+
+    @Override
+    public MapCodec<ItemUnbaked> type() {
+      return MAP_CODEC;
+    }
+
+    @Override
+    public void resolveDependencies(net.minecraft.client.resources.model.ResolvableModel.Resolver resolver) {
+      resolver.resolve(model);
+    }
+
+    @Override
+    public ItemModel bake(ItemModel.BakingContext context) {
+      return new Baked(context.bake(model));
+    }
+
+    /** Baked item model wrapping the dynamic block model */
+    public record Baked(BakedModel model) implements ItemModel {
+      @Override
+      public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+        BakedModel resolved = model instanceof AbstractBaked<?,?> dynamic ? dynamic.resolveForStack(stack) : model;
+        ItemModelUtil.renderModel(renderState, stack, resolved);
+      }
     }
   }
 }
