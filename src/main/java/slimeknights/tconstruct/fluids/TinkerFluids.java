@@ -259,16 +259,16 @@ public final class TinkerFluids extends TinkerModule {
   }
 
   @SubscribeEvent
-  void gatherData(final GatherDataEvent event) {
-    DataGenerator generator = event.getGenerator();
-    PackOutput packOutput = generator.getPackOutput();
-    boolean client = event.includeClient();
-    generator.addProvider(client, new FluidTooltipProvider(packOutput));
+  void gatherDataClient(final GatherDataEvent.Client event) {
+    PackOutput packOutput = event.getGenerator().getPackOutput();
+    event.addProvider(new FluidTooltipProvider(packOutput));
     FluidTextureProvider textureProvider = new FluidTextureProvider(packOutput);
-    generator.addProvider(client, textureProvider);
-    generator.addProvider(client, new FluidTextureCameraProvider(packOutput, event.getExistingFileHelper(), textureProvider));
-    generator.addProvider(client, new FluidBucketModelProvider(packOutput, TConstruct.MOD_ID));
-    generator.addProvider(client, new FluidBlockstateModelProvider(packOutput, TConstruct.MOD_ID));
+    event.addProvider(textureProvider);
+    // PORT 1.21.4: FluidTextureCameraProvider renders fluid blocks through a client camera, which is part of the
+    // client-render batch (not yet ported) and no longer carries an ExistingFileHelper; re-enable it with that batch.
+    // event.addProvider(new FluidTextureCameraProvider(packOutput, event.getResourceManager(PackType.CLIENT_RESOURCES), textureProvider));
+    event.addProvider(new FluidBucketModelProvider(packOutput, TConstruct.MOD_ID));
+    event.addProvider(new FluidBlockstateModelProvider(packOutput, TConstruct.MOD_ID));
   }
 
   /**

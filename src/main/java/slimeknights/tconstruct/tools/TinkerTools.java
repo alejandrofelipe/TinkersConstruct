@@ -21,7 +21,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
@@ -131,6 +132,7 @@ import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.data.StationSlotLayoutProvider;
 import slimeknights.tconstruct.tools.data.ToolDefinitionDataProvider;
 import slimeknights.tconstruct.tools.data.ToolItemModelProvider;
+import slimeknights.tconstruct.common.data.BaseRecipeProvider;
 import slimeknights.tconstruct.tools.data.ToolsRecipeProvider;
 import slimeknights.tconstruct.tools.data.client.ModifierModelMapProvider;
 import slimeknights.tconstruct.tools.data.material.MaterialDataProvider;
@@ -388,31 +390,33 @@ public final class TinkerTools extends TinkerModule {
   }
 
   @SubscribeEvent
-  void gatherData(final GatherDataEvent event) {
-    DataGenerator generator = event.getGenerator();
-    PackOutput packOutput = generator.getPackOutput();
-    ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
-    boolean server = event.includeServer();
-    boolean client = event.includeClient();
-    generator.addProvider(server, new ToolsRecipeProvider(packOutput, event.getLookupProvider()));
-    generator.addProvider(server, new MaterialRecipeProvider(packOutput, event.getLookupProvider()));
+  void gatherDataServer(final GatherDataEvent.Server event) {
+    PackOutput packOutput = event.getGenerator().getPackOutput();
+    event.addProvider(new BaseRecipeProvider.Runner(packOutput, event.getLookupProvider(), "Tinkers' Construct Tool Recipes", ToolsRecipeProvider::new));
+    event.addProvider(new BaseRecipeProvider.Runner(packOutput, event.getLookupProvider(), "Tinkers' Construct Material Recipes", MaterialRecipeProvider::new));
     MaterialDataProvider materials = new MaterialDataProvider(packOutput);
-    generator.addProvider(server, materials);
-    generator.addProvider(server, new MaterialStatsDataProvider(packOutput, materials));
-    generator.addProvider(server, new MaterialTraitsDataProvider(packOutput, materials));
-    generator.addProvider(server, new ToolDefinitionDataProvider(packOutput));
-    generator.addProvider(server, new StationSlotLayoutProvider(packOutput));
-    generator.addProvider(server, new MaterialTagProvider(packOutput, existingFileHelper));
-    generator.addProvider(client, new ToolItemModelProvider(packOutput, existingFileHelper));
+    event.addProvider(materials);
+    event.addProvider(new MaterialStatsDataProvider(packOutput, materials));
+    event.addProvider(new MaterialTraitsDataProvider(packOutput, materials));
+    event.addProvider(new ToolDefinitionDataProvider(packOutput));
+    event.addProvider(new StationSlotLayoutProvider(packOutput));
+    event.addProvider(new MaterialTagProvider(packOutput));
+  }
+
+  @SubscribeEvent
+  void gatherDataClient(final GatherDataEvent.Client event) {
+    PackOutput packOutput = event.getGenerator().getPackOutput();
+    ResourceManager resourceManager = event.getResourceManager(PackType.CLIENT_RESOURCES);
+    event.addProvider(new ToolItemModelProvider(packOutput, resourceManager));
     TinkerMaterialSpriteProvider materialSprites = new TinkerMaterialSpriteProvider();
     TinkerPartSpriteProvider partSprites = new TinkerPartSpriteProvider();
-    generator.addProvider(client, new MaterialRenderInfoProvider(packOutput, materialSprites, existingFileHelper));
-    generator.addProvider(client, new GeneratorPartTextureJsonGenerator(packOutput, TConstruct.MOD_ID, partSprites));
-    generator.addProvider(client, new MaterialPartTextureGenerator(packOutput, existingFileHelper, partSprites, materialSprites));
-    generator.addProvider(client, new MaterialPaletteDebugGenerator(packOutput, TConstruct.MOD_ID, materialSprites));
-    generator.addProvider(client, new ArmorModelProvider(packOutput));
-    generator.addProvider(client, new TinkerTrimMaterialPaletteGenerator(packOutput, existingFileHelper, materialSprites));
-    generator.addProvider(client, new ModifierModelMapProvider(packOutput));
+    event.addProvider(new MaterialRenderInfoProvider(packOutput, materialSprites, resourceManager));
+    event.addProvider(new GeneratorPartTextureJsonGenerator(packOutput, TConstruct.MOD_ID, partSprites));
+    event.addProvider(new MaterialPartTextureGenerator(packOutput, resourceManager, partSprites, materialSprites));
+    event.addProvider(new MaterialPaletteDebugGenerator(packOutput, TConstruct.MOD_ID, materialSprites));
+    event.addProvider(new ArmorModelProvider(packOutput));
+    event.addProvider(new TinkerTrimMaterialPaletteGenerator(packOutput, resourceManager, materialSprites));
+    event.addProvider(new ModifierModelMapProvider(packOutput));
   }
 
   /** Adds all relevant items to the creative tab */

@@ -29,7 +29,8 @@ import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.conditions.ICondition;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -83,6 +84,7 @@ import slimeknights.tconstruct.shared.block.SoulGlassPaneBlock;
 import slimeknights.tconstruct.shared.block.WaxedPlatformBlock;
 import slimeknights.tconstruct.shared.block.WeatheringPlatformBlock;
 import slimeknights.tconstruct.shared.command.TConstructCommand;
+import slimeknights.tconstruct.common.data.BaseRecipeProvider;
 import slimeknights.tconstruct.shared.data.CommonRecipeProvider;
 import slimeknights.tconstruct.shared.inventory.BlockContainerOpenedTrigger;
 import slimeknights.tconstruct.shared.item.CheeseBlockItem;
@@ -244,19 +246,21 @@ public final class TinkerCommons extends TinkerModule {
   }
 
   @SubscribeEvent
-  void gatherData(final GatherDataEvent event) {
-    DataGenerator generator = event.getGenerator();
-    PackOutput output = generator.getPackOutput();
-    ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
+  void gatherDataClient(final GatherDataEvent.Client event) {
+    PackOutput output = event.getGenerator().getPackOutput();
     CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
-    boolean client = event.includeClient();
-    generator.addProvider(client, new ModelSpriteProvider(output, existingFileHelper));
-    generator.addProvider(client, new TinkerSpriteSourceProvider(output, lookupProvider, existingFileHelper));
-    generator.addProvider(client, new TinkerItemModelProvider(output, existingFileHelper));
-    generator.addProvider(client, new TinkerBlockStateProvider(output, existingFileHelper));
-    generator.addProvider(client, new RenderFluidProvider(output));
-    generator.addProvider(client, new RenderItemProvider(output));
-    generator.addProvider(event.includeServer(), new CommonRecipeProvider(output, lookupProvider));
+    ResourceManager resourceManager = event.getResourceManager(PackType.CLIENT_RESOURCES);
+    event.addProvider(new ModelSpriteProvider(output, resourceManager));
+    event.addProvider(new TinkerSpriteSourceProvider(output, lookupProvider));
+    event.addProvider(new TinkerItemModelProvider(output, resourceManager));
+    event.addProvider(new TinkerBlockStateProvider(output, resourceManager));
+    event.addProvider(new RenderFluidProvider(output));
+    event.addProvider(new RenderItemProvider(output));
+  }
+
+  @SubscribeEvent
+  void gatherDataServer(final GatherDataEvent.Server event) {
+    event.addProvider(new BaseRecipeProvider.Runner(event.getGenerator().getPackOutput(), event.getLookupProvider(), "Tinkers' Construct Common Recipes", CommonRecipeProvider::new));
   }
 
   /** Adds all relevant items to the creative tab */

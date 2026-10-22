@@ -198,6 +198,7 @@ import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tools.data.EnchantmentToModifierProvider;
 import slimeknights.tconstruct.tools.data.FluidEffectProvider;
 import slimeknights.tconstruct.tools.data.ModifierProvider;
+import slimeknights.tconstruct.common.data.BaseRecipeProvider;
 import slimeknights.tconstruct.tools.data.ModifierRecipeProvider;
 import slimeknights.tconstruct.tools.entity.CustomFireball;
 import slimeknights.tconstruct.tools.entity.FluidEffectProjectile;
@@ -1091,15 +1092,13 @@ public final class TinkerModifiers extends TinkerModule {
   }
 
   @SubscribeEvent
-  void gatherData(final GatherDataEvent event) {
-    DataGenerator generator = event.getGenerator();
-    PackOutput packOutput = generator.getPackOutput();
-    boolean server = event.includeServer();
-    generator.addProvider(server, new ModifierProvider(packOutput));
-    generator.addProvider(server, new ModifierRecipeProvider(packOutput, event.getLookupProvider()));
-    generator.addProvider(server, new FluidEffectProvider(packOutput));
-    generator.addProvider(server, new ModifierTagProvider(packOutput, event.getExistingFileHelper()));
-    generator.addProvider(server, new EnchantmentToModifierProvider(packOutput));
+  void gatherDataServer(final GatherDataEvent.Server event) {
+    PackOutput packOutput = event.getGenerator().getPackOutput();
+    event.addProvider(new ModifierProvider(packOutput));
+    event.addProvider(new BaseRecipeProvider.Runner(packOutput, event.getLookupProvider(), "Tinkers' Construct Modifier Recipes", ModifierRecipeProvider::new));
+    event.addProvider(new FluidEffectProvider(packOutput));
+    event.addProvider(new ModifierTagProvider(packOutput));
+    event.addProvider(new EnchantmentToModifierProvider(packOutput));
   }
 
   /** Adds all relevant items to the creative tab, called by general */

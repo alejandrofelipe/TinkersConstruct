@@ -9,7 +9,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -198,13 +197,12 @@ public class TConstruct {
     StationSlotLayoutLoader.init();
   }
 
+  // PORT 1.21.4: GatherDataEvent split into nested Server/Client events; ExistingFileHelper + includeServer/includeClient
+  // were removed. All of Tinkers' core datagen here is server-side (datapack registries, tags, loot, advancements).
   @SubscribeEvent
-  static void gatherData(final GatherDataEvent event) {
-    DataGenerator generator = event.getGenerator();
-    PackOutput packOutput = generator.getPackOutput();
-    ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
+  static void gatherDataServer(final GatherDataEvent.Server event) {
+    PackOutput packOutput = event.getGenerator().getPackOutput();
     CompletableFuture<Provider> lookupProvider = event.getLookupProvider();
-    boolean server = event.includeServer();
 
     // its sometimes cleaner to splitup different registry sets to their own classes, combine them here into a single provider
     RegistrySetBuilder registrySetBuilder = new RegistrySetBuilder();
@@ -212,28 +210,28 @@ public class TConstruct {
     WorldgenProvider.register(registrySetBuilder);
     TrimMaterialProvider.register(registrySetBuilder);
     DatapackBuiltinEntriesProvider datapackRegistryProvider = new DatapackBuiltinEntriesProvider(packOutput, lookupProvider, registrySetBuilder, Set.of(MOD_ID));
-    generator.addProvider(server, datapackRegistryProvider);
+    event.addProvider(datapackRegistryProvider);
 
     // tags
-    BlockTagProvider blockTags = new BlockTagProvider(packOutput, lookupProvider, existingFileHelper);
-    generator.addProvider(server, blockTags);
-    generator.addProvider(server, new ItemTagProvider(packOutput, lookupProvider, blockTags.contentsGetter(), existingFileHelper));
-    generator.addProvider(server, new FluidTagProvider(packOutput, lookupProvider, existingFileHelper));
-    generator.addProvider(server, new EntityTypeTagProvider(packOutput, lookupProvider, existingFileHelper));
-    generator.addProvider(server, new BlockEntityTypeTagProvider(packOutput, lookupProvider, existingFileHelper));
-    generator.addProvider(server, new BiomeTagProvider(packOutput, lookupProvider, existingFileHelper));
-    generator.addProvider(server, new EnchantmentTagProvider(packOutput, lookupProvider, existingFileHelper));
-    generator.addProvider(server, new MenuTypeTagProvider(packOutput, lookupProvider, existingFileHelper));
-    generator.addProvider(server, new PotionTagProvider(packOutput, lookupProvider, existingFileHelper));
-    generator.addProvider(server, new DamageTypeTagProvider(packOutput, datapackRegistryProvider.getRegistryProvider(), existingFileHelper));
+    BlockTagProvider blockTags = new BlockTagProvider(packOutput, lookupProvider);
+    event.addProvider(blockTags);
+    event.addProvider(new ItemTagProvider(packOutput, lookupProvider, blockTags.contentsGetter()));
+    event.addProvider(new FluidTagProvider(packOutput, lookupProvider));
+    event.addProvider(new EntityTypeTagProvider(packOutput, lookupProvider));
+    event.addProvider(new BlockEntityTypeTagProvider(packOutput, lookupProvider));
+    event.addProvider(new BiomeTagProvider(packOutput, lookupProvider));
+    event.addProvider(new EnchantmentTagProvider(packOutput, lookupProvider));
+    event.addProvider(new MenuTypeTagProvider(packOutput, lookupProvider));
+    event.addProvider(new PotionTagProvider(packOutput, lookupProvider));
+    event.addProvider(new DamageTypeTagProvider(packOutput, datapackRegistryProvider.getRegistryProvider()));
 
     // other datagen
-    generator.addProvider(server, new TConstructLootTableProvider(packOutput, lookupProvider));
+    event.addProvider(new TConstructLootTableProvider(packOutput, lookupProvider));
     // uses the datapack registry provider (not the base lookupProvider) so world-structure advancements resolve Tinkers structures
-    generator.addProvider(server, new AdvancementsProvider(packOutput, datapackRegistryProvider.getRegistryProvider()));
-    generator.addProvider(server, new GlobalLootModifiersProvider(packOutput, lookupProvider));
-    generator.addProvider(server, new LootTableInjectionProvider(packOutput));
-    generator.addProvider(server, new ConfigurationDataProvider(packOutput));
+    event.addProvider(new AdvancementsProvider(packOutput, datapackRegistryProvider.getRegistryProvider()));
+    event.addProvider(new GlobalLootModifiersProvider(packOutput, lookupProvider));
+    event.addProvider(new LootTableInjectionProvider(packOutput));
+    event.addProvider(new ConfigurationDataProvider(packOutput));
   }
 
   // PORT: MissingMappingsEvent removed in NeoForge (no legacy remap)

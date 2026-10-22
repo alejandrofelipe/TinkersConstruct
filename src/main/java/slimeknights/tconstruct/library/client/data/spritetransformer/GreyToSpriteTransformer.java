@@ -16,14 +16,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.GsonHelper;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import slimeknights.mantle.data.loadable.common.ColorLoadable;
 import slimeknights.mantle.util.JsonHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.data.material.MaterialPartTextureGenerator;
 import slimeknights.tconstruct.library.client.data.spritetransformer.GreyToColorMapping.Interpolate;
 import slimeknights.tconstruct.library.client.data.util.AbstractSpriteReader;
-import slimeknights.tconstruct.library.client.data.util.DataGenSpriteReader;
 import slimeknights.tconstruct.library.client.data.util.ResourceManagerSpriteReader;
 import slimeknights.tconstruct.library.utils.Util;
 
@@ -371,16 +369,14 @@ public class GreyToSpriteTransformer implements IRecolorSpriteTransformer {
   }
 
   /** Called before generating to set up the reader */
-  private static void textureCallback(@Nullable ExistingFileHelper existingFileHelper, @Nullable ResourceManager manager) {
+  private static void textureCallback(@Nullable ResourceManager manager) {
     if (READER != null) {
       MAPPINGS_TO_CLEAR.forEach(mapping -> mapping.image = null);
       MAPPINGS_TO_CLEAR.clear();
       READER.closeAll();
       READER = null;
     }
-    if (existingFileHelper != null) {
-      READER = new DataGenSpriteReader(existingFileHelper, TEXTURE_FOLDER);
-    } else if (manager != null) {
+    if (manager != null) {
       READER = new ResourceManagerSpriteReader(manager, TEXTURE_FOLDER);
     }
   }

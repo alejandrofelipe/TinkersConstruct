@@ -79,7 +79,7 @@ public class ClientGeneratePartTexturesCommand {
     try {
       ResourceManager manager = Minecraft.getInstance().getResourceManager();
       // the forge mod bus is annoying, but stuck using it due to the normal bus not existing at datagen time
-      MaterialPartTextureGenerator.runCallbacks(null, manager);
+      MaterialPartTextureGenerator.runCallbacks(manager);
 
       Player player = Minecraft.getInstance().player;
 
@@ -154,7 +154,7 @@ public class ClientGeneratePartTexturesCommand {
       // success message
       long deltaTime = System.nanoTime() - time;
       int count = generated.getValue();
-      MaterialPartTextureGenerator.runCallbacks(null, null);
+      MaterialPartTextureGenerator.runCallbacks(null);
       log.info("Finished generating {} textures in {} ms", count, deltaTime / 1000000f);
       if (Minecraft.getInstance().player != null) {
         Minecraft.getInstance().player.displayClientMessage(Component.translatable(SUCCESS_KEY, count, (deltaTime / 1000000) / 1000f, GeneratePackHelper.getOutputComponent(path.toFile())), false);

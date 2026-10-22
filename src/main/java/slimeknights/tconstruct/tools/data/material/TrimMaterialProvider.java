@@ -6,7 +6,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.armortrim.TrimMaterial;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.registration.object.MetalItemObject;
 import slimeknights.tconstruct.TConstruct;
@@ -55,9 +55,12 @@ public class TrimMaterialProvider {
 
   /** Registers a trim materials with the context */
   private static void material(BootstrapContext<TrimMaterial> context, MaterialId material, ItemLike ingredient, int color, float modelIndex) {
+    // PORT 1.21.4: TrimMaterial.create dropped the model-index parameter (trims now resolve per-equipment assets) and
+    // reordered to (assetName, ingredient, description, overrideArmorAssets); modelIndex is retained in the helper
+    // signature for call-site compatibility but no longer feeds the material.
     context.register(
       ResourceKey.create(Registries.TRIM_MATERIAL, material.getLocation()),
-      TrimMaterial.create(material.getSuffix(), ingredient.asItem(), modelIndex,
+      TrimMaterial.create(material.getSuffix(), ingredient.asItem(),
         Component.translatable(TRIM_FORMAT, Component.translatable(Util.makeDescriptionId("material", material.getLocation()))).withStyle(style -> style.withColor(color)),
         Map.of())
     );

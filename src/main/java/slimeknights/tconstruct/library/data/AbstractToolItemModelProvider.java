@@ -10,13 +10,12 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ArmorItem;
 import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.phys.Vec2;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.ApiStatus.NonExtendable;
 import slimeknights.mantle.data.GenericDataProvider;
 import slimeknights.mantle.data.loadable.Loadables;
@@ -38,11 +37,11 @@ import java.util.stream.Stream;
 /** Helper for generating tool item models */
 public abstract class AbstractToolItemModelProvider extends GenericDataProvider {
   protected final Map<String,JsonObject> models = new HashMap<>();
-  protected final ExistingFileHelper existingFileHelper;
+  protected final ResourceManager resourceManager;
   protected final String modId;
-  public AbstractToolItemModelProvider(PackOutput packOutput, ExistingFileHelper existingFileHelper, String modId) {
+  public AbstractToolItemModelProvider(PackOutput packOutput, ResourceManager resourceManager, String modId) {
     super(packOutput, Target.RESOURCE_PACK, "models/item");
-    this.existingFileHelper = existingFileHelper;
+    this.resourceManager = resourceManager;
     this.modId = modId;
   }
 
@@ -289,7 +288,8 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
 
   /** Reads a JSON file */
   protected JsonObject readJson(ResourceLocation path) throws IOException {
-    try (BufferedReader reader = existingFileHelper.getResource(path, PackType.CLIENT_RESOURCES, ".json", "models/item").openAsReader()) {
+    ResourceLocation fullPath = ResourceLocation.fromNamespaceAndPath(path.getNamespace(), "models/item/" + path.getPath() + ".json");
+    try (BufferedReader reader = resourceManager.getResource(fullPath).orElseThrow(() -> new IOException("Missing model " + fullPath)).openAsReader()) {
       return GsonHelper.parse(reader);
     }
   }

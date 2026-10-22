@@ -57,6 +57,7 @@ import slimeknights.tconstruct.tables.block.entity.table.CraftingStationBlockEnt
 import slimeknights.tconstruct.tables.block.entity.table.ModifierWorktableBlockEntity;
 import slimeknights.tconstruct.tables.block.entity.table.PartBuilderBlockEntity;
 import slimeknights.tconstruct.tables.block.entity.table.TinkerStationBlockEntity;
+import slimeknights.tconstruct.common.data.BaseRecipeProvider;
 import slimeknights.tconstruct.tables.data.TableRecipeProvider;
 import slimeknights.tconstruct.tables.item.AnvilBlockItem;
 import slimeknights.tconstruct.tables.item.TinkersChestBlockItem;
@@ -192,9 +193,8 @@ public final class TinkerTables extends TinkerModule {
   }
 
   @SubscribeEvent
-  void gatherData(final GatherDataEvent event) {
-    DataGenerator generator = event.getGenerator();
-    generator.addProvider(event.includeServer(), new TableRecipeProvider(generator.getPackOutput(), event.getLookupProvider()));
+  void gatherDataServer(final GatherDataEvent.Server event) {
+    event.addProvider(new BaseRecipeProvider.Runner(event.getGenerator().getPackOutput(), event.getLookupProvider(), "Tinkers' Construct Table Recipes", TableRecipeProvider::new));
   }
 
   /** Adds all relevant items to the creative tab, called in the general tab */

@@ -95,6 +95,7 @@ import slimeknights.tconstruct.world.block.SlimeTallGrassBlock;
 import slimeknights.tconstruct.world.block.SlimeVineBlock;
 import slimeknights.tconstruct.world.block.StickySlimeBlock;
 import slimeknights.tconstruct.world.data.MobEquipmentProvider;
+import slimeknights.tconstruct.common.data.BaseRecipeProvider;
 import slimeknights.tconstruct.world.data.WorldRecipeProvider;
 import slimeknights.tconstruct.world.entity.EnderSlimeEntity;
 import slimeknights.tconstruct.world.entity.SkySlimeEntity;
@@ -408,12 +409,10 @@ public final class TinkerWorld extends TinkerModule {
   }
 
   @SubscribeEvent
-  void gatherData(final GatherDataEvent event) {
-    DataGenerator generator = event.getGenerator();
-    boolean server = event.includeServer();
-    PackOutput packOutput = generator.getPackOutput();
-    generator.addProvider(server, new WorldRecipeProvider(packOutput, event.getLookupProvider()));
-    generator.addProvider(server, new MobEquipmentProvider(packOutput));
+  void gatherDataServer(final GatherDataEvent.Server event) {
+    PackOutput packOutput = event.getGenerator().getPackOutput();
+    event.addProvider(new BaseRecipeProvider.Runner(packOutput, event.getLookupProvider(), "Tinkers' Construct World Recipes", WorldRecipeProvider::new));
+    event.addProvider(new MobEquipmentProvider(packOutput));
   }
 
   /** Adds all relevant items to the creative tab */

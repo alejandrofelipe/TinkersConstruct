@@ -15,10 +15,9 @@ import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import slimeknights.mantle.data.GenericDataProvider;
 import slimeknights.tconstruct.TConstruct;
 
@@ -39,11 +38,11 @@ import java.util.concurrent.CompletableFuture;
 public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
   private final Multimap<ResourceLocation,RepaletteTask> structures = HashMultimap.create();
 
-  private final ExistingFileHelper existingFileHelper;
+  private final ResourceManager resourceManager;
   private final String modId;
-  public AbstractStructureRepalleter(PackOutput packOutput, ExistingFileHelper existingFileHelper, String modId) {
+  public AbstractStructureRepalleter(PackOutput packOutput, ResourceManager resourceManager, String modId) {
     super(packOutput, Target.DATA_PACK, "structure");
-    this.existingFileHelper = existingFileHelper;
+    this.resourceManager = resourceManager;
     this.modId = modId;
   }
 
@@ -69,7 +68,8 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
     for (Entry<ResourceLocation,Collection<RepaletteTask>> entry : structures.asMap().entrySet()) {
       ResourceLocation original = entry.getKey();
 
-      try (InputStream io = existingFileHelper.getResource(original, PackType.SERVER_DATA, ".nbt", "structure").open()) {
+      ResourceLocation fullPath = ResourceLocation.fromNamespaceAndPath(original.getNamespace(), "structure/" + original.getPath() + ".nbt");
+      try (InputStream io = resourceManager.getResource(fullPath).orElseThrow(() -> new IOException("Missing structure " + fullPath)).open()) {
         CompoundTag inputNBT = NbtIo.readCompressed(io, NbtAccounter.unlimitedHeap());
         for (RepaletteTask task : entry.getValue()) {
           // start by fetching the palette, we assume its not randomized
@@ -91,7 +91,7 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
           // if requested, run it through the structure template to cleanup NBT (e.g. compact palettes)
           if (task.reprocess) {
             StructureTemplate template = new StructureTemplate();
-            template.load(BuiltInRegistries.BLOCK.asLookup(), newStructure);
+            template.load(BuiltInRegistries.BLOCK, newStructure);
             newStructure = template.save(new CompoundTag());
           }
           tasks.add(saveNBT(cache, Objects.requireNonNull(ResourceLocation.tryBuild(modId, task.location)), newStructure));

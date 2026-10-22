@@ -27,6 +27,7 @@ import slimeknights.tconstruct.gadgets.block.FoodCakeBlock.EffectCombination;
 import slimeknights.tconstruct.gadgets.block.InvertedCakeBlock;
 import slimeknights.tconstruct.gadgets.block.PunjiBlock;
 import slimeknights.tconstruct.gadgets.capability.PiggybackCapability;
+import slimeknights.tconstruct.common.data.BaseRecipeProvider;
 import slimeknights.tconstruct.gadgets.data.GadgetRecipeProvider;
 import slimeknights.tconstruct.gadgets.entity.EFLNEntity;
 import slimeknights.tconstruct.gadgets.entity.FancyItemFrameEntity;
@@ -161,9 +162,8 @@ public final class TinkerGadgets extends TinkerModule {
   }
 
   @SubscribeEvent
-  void gatherData(final GatherDataEvent event) {
-    DataGenerator generator = event.getGenerator();
-    generator.addProvider(event.includeServer(), new GadgetRecipeProvider(generator.getPackOutput(), event.getLookupProvider()));
+  void gatherDataServer(final GatherDataEvent.Server event) {
+    event.addProvider(new BaseRecipeProvider.Runner(event.getGenerator().getPackOutput(), event.getLookupProvider(), "Tinkers' Construct Gadget Recipes", GadgetRecipeProvider::new));
   }
 
   /** Adds all relevant items to the creative tab, called by general tab */

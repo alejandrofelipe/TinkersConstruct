@@ -13,7 +13,8 @@ import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -111,13 +112,11 @@ public final class TinkerStructures extends TinkerModule {
 
 
   @SubscribeEvent
-  void gatherData(final GatherDataEvent event) {
-    DataGenerator generator = event.getGenerator();
-    PackOutput packOutput = generator.getPackOutput();
-    ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
-    boolean server = event.includeServer();
-    generator.addProvider(server, new StructureRepalleter(packOutput, existingFileHelper));
-//    generator.addProvider(server, new StructureUpdater(packOutput, existingFileHelper, TConstruct.MOD_ID, Target.DATA_PACK, "structures"));
-//    generator.addProvider(event.includeClient(), new StructureUpdater(packOutput, existingFileHelper, TConstruct.MOD_ID, Target.RESOURCE_PACK, "book/structures"));
+  void gatherDataServer(final GatherDataEvent.Server event) {
+    PackOutput packOutput = event.getGenerator().getPackOutput();
+    ResourceManager resourceManager = event.getResourceManager(PackType.SERVER_DATA);
+    event.addProvider(new StructureRepalleter(packOutput, resourceManager));
+//    event.addProvider(new StructureUpdater(packOutput, resourceManager, TConstruct.MOD_ID, Target.DATA_PACK, "structures"));
+//    event.addProvider(new StructureUpdater(packOutput, resourceManager, TConstruct.MOD_ID, Target.RESOURCE_PACK, "book/structures"));
   }
 }

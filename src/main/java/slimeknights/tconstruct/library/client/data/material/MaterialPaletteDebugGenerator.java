@@ -36,7 +36,7 @@ public class MaterialPaletteDebugGenerator extends GenericTextureGenerator {
             // set the grey value to RGB, leave alpha as 255
             int color = colorMapping.mapColor(grey | (grey << 8) | (grey << 16) | 0xFF000000);
             for (int height = 0; height < 16; height++) {
-              palette.setPixelRGBA(grey, height, color);
+              palette.setPixel(grey, height, color);
             }
           }
           tasks.add(saveImage(cache, entry.getKey(), palette).thenRunAsync(palette::close));

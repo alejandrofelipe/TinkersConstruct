@@ -5,7 +5,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.minecraft.server.packs.resources.ResourceManager;
 import slimeknights.tconstruct.library.client.data.GenericTextureGenerator;
 import slimeknights.tconstruct.library.client.data.spritetransformer.ISpriteTransformer;
 import slimeknights.tconstruct.library.client.data.util.DataGenSpriteReader;
@@ -25,8 +25,8 @@ public class TrimMaterialPaletteGenerator extends GenericTextureGenerator {
   private final String name;
   private final MaterialId[] materials;
   private final AbstractMaterialSpriteProvider materialProvider;
-  public TrimMaterialPaletteGenerator(PackOutput packOutput, String name, ExistingFileHelper existingFileHelper, AbstractMaterialSpriteProvider materialProvider, MaterialId... materials) {
-    super(packOutput, existingFileHelper, "");
+  public TrimMaterialPaletteGenerator(PackOutput packOutput, String name, ResourceManager resourceManager, AbstractMaterialSpriteProvider materialProvider, MaterialId... materials) {
+    super(packOutput, resourceManager, "");
     this.name = name;
     this.materialProvider = materialProvider;
     this.materials = materials;
@@ -40,8 +40,8 @@ public class TrimMaterialPaletteGenerator extends GenericTextureGenerator {
   @SuppressWarnings("removal")
   @Override
   public CompletableFuture<?> run(CachedOutput cache) {
-    assert existingFileHelper != null;
-    DataGenSpriteReader spriteReader = new DataGenSpriteReader(existingFileHelper, PALETTE_TEXTURES);
+    assert resourceManager != null;
+    DataGenSpriteReader spriteReader = new DataGenSpriteReader(resourceManager, PALETTE_TEXTURES);
     try {
       // create JSON of all materials for compat with trimmed
       JsonObject trimmedJson = new JsonObject();

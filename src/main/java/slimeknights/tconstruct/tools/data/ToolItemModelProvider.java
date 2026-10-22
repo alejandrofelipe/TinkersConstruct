@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.phys.Vec2;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.minecraft.server.packs.resources.ResourceManager;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.data.AbstractToolItemModelProvider;
 import slimeknights.tconstruct.tools.TinkerTools;
@@ -18,8 +18,8 @@ import static slimeknights.tconstruct.TConstruct.getResource;
  * TODO 1.21: move to {@link slimeknights.tconstruct.tools.data.client}
  */
 public class ToolItemModelProvider extends AbstractToolItemModelProvider {
-  public ToolItemModelProvider(PackOutput packOutput, ExistingFileHelper existingFileHelper) {
-    super(packOutput, existingFileHelper, TConstruct.MOD_ID);
+  public ToolItemModelProvider(PackOutput packOutput, ResourceManager resourceManager) {
+    super(packOutput, resourceManager, TConstruct.MOD_ID);
   }
 
   @Override

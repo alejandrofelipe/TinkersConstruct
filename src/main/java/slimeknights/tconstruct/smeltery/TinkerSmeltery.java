@@ -124,6 +124,7 @@ import slimeknights.tconstruct.smeltery.block.entity.controller.FoundryBlockEnti
 import slimeknights.tconstruct.smeltery.block.entity.controller.MelterBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.SmelteryBlockEntity;
 import slimeknights.tconstruct.smeltery.data.FluidContainerTransferProvider;
+import slimeknights.tconstruct.common.data.BaseRecipeProvider;
 import slimeknights.tconstruct.smeltery.data.SmelteryRecipeProvider;
 import slimeknights.tconstruct.smeltery.item.CopperCanItem;
 import slimeknights.tconstruct.smeltery.item.DummyMaterialItem;
@@ -521,13 +522,11 @@ public final class TinkerSmeltery extends TinkerModule {
   }
 
   @SubscribeEvent
-  void gatherData(final GatherDataEvent event) {
-    boolean server = event.includeServer();
-    DataGenerator generator = event.getGenerator();
-    PackOutput packOutput = generator.getPackOutput();
-    generator.addProvider(server, new SmelteryRecipeProvider(packOutput, event.getLookupProvider()));
-    generator.addProvider(server, new FluidContainerTransferProvider(packOutput));
-    generator.addProvider(server, new GameTestStructureProvider(packOutput));
+  void gatherDataServer(final GatherDataEvent.Server event) {
+    PackOutput packOutput = event.getGenerator().getPackOutput();
+    event.addProvider(new BaseRecipeProvider.Runner(packOutput, event.getLookupProvider(), "Tinkers' Construct Smeltery Recipes", SmelteryRecipeProvider::new));
+    event.addProvider(new FluidContainerTransferProvider(packOutput));
+    event.addProvider(new GameTestStructureProvider(packOutput));
   }
 
   /** Adds all relevant items to the creative tab */
