@@ -105,7 +105,7 @@ public class EntityMeltingRecipeCategory implements IRecipeCategory<EntityMeltin
            .addIngredient(NeoForgeTypes.FLUID_STACK, recipe.getOutput());
 
     // show fuels that are valid for this recipe
-    builder.addSlot(RecipeIngredientRole.CATALYST, 75, 43)
+    builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 75, 43)
            .setFluidRenderer(1, false, 16, 16)
            .setOverlay(tank, 0, 0)
            .addRichTooltipCallback(FluidTooltipCallback.NO_AMOUNT)

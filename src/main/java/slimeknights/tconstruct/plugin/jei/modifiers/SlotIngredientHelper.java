@@ -45,14 +45,6 @@ public class SlotIngredientHelper implements IIngredientHelper<SlotCount> {
     return getName(slots);
   }
 
-  /** @deprecated JEI's getUniqueId is abstract-for-removal; kept delegating to {@link #getUid} until JEI drops it. */
-  @Deprecated
-  @SuppressWarnings("removal")
-  @Override
-  public String getUniqueId(SlotCount slots, UidContext context) {
-    return getUid(slots, context);
-  }
-
   @Override
   public ResourceLocation getResourceLocation(SlotCount slots) {
     return TConstruct.getResource(getName(slots));

@@ -25,7 +25,6 @@ import slimeknights.tconstruct.tools.TinkerTools;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -64,7 +63,7 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
   @Override
   public void setRecipe(IRecipeLayoutBuilder builder, ToolBuildingRecipe recipe, IFocusGroup focuses) {
     List<List<ItemStack>> partsAndExtras = Stream.concat(recipe.getAllToolParts().stream(),
-      recipe.getExtraRequirements().stream().map(ingredient -> Arrays.asList(ingredient.getItems()))).toList();
+      recipe.getExtraRequirements().stream().map(ingredient -> ingredient.items().map(ItemStack::new).toList())).toList();
     List<LayoutSlot> layoutSlots = recipe.getLayoutSlots();
 
     int missingSlots = partsAndExtras.size() - layoutSlots.size();

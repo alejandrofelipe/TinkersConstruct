@@ -2,7 +2,6 @@ package slimeknights.tconstruct.plugin.jei.util;
 
 import mezz.jei.api.ingredients.subtypes.UidContext;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 
 import javax.annotation.Nullable;
@@ -20,7 +19,8 @@ public interface PotionSubtypeInterpreter<T> extends SimpleSubtypeInterpreter<T>
     if (contents == null) {
       return null;
     }
-    String potionTypeString = Potion.getName(contents.potion(), "");
+    // 1.21.4: the static Potion.getName(Optional<Holder<Potion>>, String) was removed; build a stable id from the potion's base name
+    String potionTypeString = contents.potion().map(holder -> holder.value().name()).orElse("");
     StringBuilder stringBuilder = new StringBuilder(potionTypeString);
     for (MobEffectInstance effect : contents.getAllEffects()) {
       stringBuilder.append(";").append(effect);

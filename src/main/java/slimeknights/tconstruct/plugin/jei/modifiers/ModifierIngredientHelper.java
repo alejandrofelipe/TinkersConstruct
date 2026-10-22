@@ -37,14 +37,6 @@ public class ModifierIngredientHelper implements IIngredientHelper<ModifierEntry
     return entry.getId().toString();
   }
 
-  /** @deprecated JEI's getUniqueId is abstract-for-removal; kept delegating to {@link #getUid} until JEI drops it. */
-  @Deprecated
-  @SuppressWarnings("removal")
-  @Override
-  public String getUniqueId(ModifierEntry entry, UidContext context) {
-    return getUid(entry, context);
-  }
-
   @Override
   public ResourceLocation getResourceLocation(ModifierEntry entry) {
     return entry.getId().getLocation();

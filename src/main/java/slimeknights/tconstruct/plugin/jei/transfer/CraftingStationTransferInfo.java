@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.plugin.jei.transfer;
 
 import mezz.jei.api.constants.RecipeTypes;
-import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.transfer.IRecipeTransferInfo;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -32,7 +32,7 @@ public class CraftingStationTransferInfo implements IRecipeTransferInfo<Crafting
   }
 
   @Override
-  public RecipeType<RecipeHolder<CraftingRecipe>> getRecipeType() {
+  public IRecipeType<RecipeHolder<CraftingRecipe>> getRecipeType() {
     return RecipeTypes.CRAFTING;
   }
 
@@ -78,6 +78,6 @@ public class CraftingStationTransferInfo implements IRecipeTransferInfo<Crafting
     if (recipe.value() instanceof ShapedRecipe shaped) {
       return shaped.getWidth() <= 3 && shaped.getHeight() <= 3;
     }
-    return recipe.value().getIngredients().size() <= 9;
+    return recipe.value().placementInfo().ingredients().size() <= 9;
   }
 }

@@ -104,7 +104,7 @@ public abstract class AbstractCastingCategory implements IRecipeCategory<IDispla
     // items
     List<ItemStack> casts = recipe.getCastItems();
     if (!casts.isEmpty()) {
-      IRecipeSlotBuilder cast = builder.addSlot(recipe.isConsumed() ? RecipeIngredientRole.INPUT : RecipeIngredientRole.CATALYST, 38, 19).addItemStacks(casts);
+      IRecipeSlotBuilder cast = builder.addSlot(recipe.isConsumed() ? RecipeIngredientRole.INPUT : RecipeIngredientRole.RENDER_ONLY, 38, 19).addItemStacks(casts);
       // if the same size, tie a focus link to the output and cast; means we have material variants on both
       if (outputs.size() > 1 && casts.size() == outputs.size()) {
         builder.createFocusLink(output, cast);

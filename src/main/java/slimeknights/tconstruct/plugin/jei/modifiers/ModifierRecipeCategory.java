@@ -200,14 +200,14 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
     // hack: if a single part tool is in the recipe, add variants of it as invisible ingredients
     for (ItemStack stack : toolWithoutModifier) {
       if (stack.is(TinkerTags.Items.SINGLEPART_TOOL) && stack.getItem() instanceof IModifiable modifiable) {
-        builder.addInvisibleIngredients(RecipeIngredientRole.CATALYST).addItemStacks(getLookupTools(modifiable));
+        builder.addInvisibleIngredients(RecipeIngredientRole.RENDER_ONLY).addItemStacks(getLookupTools(modifiable));
       }
     }
 
     // JEI is currently being dumb and using ingredient subtypes within recipe focuses
     // we use a more strict subtype for tools in ingredients so they all show in JEI, but do not care in recipes
     // thus, manually handle the focuses
-    IFocus<ItemStack> focus = focuses.getFocuses(VanillaTypes.ITEM_STACK).filter(f -> f.getRole() == RecipeIngredientRole.CATALYST).findFirst().orElse(null);
+    IFocus<ItemStack> focus = focuses.getFocuses(VanillaTypes.ITEM_STACK).filter(f -> f.getRole() == RecipeIngredientRole.RENDER_ONLY).findFirst().orElse(null);
     if (focus != null) {
       Item item = focus.getTypedValue().getIngredient().getItem();
       for (ItemStack stack : toolWithoutModifier) {
@@ -223,8 +223,8 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
         }
       }
     }
-    builder.addSlot(RecipeIngredientRole.CATALYST,  25, 38).addItemStacks(toolWithoutModifier);
-    builder.addSlot(RecipeIngredientRole.CATALYST, 105, 34).addItemStacks(toolWithModifier);
+    builder.addSlot(RecipeIngredientRole.RENDER_ONLY,  25, 38).addItemStacks(toolWithoutModifier);
+    builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 105, 34).addItemStacks(toolWithModifier);
 
     // modifier slots
     SlotCount slots = recipe.getSlots();

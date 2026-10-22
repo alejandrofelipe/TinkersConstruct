@@ -88,14 +88,14 @@ public class ModifierWorktableCategory implements IRecipeCategory<IModifierWorkt
   public void setRecipe(IRecipeLayoutBuilder builder, IModifierWorktableRecipe recipe, IFocusGroup focuses) {
     // items
     List<ItemStack> tools = recipe.getInputTools();
-    IRecipeSlotBuilder toolSlot = builder.addSlot(recipe.isToolInput() ? RecipeIngredientRole.INPUT : RecipeIngredientRole.CATALYST, 23, 16).addItemStacks(tools);
+    IRecipeSlotBuilder toolSlot = builder.addSlot(recipe.isToolInput() ? RecipeIngredientRole.INPUT : RecipeIngredientRole.RENDER_ONLY, 23, 16).addItemStacks(tools);
     int max = Math.min(2, recipe.getInputCount());
     for (int i = 0; i < max; i++) {
       builder.addSlot(RecipeIngredientRole.INPUT, 43 + i*18, 16).addItemStacks(recipe.getDisplayItems(i));
     }
     // modifier input
     List<ModifierEntry> modifiers = recipe.getModifierOptions(null);
-    IRecipeSlotBuilder modifierSlot = builder.addSlot(recipe.isModifierOutput() ? RecipeIngredientRole.OUTPUT : RecipeIngredientRole.CATALYST, 82, 16).addIngredients(TConstructJEIConstants.MODIFIER_TYPE, modifiers);
+    IRecipeSlotBuilder modifierSlot = builder.addSlot(recipe.isModifierOutput() ? RecipeIngredientRole.OUTPUT : RecipeIngredientRole.RENDER_ONLY, 82, 16).addIngredients(TConstructJEIConstants.MODIFIER_TYPE, modifiers);
     if (recipe.linkToolsModifiers() && tools.size() == modifiers.size()) {
       builder.createFocusLink(toolSlot, modifierSlot);
     }
