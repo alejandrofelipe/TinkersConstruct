@@ -3,6 +3,7 @@ package slimeknights.tconstruct.library.recipe.tinkerstation;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import slimeknights.mantle.recipe.ICommonRecipe;
@@ -22,7 +23,7 @@ public interface ITinkerStationRecipe extends ICommonRecipe<ITinkerStationContai
   /* Recipe data */
 
   @Override
-  default RecipeType<?> getType() {
+  default RecipeType<? extends Recipe<ITinkerStationContainer>> getType() {
     return TinkerRecipeTypes.TINKER_STATION.get();
   }
 
@@ -77,7 +78,6 @@ public interface ITinkerStationRecipe extends ICommonRecipe<ITinkerStationContai
   }
 
   /** @deprecated use {@link #updateInputs(LazyToolStack, IMutableTinkerStationContainer, boolean)} */
-  @Override
   @Deprecated
   default NonNullList<ItemStack> getRemainingItems(ITinkerStationContainer inv) {
     return NonNullList.of(ItemStack.EMPTY);

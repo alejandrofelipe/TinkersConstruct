@@ -1,9 +1,9 @@
 package slimeknights.tconstruct.library.recipe.melting;
 
 import lombok.Getter;
-import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -93,13 +93,12 @@ public class MeltingRecipe implements IMeltingRecipe, ILookupRegistrar {
     return output.copy();
   }
 
-  @Override
-  public NonNullList<Ingredient> getIngredients() {
-    return NonNullList.of(Ingredient.EMPTY, input);
+  public List<Ingredient> getIngredients() {
+    return List.of(input);
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<IMeltingContainer>> getSerializer() {
     return TinkerSmeltery.meltingSerializer.get();
   }
 

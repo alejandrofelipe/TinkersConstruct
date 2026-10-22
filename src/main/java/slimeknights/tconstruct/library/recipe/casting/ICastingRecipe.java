@@ -1,11 +1,8 @@
 package slimeknights.tconstruct.library.recipe.casting;
 
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.recipe.ICommonRecipe;
-import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
-import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
 import static slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe.getTemperature;
 
@@ -13,11 +10,6 @@ import static slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe.getT
  * Base interface for all casting recipes
  */
 public interface ICastingRecipe extends ICommonRecipe<ICastingContainer> {
-  @Override
-  default ItemStack getToastSymbol() {
-    return new ItemStack(getType() == TinkerRecipeTypes.CASTING_TABLE.get() ? TinkerSmeltery.searedTable : TinkerSmeltery.searedBasin);
-  }
-
   /**
    * Gets the amount of fluid required for this recipe
    * @param inv  Inventory instance

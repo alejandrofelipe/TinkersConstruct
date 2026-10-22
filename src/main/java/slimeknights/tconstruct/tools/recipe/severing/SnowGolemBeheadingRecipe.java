@@ -24,7 +24,7 @@ public class SnowGolemBeheadingRecipe extends SeveringRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends SnowGolemBeheadingRecipe> getSerializer() {
     return TinkerModifiers.snowGolemBeheadingSerializer.get();
   }
 

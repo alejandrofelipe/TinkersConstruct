@@ -11,6 +11,8 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
@@ -54,8 +56,15 @@ public class ContainerFillingRecipe implements ICastingRecipe, IMultiRecipe<Disp
   private final Item container;
 
   @Override
-  public RecipeType<?> getType() {
-    return serializer.getType();
+  @SuppressWarnings("unchecked")
+  public RecipeType<? extends Recipe<ICastingContainer>> getType() {
+    return (RecipeType<? extends Recipe<ICastingContainer>>) serializer.getType();
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public RecipeSerializer<? extends Recipe<ICastingContainer>> getSerializer() {
+    return (RecipeSerializer<? extends Recipe<ICastingContainer>>) serializer;
   }
 
   @Override

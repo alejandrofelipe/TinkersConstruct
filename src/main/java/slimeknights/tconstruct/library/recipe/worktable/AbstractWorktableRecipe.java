@@ -2,6 +2,7 @@ package slimeknights.tconstruct.library.recipe.worktable;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -18,7 +19,6 @@ import slimeknights.tconstruct.library.tools.item.IModifiableDisplay;
 import slimeknights.tconstruct.library.tools.nbt.LazyToolStack;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,7 +27,7 @@ import java.util.List;
  */
 @RequiredArgsConstructor
 public abstract class AbstractWorktableRecipe implements IModifierWorktableRecipe {
-  public static final Ingredient DEFAULT_TOOLS = Ingredient.of(TinkerTags.Items.MODIFIABLE);
+  public static final Ingredient DEFAULT_TOOLS = Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.MODIFIABLE));
   protected static final LoadableField<Ingredient,AbstractWorktableRecipe> TOOL_FIELD = IngredientLoadable.DISALLOW_EMPTY.defaultField("tools", DEFAULT_TOOLS, true, r -> r.toolRequirement);
   protected static final LoadableField<List<SizedIngredient>,AbstractWorktableRecipe> INPUTS_FIELD = SizedIngredient.LOADABLE.list(1).requiredField("inputs", r -> r.inputs);
 
@@ -41,7 +41,7 @@ public abstract class AbstractWorktableRecipe implements IModifierWorktableRecip
   protected List<ItemStack> tools;
 
   public AbstractWorktableRecipe(ResourceLocation id, List<SizedIngredient> inputs) {
-    this(id, Ingredient.of(TinkerTags.Items.MODIFIABLE), inputs);
+    this(id, DEFAULT_TOOLS, inputs);
   }
 
   @Override
@@ -72,7 +72,7 @@ public abstract class AbstractWorktableRecipe implements IModifierWorktableRecip
   @Override
   public List<ItemStack> getInputTools() {
     if (tools == null) {
-      tools = Arrays.stream(toolRequirement.getItems()).map(stack -> IModifiableDisplay.getDisplayStack(stack.getItem())).toList();
+      tools = toolRequirement.items().map(holder -> IModifiableDisplay.getDisplayStack(holder.value())).toList();
     }
     return tools;
   }

@@ -148,12 +148,12 @@ public class PartSwapCastingRecipe extends AbstractMaterialCastingRecipe impleme
 
   @Override
   public boolean matches(ICastingContainer inv, Level level) {
-    return getCast().test(inv.getStack()) && canPartSwap(inv);
+    return testCast(inv.getStack()) && canPartSwap(inv);
   }
 
   @Override
   public ItemStack getResultItem(HolderLookup.Provider registryAccess) {
-    return getCast().getItems()[0].copy();
+    return getCast().items().findFirst().map(ItemStack::new).orElse(ItemStack.EMPTY).copy();
   }
 
   @Override
@@ -222,7 +222,7 @@ public class PartSwapCastingRecipe extends AbstractMaterialCastingRecipe impleme
   @Override
   public List<IDisplayableCastingRecipe> getRecipes(RegistryAccess access) {
     if (multiRecipes == null) {
-      List<ItemStack> casts = List.of(getCast().getItems());
+      List<ItemStack> casts = getCast().items().map(ItemStack::new).toList();
       Predicate<MaterialFluidRecipe> validRecipe = recipe -> recipe.isVisible() && materials.matches(recipe.getOutput().getVariant());
       multiRecipes = Stream.concat(
           // show recipes for creating the tool from all castable fluids

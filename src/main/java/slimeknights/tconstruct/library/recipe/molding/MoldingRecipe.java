@@ -1,11 +1,11 @@
 package slimeknights.tconstruct.library.recipe.molding;
 
 import lombok.Getter;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -18,49 +18,54 @@ import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.mantle.recipe.helper.LoadableRecipeSerializer;
 import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
 
+import javax.annotation.Nullable;
+import java.util.List;
+
 /** Recipe to combine two items on the top of a casting table, changing the first */
 public class MoldingRecipe implements ICommonRecipe<IMoldingContainer> {
   public static final RecordLoadable<MoldingRecipe> LOADER = RecordLoadable.create(
     LoadableRecipeSerializer.TYPED_SERIALIZER.requiredField(),
     ContextKey.ID.nullableField(),
     IngredientLoadable.DISALLOW_EMPTY.requiredField("material", MoldingRecipe::getMaterial),
-    IngredientLoadable.ALLOW_EMPTY.defaultField("pattern", Ingredient.EMPTY, MoldingRecipe::getPattern),
+    IngredientLoadable.ALLOW_EMPTY.nullableField("pattern", MoldingRecipe::getPattern),
     BooleanLoadable.INSTANCE.defaultField("pattern_consumed", false, false, MoldingRecipe::isPatternConsumed),
     ItemOutput.Loadable.REQUIRED_ITEM.requiredField("result", (MoldingRecipe r) -> r.recipeOutput),
     MoldingRecipe::new);
 
   @Getter
-  private final RecipeType<?> type;
+  private final RecipeType<? extends Recipe<IMoldingContainer>> type;
   @Getter
-  private final RecipeSerializer<?> serializer;
+  private final RecipeSerializer<? extends Recipe<IMoldingContainer>> serializer;
   @Getter
   private final ResourceLocation id;
   @Getter
   private final Ingredient material;
-  @Getter
+  /** Pattern ingredient; null if this recipe has no pattern (1.21.4 removed the empty ingredient) */
+  @Getter @Nullable
   private final Ingredient pattern;
   @Getter
   private final boolean patternConsumed;
   private final ItemOutput recipeOutput;
 
-  public MoldingRecipe(TypeAwareRecipeSerializer<?> serializer, ResourceLocation id, Ingredient material, Ingredient pattern, boolean patternConsumed, ItemOutput recipeOutput) {
-    this.type = serializer.getType();
-    this.serializer = serializer;
+  @SuppressWarnings("unchecked")
+  public MoldingRecipe(TypeAwareRecipeSerializer<?> serializer, ResourceLocation id, Ingredient material, @Nullable Ingredient pattern, boolean patternConsumed, ItemOutput recipeOutput) {
+    this.type = (RecipeType<? extends Recipe<IMoldingContainer>>) serializer.getType();
+    this.serializer = (RecipeSerializer<? extends Recipe<IMoldingContainer>>) serializer;
     this.id = id;
     this.material = material;
     this.pattern = pattern;
-    this.patternConsumed = pattern != Ingredient.EMPTY && patternConsumed;
+    this.patternConsumed = pattern != null && patternConsumed;
     this.recipeOutput = recipeOutput;
   }
 
   @Override
   public boolean matches(IMoldingContainer inv, Level worldIn) {
-    return material.test(inv.getMaterial()) && pattern.test(inv.getPattern());
+    return material.test(inv.getMaterial()) && (pattern == null ? inv.getPattern().isEmpty() : pattern.test(inv.getPattern()));
   }
 
-  @Override
-  public NonNullList<Ingredient> getIngredients() {
-    return NonNullList.of(Ingredient.EMPTY, material, pattern);
+  /** Gets the ingredients for display; {@code Recipe#getIngredients} was removed in 1.21.4 */
+  public List<Ingredient> getIngredients() {
+    return pattern == null ? List.of(material) : List.of(material, pattern);
   }
 
   @Override

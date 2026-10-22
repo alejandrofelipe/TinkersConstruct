@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.library.recipe.melting;
 
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -9,7 +9,6 @@ import slimeknights.mantle.recipe.ICustomOutputRecipe;
 import slimeknights.mantle.registration.object.FluidObject;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
-import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
 /**
  * Common interface for all melting recipes
@@ -46,13 +45,8 @@ public interface IMeltingRecipe extends ICustomOutputRecipe<IMeltingContainer> {
   /* Recipe data */
 
   @Override
-  default RecipeType<?> getType() {
+  default RecipeType<? extends Recipe<IMeltingContainer>> getType() {
     return TinkerRecipeTypes.MELTING.get();
-  }
-
-  @Override
-  default ItemStack getToastSymbol() {
-    return new ItemStack(TinkerSmeltery.searedMelter);
   }
 
   /* Utils */

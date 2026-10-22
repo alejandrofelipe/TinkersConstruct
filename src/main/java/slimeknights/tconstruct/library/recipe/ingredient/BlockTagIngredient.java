@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.library.recipe.ingredient;
 
 import lombok.RequiredArgsConstructor;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -55,8 +56,8 @@ public class BlockTagIngredient implements ICustomIngredient {
   }
 
   @Override
-  public Stream<ItemStack> getItems() {
-    return getMatchingItems().stream().map(ItemStack::new);
+  public Stream<Holder<Item>> items() {
+    return getMatchingItems().stream().map(Item::builtInRegistryHolder);
   }
 
   @Override

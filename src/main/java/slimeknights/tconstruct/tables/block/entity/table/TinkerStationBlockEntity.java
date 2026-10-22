@@ -293,7 +293,7 @@ public class TinkerStationBlockEntity extends RetexturedTableBlockEntity impleme
   public void syncRecipe(Player player) {
     // must have a last recipe and a server level
     if (this.lastRecipe != null && this.level != null && !this.level.isClientSide && player instanceof ServerPlayer server) {
-      TinkerNetwork.getInstance().sendTo(new UpdateTinkerStationRecipePacket(this.worldPosition, this.lastRecipe.id()), server);
+      TinkerNetwork.getInstance().sendTo(new UpdateTinkerStationRecipePacket(this.worldPosition, this.lastRecipe.id().location()), server);
     }
   }
 

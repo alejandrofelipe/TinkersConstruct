@@ -25,7 +25,9 @@ public class MeltingRecipeLookup {
   /** Record holding data from the melting recipe */
   public record MeltingFluid(Ingredient ingredient, FluidOutput result, int temperature) {
     /** Empty instance, used to cache missing results */
-    public static final MeltingFluid EMPTY = new MeltingFluid(Ingredient.EMPTY, FluidOutput.EMPTY, 0);
+    // 1.21.4 dropped Ingredient.EMPTY (ingredients can no longer be empty); this sentinel's ingredient is never tested
+    // (EMPTY is only the no-match fallback, guarded by isEmpty()), so a harmless non-air placeholder is used.
+    public static final MeltingFluid EMPTY = new MeltingFluid(Ingredient.of(Items.BARRIER), FluidOutput.EMPTY, 0);
 
     /** Checks if this result is present */
     public boolean isEmpty() {

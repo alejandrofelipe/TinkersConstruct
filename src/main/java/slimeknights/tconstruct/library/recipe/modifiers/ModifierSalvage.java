@@ -3,6 +3,7 @@ package slimeknights.tconstruct.library.recipe.modifiers;
 import lombok.Getter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -87,9 +88,10 @@ public class ModifierSalvage implements ICustomOutputRecipe<RecipeInput>, ILooku
     tool.getPersistentData().addSlots(slots.type(), slots.count());
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public RecipeType<?> getType() {
-    return TinkerRecipeTypes.DATA.get();
+  public RecipeType<? extends Recipe<RecipeInput>> getType() {
+    return (RecipeType<? extends Recipe<RecipeInput>>)(RecipeType<?>) TinkerRecipeTypes.DATA.get();
   }
 
   /** @deprecated Use {@link #matches(ItemStack, IToolStackView, int)} */
@@ -100,7 +102,7 @@ public class ModifierSalvage implements ICustomOutputRecipe<RecipeInput>, ILooku
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<RecipeInput>> getSerializer() {
     return TinkerModifiers.modifierSalvageSerializer.get();
   }
 }

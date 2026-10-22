@@ -3,6 +3,7 @@ package slimeknights.tconstruct.library.recipe.casting.material;
 import lombok.Getter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.data.loadable.field.LoadableField;
@@ -42,6 +43,12 @@ public abstract class AbstractMaterialCastingRecipe extends AbstractCastingRecip
   @Deprecated(forRemoval = true)
   public AbstractMaterialCastingRecipe(TypeAwareRecipeSerializer<?> serializer, ResourceLocation id, String group, Ingredient cast, int itemCost, boolean consumed, boolean switchSlots) {
     this(serializer, id, group, cast, itemCost, consumed, switchSlots, MaterialPredicate.ANY);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public RecipeSerializer<? extends Recipe<ICastingContainer>> getSerializer() {
+    return (RecipeSerializer<? extends Recipe<ICastingContainer>>) serializer;
   }
 
   /** Gets the material fluid recipe for the given recipe */

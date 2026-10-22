@@ -6,6 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -81,12 +82,12 @@ public class SeveringRecipe implements ICustomOutputRecipe<IEmptyContainer> {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<IEmptyContainer>> getSerializer() {
     return TinkerModifiers.severingSerializer.get();
   }
 
   @Override
-  public RecipeType<?> getType() {
+  public RecipeType<? extends Recipe<IEmptyContainer>> getType() {
     return TinkerRecipeTypes.SEVERING.get();
   }
 

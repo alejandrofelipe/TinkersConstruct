@@ -45,7 +45,7 @@ public class TippedToolTransformRecipe extends ToolBuildingRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends TippedToolTransformRecipe> getSerializer() {
     return TinkerModifiers.tippedToolTransformRecipeSerializer.get();
   }
 
@@ -82,7 +82,7 @@ public class TippedToolTransformRecipe extends ToolBuildingRecipe {
   public List<ItemStack> getDisplayOutput() {
     if (displayOutput == null) {
       ItemStack result = super.getDisplayOutput().get(0);
-      displayOutput = Arrays.stream(ingredients.get(0).getItems())
+      displayOutput = ingredients.get(0).items().map(ItemStack::new)
         .map(stack -> {
           PotionContents contents = stack.get(DataComponents.POTION_CONTENTS);
           if (contents != null) {

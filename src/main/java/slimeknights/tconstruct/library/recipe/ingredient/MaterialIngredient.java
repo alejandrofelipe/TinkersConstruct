@@ -1,8 +1,10 @@
 package slimeknights.tconstruct.library.recipe.ingredient;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.crafting.ICustomIngredient;
@@ -14,15 +16,11 @@ import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.mantle.recipe.helper.LoadableIngredientSerializer;
 import slimeknights.tconstruct.library.json.predicate.material.MaterialPredicate;
 import slimeknights.tconstruct.library.json.predicate.material.MaterialPredicateField;
-import slimeknights.tconstruct.library.materials.MaterialRegistry;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
-import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.stream.Stream;
 
 /**
  * Custom ingredient to display materials on items and support matching by materials
@@ -30,13 +28,11 @@ import java.util.stream.Stream;
 public class MaterialIngredient extends NestedIngredient {
   /** Loadable serializer instance, registered as an {@link IngredientType} in {@link TinkerIngredients} */
   public static final LoadableIngredientSerializer<MaterialIngredient> SERIALIZER = new LoadableIngredientSerializer<>(RecordLoadable.create(
-    IngredientLoadable.DISALLOW_EMPTY.defaultField("match", Ingredient.EMPTY, false, i -> i.nested),
+    IngredientLoadable.DISALLOW_EMPTY.defaultField("match", Ingredient.of(Items.BARRIER), false, i -> i.nested),
     new MaterialPredicateField<>("material", i -> i.material),
     MaterialIngredient::new));
 
   private final IJsonPredicate<MaterialVariantId> material;
-  @Nullable
-  private ItemStack[] materialStacks;
   protected MaterialIngredient(Ingredient nested, IJsonPredicate<MaterialVariantId> material) {
     super(nested);
     this.material = material;
@@ -88,6 +84,11 @@ public class MaterialIngredient extends NestedIngredient {
     return of(ingredient, MaterialPredicate.tag(tag));
   }
 
+  /** Creates an ingredient matching the items in the given item tag (1.21.4: {@code Ingredient.of(TagKey)} was removed) */
+  private static Ingredient ofTag(TagKey<Item> tag) {
+    return Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag));
+  }
+
   /**
    * Creates a new instance from an item with a fixed material
    * @param item      Material item
@@ -124,7 +125,7 @@ public class MaterialIngredient extends NestedIngredient {
    * @return  Material with tag
    */
   public static Ingredient of(TagKey<Item> tag, MaterialVariantId material) {
-    return of(Ingredient.of(tag), material);
+    return of(ofTag(tag), material);
   }
 
   /**
@@ -133,7 +134,7 @@ public class MaterialIngredient extends NestedIngredient {
    * @return  Material with tag
    */
   public static Ingredient of(TagKey<Item> tag) {
-    return of(Ingredient.of(tag));
+    return of(ofTag(tag));
   }
 
   @Override
@@ -149,23 +150,9 @@ public class MaterialIngredient extends NestedIngredient {
     return true;
   }
 
-  @Override
-  public Stream<ItemStack> getItems() {
-    if (materialStacks == null) {
-      if (!MaterialRegistry.isFullyLoaded()) {
-        return Stream.of(nested.getItems());
-      }
-      // no material? apply all materials for variants
-      Stream<ItemStack> items = Arrays.stream(nested.getItems());
-      // find all materials matching the filter; note this only shows craftable material variants
-      items = items.flatMap(stack -> MaterialRecipeCache.getAllVariants().stream()
-        .filter(material::matches)
-        .map(mat -> IMaterialItem.withMaterial(stack, mat))
-        .filter(s -> !s.getComponentsPatch().isEmpty()));
-      materialStacks = items.distinct().toArray(ItemStack[]::new);
-    }
-    return Stream.of(materialStacks);
-  }
+  // note: the vanilla recipe-book display of per-material variants was dropped in the 1.21.4 port; ICustomIngredient.items()
+  // now returns Holder<Item> (item types, no NBT), so variant display must move to getCustomDisplay() (follow-up). items()
+  // is inherited from NestedIngredient (the base item types), which is sufficient for matching.
 
   @Override
   public boolean isSimple() {

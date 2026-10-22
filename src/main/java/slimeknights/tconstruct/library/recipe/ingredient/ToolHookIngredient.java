@@ -2,12 +2,10 @@ package slimeknights.tconstruct.library.recipe.ingredient;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.crafting.ICustomIngredient;
 import net.neoforged.neoforge.common.crafting.IngredientType;
 import slimeknights.mantle.data.loadable.Loadables;
@@ -56,20 +54,13 @@ public class ToolHookIngredient implements ICustomIngredient {
   }
 
   @Override
-  public Stream<ItemStack> getItems() {
-    Stream.Builder<ItemStack> builder = Stream.builder();
-    boolean found = false;
+  public Stream<Holder<Item>> items() {
+    Stream.Builder<Holder<Item>> builder = Stream.builder();
     // filtered version of tag values
     for (Holder<Item> holder : BuiltInRegistries.ITEM.getTagOrEmpty(tag)) {
       if (holder.value() instanceof IModifiable modifiable && modifiable.getToolDefinition().getData().getHooks().hasHook(hook)) {
-        builder.add(new ItemStack(modifiable));
-        found = true;
+        builder.add(holder);
       }
-    }
-    if (!found) {
-      ItemStack barrier = new ItemStack(Blocks.BARRIER);
-      barrier.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, Component.literal("Empty Tag: " + tag.location()));
-      builder.add(barrier);
     }
     return builder.build();
   }

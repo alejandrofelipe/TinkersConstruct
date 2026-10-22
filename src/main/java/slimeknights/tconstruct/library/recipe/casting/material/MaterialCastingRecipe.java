@@ -28,7 +28,6 @@ import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
 import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,7 +63,7 @@ public class MaterialCastingRecipe extends AbstractMaterialCastingRecipe impleme
 
   @Override
   public boolean matches(ICastingContainer inv, Level worldIn) {
-    if (!this.getCast().test(inv.getStack())) {
+    if (!testCast(inv.getStack())) {
       return false;
     }
     MaterialFluidRecipe fluid = getFluidRecipe(inv);
@@ -88,7 +87,7 @@ public class MaterialCastingRecipe extends AbstractMaterialCastingRecipe impleme
   public List<IDisplayableCastingRecipe> getRecipes(RegistryAccess access) {
     if (multiRecipes == null) {
       RecipeType<?> type = getType();
-      List<ItemStack> castItems = Arrays.asList(getCast().getItems());
+      List<ItemStack> castItems = getCast() == null ? List.of() : getCast().items().map(ItemStack::new).toList();
       multiRecipes = MaterialRecipeCache
         .getAllCastingFluids().stream()
         .filter(recipe -> {

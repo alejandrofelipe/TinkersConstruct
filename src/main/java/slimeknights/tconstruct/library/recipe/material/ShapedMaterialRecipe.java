@@ -12,6 +12,8 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.Level;
 import slimeknights.mantle.data.loadable.Loadable;
 import slimeknights.tconstruct.TConstruct;
@@ -21,6 +23,7 @@ import slimeknights.tconstruct.tables.TinkerTables;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Shaped recipe with a number of {@link slimeknights.tconstruct.library.recipe.ingredient.MaterialValueIngredient} to set the material of the result.
@@ -36,7 +39,17 @@ public class ShapedMaterialRecipe extends ShapedRecipe {
   }
 
   public ShapedMaterialRecipe(ShapedRecipe recipe, List<MaterialVariantId> extraMaterials) {
-    this(recipe.getGroup(), recipe.category(), recipe.pattern, recipe.getResultItem(null), recipe.showNotification(), extraMaterials);
+    this(recipe.group(), recipe.category(), recipe.pattern, baseResult(recipe), recipe.showNotification(), extraMaterials);
+  }
+
+  /** Reads the stored result of a shaped recipe from its display, as {@link ShapedRecipe} no longer exposes it directly in 1.21.4 */
+  private static ItemStack baseResult(ShapedRecipe recipe) {
+    for (RecipeDisplay display : recipe.display()) {
+      if (display.result() instanceof SlotDisplay.ItemStackSlotDisplay stackDisplay) {
+        return stackDisplay.stack();
+      }
+    }
+    return ItemStack.EMPTY;
   }
 
   /** @deprecated use {@link #ShapedMaterialRecipe(ShapedRecipe,List)} */
@@ -50,9 +63,9 @@ public class ShapedMaterialRecipe extends ShapedRecipe {
   public MaterialValueIngredient getMaterial() {
     if (material == null) {
       // assume all material ingredients match the same stat type
-      for (Ingredient ingredient : getIngredients()) {
+      for (Optional<Ingredient> optional : getIngredients()) {
         // collect all ingredients that match
-        if (ingredient.getCustomIngredient() instanceof MaterialValueIngredient materialValue) {
+        if (optional.isPresent() && optional.get().getCustomIngredient() instanceof MaterialValueIngredient materialValue) {
           if (material == null) {
             material = materialValue;
           } else {
@@ -127,7 +140,7 @@ public class ShapedMaterialRecipe extends ShapedRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends ShapedRecipe> getSerializer() {
     return TinkerTables.shapedMaterialRecipeSerializer.get();
   }
 

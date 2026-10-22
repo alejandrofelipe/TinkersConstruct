@@ -4,6 +4,7 @@ import com.google.common.collect.Streams;
 import lombok.Getter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -66,7 +67,7 @@ public class OreMeltingRecipe extends MeltingRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<IMeltingContainer>> getSerializer() {
     return TinkerSmeltery.oreMeltingSerializer.get();
   }
 }

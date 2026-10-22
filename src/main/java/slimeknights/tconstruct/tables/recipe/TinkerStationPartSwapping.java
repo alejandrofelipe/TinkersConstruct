@@ -123,7 +123,7 @@ public class TinkerStationPartSwapping extends MaterialSwappingRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends TinkerStationPartSwapping> getSerializer() {
     return TinkerTables.tinkerStationPartSwappingSerializer.get();
   }
 }

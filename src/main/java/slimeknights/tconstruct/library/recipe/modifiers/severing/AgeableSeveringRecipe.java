@@ -4,7 +4,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import slimeknights.mantle.recipe.container.IEmptyContainer;
 import slimeknights.mantle.data.loadable.field.ContextKey;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.recipe.helper.ItemOutput;
@@ -41,7 +43,7 @@ public class AgeableSeveringRecipe extends SeveringRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<IEmptyContainer>> getSerializer() {
     return TinkerModifiers.ageableSeveringSerializer.get();
   }
 }

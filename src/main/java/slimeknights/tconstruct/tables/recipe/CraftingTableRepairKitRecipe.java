@@ -138,12 +138,7 @@ public class CraftingTableRepairKitRecipe extends CustomRecipe {
   }
 
   @Override
-  public boolean canCraftInDimensions(int width, int height) {
-    return width * height >= 2;
-  }
-
-  @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends CraftingTableRepairKitRecipe> getSerializer() {
     return TinkerTables.craftingTableRepairSerializer.get();
   }
 }

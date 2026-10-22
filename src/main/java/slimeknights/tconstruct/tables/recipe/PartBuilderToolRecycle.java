@@ -204,7 +204,7 @@ public class PartBuilderToolRecycle implements IPartBuilderRecipe, IMultiRecipe<
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends PartBuilderToolRecycle> getSerializer() {
     return TinkerTables.partBuilderToolRecycling.get();
   }
 
@@ -239,7 +239,7 @@ public class PartBuilderToolRecycle implements IPartBuilderRecipe, IMultiRecipe<
   @Override
   public List<DisplayPartRecipe> getRecipes(RegistryAccess access) {
     if (displayRecipes == null) {
-      List<ItemStack> patternItems = List.of(this.pattern.getItems());
+      List<ItemStack> patternItems = this.pattern.items().map(ItemStack::new).toList();
       // if we have parts, will be using the same list for all tools, so make just 1 recipe per part
       if (!parts.isEmpty()) {
         List<ItemStack> tools = toolRequirement.getMatchingStacks().stream().map(IModifiableDisplay::getDisplayStack).toList();

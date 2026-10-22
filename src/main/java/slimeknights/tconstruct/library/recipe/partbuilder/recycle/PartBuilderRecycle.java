@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -133,7 +134,7 @@ public class PartBuilderRecycle implements IPartBuilderRecipe, IMultiRecipe<Disp
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<IPartBuilderContainer>> getSerializer() {
     return TinkerTables.partBuilderDamageableRecycling.get();
   }
 
@@ -184,8 +185,8 @@ public class PartBuilderRecycle implements IPartBuilderRecipe, IMultiRecipe<Disp
   @Override
   public List<DisplayPartRecipe> getRecipes(RegistryAccess access) {
     if (displayRecipes == null) {
-      List<ItemStack> patternItems = List.of(pattern.getItems());
-      List<ItemStack> toolItems = List.of(tool.getItems());
+      List<ItemStack> patternItems = pattern.items().map(ItemStack::new).toList();
+      List<ItemStack> toolItems = tool.items().map(ItemStack::new).toList();
       displayRecipes = results.entrySet().stream()
         .map((Map.Entry<Pattern,ItemOutput> entry) -> new DisplayPartRecipe(id, MaterialVariant.UNKNOWN, entry.getKey(), patternItems, 0, toolItems, List.of(entry.getValue().get()))).toList();
     }

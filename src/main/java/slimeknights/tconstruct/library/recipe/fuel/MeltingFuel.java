@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.recipe.fuel;
 
 import lombok.Getter;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -16,7 +16,6 @@ import slimeknights.mantle.recipe.ingredient.FluidIngredient;
 import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
-import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
 
 import java.util.List;
 
@@ -103,17 +102,12 @@ public class MeltingFuel implements ICustomOutputRecipe<IFluidContainer>, ILooku
   /* Recipe type methods */
 
   @Override
-  public RecipeType<?> getType() {
+  public RecipeType<? extends Recipe<IFluidContainer>> getType() {
     return TinkerRecipeTypes.FUEL.get();
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<IFluidContainer>> getSerializer() {
     return TinkerSmeltery.fuelSerializer.get();
-  }
-
-  @Override
-  public ItemStack getToastSymbol() {
-    return new ItemStack(TinkerSmeltery.searedTank.get(TankType.FUEL_TANK));
   }
 }

@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import slimeknights.mantle.data.loadable.field.ContextKey;
 import slimeknights.mantle.data.loadable.primitive.StringLoadable;
@@ -123,7 +124,7 @@ public class SwappableModifierRecipe extends ModifierRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<ITinkerStationContainer>> getSerializer() {
     return TinkerModifiers.swappableModifierSerializer.get();
   }
 
@@ -143,7 +144,7 @@ public class SwappableModifierRecipe extends ModifierRecipe {
   @Override
   public List<SlotCount> getResultSlots() {
     if (resultSlots == null) {
-      ItemStack[] tools = toolRequirement.getItems();
+      ItemStack[] tools = toolRequirement.items().map(ItemStack::new).toArray(ItemStack[]::new);
       resultSlots = getResultSlots(getDisplayResult(), tools.length > 0 ? tools[0].getItem() : Items.AIR, value);
     }
     return resultSlots;

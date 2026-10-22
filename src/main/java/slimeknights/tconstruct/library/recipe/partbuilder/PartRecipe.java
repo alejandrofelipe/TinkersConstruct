@@ -9,6 +9,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import slimeknights.mantle.data.loadable.common.IngredientLoadable;
@@ -77,7 +78,7 @@ public class PartRecipe implements IPartBuilderRecipe, IMultiRecipe<IDisplayPart
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<IPartBuilderContainer>> getSerializer() {
     return TinkerTables.partRecipeSerializer.get();
   }
 
@@ -212,7 +213,7 @@ public class PartRecipe implements IPartBuilderRecipe, IMultiRecipe<IDisplayPart
             materialItems = List.copyOf(materialItems);
             resultItems = List.copyOf(resultItems);
           }
-          return Stream.of(new DisplayPartRecipe(id, materialTitle, pattern, List.of(patternItem.getItems()), getCost(), materialItems, resultItems));
+          return Stream.of(new DisplayPartRecipe(id, materialTitle, pattern, patternItem.items().map(ItemStack::new).toList(), getCost(), materialItems, resultItems));
         })
         .collect(Collectors.toUnmodifiableList());
     }

@@ -1,10 +1,11 @@
 package slimeknights.tconstruct.library.recipe.material;
 
 import lombok.Getter;
-import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -22,7 +23,6 @@ import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.tables.TinkerTables;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,8 +31,10 @@ import java.util.stream.Collectors;
  */
 public class MaterialRecipe implements ICustomOutputRecipe<ISingleStackContainer>, IMaterialValue, ILookupRegistrar {
   /** Empty material instance for the cache */
+  // 1.21.4: Ingredient.EMPTY was removed (ingredients can no longer be empty). This sentinel recipe never matches
+  // (material is UNKNOWN_ID), so the ingredient value is irrelevant; use a dummy non-empty ingredient.
   @SuppressWarnings("removal")
-  public static final MaterialRecipe EMPTY = new MaterialRecipe(ResourceLocation.parse("missingno"), "", Ingredient.EMPTY, 0, 0, IMaterial.UNKNOWN_ID, ItemOutput.EMPTY);
+  public static final MaterialRecipe EMPTY = new MaterialRecipe(ResourceLocation.parse("missingno"), "", Ingredient.of(Items.BARRIER), 0, 0, IMaterial.UNKNOWN_ID, ItemOutput.EMPTY);
   public static final RecordLoadable<MaterialRecipe> LOADER = RecordLoadable.create(
     ContextKey.ID.nullableField(),
     LoadableRecipeSerializer.RECIPE_GROUP,
@@ -88,17 +90,12 @@ public class MaterialRecipe implements ICustomOutputRecipe<ISingleStackContainer
   /* Basic */
 
   @Override
-  public RecipeType<?> getType() {
+  public RecipeType<? extends Recipe<ISingleStackContainer>> getType() {
     return TinkerRecipeTypes.MATERIAL.get();
   }
 
   @Override
-  public ItemStack getToastSymbol() {
-    return new ItemStack(TinkerTables.partBuilder);
-  }
-
-  @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<ISingleStackContainer>> getSerializer() {
     return TinkerTables.materialRecipeSerializer.get();
   }
 
@@ -119,9 +116,9 @@ public class MaterialRecipe implements ICustomOutputRecipe<ISingleStackContainer
     return !material.isUnknown() && this.ingredient.test(inv.getStack());
   }
 
-  @Override
-  public NonNullList<Ingredient> getIngredients() {
-    return NonNullList.of(Ingredient.EMPTY, ingredient);
+  /** Gets the ingredients for display; {@code Recipe#getIngredients} was removed in 1.21.4 */
+  public List<Ingredient> getIngredients() {
+    return List.of(ingredient);
   }
 
   /** Cache of the display items list */
@@ -131,11 +128,11 @@ public class MaterialRecipe implements ICustomOutputRecipe<ISingleStackContainer
   public List<ItemStack> getDisplayItems() {
     if (displayItems == null) {
       if (needed > 1) {
-        displayItems = Arrays.stream(ingredient.getItems())
-                             .map(stack -> stack.copyWithCount(needed))
+        displayItems = ingredient.items()
+                             .map(holder -> new ItemStack(holder).copyWithCount(needed))
                              .collect(Collectors.toList());
       } else {
-        displayItems = Arrays.asList(ingredient.getItems());
+        displayItems = ingredient.items().map(ItemStack::new).collect(Collectors.toList());
       }
     }
     return displayItems;

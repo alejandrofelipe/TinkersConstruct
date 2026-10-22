@@ -2,7 +2,6 @@ package slimeknights.tconstruct.library.recipe.casting;
 
 import lombok.Getter;
 import net.minecraft.core.Holder;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentPatch;
@@ -15,6 +14,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -77,8 +78,15 @@ public class PotionCastingRecipe implements ICastingRecipe, IMultiRecipe<Display
   }
 
   @Override
-  public RecipeType<?> getType() {
-    return serializer.getType();
+  @SuppressWarnings("unchecked")
+  public RecipeType<? extends Recipe<ICastingContainer>> getType() {
+    return (RecipeType<? extends Recipe<ICastingContainer>>) serializer.getType();
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public RecipeSerializer<? extends Recipe<ICastingContainer>> getSerializer() {
+    return (RecipeSerializer<? extends Recipe<ICastingContainer>>) serializer;
   }
 
   @Override
@@ -155,8 +163,8 @@ public class PotionCastingRecipe implements ICastingRecipe, IMultiRecipe<Display
   public List<DisplayCastingRecipe> getRecipes(RegistryAccess access) {
     if (displayRecipes == null) {
       // create a subrecipe for every potion variant
-      List<ItemStack> bottles = List.of(bottle.getItems());
-      displayRecipes = BuiltInRegistries.POTION.holders()
+      List<ItemStack> bottles = bottle.items().map(ItemStack::new).toList();
+      displayRecipes = BuiltInRegistries.POTION.listElements()
         .map(holder -> {
           // build the result item carrying the potion contents
           ItemStack result = new ItemStack(this.result);
@@ -180,9 +188,9 @@ public class PotionCastingRecipe implements ICastingRecipe, IMultiRecipe<Display
 
   /* Recipe interface methods */
 
-  @Override
-  public NonNullList<Ingredient> getIngredients() {
-    return NonNullList.of(Ingredient.EMPTY, bottle);
+  /** Gets the ingredients for display; {@code Recipe#getIngredients} was removed in 1.21.4 */
+  public List<Ingredient> getIngredients() {
+    return List.of(bottle);
   }
 
   /** @deprecated use {@link #assemble(Container, HolderLookup.Provider)} */

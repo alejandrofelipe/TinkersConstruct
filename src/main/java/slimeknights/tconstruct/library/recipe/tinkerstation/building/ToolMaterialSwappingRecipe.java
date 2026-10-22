@@ -4,6 +4,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -121,7 +122,7 @@ public class ToolMaterialSwappingRecipe extends MaterialSwappingRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<ITinkerStationContainer>> getSerializer() {
     return TinkerTables.toolMaterialSwapping.get();
   }
 }

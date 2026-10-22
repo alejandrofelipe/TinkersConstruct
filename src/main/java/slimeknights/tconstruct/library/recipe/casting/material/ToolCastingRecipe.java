@@ -100,7 +100,7 @@ public class ToolCastingRecipe extends PartSwapCastingRecipe implements IMultiRe
       return canPartSwap(inv);
     }
     // no tool match? need to check cast and fluid
-    if (!this.getCast().test(cast)) {
+    if (!testCast(cast)) {
       return false;
     }
     // if we have a material item input, must have exactly 2 materials, else exactly 1
@@ -242,7 +242,7 @@ public class ToolCastingRecipe extends PartSwapCastingRecipe implements IMultiRe
         ItemStack partSwapDisplay = ToolBuildHandler.buildItemFromMaterials(result, partSwapMaterials.build());
         TooltipUtil.setDisplay(partSwapDisplay);
 
-        List<ItemStack> casts = List.of(getCast().getItems());
+        List<ItemStack> casts = getCast().items().map(ItemStack::new).toList();
         // if the cast is consumed, add the tool to the list of cast items to show that part swapping is an option
         boolean consumed = castPurpose != CastPurpose.CATALYST;
         List<ItemStack> castsWithTool = consumed ? Streams.concat(casts.stream(), Stream.of(partSwapDisplay)).toList() : casts;

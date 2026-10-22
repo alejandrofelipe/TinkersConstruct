@@ -221,7 +221,7 @@ public class EnchantmentConvertingRecipe extends AbstractWorktableRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends EnchantmentConvertingRecipe> getSerializer() {
     return TinkerModifiers.enchantmentConvertingSerializer.get();
   }
 

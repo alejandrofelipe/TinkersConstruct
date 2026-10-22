@@ -8,6 +8,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.mantle.data.loadable.field.ContextKey;
@@ -140,7 +141,7 @@ public class ModifierSetWorktableRecipe extends AbstractWorktableRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<ITinkerableContainer>> getSerializer() {
     return TinkerModifiers.modifierSetWorktableSerializer.get();
   }
 

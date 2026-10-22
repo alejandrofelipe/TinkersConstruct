@@ -2,6 +2,7 @@ package slimeknights.tconstruct.library.recipe.casting.material;
 
 import lombok.Getter;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -90,13 +91,14 @@ public class MaterialFluidRecipe implements ICustomOutputRecipe<ICastingContaine
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<ICastingContainer>> getSerializer() {
     return TinkerSmeltery.materialFluidRecipe.get();
   }
 
   @Override
-  public RecipeType<?> getType() {
-    return TinkerRecipeTypes.DATA.get();
+  @SuppressWarnings("unchecked")
+  public RecipeType<? extends Recipe<ICastingContainer>> getType() {
+    return (RecipeType<? extends Recipe<ICastingContainer>>) (RecipeType<?>) TinkerRecipeTypes.DATA.get();
   }
 
   /** Checks that all materials in this recipe are known */

@@ -3,6 +3,7 @@ package slimeknights.tconstruct.library.recipe.modifiers.adding;
 import lombok.Getter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
@@ -28,7 +29,7 @@ import java.util.function.Predicate;
 public class OverslimeCraftingTableRecipe extends CustomRecipe {
   public static final RecordLoadable<OverslimeCraftingTableRecipe> LOADER = RecordLoadable.create(
     ContextKey.ID.nullableField(),
-    IngredientLoadable.DISALLOW_EMPTY.defaultField("tools", Ingredient.of(TinkerTags.Items.DURABILITY), r -> r.tools),
+    IngredientLoadable.DISALLOW_EMPTY.defaultField("tools", Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY)), r -> r.tools),
     IngredientLoadable.DISALLOW_EMPTY.requiredField("ingredient", r -> r.ingredient),
     IntLoadable.FROM_ONE.requiredField("restore_amount", r -> r.restoreAmount),
     OverslimeCraftingTableRecipe::new);
@@ -125,8 +126,9 @@ public class OverslimeCraftingTableRecipe extends CustomRecipe {
         }
         repairNeeded -= repairPerItem;
       }
-      if (stack.hasCraftingRemainingItem()) {
-        list.set(i, stack.getCraftingRemainingItem());
+      ItemStack remainder = stack.getItem().getCraftingRemainder();
+      if (!remainder.isEmpty()) {
+        list.set(i, remainder);
       }
     }
     return list;
@@ -149,12 +151,7 @@ public class OverslimeCraftingTableRecipe extends CustomRecipe {
   }
 
   @Override
-  public boolean canCraftInDimensions(int width, int height) {
-    return width * height >= 2;
-  }
-
-  @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends CustomRecipe> getSerializer() {
     return TinkerModifiers.craftingOverslimeSerializer.get();
   }
 }

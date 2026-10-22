@@ -109,7 +109,7 @@ public class ToggleInteractionWorktableRecipe extends AbstractWorktableRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends ToggleInteractionWorktableRecipe> getSerializer() {
     return TinkerModifiers.toggleInteractionSerializer.get();
   }
 }

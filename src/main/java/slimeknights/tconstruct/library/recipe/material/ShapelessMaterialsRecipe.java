@@ -13,6 +13,8 @@ import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import slimeknights.mantle.data.loadable.Loadable;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.tables.TinkerTables;
@@ -24,6 +26,8 @@ import java.util.List;
  * {@link slimeknights.tconstruct.library.recipe.ingredient.MaterialValueIngredient} to set the materials of the result.
  */
 public class ShapelessMaterialsRecipe extends ShapelessRecipe implements MaterialsCraftingTableRecipe {
+  /** Copy of the recipe ingredients; {@link ShapelessRecipe} no longer exposes {@code getIngredients} in 1.21.4 */
+  private final List<Ingredient> ingredients;
   /** Number of parts to match */
   @Getter
   private final int partCount;
@@ -31,19 +35,30 @@ public class ShapelessMaterialsRecipe extends ShapelessRecipe implements Materia
   @Getter
   private final List<MaterialVariantId> extraMaterials;
 
-  public ShapelessMaterialsRecipe(String group, net.minecraft.world.item.crafting.CraftingBookCategory category, ItemStack result, net.minecraft.core.NonNullList<Ingredient> ingredients, int partCount, List<MaterialVariantId> extraMaterials) {
+  public ShapelessMaterialsRecipe(String group, net.minecraft.world.item.crafting.CraftingBookCategory category, ItemStack result, List<Ingredient> ingredients, int partCount, List<MaterialVariantId> extraMaterials) {
     super(group, category, result, ingredients);
+    this.ingredients = ingredients;
     this.partCount = partCount;
     this.extraMaterials = extraMaterials;
   }
 
   public ShapelessMaterialsRecipe(ShapelessRecipe recipe, int partCount, List<MaterialVariantId> extraMaterials) {
-    this(recipe.getGroup(), recipe.category(), recipe.getResultItem(null), recipe.getIngredients(), partCount, extraMaterials);
+    this(recipe.group(), recipe.category(), baseResult(recipe), recipe.placementInfo().ingredients(), partCount, extraMaterials);
+  }
+
+  /** Reads the stored result of a recipe from its display, as {@link ShapelessRecipe} no longer exposes it directly in 1.21.4 */
+  private static ItemStack baseResult(ShapelessRecipe recipe) {
+    for (RecipeDisplay display : recipe.display()) {
+      if (display.result() instanceof SlotDisplay.ItemStackSlotDisplay stackDisplay) {
+        return stackDisplay.stack();
+      }
+    }
+    return ItemStack.EMPTY;
   }
 
   @Override
   public List<Ingredient> getParts() {
-    return getIngredients();
+    return ingredients;
   }
 
   /** Sets the material for the given stack */
@@ -54,12 +69,14 @@ public class ShapelessMaterialsRecipe extends ShapelessRecipe implements Materia
 
   @Override
   public ItemStack assemble(CraftingInput inventory, HolderLookup.Provider registryAccess) {
-    return ShapedMaterialsRecipe.assemble(super.assemble(inventory, registryAccess), inventory, getIngredients(), partCount, false, extraMaterials);
+    return ShapedMaterialsRecipe.assemble(super.assemble(inventory, registryAccess), inventory, ingredients, partCount, false, extraMaterials);
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
-    return TinkerTables.shapelessMaterialsRecipeSerializer.get();
+  @SuppressWarnings("unchecked")
+  public RecipeSerializer<ShapelessRecipe> getSerializer() {
+    // ShapelessRecipe#getSerializer returns the invariant RecipeSerializer<ShapelessRecipe>, so an unchecked cast is required
+    return (RecipeSerializer<ShapelessRecipe>) (RecipeSerializer<?>) TinkerTables.shapelessMaterialsRecipeSerializer.get();
   }
 
   public static class Serializer implements RecipeSerializer<ShapelessMaterialsRecipe> {

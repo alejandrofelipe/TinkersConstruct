@@ -14,7 +14,6 @@ import slimeknights.mantle.recipe.helper.LoadableRecipeSerializer;
 import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
 import slimeknights.mantle.recipe.ingredient.FluidIngredient;
 
-import java.util.Arrays;
 import java.util.List;
 
 /** Recipe which duplicates the input cast using a fluid */
@@ -37,8 +36,7 @@ public class CastDuplicationRecipe extends ItemCastingRecipe implements IMultiRe
 
   @Override
   public ItemStack getResultItem(HolderLookup.Provider access) {
-    ItemStack[] items = getCast().getItems();
-    return items.length == 0 ? ItemStack.EMPTY : items[0];
+    return getCast().items().findFirst().map(ItemStack::new).orElse(ItemStack.EMPTY);
   }
 
   /* JEI */
@@ -47,7 +45,7 @@ public class CastDuplicationRecipe extends ItemCastingRecipe implements IMultiRe
   @Override
   public List<DisplayCastingRecipe> getRecipes(RegistryAccess access) {
     if (displayRecipes == null) {
-      displayRecipes = Arrays.stream(getCast().getItems())
+      displayRecipes = getCast().items().map(ItemStack::new)
         .map(item -> new DisplayCastingRecipe(getId(), getType(), List.of(item), fluid.getFluids(), item, coolingTime, false))
         .toList();
     }

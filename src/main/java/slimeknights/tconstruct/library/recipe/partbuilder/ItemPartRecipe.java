@@ -5,6 +5,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import slimeknights.mantle.data.loadable.common.IngredientLoadable;
@@ -20,7 +21,6 @@ import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 import slimeknights.tconstruct.tables.TinkerTables;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -124,7 +124,7 @@ public class ItemPartRecipe implements IDisplayPartBuilderRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<IPartBuilderContainer>> getSerializer() {
     return TinkerTables.itemPartBuilderSerializer.get();
   }
 
@@ -135,7 +135,7 @@ public class ItemPartRecipe implements IDisplayPartBuilderRecipe {
 
   @Override
   public List<ItemStack> getPatternItems() {
-    return Arrays.asList(patternItem.getItems());
+    return patternItem.items().map(ItemStack::new).toList();
   }
 
   @Override

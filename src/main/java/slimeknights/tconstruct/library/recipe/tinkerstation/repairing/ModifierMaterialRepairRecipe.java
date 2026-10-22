@@ -65,7 +65,7 @@ public class ModifierMaterialRepairRecipe extends TinkerStationRepairRecipe impl
 
   @SuppressWarnings("removal")
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends TinkerStationRepairRecipe> getSerializer() {
     return TinkerModifiers.modifierMaterialRepair.get();
   }
 

@@ -5,6 +5,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.data.loadable.field.ContextKey;
@@ -17,7 +19,6 @@ import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
 import slimeknights.mantle.recipe.ingredient.FluidIngredient;
 import slimeknights.tconstruct.common.recipe.ILookupRegistrar;
 
-import java.util.Arrays;
 import java.util.List;
 
 /** Casting recipe that takes a fluid and optional cast and outputs an item. */
@@ -57,7 +58,13 @@ public class ItemCastingRecipe extends AbstractCastingRecipe implements IDisplay
 
   @Override
   public boolean matches(ICastingContainer inv, Level worldIn) {
-    return getCast().test(inv.getStack()) && fluid.test(inv.getFluid());
+    return testCast(inv.getStack()) && fluid.test(inv.getFluid());
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public RecipeSerializer<? extends Recipe<ICastingContainer>> getSerializer() {
+    return (RecipeSerializer<? extends Recipe<ICastingContainer>>) serializer;
   }
 
   @Override
@@ -81,12 +88,13 @@ public class ItemCastingRecipe extends AbstractCastingRecipe implements IDisplay
 
   @Override
   public boolean hasCast() {
-    return getCast() != Ingredient.EMPTY;
+    return getCast() != null;
   }
 
   @Override
   public List<ItemStack> getCastItems() {
-    return Arrays.asList(getCast().getItems());
+    Ingredient cast = getCast();
+    return cast == null ? List.of() : cast.items().map(ItemStack::new).toList();
   }
 
   @Override

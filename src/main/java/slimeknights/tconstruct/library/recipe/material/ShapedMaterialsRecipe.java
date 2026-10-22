@@ -12,6 +12,8 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.Level;
 import slimeknights.mantle.data.loadable.Loadable;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
@@ -47,7 +49,17 @@ public class ShapedMaterialsRecipe extends ShapedRecipe implements MaterialsCraf
   }
 
   public ShapedMaterialsRecipe(ShapedRecipe recipe, List<Ingredient> parts, List<MaterialVariantId> extraMaterials) {
-    this(recipe.getGroup(), recipe.category(), recipe.pattern, recipe.getResultItem(null), recipe.showNotification(), parts, extraMaterials);
+    this(recipe.group(), recipe.category(), recipe.pattern, baseResult(recipe), recipe.showNotification(), parts, extraMaterials);
+  }
+
+  /** Reads the stored result of a shaped recipe from its display, as {@link ShapedRecipe} no longer exposes it directly in 1.21.4 */
+  private static ItemStack baseResult(ShapedRecipe recipe) {
+    for (RecipeDisplay display : recipe.display()) {
+      if (display.result() instanceof SlotDisplay.ItemStackSlotDisplay stackDisplay) {
+        return stackDisplay.stack();
+      }
+    }
+    return ItemStack.EMPTY;
   }
 
   @Override
@@ -158,7 +170,7 @@ public class ShapedMaterialsRecipe extends ShapedRecipe implements MaterialsCraf
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends ShapedRecipe> getSerializer() {
     return TinkerTables.shapedMaterialsRecipeSerializer.get();
   }
 

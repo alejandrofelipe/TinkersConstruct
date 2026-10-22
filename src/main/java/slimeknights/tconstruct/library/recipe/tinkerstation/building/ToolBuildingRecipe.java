@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import slimeknights.mantle.data.loadable.Loadables;
@@ -104,7 +105,7 @@ public class ToolBuildingRecipe implements ITinkerStationRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<ITinkerStationContainer>> getSerializer() {
     return TinkerTables.toolBuildingRecipeSerializer.get();
   }
 
@@ -161,8 +162,9 @@ public class ToolBuildingRecipe implements ITinkerStationRecipe {
     }
     // remaining slots must match extra requirements
     for (; i < maxInputs; i++) {
-      Ingredient ingredient = LogicHelper.getOrDefault(ingredients, i - partSize, Ingredient.EMPTY);
-      if (!ingredient.test(inv.getInput(i))) {
+      Ingredient ingredient = LogicHelper.getOrDefault(ingredients, i - partSize, null);
+      // 1.21.4 removed Ingredient.EMPTY; a missing extra ingredient means the slot must be empty (old empty ingredient matched only empty)
+      if (ingredient == null ? !inv.getInput(i).isEmpty() : !ingredient.test(inv.getInput(i))) {
         return false;
       }
     }

@@ -28,7 +28,6 @@ import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
 import slimeknights.tconstruct.library.tools.item.IModifiableDisplay;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 
-import java.util.Arrays;
 import java.util.List;
 
 /** Casting recipe applying a potion to a tool */
@@ -77,10 +76,10 @@ public class TippingCastingRecipe extends PotionCastingRecipe {
   public List<DisplayCastingRecipe> getRecipes(RegistryAccess access) {
     if (displayRecipes == null) {
       // create a list of tools with the modifier
-      List<ItemStack> tools = Arrays.stream(bottle.getItems())
+      List<ItemStack> tools = bottle.items().map(ItemStack::new)
         .map(stack -> IDisplayModifierRecipe.withModifiers(IModifiableDisplay.getDisplayStack(stack), List.of(new ModifierEntry(modifier, 1))))
         .toList();
-      displayRecipes = BuiltInRegistries.POTION.holders()
+      displayRecipes = BuiltInRegistries.POTION.listElements()
         .map(holder -> {
           // add the potion to the tool list
           Potion potion = holder.value();

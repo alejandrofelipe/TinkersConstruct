@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.recipe.ingredient;
 
+import net.minecraft.core.Holder;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.crafting.ICustomIngredient;
@@ -15,7 +17,6 @@ import slimeknights.tconstruct.library.recipe.material.MaterialRecipe;
 import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.stream.Stream;
 
 /**
@@ -32,8 +33,6 @@ public class MaterialValueIngredient implements ICustomIngredient {
   private final IJsonPredicate<MaterialVariantId> material;
   private final float minValue;
   private final float maxValue;
-  @Nullable
-  private ItemStack[] items;
 
   protected MaterialValueIngredient(IJsonPredicate<MaterialVariantId> material, float minValue, float maxValue) {
     this.material = material;
@@ -67,14 +66,10 @@ public class MaterialValueIngredient implements ICustomIngredient {
   }
 
   @Override
-  public Stream<ItemStack> getItems() {
-    if (items == null) {
-      items = MaterialRecipeCache.getAllRecipes().stream()
-        .filter(this::test)
-        .flatMap(material -> Arrays.stream(material.getIngredient().getItems()))
-        .toArray(ItemStack[]::new);
-    }
-    return Stream.of(items);
+  public Stream<Holder<Item>> items() {
+    return MaterialRecipeCache.getAllRecipes().stream()
+      .filter(this::test)
+      .flatMap(material -> material.getIngredient().items());
   }
 
   @Override

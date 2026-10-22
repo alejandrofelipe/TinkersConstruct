@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.library.recipe.ingredient;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +27,7 @@ public class NoContainerIngredient extends NestedIngredient {
 
   @Override
   public boolean test(@Nullable ItemStack stack) {
-    return stack != null && super.test(stack) && !stack.hasCraftingRemainingItem();
+    return stack != null && super.test(stack) && stack.getCraftingRemainder().isEmpty();
   }
 
   @Override
@@ -54,11 +55,12 @@ public class NoContainerIngredient extends NestedIngredient {
 
   /** Creates an instance from the given stacks */
   public static Ingredient of(ItemStack... stacks) {
-    return of(Ingredient.of(stacks));
+    // 1.21.4: Ingredient.of(ItemStack...) was removed; build from the item types
+    return of(Ingredient.of(java.util.Arrays.stream(stacks).map(ItemStack::getItem)));
   }
 
   /** Creates an instance from the given tag */
   public static Ingredient of(TagKey<Item> tag) {
-    return of(Ingredient.of(tag));
+    return of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)));
   }
 }

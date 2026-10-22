@@ -68,7 +68,7 @@ public class TinkerStationDamagingRecipe implements ITinkerStationRecipe {
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends TinkerStationDamagingRecipe> getSerializer() {
     return TinkerTables.tinkerStationDamagingSerializer.get();
   }
 }
