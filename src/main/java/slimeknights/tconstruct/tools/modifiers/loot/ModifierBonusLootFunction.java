@@ -15,7 +15,7 @@ import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount.OreDrops
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount.UniformBonusCount;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
@@ -94,13 +94,13 @@ public class ModifierBonusLootFunction extends LootItemConditionalFunction {
   }
 
   @Override
-  public Set<LootContextParam<?>> getReferencedContextParams() {
+  public Set<ContextKey<?>> getReferencedContextParams() {
     return ImmutableSet.of(LootContextParams.TOOL);
   }
 
   @Override
   protected ItemStack run(ItemStack stack, LootContext context) {
-    int level = ModifierUtil.getModifierLevel(context.getParam(LootContextParams.TOOL), modifier);
+    int level = ModifierUtil.getModifierLevel(context.getParameter(LootContextParams.TOOL), modifier);
     if (!includeBase) {
       level--;
     }

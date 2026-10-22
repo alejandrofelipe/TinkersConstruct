@@ -213,7 +213,7 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
     }
     // if the projectile moves above the world, delete it
     // only likely to happen for lighter than air fluids
-    if (getY() > level().getMaxBuildHeight() + 64) {
+    if (getY() > level().getMaxY() + 64) {
       this.discard();
     }
   }

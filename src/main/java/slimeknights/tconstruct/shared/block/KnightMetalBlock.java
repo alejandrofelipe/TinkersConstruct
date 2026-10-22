@@ -53,11 +53,11 @@ public class KnightMetalBlock extends Block implements SimpleWaterloggedBlock {
   @SuppressWarnings("deprecation")
   @Deprecated
   @Override
-  public BlockState updateShape(BlockState state, Direction pDirection, BlockState pNeighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+  public BlockState updateShape(BlockState state, net.minecraft.world.level.LevelReader level, net.minecraft.world.level.ScheduledTickAccess scheduledTickAccess, BlockPos pos, Direction pDirection, BlockPos neighborPos, BlockState pNeighborState, net.minecraft.util.RandomSource random) {
     if (state.getValue(WATERLOGGED)) {
-      level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+      scheduledTickAccess.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
     }
-    return super.updateShape(state, pDirection, pNeighborState, level, pos, neighborPos);
+    return super.updateShape(state, level, scheduledTickAccess, pos, pDirection, neighborPos, pNeighborState, random);
   }
 
   @Override
@@ -73,6 +73,6 @@ public class KnightMetalBlock extends Block implements SimpleWaterloggedBlock {
 
   @Override
   public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-    entity.hurt(CombatHelper.damageSource(level, TinkerDamageTypes.KNIGHTMETAL), BLOCK_DAMAGE);
+    entity.hurtOrSimulate(CombatHelper.damageSource(level, TinkerDamageTypes.KNIGHTMETAL), BLOCK_DAMAGE);
   }
 }

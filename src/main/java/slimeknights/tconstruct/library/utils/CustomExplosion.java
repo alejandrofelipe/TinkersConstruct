@@ -178,7 +178,7 @@ public class CustomExplosion extends Explosion {
             if (bypassInvulnerableTime) {
               ToolAttackUtil.hurtNoInvulnerableTime(entity, customDamageSource, toDeal);
             } else {
-              entity.hurt(customDamageSource, toDeal);
+              entity.hurtOrSimulate(customDamageSource, toDeal);
             }
           }
 

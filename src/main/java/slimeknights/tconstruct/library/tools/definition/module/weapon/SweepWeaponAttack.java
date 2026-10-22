@@ -76,7 +76,7 @@ public record SweepWeaponAttack(LevelingValue range) implements MeleeHitToolHook
             && !(aoeTarget instanceof ArmorStand armorStand && armorStand.isMarker()) && attacker.distanceToSqr(aoeTarget) < rangeSq) {
           float angle = attacker.getYRot() * ((float) Math.PI / 180F);
           aoeTarget.knockback(0.4F, Mth.sin(angle), -Mth.cos(angle));
-          aoeTarget.hurt(source, sweepDamage);
+          aoeTarget.hurtOrSimulate(source, sweepDamage);
         }
       }
 

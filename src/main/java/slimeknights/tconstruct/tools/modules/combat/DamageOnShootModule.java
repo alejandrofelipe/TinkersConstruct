@@ -47,14 +47,14 @@ public record DamageOnShootModule(float damage, ResourceKey<DamageType> damageTy
   @Override
   public void onProjectileLaunch(IToolStackView tool, ModifierEntry modifier, LivingEntity shooter, Projectile projectile, @Nullable AbstractArrow arrow, ModDataNBT persistentData, boolean primary) {
     if (condition.matches(tool, modifier)) {
-      shooter.hurt(TinkerDamageTypes.source(shooter.level().registryAccess(), damageType), damage * modifier.getEffectiveLevel());
+      shooter.hurtOrSimulate(TinkerDamageTypes.source(shooter.level().registryAccess(), damageType), damage * modifier.getEffectiveLevel());
     }
   }
 
   @Override
   public void afterSlingLaunch(IToolStackView tool, ModifierEntry modifier, LivingEntity holder, LivingEntity target, ModifierEntry slingSource, float force, float multiplier, Vec3 angle) {
     if (condition.matches(tool, modifier)) {
-      holder.hurt(TinkerDamageTypes.source(holder.level().registryAccess(), damageType), damage * modifier.getEffectiveLevel());
+      holder.hurtOrSimulate(TinkerDamageTypes.source(holder.level().registryAccess(), damageType), damage * modifier.getEffectiveLevel());
     }
   }
 }

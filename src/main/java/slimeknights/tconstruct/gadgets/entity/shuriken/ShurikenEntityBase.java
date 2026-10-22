@@ -65,7 +65,7 @@ public abstract class ShurikenEntityBase extends ThrowableItemProjectile impleme
   @Override
   protected void onHitEntity(EntityHitResult result) {
     Entity entity = result.getEntity();
-    entity.hurt(damageSources().thrown(this, this.getOwner()), this.getDamage());
+    entity.hurtOrSimulate(damageSources().thrown(this, this.getOwner()), this.getDamage());
 
     if (!level().isClientSide() && entity instanceof LivingEntity) {
       Vec3 motion = this.getDeltaMovement().normalize();

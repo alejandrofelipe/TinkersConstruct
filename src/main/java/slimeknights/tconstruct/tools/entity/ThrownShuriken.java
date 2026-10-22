@@ -220,7 +220,7 @@ public class ThrownShuriken extends Projectile implements ToolProjectile, Projec
     } else {
       source = damageSources().thrown(this, this.getOwner());
     }
-    boolean hit = target.hurt(source, power);
+    boolean hit = target.hurtOrSimulate(source, power);
 
     if (hit && knockback > 0 && target instanceof LivingEntity living) {
       // knockback logic based on arrows

@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -63,7 +64,7 @@ public class CustomFireball extends Fireball implements ProjectileWithPower {
   }
 
   @Override
-  public boolean hurt(DamageSource pSource, float pAmount) {
+  public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
     return false;
   }
 
@@ -101,7 +102,7 @@ public class CustomFireball extends Fireball implements ProjectileWithPower {
       // PORT M3: 1.21 removed AbstractHurtingProjectile#doEnchantDamageEffects; post-hit enchantment
       // effects now run via EnchantmentHelper#doPostAttackEffectsWithItemSource which needs a weapon
       // ItemStack the modifier fireball does not carry, so we just deal the damage.
-      target.hurt(CombatHelper.damageSource(TinkerEffects.needsEnderferenceOverride(target) ? enderferenceType : damageType, this, owner), getDamage());
+      target.hurtOrSimulate(CombatHelper.damageSource(TinkerEffects.needsEnderferenceOverride(target) ? enderferenceType : damageType, this, owner), getDamage());
     }
   }
 
@@ -130,7 +131,7 @@ public class CustomFireball extends Fireball implements ProjectileWithPower {
     // despawn if going too high or low, otherwise projectile may live forever going into the sky
     double y = getY();
     Level level = level();
-    if (y < (level.getMinBuildHeight() - 64) || y > level.getMaxBuildHeight() + 64) {
+    if (y < (level.getMinY() - 64) || y > level.getMaxY() + 64) {
       onBelowWorld();
     }
   }

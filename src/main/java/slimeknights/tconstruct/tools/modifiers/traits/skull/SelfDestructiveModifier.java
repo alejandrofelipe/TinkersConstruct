@@ -70,7 +70,7 @@ public class SelfDestructiveModifier extends NoLevelsModifier implements Keybind
       // TODO: is firing mob grief event with a player okay?
       if (living.level() instanceof ServerLevel level) {
         level.explode(living, living.getX(), living.getY(), living.getZ(), amplifier + 1, ExplosionInteraction.MOB);
-        living.hurt(TinkerDamageTypes.source(level.registryAccess(), TinkerDamageTypes.SELF_DESTRUCT), 99999);
+        living.hurtServer(level, TinkerDamageTypes.source(level.registryAccess(), TinkerDamageTypes.SELF_DESTRUCT), 99999);
       }
       return true;
     }

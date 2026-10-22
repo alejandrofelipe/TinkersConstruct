@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.BooleanOp;
@@ -39,7 +39,7 @@ import java.util.EnumMap;
 import java.util.Optional;
 
 public class FaucetBlock extends Block implements EntityBlock {
-  public static final DirectionProperty FACING = BlockStateProperties.FACING_HOPPER;
+  public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING_HOPPER;
   private static final EnumMap<Direction,VoxelShape> SHAPES = Maps.newEnumMap(ImmutableMap.of(
     Direction.DOWN,  Shapes.join(box( 4, 10,  4, 12, 16, 12), box( 6, 10,  6, 10, 16, 10), BooleanOp.ONLY_FIRST),
     Direction.NORTH, Shapes.join(box( 4,  4, 10, 12, 10, 16), box( 6,  6, 10, 10, 10, 16), BooleanOp.ONLY_FIRST),
@@ -108,14 +108,11 @@ public class FaucetBlock extends Block implements EntityBlock {
 
   @SuppressWarnings("deprecation")
   @Override
-  public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+  public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, net.minecraft.world.level.redstone.Orientation orientation, boolean isMoving) {
     if (worldIn.isClientSide()) {
       return;
     }
-    getFaucet(worldIn, pos).ifPresent(faucet -> {
-      faucet.neighborChanged(fromPos);
-      faucet.handleRedstone(worldIn.hasNeighborSignal(pos));
-    });
+    getFaucet(worldIn, pos).ifPresent(faucet -> faucet.handleRedstone(worldIn.hasNeighborSignal(pos)));
   }
 
   @SuppressWarnings("deprecation")

@@ -84,7 +84,7 @@ public abstract class AbstractCastingBlock extends TableBlock {
   @SuppressWarnings("deprecation")
   @Deprecated
   @Override
-  public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+  public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, net.minecraft.world.level.redstone.Orientation orientation, boolean isMoving) {
     if (worldIn.isClientSide()) {
       return;
     }

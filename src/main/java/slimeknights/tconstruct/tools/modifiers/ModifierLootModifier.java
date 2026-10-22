@@ -44,13 +44,13 @@ public class ModifierLootModifier extends LootModifier {
   @Override
   protected ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
     // tool is for harvest
-    ItemStack stack = context.getParamOrNull(LootContextParams.TOOL);
+    ItemStack stack = context.getOptionalParameter(LootContextParams.TOOL);
 
     // if null, try killer entity
     if (stack == null) {
       // if this loot is due to a projectile fired by one of our tools, then use that projectile as the loot source
       // prevents weirdness when held tool switches after firing a projectile
-      if (context.getParamOrNull(LootContextParams.DIRECT_ATTACKING_ENTITY) instanceof Projectile projectile) {
+      if (context.getOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY) instanceof Projectile projectile) {
         ModifierNBT modifiers = EntityModifierCapability.getOrEmpty(projectile);
 
         // no need to build the dummy tool if we lack modifiers
@@ -70,7 +70,7 @@ public class ModifierLootModifier extends LootModifier {
       }
 
       // not a projectile causing it, fetch the killer entity directly from loot context
-      if (context.getParamOrNull(LootContextParams.ATTACKING_ENTITY) instanceof LivingEntity living) {
+      if (context.getOptionalParameter(LootContextParams.ATTACKING_ENTITY) instanceof LivingEntity living) {
         stack = living.getItemBySlot(ModifierLootingHandler.getLootingSlot(living));
       }
     }

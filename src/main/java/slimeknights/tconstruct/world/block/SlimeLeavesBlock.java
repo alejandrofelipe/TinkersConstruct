@@ -20,10 +20,10 @@ public class SlimeLeavesBlock extends LeavesBlock {
   }
 
   @Override
-  public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor worldIn, BlockPos currentPos, BlockPos facingPos) {
+  public BlockState updateShape(BlockState stateIn, net.minecraft.world.level.LevelReader worldIn, net.minecraft.world.level.ScheduledTickAccess scheduledTickAccess, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, net.minecraft.util.RandomSource random) {
     int i = getDistance(facingState) + 1;
     if (i != 1 || stateIn.getValue(DISTANCE) != i) {
-      worldIn.scheduleTick(currentPos, this, 1);
+      scheduledTickAccess.scheduleTick(currentPos, this, 1);
     }
 
     return stateIn;

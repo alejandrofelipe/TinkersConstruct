@@ -62,8 +62,8 @@ public class AntigravityEffect extends TinkerEffect {
       if (!living.level().isClientSide) {
         // 6100 meters is when it starts becoming hard to breathe, assuming world height is 320
         // really just need some arbitrarily big number to start damaging entities so you don't get entities falling up forever
-        if (living.getY() > level.getMaxBuildHeight() + 5780) {
-          living.hurt(level.damageSources().fellOutOfWorld(), 4.0F);
+        if (living.getY() > level.getMaxY() + 5780) {
+          living.hurtOrSimulate(level.damageSources().fellOutOfWorld(), 4.0F);
         }
       }
 

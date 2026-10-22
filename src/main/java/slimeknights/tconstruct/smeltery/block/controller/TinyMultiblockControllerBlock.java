@@ -46,7 +46,7 @@ public abstract class TinyMultiblockControllerBlock extends ControllerBlock {
 
   @Deprecated
   @Override
-  public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+  public BlockState updateShape(BlockState state, net.minecraft.world.level.LevelReader world, net.minecraft.world.level.ScheduledTickAccess scheduledTickAccess, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighbor, net.minecraft.util.RandomSource random) {
     if (direction == Direction.DOWN) {
       boolean hasFuel = isValidFuelSource(neighbor);
       state = state.setValue(IN_STRUCTURE, hasFuel);

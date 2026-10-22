@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
 import static slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.LIGHT;
 
 public class CastingTankBlock extends InventoryBlock implements ITankBlock, EntityBlock {
-  public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+  public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
   public CastingTankBlock(Properties properties) {
     super(properties);
@@ -108,7 +108,7 @@ public class CastingTankBlock extends InventoryBlock implements ITankBlock, Enti
   @SuppressWarnings("deprecation")
   @Deprecated
   @Override
-  public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+  public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, net.minecraft.world.level.redstone.Orientation orientation, boolean isMoving) {
     if (!worldIn.isClientSide() && worldIn.getBlockEntity(pos) instanceof CastingTankBlockEntity tank) {
       tank.handleRedstone(worldIn.hasNeighborSignal(pos));
     }

@@ -16,7 +16,8 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.pathfinder.PathType;
 import slimeknights.mantle.block.InventoryBlock;
 import slimeknights.tconstruct.smeltery.block.component.SearedBlock;
@@ -25,7 +26,7 @@ import javax.annotation.Nullable;
 
 /** Shared logic for all multiblock structure controllers */
 public abstract class ControllerBlock extends InventoryBlock {
-  public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+  public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
   public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
   public static final BooleanProperty IN_STRUCTURE = SearedBlock.IN_STRUCTURE;
   protected ControllerBlock(Properties builder) {

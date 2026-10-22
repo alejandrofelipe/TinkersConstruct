@@ -26,7 +26,7 @@ public class FlexBurningLiquidBlock extends FlexLiquidBlock {
   public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
     if (!entity.fireImmune() && entity.getFluidTypeHeight(this.fluid.getFluidType()) > 0) {
       entity.igniteForSeconds(burnTime);
-      if (entity.hurt(level.damageSources().lava(), damage)) {
+      if (entity.hurtOrSimulate(level.damageSources().lava(), damage)) {
         entity.playSound(SoundEvents.GENERIC_BURN, 0.4F, 2.0F + level.random.nextFloat() * 0.4F);
       }
     }

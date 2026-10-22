@@ -116,7 +116,7 @@ public record MeltingModule(LevelingInt temperature, LevelingInt nuggetsPerMetal
     // first, update inventory
     IMeltingRecipe recipe = lastRecipe;
     if (recipe == null || !recipe.matches(this, world)) {
-      recipe = world.getRecipeManager().getRecipeFor(TinkerRecipeTypes.MELTING.get(), this, world).map(net.minecraft.world.item.crafting.RecipeHolder::value).orElse(null);
+      recipe = world.getServer().getRecipeManager().getRecipeFor(TinkerRecipeTypes.MELTING.get(), this, world).map(net.minecraft.world.item.crafting.RecipeHolder::value).orElse(null);
       if (recipe == null) {
         MeltingModule.stack = ItemStack.EMPTY;
         return FluidStack.EMPTY;
@@ -147,8 +147,8 @@ public record MeltingModule(LevelingInt temperature, LevelingInt nuggetsPerMetal
     // allow tools to decide that we *must* melt the drops
     // for harvestable blocsk though, ignore that flag if the block was not effective (so we don't delete
     boolean forceMelt = tool.getVolatileData().getBoolean(FORCE_MELTING);
-    if (forceMelt && context.hasParam(LootContextParams.BLOCK_STATE)) {
-      BlockState state = context.getParam(LootContextParams.BLOCK_STATE);
+    if (forceMelt && context.hasParameter(LootContextParams.BLOCK_STATE)) {
+      BlockState state = context.getParameter(LootContextParams.BLOCK_STATE);
       forceMelt = tool.getHook(ToolHooks.IS_EFFECTIVE).isToolEffective(tool, state);
     }
 
@@ -204,7 +204,7 @@ public record MeltingModule(LevelingInt temperature, LevelingInt nuggetsPerMetal
     if (damageDealt > 0 && condition.matches(tool, modifier)) {
       // first, find the proper recipe
       if (target != null) {
-        EntityMeltingRecipe recipe = EntityMeltingRecipeCache.findRecipe(target.level().getRecipeManager(), target.getType());
+        EntityMeltingRecipe recipe = EntityMeltingRecipeCache.findRecipe(target.level().getServer().getRecipeManager(), target.getType());
         FluidStack output;
         int damagePerOutput;
         if (recipe != null) {

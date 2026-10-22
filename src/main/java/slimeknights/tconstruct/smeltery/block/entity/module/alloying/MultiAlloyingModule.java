@@ -49,8 +49,13 @@ public class MultiAlloyingModule implements IAlloyingModule {
    */
   private List<AlloyRecipe> getRecipes() {
     if (lastRecipes == null) {
-      lastRecipes = getLevel().getRecipeManager().getRecipesFor(TinkerRecipeTypes.ALLOYING.get(), alloyTank, getLevel())
-                              .stream().map(RecipeHolder::value).collect(Collectors.toList());
+      lastRecipes = getLevel().getServer().getRecipeManager().getRecipes()
+                              .stream()
+                              .map(RecipeHolder::value)
+                              .filter(r -> r.getType() == TinkerRecipeTypes.ALLOYING.get())
+                              .map(r -> (AlloyRecipe) r)
+                              .filter(r -> r.matches(alloyTank, getLevel()))
+                              .collect(Collectors.toList());
     }
     return lastRecipes;
   }

@@ -22,6 +22,6 @@ public class BlockOrEntityCondition implements LootItemCondition {
 
   @Override
   public boolean test(LootContext lootContext) {
-    return lootContext.hasParam(LootContextParams.THIS_ENTITY) || lootContext.hasParam(LootContextParams.BLOCK_STATE);
+    return lootContext.hasParameter(LootContextParams.THIS_ENTITY) || lootContext.hasParameter(LootContextParams.BLOCK_STATE);
   }
 }

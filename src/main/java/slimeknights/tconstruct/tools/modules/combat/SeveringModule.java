@@ -42,18 +42,18 @@ public enum SeveringModule implements ModifierModule, ProcessLootModifierHook {
   public void processLoot(IToolStackView tool, ModifierEntry modifier, List<ItemStack> generatedLoot, LootContext context) {
     // if no damage source, probably not a mob
     // otherwise blocks breaking (where THIS_ENTITY is the player) start dropping player heads
-    if (!context.hasParam(LootContextParams.DAMAGE_SOURCE)) {
+    if (!context.hasParameter(LootContextParams.DAMAGE_SOURCE)) {
       return;
     }
 
     // must have an entity
-    Entity entity = context.getParamOrNull(LootContextParams.THIS_ENTITY);
+    Entity entity = context.getOptionalParameter(LootContextParams.THIS_ENTITY);
     if (entity != null) {
       // ensure no head so far
       if (generatedLoot.stream().noneMatch(stack -> stack.is(ItemTags.SKULLS))) {
         // find proper recipe
         Level world = context.getLevel();
-        List<SeveringRecipe> recipes = SeveringRecipeCache.findRecipe(world.getRecipeManager(), entity.getType());
+        List<SeveringRecipe> recipes = SeveringRecipeCache.findRecipe(world.getServer().getRecipeManager(), entity.getType());
         if (!recipes.isEmpty()) {
           float level = modifier.getEffectiveLevel();
           // PORT M3 (looting): LootContext.getLootingModifier() was removed in 1.21; loot bonus is now driven by the

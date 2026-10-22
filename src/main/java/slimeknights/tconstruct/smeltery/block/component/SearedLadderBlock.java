@@ -108,7 +108,7 @@ public class SearedLadderBlock extends OrientableSmelteryBlock {
 
   @Deprecated
   @Override
-  public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor worldIn, BlockPos currentPos, BlockPos facingPos) {
+  public BlockState updateShape(BlockState state, net.minecraft.world.level.LevelReader worldIn, net.minecraft.world.level.ScheduledTickAccess scheduledTickAccess, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, net.minecraft.util.RandomSource random) {
     if (facing == Direction.DOWN) {
       return state.setValue(BOTTOM, !facingState.is(this) || state.getValue(FACING) != facingState.getValue(FACING));
     }

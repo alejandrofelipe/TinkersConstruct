@@ -64,7 +64,7 @@ public record UpdateHealthModule(LevelingValue bonus, Set<EquipmentSlot> slots, 
       entity.setHealth(newHealth);
     } else if (bonus < 0) {
       // if harming, apply using a hurt to trigger a death message if it kills you
-      entity.hurt(CombatHelper.damageSource(entity.level(), TinkerDamageTypes.UPDATE_HEALTH), -bonus);
+      entity.hurtOrSimulate(CombatHelper.damageSource(entity.level(), TinkerDamageTypes.UPDATE_HEALTH), -bonus);
     }
   }
 

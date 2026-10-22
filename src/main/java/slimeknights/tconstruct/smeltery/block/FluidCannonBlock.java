@@ -113,7 +113,7 @@ public class FluidCannonBlock extends SearedTankBlock implements IFluidCannon, E
   @SuppressWarnings("deprecation")
   @Deprecated
   @Override
-  public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
+  public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, net.minecraft.world.level.redstone.Orientation orientation, boolean isMoving) {
     boolean hasSignal = level.hasNeighborSignal(pos) || level.hasNeighborSignal(pos.above());
     boolean wasTriggered = state.getValue(TRIGGERED);
     if (hasSignal && !wasTriggered) {

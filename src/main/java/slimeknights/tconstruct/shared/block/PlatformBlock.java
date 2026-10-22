@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.BooleanOp;
@@ -110,7 +110,7 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock {
   }
 
   /** Checks if the block has the given facing property */
-  private static boolean facingConnected(Direction facing, BlockState state, DirectionProperty property) {
+  private static boolean facingConnected(Direction facing, BlockState state, EnumProperty<Direction> property) {
     return !state.hasProperty(property) || state.getValue(property) == facing;
   }
 
@@ -156,9 +156,9 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock {
   }
 
   @Override
-  public BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, LevelAccessor level, BlockPos selfPos, BlockPos neighborPos) {
+  public BlockState updateShape(BlockState state, net.minecraft.world.level.LevelReader level, net.minecraft.world.level.ScheduledTickAccess scheduledTickAccess, BlockPos selfPos, Direction direction, BlockPos neighborPos, BlockState neighbor, net.minecraft.util.RandomSource random) {
     if (state.getValue(WATERLOGGED)) {
-      level.scheduleTick(selfPos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+      scheduledTickAccess.scheduleTick(selfPos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
     }
 
     if (direction == Direction.UP) {

@@ -36,10 +36,10 @@ public class AlloyerBlock extends TinyMultiblockControllerBlock {
   }
 
   @Override
-  public void neighborChanged(BlockState state, Level world, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
-    Direction direction = Util.directionFromOffset(pos, fromPos);
+  public void onNeighborChange(BlockState state, net.minecraft.world.level.LevelReader level, BlockPos pos, BlockPos neighbor) {
+    Direction direction = Util.directionFromOffset(pos, neighbor);
     if (direction != Direction.DOWN) {
-      BlockEntityHelper.get(AlloyerBlockEntity.class, world, pos).ifPresent(te -> te.neighborChanged(direction));
+      BlockEntityHelper.get(AlloyerBlockEntity.class, level, pos).ifPresent(te -> te.neighborChanged(direction));
     }
   }
 

@@ -40,8 +40,8 @@ public class TeleportHelper {
     double posZ = living.getZ();
 
     RandomSource random = living.getRandom();
-    float minHeight = level.getMinBuildHeight();
-    float maxHeight = (level instanceof ServerLevel server ? (level.getMinBuildHeight() + server.getLogicalHeight()) : level.getMaxBuildHeight()) - 1;
+    float minHeight = level.getMinY();
+    float maxHeight = (level instanceof ServerLevel server ? (level.getMinY() + server.getLogicalHeight()) : level.getMaxY() + 1) - 1;
     for(int i = 0; i < chances; ++i) {
       double x = posX + (random.nextDouble() - 0.5D) * diameter;
       double y = Mth.clamp(posY + (double)(random.nextInt(diameter) - 8), minHeight, maxHeight);

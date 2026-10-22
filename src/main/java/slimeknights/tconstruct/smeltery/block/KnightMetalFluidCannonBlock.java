@@ -33,6 +33,6 @@ public class KnightMetalFluidCannonBlock extends FluidCannonBlock {
 
   @Override
   public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-    entity.hurt(CombatHelper.damageSource(level, TinkerDamageTypes.KNIGHTMETAL), KnightMetalBlock.BLOCK_DAMAGE);
+    entity.hurtOrSimulate(CombatHelper.damageSource(level, TinkerDamageTypes.KNIGHTMETAL), KnightMetalBlock.BLOCK_DAMAGE);
   }
 }

@@ -86,7 +86,7 @@ public class AutosmeltModule implements ModifierModule, ProcessLootModifierHook 
     // try each recipe type to see if we have a recipe for any of them
     Optional<? extends AbstractCookingRecipe> recipe = Optional.empty();
     for (RecipeType<? extends AbstractCookingRecipe> recipeType : recipeTypes) {
-      recipe = world.getRecipeManager().getRecipeFor(recipeType, input, world).map(RecipeHolder::value);
+      recipe = world.getServer().getRecipeManager().getRecipeFor(recipeType, input, world).map(RecipeHolder::value);
       if (recipe.isPresent()) {
         break;
       }

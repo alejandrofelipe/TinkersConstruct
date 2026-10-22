@@ -34,7 +34,7 @@ public class InvertedCakeBlock extends FoodCakeBlock {
   }
 
   @Override
-  public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor level, BlockPos pos, BlockPos facingPos) {
+  public BlockState updateShape(BlockState state, net.minecraft.world.level.LevelReader level, net.minecraft.world.level.ScheduledTickAccess scheduledTickAccess, BlockPos pos, Direction facing, BlockPos facingPos, BlockState facingState, net.minecraft.util.RandomSource random) {
     if (facing == Direction.UP && !state.canSurvive(level, pos)) {
       return Blocks.AIR.defaultBlockState();
     }

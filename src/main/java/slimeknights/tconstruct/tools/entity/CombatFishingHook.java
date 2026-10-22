@@ -236,7 +236,7 @@ public class CombatFishingHook extends FishingHook implements ProjectileWithKnoc
         AttributeInstance knockback = ToolAttackUtil.disableKnockback(targetLiving);
         // actually hurt the entity
         float oldHealth = targetLiving != null ? targetLiving.getHealth() : 0;
-        if (target.hurt(source, damage)) {
+        if (target.hurtOrSimulate(source, damage)) {
           if (!this.level().isClientSide && owner instanceof LivingEntity ownerLiving) {
             // 1.21: EnchantmentHelper#doPostHurtEffects(LivingEntity, Entity) was unified into
             // doPostAttackEffectsWithItemSource which runs the target's post-hit enchantment effects (e.g. thorns)

@@ -50,6 +50,6 @@ public record ThornsModule(ResourceKey<DamageType> damageType, LevelingValue cha
   @Override
   public void applyEffect(IToolStackView tool, ModifierEntry modifier, float value, EquipmentContext context, Entity attacker, DamageSource source, float damageDealt) {
     // this works like vanilla, damage is capped due to the hurt immunity mechanics, so if multiple pieces apply thorns between us and vanilla, damage is capped at max amount
-    attacker.hurt(CombatHelper.damageSource(damageType, context.getEntity()), value);
+    attacker.hurtOrSimulate(CombatHelper.damageSource(damageType, context.getEntity()), value);
   }
 }

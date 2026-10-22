@@ -240,7 +240,7 @@ public class ToolAttackUtil {
 
     // removed: sword special attack check and logic, replaced by this
     Entity targetEntity = context.getTarget();
-    boolean didHit = targetEntity.hurt(context.makeDamageSource(), damage);
+    boolean didHit = targetEntity.hurtOrSimulate(context.makeDamageSource(), damage);
 
     // reset hand to make sure we don't mess with vanilla tools
     ModifierLootingHandler.setLootingSlot(attackerLiving, EquipmentSlot.MAINHAND);
@@ -424,7 +424,7 @@ public class ToolAttackUtil {
     // set hurt resistance time to 0 because we always want to deal damage in traits
     int lastInvulnerableTime = target.invulnerableTime;
     target.invulnerableTime = 0;
-    boolean hit = target.hurt(source, damage);
+    boolean hit = target.hurtOrSimulate(source, damage);
     // reset to the old time so bows work right
     target.invulnerableTime = lastInvulnerableTime;
     // set total received damage, important for AI and stuff
@@ -529,9 +529,9 @@ public class ToolAttackUtil {
   @Deprecated(forRemoval = true)
   public static boolean dealDefaultDamage(LivingEntity attacker, Entity target, float damage) {
     if (attacker instanceof Player player) {
-      return target.hurt(attacker.damageSources().playerAttack(player), damage);
+      return target.hurtOrSimulate(attacker.damageSources().playerAttack(player), damage);
     }
-    return target.hurt(attacker.damageSources().mobAttack(attacker), damage);
+    return target.hurtOrSimulate(attacker.damageSources().mobAttack(attacker), damage);
   }
 
   /** @deprecated use {@link #performAttack(IToolStackView, ToolAttackContext)} */

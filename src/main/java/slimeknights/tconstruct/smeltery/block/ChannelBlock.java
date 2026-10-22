@@ -233,7 +233,7 @@ public class ChannelBlock extends Block implements EntityBlock {
 	@SuppressWarnings("deprecation")
 	@Override
 	@Deprecated
-	public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor world, BlockPos currentPos, BlockPos facingPos) {
+	public BlockState updateShape(BlockState state, net.minecraft.world.level.LevelReader world, net.minecraft.world.level.ScheduledTickAccess scheduledTickAccess, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, net.minecraft.util.RandomSource random) {
 		// down only cares about connected or not
 		if (facing == Direction.DOWN) {
 			if (state.getValue(DOWN) && facingState.isAir()) {
@@ -362,16 +362,22 @@ public class ChannelBlock extends Block implements EntityBlock {
 	@SuppressWarnings("deprecation")
 	@Override
 	@Deprecated
-	public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
-		super.neighborChanged(state, worldIn, pos, blockIn, fromPos, isMoving);
+	public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, net.minecraft.world.level.redstone.Orientation orientation, boolean isMoving) {
+		super.neighborChanged(state, worldIn, pos, blockIn, orientation, isMoving);
 		if (!worldIn.isClientSide) {
 			boolean isPowered = worldIn.hasNeighborSignal(pos);
 			if (isPowered != state.getValue(POWERED)) {
 				state = state.setValue(POWERED, isPowered).setValue(DOWN, isPowered && canConnect(worldIn, pos, Direction.DOWN));
 				worldIn.setBlock(pos, state, Block.UPDATE_CLIENTS);
 			}
-      BlockEntityHelper.get(ChannelBlockEntity.class, worldIn, pos)
-                      .ifPresent(te -> te.removeCachedNeighbor(Util.directionFromOffset(pos, fromPos)));
+		}
+	}
+
+	@Override
+	public void onNeighborChange(BlockState state, net.minecraft.world.level.LevelReader level, BlockPos pos, BlockPos neighbor) {
+		if (!level.isClientSide()) {
+			BlockEntityHelper.get(ChannelBlockEntity.class, level, pos)
+			                 .ifPresent(te -> te.removeCachedNeighbor(Util.directionFromOffset(pos, neighbor)));
 		}
 	}
 

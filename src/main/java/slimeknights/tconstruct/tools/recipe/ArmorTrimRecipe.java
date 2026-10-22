@@ -157,7 +157,7 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
                                                  .map(IModifiableDisplay::getDisplayStack).toList();
       if (!trims.isEmpty() && !toolInputs.isEmpty()) {
         ResourceLocation id = getId();
-        displayRecipes = access.registryOrThrow(Registries.TRIM_MATERIAL).holders()
+        displayRecipes = access.lookupOrThrow(Registries.TRIM_MATERIAL).listElements()
           .map(material -> new DisplayRecipe(id, toolInputs, trims, material))
           .collect(Collectors.toList());
       } else {

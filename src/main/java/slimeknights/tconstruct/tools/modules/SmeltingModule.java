@@ -130,7 +130,7 @@ public record SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeT
         return lastRecipe;
       }
       // if that failed, do a recipe lookup
-      AbstractCookingRecipe recipe = level.getRecipeManager().getRecipeFor(recipeType, input, level).map(RecipeHolder::value).orElse(null);
+      AbstractCookingRecipe recipe = level.getServer().getRecipeManager().getRecipeFor(recipeType, input, level).map(RecipeHolder::value).orElse(null);
       if (recipe != null) {
         lastRecipe = recipe;
       }

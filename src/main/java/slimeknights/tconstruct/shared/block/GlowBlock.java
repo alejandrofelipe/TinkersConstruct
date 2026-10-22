@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -26,7 +26,7 @@ import java.util.Objects;
 
 public class GlowBlock extends Block {
 
-  public static final DirectionProperty FACING = BlockStateProperties.FACING;
+  public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
   public GlowBlock(Properties properties) {
     super(properties);
@@ -100,12 +100,12 @@ public class GlowBlock extends Block {
 
   @SuppressWarnings("deprecation")
   @Override
-  public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean p_220069_6_) {
+  public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, net.minecraft.world.level.redstone.Orientation orientation, boolean p_220069_6_) {
     if (!this.canSurvive(state, worldIn, pos)) {
       worldIn.removeBlock(pos, false);
     }
 
-    super.neighborChanged(state, worldIn, pos, blockIn, fromPos, p_220069_6_);
+    super.neighborChanged(state, worldIn, pos, blockIn, orientation, p_220069_6_);
   }
 
   @SuppressWarnings("deprecation")

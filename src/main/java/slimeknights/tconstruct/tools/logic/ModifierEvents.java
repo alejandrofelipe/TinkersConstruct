@@ -487,7 +487,7 @@ public class ModifierEvents {
         }
 
         // hurt the enderman
-        if (target.hurt(damageSource, (float) damage)) {
+        if (target.hurtOrSimulate(damageSource, (float) damage)) {
           if (!level.isClientSide && arrow.getPierceLevel() <= 0) {
             target.setArrowCount(target.getArrowCount() + 1);
           }
