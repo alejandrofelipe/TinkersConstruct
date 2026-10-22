@@ -20,8 +20,8 @@ import slimeknights.tconstruct.tools.client.material.ThrownShurikenRenderer;
 public class GadgetClientEvents extends ClientEventBase {
   @SubscribeEvent
   static void registerModels(RegisterAdditional event) {
-    FancyItemFrameRenderer.LOCATIONS_MODEL.values().forEach(event::register);
-    FancyItemFrameRenderer.LOCATIONS_MODEL_MAP.values().forEach(event::register);
+    FancyItemFrameRenderer.LOCATIONS_MODEL.values().forEach(mrl -> event.register(mrl.id()));
+    FancyItemFrameRenderer.LOCATIONS_MODEL_MAP.values().forEach(mrl -> event.register(mrl.id()));
   }
 
   @SubscribeEvent
@@ -30,7 +30,7 @@ public class GadgetClientEvents extends ClientEventBase {
     EntityRendererProvider<ThrowableItemProjectile> throwable = ThrownItemRenderer::new;
     event.registerEntityRenderer(TinkerGadgets.glowBallEntity.get(), throwable);
     event.registerEntityRenderer(TinkerGadgets.eflnEntity.get(), throwable);
-    EntityRendererProvider<ShurikenEntityBase> shuriken = ThrownShurikenRenderer::new;
+    EntityRendererProvider<ShurikenEntityBase> shuriken = ctx -> new ThrownShurikenRenderer<>(ctx);
     event.registerEntityRenderer(TinkerGadgets.quartzShurikenEntity.get(), shuriken);
     event.registerEntityRenderer(TinkerGadgets.flintShurikenEntity.get(), shuriken);
   }

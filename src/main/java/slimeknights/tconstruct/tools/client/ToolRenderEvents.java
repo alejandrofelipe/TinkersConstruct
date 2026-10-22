@@ -10,6 +10,7 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
@@ -25,6 +26,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.HitResult.Type;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
@@ -110,7 +112,8 @@ public class ToolRenderEvents {
       BlockPos pos = extraBlocks.next();
       if (world.getWorldBorder().isWithinBounds(pos)) {
         rendered++;
-        worldRender.renderHitOutline(matrices, vertexBuilder, viewEntity, x, y, z, pos, world.getBlockState(pos));
+        // 1.21.4: LevelRenderer#renderHitOutline is private, so inline its ShapeRenderer#renderShape body (semi-transparent black outline)
+        ShapeRenderer.renderShape(matrices, vertexBuilder, world.getBlockState(pos).getShape(world, pos, CollisionContext.of(viewEntity)), pos.getX() - x, pos.getY() - y, pos.getZ() - z, 0x66000000);
       }
     } while(rendered < MAX_BLOCKS && extraBlocks.hasNext());
     matrices.popPose();

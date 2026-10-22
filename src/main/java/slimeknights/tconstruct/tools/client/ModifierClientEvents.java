@@ -8,7 +8,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.renderer.ItemInHandRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.MapRenderer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.util.Mth;
@@ -268,14 +270,14 @@ public class ModifierClientEvents {
       if (renderShield) {
         int x = scaledWidth / 2 + (rightHanded ? -117 : 101);
         int y = scaledHeight - 38;
-        graphics.blit(Icons.ICONS, x - 3, y - 3, emptyOffhand ? 211 : 189, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
+        graphics.blit(RenderType::guiTextured, Icons.ICONS, x - 3, y - 3, emptyOffhand ? 211 : 189, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
         mc.gui.renderSlot(graphics, x, y, partialTicks, player, nextOffhand, 11);
       }
       // want to the side above the normal offhand item
       if (renderSleeves) {
         int x = scaledWidth / 2 + (rightHanded ? -136 : 120);
         int y = scaledHeight - 19;
-        graphics.blit(Icons.ICONS, x - 3, y - 3, emptyOffhand ? 211 : rightHanded ? 145 : 123, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
+        graphics.blit(RenderType::guiTextured, Icons.ICONS, x - 3, y - 3, emptyOffhand ? 211 : rightHanded ? 145 : 123, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
         mc.gui.renderSlot(graphics, x, y, partialTicks, player, currentSleeve, 11);
       }
 
@@ -316,18 +318,24 @@ public class ModifierClientEvents {
 
         // draw background
         int light = 0xF000F0;
-        MultiBufferSource buffer = graphics.bufferSource();
-        VertexConsumer consumer = buffer.getBuffer(data == null ? ItemInHandRenderer.MAP_BACKGROUND : ItemInHandRenderer.MAP_BACKGROUND_CHECKERBOARD);
         Matrix4f matrix = poseStack.last().pose();
-        consumer.addVertex(matrix,  -7, 135, 0).setColor(255, 255, 255, 255).setUv(0, 1).setLight(light);
-        consumer.addVertex(matrix, 135, 135, 0).setColor(255, 255, 255, 255).setUv(1, 1).setLight(light);
-        consumer.addVertex(matrix, 135,  -7, 0).setColor(255, 255, 255, 255).setUv(1, 0).setLight(light);
-        consumer.addVertex(matrix,  -7,  -7, 0).setColor(255, 255, 255, 255).setUv(0, 0).setLight(light);
-
-        // draw map if present
-        if (data != null && index != null) {
-          Minecraft.getInstance().gameRenderer.getMapRenderer().render(poseStack, buffer, index, data, false, light);
+        // 1.21.4: GuiGraphics#bufferSource is gone; custom geometry goes through drawSpecial, and maps render from a MapRenderState
+        boolean hasMap = data != null && index != null;
+        MapRenderState mapRenderState = new MapRenderState();
+        MapRenderer mapRenderer = Minecraft.getInstance().getMapRenderer();
+        if (hasMap) {
+          mapRenderer.extractRenderState(index, data, mapRenderState);
         }
+        graphics.drawSpecial(bufferSource -> {
+          VertexConsumer consumer = bufferSource.getBuffer(data == null ? ItemInHandRenderer.MAP_BACKGROUND : ItemInHandRenderer.MAP_BACKGROUND_CHECKERBOARD);
+          consumer.addVertex(matrix,  -7, 135, 0).setColor(255, 255, 255, 255).setUv(0, 1).setLight(light);
+          consumer.addVertex(matrix, 135, 135, 0).setColor(255, 255, 255, 255).setUv(1, 1).setLight(light);
+          consumer.addVertex(matrix, 135,  -7, 0).setColor(255, 255, 255, 255).setUv(1, 0).setLight(light);
+          consumer.addVertex(matrix,  -7,  -7, 0).setColor(255, 255, 255, 255).setUv(0, 0).setLight(light);
+          if (hasMap) {
+            mapRenderer.render(mapRenderState, poseStack, bufferSource, false, light);
+          }
+        });
         poseStack.popPose();
       }
 
@@ -369,13 +377,13 @@ public class ModifierClientEvents {
         int lastRow = rows - 1;
         for (int r = 0; r < lastRow; r++) {
           for (int c = 0; c < columns; c++) {
-            graphics.blit(Icons.ICONS, xStart + c * SLOT_BACKGROUND_SIZE, yStart + r * SLOT_BACKGROUND_SIZE, 167, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
+            graphics.blit(RenderType::guiTextured, Icons.ICONS, xStart + c * SLOT_BACKGROUND_SIZE, yStart + r * SLOT_BACKGROUND_SIZE, 167, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
           }
         }
         // last row will be aligned in the direction of x orientation (center, left, or right)
         int lastRowOffset = xOrientation.align((columns - inLastRow) * 2) * SLOT_BACKGROUND_SIZE / 2;
         for (int c = 0; c < inLastRow; c++) {
-          graphics.blit(Icons.ICONS, xStart + c * SLOT_BACKGROUND_SIZE + lastRowOffset, yStart + lastRow * SLOT_BACKGROUND_SIZE, 167, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
+          graphics.blit(RenderType::guiTextured, Icons.ICONS, xStart + c * SLOT_BACKGROUND_SIZE + lastRowOffset, yStart + lastRow * SLOT_BACKGROUND_SIZE, 167, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
         }
 
         // draw items

@@ -3,6 +3,7 @@ package slimeknights.tconstruct.tools.modifiers.effect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +14,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.extensions.common.IClientMobEffectExtensions;
-import net.neoforged.neoforge.common.EffectCure;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.modifiers.hook.interaction.GeneralInteractionModifierHook;
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
@@ -30,12 +30,8 @@ public class HelmetChargingEffect extends MobEffect {
     super(MobEffectCategory.NEUTRAL, -1);
   }
 
-  @Override
-  public void fillEffectCures(java.util.Set<EffectCure> cures, MobEffectInstance effectInstance) {
-    // intentionally add no cures so this effect cannot be cured
-  }
-
-  @Override
+  // 1.21.4: MobEffect#initializeClient was removed; register via RegisterClientExtensionsEvent#registerMobEffect
+  // (e.g. event.registerMobEffect(ext, effect)) from a client mod-bus handler. Kept here as the extension factory.
   public void initializeClient(Consumer<IClientMobEffectExtensions> consumer) {
     consumer.accept(new IClientMobEffectExtensions() {
       private static final ResourceLocation BAR_KEY = TConstruct.getResource("helmet_charging_bar");
@@ -51,7 +47,7 @@ public class HelmetChargingEffect extends MobEffect {
         // start by drawing the original texture, skip alpha
         MobEffectTextureManager textures = mc.getMobEffectTextures();
         TextureAtlasSprite sprite = textures.get(instance.getEffect());
-        graphics.blit(x + 3, y + 3, 0, 18, 18, sprite);
+        graphics.blitSprite(RenderType::guiTextured, sprite, x + 3, y + 3, 18, 18);
 
         // if the helmet has a drawtime, render the extra bar
         if (mc.player != null) {
@@ -69,9 +65,11 @@ public class HelmetChargingEffect extends MobEffect {
               } else {
                 height = (dd - duration) * 18 / drawtime;
               }
-              float v0 = sprite.getV0(), v1 = sprite.getV1();
               int yOffset = (18 - height);
-              graphics.innerBlit(sprite.atlasLocation(), x + 3, x + 21, y + 3 + yOffset, y + 21, 0, sprite.getU0(), sprite.getU1(), v0 + (v1 - v0) * yOffset / 18f, v1);
+              // 1.21.4: GuiGraphics#innerBlit is private; clip the full bar sprite to its lower portion with a scissor
+              graphics.enableScissor(x + 3, y + 3 + yOffset, x + 21, y + 21);
+              graphics.blitSprite(RenderType::guiTextured, sprite, x + 3, y + 3, 18, 18);
+              graphics.disableScissor();
             }
           }
         }

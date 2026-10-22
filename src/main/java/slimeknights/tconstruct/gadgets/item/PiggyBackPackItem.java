@@ -3,9 +3,11 @@ package slimeknights.tconstruct.gadgets.item;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -169,7 +171,7 @@ public class PiggyBackPackItem extends TooltipItem {
     }
 
     @Override
-    public boolean applyEffectTick(@Nonnull LivingEntity livingEntityIn, int amplifier) {
+    public boolean applyEffectTick(@Nonnull ServerLevel level, @Nonnull LivingEntity livingEntityIn, int amplifier) {
       ItemStack chestArmor = livingEntityIn.getItemBySlot(EquipmentSlot.CHEST);
       if (chestArmor.isEmpty() || chestArmor.getItem() != TinkerGadgets.piggyBackpack.get()) {
         TinkerGadgets.piggyBackpack.get().matchCarriedEntitiesToCount(livingEntityIn, 0);
@@ -185,7 +187,8 @@ public class PiggyBackPackItem extends TooltipItem {
       return true;
     }
 
-    @Override
+    // 1.21.4: MobEffect#initializeClient was removed; register via RegisterClientExtensionsEvent#registerMobEffect
+    // (e.g. event.registerMobEffect(ext, effect)) from a client mod-bus handler. Kept here as the extension factory.
     public void initializeClient(Consumer<IClientMobEffectExtensions> consumer) {
       consumer.accept(new IClientMobEffectExtensions() {
         private final Minecraft mc = Minecraft.getInstance();
@@ -201,11 +204,11 @@ public class PiggyBackPackItem extends TooltipItem {
           if (amplifier > 2) {
             amplifier = 2;
           }
-          graphics.blit(x, y, 0, 18, 18, mc.getMobEffectTextures().getSprite(ICONS[amplifier]));
+          graphics.blitSprite(RenderType::guiTextured, mc.getMobEffectTextures().getSprite(ICONS[amplifier]), x, y, 18, 18);
         }
 
         @Override
-        public boolean renderInventoryIcon(MobEffectInstance effect, EffectRenderingInventoryScreen<?> gui, GuiGraphics graphics, int x, int y, int z) {
+        public boolean renderInventoryIcon(MobEffectInstance effect, AbstractContainerScreen<?> gui, GuiGraphics graphics, int x, int y, int z) {
           renderIcon(effect, graphics, x, y + 7);
           return true;
         }
