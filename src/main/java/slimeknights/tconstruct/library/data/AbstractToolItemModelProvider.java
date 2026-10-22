@@ -7,7 +7,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.data.CachedOutput;
+import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.data.PackOutput.PathProvider;
 import net.minecraft.data.PackOutput.Target;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -37,10 +39,14 @@ import java.util.stream.Stream;
 /** Helper for generating tool item models */
 public abstract class AbstractToolItemModelProvider extends GenericDataProvider {
   protected final Map<String,JsonObject> models = new HashMap<>();
+  /** PORT 1.21.4: item-model definitions (assets/<ns>/items/<id>.json), keyed by item id */
+  protected final Map<ResourceLocation,JsonObject> itemModels = new HashMap<>();
+  private final PathProvider itemPath;
   protected final ResourceManager resourceManager;
   protected final String modId;
   public AbstractToolItemModelProvider(PackOutput packOutput, ResourceManager resourceManager, String modId) {
     super(packOutput, Target.RESOURCE_PACK, "models/item");
+    this.itemPath = packOutput.createPathProvider(Target.RESOURCE_PACK, "items");
     this.resourceManager = resourceManager;
     this.modId = modId;
   }
@@ -56,7 +62,50 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
       return CompletableFuture.failedFuture(e);
     }
     // no key comparator - I want them sorted in the same order as the input models for easier readability
-    return allOf(models.entrySet().stream().map((entry) -> saveJson(cache, resource(entry.getKey()), entry.getValue(), null)));
+    return allOf(Stream.concat(
+      models.entrySet().stream().map((entry) -> saveJson(cache, resource(entry.getKey()), entry.getValue(), null)),
+      itemModels.entrySet().stream().map((entry) -> DataProvider.saveStable(cache, entry.getValue(), itemPath.json(entry.getKey())))));
+  }
+
+  /**
+   * Converts a legacy {@code tconstruct:tool} loader model (parent/textures/parts/modifier_maps/overrides) into the 1.21.4
+   * {@code tconstruct:tool} {@link net.minecraft.client.renderer.item.ItemModel.Unbaked} object, matching
+   * {@code ToolModel.Unbaked.MAP_CODEC}. The legacy {@code modifier_roots} has no codec field (modifier models now resolve
+   * via {@code modifier_maps}) and {@code overrides} become the dispatch tree, so both are dropped here.
+   */
+  protected JsonObject convertToolDef(JsonObject legacy) {
+    JsonObject def = new JsonObject();
+    def.addProperty("type", "tconstruct:tool");
+    if (legacy.has("parent")) {
+      def.addProperty("transform_model", GsonHelper.getAsString(legacy, "parent"));
+    }
+    for (String key : new String[]{"textures", "parts", "modifier_maps", "large", "large_offset", "first_modifiers", "show_traits"}) {
+      if (legacy.has(key)) {
+        def.add(key, legacy.get(key));
+      }
+    }
+    return def;
+  }
+
+  /**
+   * Emits the {@code items/<id>.json} item-model definition for a tool, dispatching the broken variant via a
+   * {@code minecraft:condition} on {@code tconstruct:broken}.
+   * PORT 1.21.4: the charging/blocking display override and the ranged (pulling/ammo/charge) dispatches are not yet
+   * reconstructed here; ranged tools (bows, staves) + armor/shields still need their items/ definitions.
+   */
+  protected void toolItem(ResourceLocation id, JsonObject source, @Nullable JsonObject broken) {
+    JsonObject model = convertToolDef(source);
+    if (broken != null) {
+      JsonObject condition = new JsonObject();
+      condition.addProperty("type", "minecraft:condition");
+      condition.addProperty("property", "tconstruct:broken");
+      condition.add("on_true", convertToolDef(broken));
+      condition.add("on_false", model);
+      model = condition;
+    }
+    JsonObject def = new JsonObject();
+    def.add("model", model);
+    itemModels.put(id, def);
   }
 
 
@@ -66,10 +115,12 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
   protected void tool(IdAwareObject<ResourceLocation> tool, @Nullable JsonObject blocking, String... brokenParts) throws IOException {
     ResourceLocation id = tool.getId();
     String name = id.getPath();
+    JsonObject source = readJson(id);
     if (blocking != null) {
       withDisplay("tool/" + name + "/blocking", id, blocking);
     }
-    transformTool("tool/" + name + "/broken", readJson(id), "", false, '_', "broken", brokenParts);
+    JsonObject broken = transformTool("tool/" + name + "/broken", source, "", false, '_', "broken", brokenParts);
+    toolItem(id, source, broken);
   }
 
   /** Logic for creating models for the given ammo type */
