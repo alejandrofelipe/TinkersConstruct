@@ -8,7 +8,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.world.inventory.Slot;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -116,13 +117,13 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
     this.drawBackground(graphics, BACKGROUND);
 
     // draw scrollbar
-    graphics.blit(BACKGROUND, this.cornerX + SLIDER_LEFT, this.cornerY + SLIDER_TOP + (int) (SROLLABLE_AREA * this.sliderProgress), canScroll() ? HANDLE_U : HANDLE_U_DISABLE, 0, SLIDER_WIDTH, HANDLE_HEIGHT);
+    graphics.blit(RenderType::guiTextured, BACKGROUND, this.cornerX + SLIDER_LEFT, this.cornerY + SLIDER_TOP + (int) (SROLLABLE_AREA * this.sliderProgress), canScroll() ? HANDLE_U : HANDLE_U_DISABLE, 0, SLIDER_WIDTH, HANDLE_HEIGHT, 256, 256);
     this.drawModifierBackgrounds(graphics, mouseX, mouseY, this.cornerX + MODIFIER_LEFT, this.cornerY + MODIFIER_TOP);
 
     // draw slot icons
     List<Slot> slots = this.getMenu().getInputSlots();
     int max = Math.min(slots.size(), INPUT_PATTERNS.length);
-    RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
+    RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
     for (int i = 0; i < max; i++) {
       this.drawIconEmpty(graphics, slots.get(i), INPUT_PATTERNS[i]);
     }
@@ -190,7 +191,7 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
         } else if (mouseX >= x && mouseY >= y && mouseX < x + MODIFIER_SIZE && mouseY < y + MODIFIER_SIZE) {
           v += 2 * MODIFIER_SIZE;
         }
-        graphics.blit(BACKGROUND, x, y, MODIFIER_U, v, MODIFIER_SIZE, MODIFIER_SIZE);
+        graphics.blit(RenderType::guiTextured, BACKGROUND, x, y, MODIFIER_U, v, MODIFIER_SIZE, MODIFIER_SIZE, 256, 256);
       }
     }
   }
@@ -200,7 +201,7 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
     // use block texture list
     if (tile != null) {
       assert this.minecraft != null;
-      RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
+      RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
       // iterate all recipes
       List<ModifierEntry> list = this.tile.getCurrentButtons();
       int max = Math.min(this.modifierIndexOffset + MAX_MODIFIER, this.getModifierCount());

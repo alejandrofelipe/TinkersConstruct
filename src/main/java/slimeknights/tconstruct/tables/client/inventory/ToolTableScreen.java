@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -231,7 +232,7 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
       pose.rotateY(this.armorStandAngle);
       InventoryScreen.renderEntityInInventory(graphics, this.armorStandX, this.armorStandY, this.armorStandScale, ARMOR_STAND_TRANSLATION, pose, null, this.armorStandPreview);
 
-      graphics.blit(ICON_TEXTURE, armorStandX - 16, armorStandY - 16, 0, 184, 32, 32);
+      graphics.blit(RenderType::guiTextured, ICON_TEXTURE, armorStandX - 16, armorStandY - 16, 0, 184, 32, 32, 256, 256);
     }
   }
 
@@ -258,7 +259,7 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
         ItemStack copy = stack.copy();
         Item item = stack.getItem();
         if (item instanceof ArmorItem armor) {
-          this.armorStandPreview.setItemSlot(armor.getEquipmentSlot(), copy);
+          this.armorStandPreview.setItemSlot(armor.getEquipmentSlot(copy), copy);
         } else {
           this.armorStandPreview.setItemSlot(EquipmentSlot.OFFHAND, copy);
         }

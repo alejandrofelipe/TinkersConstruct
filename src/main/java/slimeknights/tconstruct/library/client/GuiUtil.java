@@ -13,9 +13,10 @@ import lombok.NoArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.joml.Matrix4f;
@@ -31,7 +32,7 @@ public final class GuiUtil {
    * @param background  Background location
    */
   public static void drawBackground(GuiGraphics graphics, AbstractContainerScreen<?> screen, ResourceLocation background) {
-    graphics.blit(background, screen.leftPos, screen.topPos, 0, 0, screen.imageWidth, screen.imageHeight);
+    graphics.blit(RenderType::guiTextured, background, screen.leftPos, screen.topPos, 0.0F, 0.0F, screen.imageWidth, screen.imageHeight, 256, 256);
   }
 
   /**
@@ -118,7 +119,7 @@ public final class GuiUtil {
   public static void renderTiledFluid(PoseStack matrices, AbstractContainerScreen<?> screen, FluidStack stack, int x, int y, int width, int height, int depth) {
     if (!stack.isEmpty()) {
       IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(stack.getFluid());
-      TextureAtlasSprite fluidSprite = screen.getMinecraft().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(clientFluid.getStillTexture(stack));
+      TextureAtlasSprite fluidSprite = screen.getMinecraft().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(clientFluid.getStillTexture(stack));
       RenderUtils.setColorRGBA(clientFluid.getTintColor(stack));
       renderTiledTextureAtlas(matrices, screen, fluidSprite, x, y, width, height, depth, stack.getFluid().getFluidType().isLighterThanAir());
       RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -225,7 +226,7 @@ public final class GuiUtil {
     }
     // amount to offset element by for the height
     int deltaY = element.h - height;
-    graphics.blit(element.texture, x, y + deltaY, element.x, element.y + deltaY, element.w, height, element.texW, element.texH);
+    graphics.blit(RenderType::guiTextured, element.texture, x, y + deltaY, (float) element.x, (float) (element.y + deltaY), element.w, height, element.texW, element.texH);
   }
 
   /**
@@ -246,7 +247,7 @@ public final class GuiUtil {
 
   /** Renders a pattern at the given location */
   public static void renderPattern(GuiGraphics graphics, Pattern pattern, int x, int y) {
-    TextureAtlasSprite sprite = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS).getSprite(pattern.getTexture());
-    graphics.blit(x, y, 100, 16, 16, sprite);
+    TextureAtlasSprite sprite = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(pattern.getTexture());
+    graphics.blitSprite(RenderType::guiTextured, sprite, x, y, 16, 16);
   }
 }

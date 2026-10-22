@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
@@ -23,7 +23,7 @@ public final class RenderUtils {
    * @param texture  Texture
    */
   public static void bindTexture(ResourceLocation texture) {
-    RenderSystem.setShader(GameRenderer::getPositionTexShader);
+    RenderSystem.setShader(CoreShaders.POSITION_TEX);
     RenderSystem.setShaderTexture(0, texture);
   }
 
