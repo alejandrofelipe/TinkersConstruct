@@ -6,7 +6,6 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -14,6 +13,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
@@ -78,8 +78,6 @@ public class RecipeValidationGameTests {
 
   @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void all_melting_recipes_valid(GameTestHelper helper) {
-    RecipeManager recipeManager = helper.getLevel().getRecipeManager();
-
     // MaterialMeltingRecipe ("melt any tool part of material X") has no item Ingredient of its own - getIngredients()
     // is empty - and its getOutput(container)/getTime(container) scale the declared output by
     // MaterialRecipeCache.getItemCost(container item), which is 0 (so output/time read as 0) for any stack that
@@ -92,22 +90,21 @@ public class RecipeValidationGameTests {
       .orElse(ItemStack.EMPTY);
 
     Map<String, String> failures = new LinkedHashMap<>();
-    for (RecipeHolder<IMeltingRecipe> holder : recipeManager.getAllRecipesFor(TinkerRecipeTypes.MELTING.get())) {
+    for (RecipeHolder<IMeltingRecipe> holder : TinkerRecipeAccess.byType(TinkerRecipeTypes.MELTING.get(), helper.getLevel())) {
       IMeltingRecipe recipe = holder.value();
-      String id = holder.id().toString();
+      String id = holder.id().location().toString();
       try {
-        List<Ingredient> ingredients = recipe.getIngredients();
+        List<Ingredient> ingredients = recipe.placementInfo().ingredients();
         for (Ingredient ingredient : ingredients) {
-          // isEmpty() = deliberately no ingredient declared (fine); hasNoItems() catches a tag/item that is
-          // declared but resolves to nothing (NeoForge's Ingredient#getItems() returns a synthetic "Empty Tag: .."
-          // barrier stack for a dead tag rather than a zero-length array, so getItems().length == 0 never fires).
-          if (!ingredient.isEmpty() && ingredient.hasNoItems()) {
+          // 1.21.4: Ingredient#isEmpty() now means "resolves to no items" (its HolderSet is empty, including a dead tag),
+          // so a declared-but-unresolved ingredient and a deliberately-absent one are indistinguishable here.
+          if (ingredient.items().findAny().isEmpty()) {
             failures.merge(id, "input ingredient resolves to no items", (a, b) -> a + "; " + b);
           }
         }
         ItemStack dummyStack = fallbackStack;
-        if (!ingredients.isEmpty() && !ingredients.get(0).isEmpty() && !ingredients.get(0).hasNoItems()) {
-          dummyStack = ingredients.get(0).getItems()[0];
+        if (!ingredients.isEmpty() && ingredients.get(0).items().findAny().isPresent()) {
+          dummyStack = ingredients.get(0).items().map(ItemStack::new).findFirst().orElse(ItemStack.EMPTY);
         }
         IMeltingContainer container = new DummyMeltingContainer(dummyStack);
         FluidStack output = recipe.getOutput(container);
@@ -129,17 +126,16 @@ public class RecipeValidationGameTests {
 
   @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void all_casting_recipes_valid(GameTestHelper helper) {
-    RecipeManager recipeManager = helper.getLevel().getRecipeManager();
     HolderLookup.Provider registryAccess = helper.getLevel().registryAccess();
 
     Map<String, String> failures = new LinkedHashMap<>();
     for (RecipeType<ICastingRecipe> type : List.of(TinkerRecipeTypes.CASTING_TABLE.get(), TinkerRecipeTypes.CASTING_BASIN.get())) {
-      for (RecipeHolder<ICastingRecipe> holder : recipeManager.getAllRecipesFor(type)) {
+      for (RecipeHolder<ICastingRecipe> holder : TinkerRecipeAccess.byType(type, helper.getLevel())) {
         ICastingRecipe recipe = holder.value();
-        String id = holder.id().toString();
+        String id = holder.id().location().toString();
         try {
-          for (Ingredient ingredient : recipe.getIngredients()) {
-            if (!ingredient.isEmpty() && ingredient.hasNoItems()) {
+          for (Ingredient ingredient : recipe.placementInfo().ingredients()) {
+            if (ingredient.items().findAny().isEmpty()) {
               failures.merge(id, "cast ingredient resolves to no items", (a, b) -> a + "; " + b);
             }
           }
@@ -164,12 +160,10 @@ public class RecipeValidationGameTests {
 
   @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void all_alloy_recipes_valid(GameTestHelper helper) {
-    RecipeManager recipeManager = helper.getLevel().getRecipeManager();
-
     Map<String, String> failures = new LinkedHashMap<>();
-    for (RecipeHolder<AlloyRecipe> holder : recipeManager.getAllRecipesFor(TinkerRecipeTypes.ALLOYING.get())) {
+    for (RecipeHolder<AlloyRecipe> holder : TinkerRecipeAccess.byType(TinkerRecipeTypes.ALLOYING.get(), helper.getLevel())) {
       AlloyRecipe recipe = holder.value();
-      String id = holder.id().toString();
+      String id = holder.id().location().toString();
       try {
         for (AlloyRecipe.AlloyIngredient ingredient : recipe.getInputs()) {
           if (ingredient.fluid().getFluids().isEmpty()) {
@@ -233,13 +227,12 @@ public class RecipeValidationGameTests {
     // ingredient) from the manager, then assert the lookup resolves that same input. If population never ran, the
     // lookup is empty and canMelt returns false. MaterialMeltingRecipe is skipped as it has no item ingredient of its
     // own and never feeds the lookup.
-    RecipeManager recipeManager = helper.getLevel().getRecipeManager();
     ItemStack sample = ItemStack.EMPTY;
-    for (RecipeHolder<IMeltingRecipe> holder : recipeManager.getAllRecipesFor(TinkerRecipeTypes.MELTING.get())) {
+    for (RecipeHolder<IMeltingRecipe> holder : TinkerRecipeAccess.byType(TinkerRecipeTypes.MELTING.get(), helper.getLevel())) {
       if (holder.value() instanceof MeltingRecipe recipe) {
         Ingredient input = recipe.getInput();
-        if (!input.isEmpty() && !input.hasNoItems()) {
-          sample = input.getItems()[0];
+        if (input.items().findAny().isPresent()) {
+          sample = input.items().map(ItemStack::new).findFirst().orElse(ItemStack.EMPTY);
           break;
         }
       }
@@ -261,10 +254,9 @@ public class RecipeValidationGameTests {
     // the lookup is empty and isCastable returns false. We read getResult() (the ItemOutput actually registered as
     // castable) rather than getResultItem(): CastDuplicationRecipe extends ItemCastingRecipe but registers ItemOutput.EMPTY
     // while overriding getResultItem() to return the cast, so it is skipped here via the isEmpty() check.
-    RecipeManager recipeManager = helper.getLevel().getRecipeManager();
     ItemStack sample = ItemStack.EMPTY;
     for (RecipeType<ICastingRecipe> type : List.of(TinkerRecipeTypes.CASTING_TABLE.get(), TinkerRecipeTypes.CASTING_BASIN.get())) {
-      for (RecipeHolder<ICastingRecipe> holder : recipeManager.getAllRecipesFor(type)) {
+      for (RecipeHolder<ICastingRecipe> holder : TinkerRecipeAccess.byType(type, helper.getLevel())) {
         if (holder.value() instanceof ItemCastingRecipe recipe) {
           ItemOutput result = recipe.getResult();
           if (!result.isEmpty()) {
@@ -294,9 +286,8 @@ public class RecipeValidationGameTests {
     // via getDisplayResult().getId() (which does not resolve the lazy modifier), then assert the lookup marks that same
     // modifier as a recipe modifier. If the TINKER_STATION populate path never ran, the lookup is empty and
     // isRecipeModifier returns false.
-    RecipeManager recipeManager = helper.getLevel().getRecipeManager();
     ModifierId sample = null;
-    for (RecipeHolder<ITinkerStationRecipe> holder : recipeManager.getAllRecipesFor(TinkerRecipeTypes.TINKER_STATION.get())) {
+    for (RecipeHolder<ITinkerStationRecipe> holder : TinkerRecipeAccess.byType(TinkerRecipeTypes.TINKER_STATION.get(), helper.getLevel())) {
       if (holder.value() instanceof IDisplayModifierRecipe recipe) {
         sample = recipe.getDisplayResult().getId();
         break;

@@ -57,8 +57,24 @@ public final class RecipeLookupPopulator {
     }
   }
 
+  /**
+   * Recipe types the client needs full recipes for: GUI block entities ({@link slimeknights.tconstruct.tables.block.entity.table.PartBuilderBlockEntity},
+   * {@link slimeknights.tconstruct.tables.block.entity.table.ModifierWorktableBlockEntity}, casting tables), container
+   * wrappers (material resolution), recipe-sync packets, and the migrated static lookups populated in {@link #populate}.
+   * 1.21.4 vanilla only syncs {@code RecipeDisplay}s, so these are requested explicitly via {@link OnDatapackSyncEvent#sendRecipes}.
+   */
+  private static final RecipeType<?>[] CLIENT_SYNCED_TYPES = {
+    TinkerRecipeTypes.FUEL.get(), TinkerRecipeTypes.MELTING.get(), TinkerRecipeTypes.MATERIAL.get(),
+    TinkerRecipeTypes.CASTING_TABLE.get(), TinkerRecipeTypes.CASTING_BASIN.get(),
+    TinkerRecipeTypes.MOLDING_TABLE.get(), TinkerRecipeTypes.MOLDING_BASIN.get(),
+    TinkerRecipeTypes.TINKER_STATION.get(), TinkerRecipeTypes.MODIFIER_WORKTABLE.get(),
+    TinkerRecipeTypes.PART_BUILDER.get(), TinkerRecipeTypes.DATA.get(),
+    RecipeType.CRAFTING,
+  };
+
   /** Client: recipes synced from the server. */
   public static void onRecipesUpdated(RecipesReceivedEvent event) {
+    TinkerRecipeAccess.setClientRecipeMap(event.getRecipeMap());
     populate(event.getRecipeMap().values());
   }
 
@@ -67,8 +83,9 @@ public final class RecipeLookupPopulator {
     populate(event.getServer().getRecipeManager().getRecipes());
   }
 
-  /** Server: /reload and player join. */
+  /** Server: /reload and player join. Populates the server lookups and requests the client recipe sync. */
   public static void onDatapackSync(OnDatapackSyncEvent event) {
+    event.sendRecipes(CLIENT_SYNCED_TYPES);
     RecipeManager manager = event.getPlayerList().getServer().getRecipeManager();
     populate(manager.getRecipes());
   }

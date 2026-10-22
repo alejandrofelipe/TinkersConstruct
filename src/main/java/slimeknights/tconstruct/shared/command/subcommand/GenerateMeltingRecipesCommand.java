@@ -21,6 +21,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.PackType;
@@ -35,6 +36,8 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -57,6 +60,7 @@ import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferResult
 import slimeknights.mantle.recipe.helper.FluidOutput;
 import slimeknights.mantle.util.JsonHelper;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeBuilder;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeLookup;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeLookup.MeltingFluid;
@@ -144,8 +148,9 @@ public class GenerateMeltingRecipesCommand {
     RegistryOps<JsonElement> jsonOps = access.createSerializationContext(JsonOps.INSTANCE);
     RecipeOutput consumer = new RecipeOutput() {
       @Override
-      public void accept(ResourceLocation id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions) {
-        Path path = data.resolve(id.getNamespace() + "/recipe/" + id.getPath() + ".json");
+      public void accept(ResourceKey<Recipe<?>> id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions) {
+        ResourceLocation location = id.location();
+        Path path = data.resolve(location.getNamespace() + "/recipe/" + location.getPath() + ".json");
         JsonElement json = Recipe.CODEC.encodeStart(jsonOps, recipe).getOrThrow(JsonParseException::new);
         if (GeneratePackHelper.saveJson(json, path)) {
           successes.increment();
@@ -157,6 +162,11 @@ public class GenerateMeltingRecipesCommand {
         // melting recipes generated in-game do not emit advancements
         return Advancement.Builder.recipeAdvancement();
       }
+
+      @Override
+      public void includeRootAdvancement() {
+        // 1.21.4: RecipeOutput requires this; generated melting recipes emit no advancements, so it is a no-op
+      }
     };
 
     // start building a list of melting recipes, but don't save them yet; duplicate recipes means we may need to take an intersection
@@ -164,14 +174,19 @@ public class GenerateMeltingRecipesCommand {
     BiFunction<List<MeltingResult>,List<MeltingResult>,List<MeltingResult>> merger = (first, second) -> MeltingResult.intersection(nameComparator, first, second);
 
     // iterate all recipes and try adding a melting recipe
+    // 1.21.4: Recipe#getResultItem was removed; the result is read from Recipe#display() resolved against the level's context
+    ContextMap displayContext = SlotDisplayContext.fromLevel(level);
     MeltingCache cache = new MeltingCache();
-    for (RecipeHolder<T> holder : level.getRecipeManager().getAllRecipesFor((RecipeType<T>) recipeType.value())) {
+    for (RecipeHolder<T> holder : TinkerRecipeAccess.byType((RecipeType<T>) recipeType.value(), level)) {
       // skip any recipes that are specifically blacklisted
-      if (skipRecipes.contains(holder.id())) {
+      if (skipRecipes.contains(holder.id().location())) {
         continue;
       }
       Recipe<?> recipe = holder.value();
-      ItemStack resultStack = recipe.getResultItem(access);
+      ItemStack resultStack = recipe.display().stream()
+        .map(display -> display.result().resolveForFirstStack(displayContext))
+        .filter(stack -> !stack.isEmpty())
+        .findFirst().orElse(ItemStack.EMPTY);
       // don't bother with results that have NBT unless its a damagable item, in which case we ignore NBT and hope for the best
       // also skip anything already meltable
       Item result = resultStack.getItem();
@@ -182,7 +197,7 @@ public class GenerateMeltingRecipesCommand {
 
       // in order to melt the result, we need to find what it's made of. Iterate all ingredients and turn them into a single result object
       ingredientSearch: {
-        for (Ingredient ingredient : recipe.getIngredients()) {
+        for (Ingredient ingredient : recipe.placementInfo().ingredients()) {
           // skip empty ingredients, just saves some steps really
           if (ingredient.isEmpty()) {
             continue;
@@ -190,7 +205,7 @@ public class GenerateMeltingRecipesCommand {
           // for each ingredient, convert it into the smallest fluid. If we have multiple or anything invalid, give up
           MeltingResult ingredientFluid = null;
           boolean didIgnore = false; // if true, we skipped something and are ineligible for a fluid next
-          for (ItemStack stack : ingredient.getItems()) {
+          for (ItemStack stack : ingredient.items().map(ItemStack::new).toList()) {
             // if the ingredient has NBT, nothing we can do here
             // also skip if the item is disallowed as an input
             if (stack.isEmpty() || !stack.getComponentsPatch().isEmpty() || !inputs.matches(stack.getItem())) {

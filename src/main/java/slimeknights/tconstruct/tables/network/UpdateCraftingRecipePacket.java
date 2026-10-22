@@ -13,6 +13,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import slimeknights.mantle.network.packet.IThreadsafePacket;
 import slimeknights.mantle.util.BlockEntityHelper;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.tables.block.entity.table.CraftingStationBlockEntity;
 
 /**
@@ -41,7 +42,7 @@ public record UpdateCraftingRecipePacket(BlockPos pos, ResourceLocation recipe) 
       Level world = Minecraft.getInstance().level;
       if (world != null) {
         BlockEntityHelper.get(CraftingStationBlockEntity.class, world, packet.pos).ifPresent(te ->
-          world.getRecipeManager().byKey(packet.recipe)
+          TinkerRecipeAccess.byKey(world, packet.recipe)
                .filter(holder -> holder.value() instanceof CraftingRecipe)
                .ifPresent(holder -> {
                  @SuppressWarnings("unchecked")

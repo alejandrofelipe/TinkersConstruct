@@ -7,12 +7,12 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.material.IMaterialValue;
 import slimeknights.tconstruct.library.recipe.partbuilder.IPartBuilderRecipe;
@@ -80,9 +80,10 @@ public class PartBuilderBlockEntity extends RetexturedTableBlockEntity implement
       } else {
         record PatternRecipe(Pattern pattern, IPartBuilderRecipe recipe) {}
         // fetch all recipes that can match these inputs, the map ensures the patterns are unique
-        recipes = level.getRecipeManager().getAllRecipesFor(TinkerRecipeTypes.PART_BUILDER.get()).stream()
+        recipes = TinkerRecipeAccess.byType(TinkerRecipeTypes.PART_BUILDER.get(), level).stream()
                        .filter(holder -> holder.value().partialMatch(inventoryWrapper))
-                       .sorted(Comparator.comparing(RecipeHolder::id))
+                       // sort by holder ID to keep order consistent on both sides (ResourceKey is not Comparable, so compare its location)
+                       .sorted(Comparator.comparing(holder -> holder.id().location()))
                        .flatMap(holder -> holder.value().getPatterns(inventoryWrapper).map(p -> new PatternRecipe(p, holder.value())))
                        .collect(Collectors.toMap(PatternRecipe::pattern, PatternRecipe::recipe, (a, b) -> a));
         sortedButtons = recipes.entrySet()
@@ -262,7 +263,7 @@ public class PartBuilderBlockEntity extends RetexturedTableBlockEntity implement
     }
     ItemStack stack = getItem(slot);
     if (!stack.isEmpty()) {
-      ItemStack container = stack.getCraftingRemainingItem().copy();
+      ItemStack container = stack.getCraftingRemainder().copy();
       if (amount > 1) {
         container.setCount(container.getCount() * amount);
       }

@@ -12,6 +12,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import slimeknights.mantle.network.packet.IThreadsafePacket;
 import slimeknights.mantle.util.BlockEntityHelper;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.library.recipe.tinkerstation.ITinkerStationRecipe;
 import slimeknights.tconstruct.tables.client.inventory.TinkerStationScreen;
 import slimeknights.tconstruct.tables.block.entity.table.TinkerStationBlockEntity;
@@ -44,7 +45,7 @@ public record UpdateTinkerStationRecipePacket(BlockPos pos, ResourceLocation rec
       Level world = Minecraft.getInstance().level;
       if (world != null) {
         @SuppressWarnings("unchecked")
-        Optional<RecipeHolder<ITinkerStationRecipe>> recipe = world.getRecipeManager().byKey(packet.recipe)
+        Optional<RecipeHolder<ITinkerStationRecipe>> recipe = TinkerRecipeAccess.byKey(world, packet.recipe)
           .filter(holder -> holder.value() instanceof ITinkerStationRecipe)
           .map(holder -> (RecipeHolder<ITinkerStationRecipe>) (RecipeHolder<?>) holder);
 
