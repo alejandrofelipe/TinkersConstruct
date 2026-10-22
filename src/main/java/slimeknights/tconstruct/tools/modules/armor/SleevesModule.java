@@ -4,7 +4,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
@@ -72,16 +71,20 @@ public enum SleevesModule implements ModifierModule, GeneralInteractionModifierH
             ItemStack held = player.getItemInHand(hand);
             player.setItemInHand(hand, ammo);
             // use the item
-            InteractionResultHolder<ItemStack> result = ammo.use(player.level(), player, hand);
+            InteractionResult result = ammo.use(player.level(), player, hand);
             // restore original hand item
             player.setItemInHand(hand, held);
             // ensure the use action did not start us using items
             if (player.isUsingItem()) {
               player.stopUsingItem();
             }
-            // handle result
-            inventory.setStack(tool, modifier, selected, result.getObject());
-            return result.getResult();
+            // handle result: recover the (possibly transformed) stack to store back into the inventory
+            ItemStack resultStack = ammo;
+            if (result instanceof InteractionResult.Success success && success.heldItemTransformedTo() != null) {
+              resultStack = success.heldItemTransformedTo();
+            }
+            inventory.setStack(tool, modifier, selected, resultStack);
+            return result;
           } else {
             // toggle if we just were unable to use the item
             return InteractionResult.PASS;

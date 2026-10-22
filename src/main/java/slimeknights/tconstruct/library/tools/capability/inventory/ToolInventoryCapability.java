@@ -557,7 +557,7 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
           }
         });
       }
-      return InteractionResult.sidedSuccess(player.level().isClientSide);
+      return InteractionResult.SUCCESS;
     }
     return InteractionResult.PASS;
   }

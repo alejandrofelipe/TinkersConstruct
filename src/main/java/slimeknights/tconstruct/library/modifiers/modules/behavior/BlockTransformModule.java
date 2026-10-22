@@ -125,7 +125,7 @@ public interface BlockTransformModule extends ModifierModule, BlockInteractionMo
     }
 
     // if anything happened, return success
-    return didTransform ? InteractionResult.sidedSuccess(world.isClientSide) : InteractionResult.PASS;
+    return didTransform ? InteractionResult.SUCCESS : InteractionResult.PASS;
   }
 
   /** Applies this transformation */

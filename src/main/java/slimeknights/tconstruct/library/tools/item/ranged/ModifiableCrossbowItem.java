@@ -14,7 +14,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -129,12 +129,12 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
   }
 
   @Override
-  public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+  public InteractionResult use(Level level, Player player, InteractionHand hand) {
     ItemStack bow = player.getItemInHand(hand);
 
     ToolStack tool = ToolStack.from(bow);
     if (tool.isBroken()) {
-      return InteractionResultHolder.fail(bow);
+      return InteractionResult.FAIL;
     }
 
     // yeah, its hardcoded, I cannot see a need to not hardcode this, request it if you need it
@@ -146,7 +146,7 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
     if (heldAmmo.isEmpty()) {
       // do not charge if sneaking and we have sinistral, gives you a way to activate the offhand when the crossbow is not charged
       if (sinistral && !player.getOffhandItem().isEmpty() && player.isCrouching()) {
-        return InteractionResultHolder.pass(bow);
+        return InteractionResult.PASS;
       }
 
       // if we have ammo, start charging
@@ -165,14 +165,14 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
         if (!level.isClientSide) {
           level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.CROSSBOW_QUICK_CHARGE_1, SoundSource.PLAYERS, 0.75F, 1.0F);
         }
-        return InteractionResultHolder.consume(bow);
+        return InteractionResult.CONSUME;
       }
       // can also block without ammo
       if (tool.getModifiers().has(TinkerTags.Modifiers.CHARGE_EMPTY_BOW_WITHOUT_DRAWTIME)) {
         player.startUsingItem(hand);
-        return InteractionResultHolder.consume(bow);
+        return InteractionResult.CONSUME;
       }
-      return InteractionResultHolder.fail(bow);
+      return InteractionResult.FAIL;
     }
 
     // coming down here means we have ammo, try to use it
@@ -181,18 +181,18 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
     if (sinistral) {
       ItemStack offhand = player.getOffhandItem();
       if (!offhand.isEmpty() && !offhand.is(Items.FIREWORK_ROCKET)) {
-        return InteractionResultHolder.pass(bow);
+        return InteractionResult.PASS;
       }
       // can block while filled with ammo
       if (ModifierUtil.canPerformAction(tool, ItemAbilities.SHIELD_BLOCK)) {
         player.startUsingItem(hand);
-        return InteractionResultHolder.consume(bow);
+        return InteractionResult.CONSUME;
       }
     }
 
     // ammo already loaded? time to fire
     fireCrossbow(tool, player, hand, heldAmmo);
-    return InteractionResultHolder.consume(bow);
+    return InteractionResult.CONSUME;
   }
 
   /**

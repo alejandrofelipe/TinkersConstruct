@@ -60,7 +60,7 @@ public record PlaceGlowModule(int damage) implements ModifierModule, BlockIntera
           world.playSound(null, pos, world.getBlockState(pos).getSoundType(world, pos, player).getPlaceSound(), SoundSource.BLOCKS, 1.0f, 1.0f);
         }
       }
-      return InteractionResult.sidedSuccess(context.getLevel().isClientSide);
+      return InteractionResult.SUCCESS;
     }
     return InteractionResult.PASS;
   }

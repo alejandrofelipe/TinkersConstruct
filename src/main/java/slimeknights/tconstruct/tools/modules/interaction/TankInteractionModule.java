@@ -99,6 +99,6 @@ public record TankInteractionModule(@Nullable InteractionSource source) implemen
         world.playSound(null, target, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
     }
-    return InteractionResult.sidedSuccess(world.isClientSide);
+    return InteractionResult.SUCCESS;
   }
 }

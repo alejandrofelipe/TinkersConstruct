@@ -85,7 +85,7 @@ public enum PlaceFireModule implements ModifierModule, EntityInteractionModifier
         creeper.ignite();
         ToolDamageUtil.damageAnimated(tool, 1, player, source.getSlot(hand), modifier.getId());
       }
-      return InteractionResult.sidedSuccess(level.isClientSide);
+      return InteractionResult.SUCCESS;
     }
     return InteractionResult.PASS;
   }
@@ -167,7 +167,7 @@ public enum PlaceFireModule implements ModifierModule, EntityInteractionModifier
         if (player != null) {
           player.onEquippedItemBroken(stack.getItem(), slotType);
         }
-        return InteractionResult.sidedSuccess(world.isClientSide);
+        return InteractionResult.SUCCESS;
       }
     }
     // ignite the edges, if any worked return success
@@ -183,7 +183,7 @@ public enum PlaceFireModule implements ModifierModule, EntityInteractionModifier
       }
     }
     // when targeting fire, return true so left click interact does not continue to run
-    return didIgnite || targetingFire ? InteractionResult.sidedSuccess(world.isClientSide) : InteractionResult.PASS;
+    return didIgnite || targetingFire ? InteractionResult.SUCCESS : InteractionResult.PASS;
   }
 
   @Nullable

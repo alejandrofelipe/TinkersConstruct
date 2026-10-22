@@ -8,7 +8,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -101,11 +101,11 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
   }
 
   @Override
-  public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+  public InteractionResult use(Level level, Player player, InteractionHand hand) {
     ItemStack bow = player.getItemInHand(hand);
     ToolStack tool = ToolStack.from(bow);
     if (tool.isBroken()) {
-      return InteractionResultHolder.fail(bow);
+      return InteractionResult.FAIL;
     }
 
     // locate ammo as requested by the item properties
@@ -113,7 +113,7 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
     boolean isBallista = isBallista(tool);
     ItemStack ammo = BowAmmoModifierHook.getAmmo(tool, bow, player, isBallista ? getSupportedBallistaAmmo() : getSupportedHeldProjectiles());
     // ask forge if it has any different opinions
-    InteractionResultHolder<ItemStack> override = EventHooks.onArrowNock(bow, level, player, hand, !ammo.isEmpty());
+    InteractionResult override = EventHooks.onArrowNock(bow, level, player, hand, !ammo.isEmpty());
     if (override != null) {
       return override;
     }
@@ -123,9 +123,9 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
       // however, modifiers such as block can trigger for no drawtime
       if (tool.getModifiers().has(TinkerTags.Modifiers.CHARGE_EMPTY_BOW_WITHOUT_DRAWTIME)) {
         player.startUsingItem(hand);
-        return InteractionResultHolder.consume(bow);
+        return InteractionResult.CONSUME;
       }
-      return InteractionResultHolder.fail(bow);
+      return InteractionResult.FAIL;
     }
     GeneralInteractionModifierHook.startDrawing(tool, player, 1);
     // store either ammo or boolean as requested
@@ -151,7 +151,7 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
     if (!level.isClientSide) {
       level.playSound(null, player.getX(), player.getY(), player.getZ(), Sounds.LONGBOW_CHARGE.getSound(), SoundSource.PLAYERS, 0.75F, 1.0F);
     }
-    return InteractionResultHolder.consume(bow);
+    return InteractionResult.CONSUME;
   }
 
   @Override

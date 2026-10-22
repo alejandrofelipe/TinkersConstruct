@@ -6,7 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -59,7 +59,7 @@ public class FluidCannonBlock extends SearedTankBlock implements IFluidCannon, E
   }
 
   @Override
-  protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+  protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
     if (world.getBlockEntity(pos) instanceof FluidCannonBlockEntity cannon) {
       Vec3 location = hit.getLocation();
       boolean clickedTank = location.y - pos.getY() > 0.5;
@@ -71,7 +71,7 @@ public class FluidCannonBlock extends SearedTankBlock implements IFluidCannon, E
       }
       cannon.interact(player, hand, clickedTank);
     }
-    return ItemInteractionResult.SUCCESS;
+    return InteractionResult.SUCCESS;
   }
 
   @Deprecated

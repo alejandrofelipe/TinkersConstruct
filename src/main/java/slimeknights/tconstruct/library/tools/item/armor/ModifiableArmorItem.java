@@ -8,7 +8,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -157,12 +156,12 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
   }
 
   @Override
-  public InteractionResultHolder<ItemStack> use(Level levelIn, Player playerIn, InteractionHand handIn) {
+  public InteractionResult use(Level levelIn, Player playerIn, InteractionHand handIn) {
     if (playerIn.isCrouching()) {
       ItemStack stack = playerIn.getItemInHand(handIn);
       InteractionResult result = ToolInventoryCapability.tryOpenContainer(stack, null, getToolDefinition(), playerIn, Util.getSlotType(handIn));
       if (result.consumesAction()) {
-        return new InteractionResultHolder<>(result, stack);
+        return result;
       }
     }
     return super.use(levelIn, playerIn, handIn);

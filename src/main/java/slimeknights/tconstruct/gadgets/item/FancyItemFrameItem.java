@@ -52,7 +52,7 @@ public class FancyItemFrameItem extends Item {
         world.addFreshEntity(frame);
       }
       stack.shrink(1);
-      return InteractionResult.sidedSuccess(world.isClientSide);
+      return InteractionResult.SUCCESS;
     }
     return InteractionResult.CONSUME;
   }

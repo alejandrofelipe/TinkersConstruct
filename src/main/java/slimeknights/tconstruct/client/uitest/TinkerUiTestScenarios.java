@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
@@ -224,9 +223,9 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void open(UiTestContext ctx) {
-      InteractionResultHolder<ItemStack> result = ctx.player().getItemInHand(InteractionHand.MAIN_HAND)
+      InteractionResult result = ctx.player().getItemInHand(InteractionHand.MAIN_HAND)
         .getItem().use(ctx.mc().level, ctx.player(), InteractionHand.MAIN_HAND);
-      if (result.getResult() == InteractionResult.PASS) {
+      if (result == InteractionResult.PASS) {
         throw new IllegalStateException("book item use() passed - book screen did not open");
       }
     }
@@ -257,9 +256,9 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void open(UiTestContext ctx) {
-      InteractionResultHolder<ItemStack> result = ctx.player().getItemInHand(InteractionHand.MAIN_HAND)
+      InteractionResult result = ctx.player().getItemInHand(InteractionHand.MAIN_HAND)
         .getItem().use(ctx.mc().level, ctx.player(), InteractionHand.MAIN_HAND);
-      if (result.getResult() == InteractionResult.PASS) {
+      if (result == InteractionResult.PASS) {
         throw new IllegalStateException("book item use() passed - book screen did not open");
       }
       if (!(ctx.mc().screen instanceof BookScreen book)) {
