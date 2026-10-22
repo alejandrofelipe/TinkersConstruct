@@ -48,7 +48,7 @@ public class StrongBonesModifier extends NoLevelsModifier {
       MobEffectInstance effect = new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, duration);
       // PORT M3: Forge per-ItemStack curative items became NeoForge EffectCure tokens; clear default cures so the
       // applied resistance is not milk-curable. The CureOnRemovalModule handles removal when the helmet changes.
-      effect.getCures().clear();
+      // PORT 1.21.4: MobEffectInstance#getCures was removed; the effect is no longer marked uncurable here.
       // on simulate, don't apply the effect, just ask if we can apply
       didSomething = action.execute() ? living.addEffect(effect) : living.canBeAffected(effect);
       // quick exit on simulate: no more information needed

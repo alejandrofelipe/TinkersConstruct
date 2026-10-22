@@ -25,7 +25,7 @@ public class BleedingEffect extends NoMilkEffect {
   }
 
   @Override
-  public boolean applyEffectTick(LivingEntity target, int level) {
+  public boolean applyEffectTick(ServerLevel world, LivingEntity target, int level) {
     // attribute to player kill
     LivingEntity lastAttacker = target.getLastHurtMob();
     DamageSource source = TinkerDamageTypes.source(target.level().registryAccess(), TinkerDamageTypes.BLEEDING, lastAttacker);

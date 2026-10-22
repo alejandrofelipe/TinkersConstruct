@@ -53,7 +53,7 @@ public class AnvilBlockItem extends MaterialBlockItem {
   @Override
   public Component getName(ItemStack stack) {
     // don't put tool material in name
-    return Component.translatable(this.getDescriptionId(stack));
+    return Component.translatable(this.getDescriptionId());
   }
 
   @Override
@@ -73,7 +73,7 @@ public class AnvilBlockItem extends MaterialBlockItem {
 
   @Nullable
   @Override
-  public String getCreatorModId(ItemStack stack) {
+  public String getCreatorModId(net.minecraft.core.HolderLookup.Provider provider, ItemStack stack) {
     // reset to default, just show the anvil ID. Material variants mean less here
     return BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace();
   }

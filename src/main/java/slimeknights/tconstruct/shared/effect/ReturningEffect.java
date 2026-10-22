@@ -6,6 +6,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
@@ -42,7 +43,7 @@ public class ReturningEffect extends TinkerEffect {
   }
 
   @Override
-  public boolean applyEffectTick(LivingEntity living, int amplifier) {
+  public boolean applyEffectTick(ServerLevel world, LivingEntity living, int amplifier) {
     ModDataNBT data = PersistentDataCapability.getOrWarn(living);
     if (data.contains(KEY, Tag.TAG_COMPOUND)) {
       CompoundTag tag = data.getCompound(KEY);

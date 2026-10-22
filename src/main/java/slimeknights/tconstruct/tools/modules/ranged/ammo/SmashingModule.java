@@ -114,7 +114,7 @@ public enum SmashingModule implements ModifierModule, FluidModifierHook, Project
     if (data.contains(KEY_FLUID, Tag.TAG_STRING)) {
       ResourceLocation id = ResourceLocation.tryParse(data.getString(KEY_FLUID));
       if (id != null) {
-        return BuiltInRegistries.FLUID.get(id);
+        return BuiltInRegistries.FLUID.getValue(id);
       }
     }
     return Fluids.EMPTY;

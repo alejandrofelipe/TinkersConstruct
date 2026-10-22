@@ -148,7 +148,7 @@ public enum BrushModule implements ModifierModule, GeneralInteractionModifierHoo
 
     // brush the block
     if (!level.isClientSide) {
-      return level.getBlockEntity(blockHit.getBlockPos()) instanceof BrushableBlockEntity brushable && brushable.brush(level.getGameTime(), player, blockHit.getDirection());
+      return level.getBlockEntity(blockHit.getBlockPos()) instanceof BrushableBlockEntity brushable && brushable.brush(level.getGameTime(), (net.minecraft.server.level.ServerLevel) level, player, blockHit.getDirection(), player.getMainHandItem());
     }
     return false;
   }

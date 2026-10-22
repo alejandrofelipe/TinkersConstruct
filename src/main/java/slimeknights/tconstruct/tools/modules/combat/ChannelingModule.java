@@ -64,7 +64,7 @@ public record ChannelingModule(float clearChance, float rainChance, float thunde
       }
       // if the chance passes, spawn lightning
       if (chance >= 1 || level.random.nextFloat() < chance) {
-        LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(level);
+        LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (lightning != null) {
           lightning.moveTo(Vec3.atBottomCenterOf(target));
           if (attacker instanceof ServerPlayer player) {

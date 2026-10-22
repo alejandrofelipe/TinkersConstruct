@@ -56,14 +56,15 @@ public class TagIntersectionPresentCondition<T> implements ICondition {
   @Override
   public boolean test(IContext context) {
     // if there is just one tag, just needs to be filled
-    List<Collection<Holder<T>>> tags = names.stream().map(context::getTag).toList();
+    // PORT 1.21.4: IContext#getTag was removed; resolve tags through the registry access instead
+    List<net.minecraft.core.HolderSet.Named<T>> tags = names.stream().map(tag -> context.registryAccess().lookupOrThrow(tag.registry()).getOrThrow(tag)).toList();
     if (tags.size() == 1) {
-      return !tags.get(0).isEmpty();
+      return tags.get(0).size() > 0;
     }
     // if any remaining tag is empty, give up
     int count = tags.size();
     for (int i = 1; i < count; i++) {
-      if (tags.get(i).isEmpty()) {
+      if (tags.get(i).size() == 0) {
         return false;
       }
     }

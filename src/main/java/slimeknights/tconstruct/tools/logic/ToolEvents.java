@@ -204,7 +204,7 @@ public class ToolEvents {
     }
     // I cannot think of a reason to run when invulnerable
     DamageSource source = event.getSource();
-    if (entity.isInvulnerableTo(source)) {
+    if (entity.isInvulnerableTo((net.minecraft.server.level.ServerLevel) entity.level(), source)) {
       return;
     }
 
@@ -382,13 +382,13 @@ public class ToolEvents {
           for (EquipmentSlot slotType : ModifiableArmorMaterial.EQUIPMENT_SLOTS) {
             // for our own armor, saves effort to damage directly with our utility
             IToolStackView tool = context.getToolInSlot(slotType);
-            if (tool != null && (!source.is(DamageTypeTags.IS_FIRE) || !tool.getItem().components().has(DataComponents.FIRE_RESISTANT))) {
+            if (tool != null && (!source.is(DamageTypeTags.IS_FIRE) || !tool.getItem().components().has(DataComponents.DAMAGE_RESISTANT))) {
               // mark this as protection (any valid modifier really would do) so tanned can reduce it to not count it as separate damage
               ToolDamageUtil.damageAnimated(tool, damageMissed, entity, slotType, ARMOR_DAMAGE);
             } else {
               // if not our armor, damage using vanilla like logic
               ItemStack armorStack = entity.getItemBySlot(slotType);
-              if (!armorStack.isEmpty() && (!source.is(DamageTypeTags.IS_FIRE) || !armorStack.has(DataComponents.FIRE_RESISTANT)) && armorStack.getItem() instanceof ArmorItem) {
+              if (!armorStack.isEmpty() && (!source.is(DamageTypeTags.IS_FIRE) || !armorStack.has(DataComponents.DAMAGE_RESISTANT)) && armorStack.getItem() instanceof ArmorItem) {
                 armorStack.hurtAndBreak(damageMissed, entity, slotType);
               }
             }

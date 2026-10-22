@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -55,7 +56,7 @@ public class AntigravityEffect extends TinkerEffect {
 
   /** Handles movement while under anti-gravity */
   @Override
-  public boolean applyEffectTick(LivingEntity living, int amplifier) {
+  public boolean applyEffectTick(ServerLevel world, LivingEntity living, int amplifier) {
     // ensure we are actually under the effects of antigrav, might have a double negative
     if (living.getAttributeValue(Attributes.GRAVITY) < 0) {
       Level level = living.level();
@@ -78,7 +79,7 @@ public class AntigravityEffect extends TinkerEffect {
           if (height > 0.0F) {
             hit.getBlock().fallOn(level, hit, above, living, height);
           }
-          hit.getBlock().updateEntityAfterFallOn(level, living);
+          hit.getBlock().updateEntityMovementAfterFallOn(level, living);
         }
         lastVelocity.update(0);
       } else {

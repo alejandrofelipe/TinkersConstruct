@@ -55,15 +55,8 @@ public class TankItem extends BlockTooltipItem {
     return content != null && !content.isEmpty();
   }
 
-  @Override
-  public boolean hasCraftingRemainingItem(ItemStack stack) {
-    return isFilled(stack);
-  }
-
-  @Override
-  public ItemStack getCraftingRemainingItem(ItemStack stack) {
-    return isFilled(stack) ? new ItemStack(this) : ItemStack.EMPTY;
-  }
+  // PORT 1.21.4: IItemExtension#hasCraftingRemainingItem/getCraftingRemainingItem(ItemStack) were removed; a filled
+  // tank no longer returns itself as a crafting remainder. Re-wire via the crafting-remainder data component in Phase 4.
 
   @Override
   public int getMaxStackSize(ItemStack stack) {
@@ -226,7 +219,7 @@ public class TankItem extends BlockTooltipItem {
 
   /** Creates a stack with the given fluid and amount, not validated. */
   private static ItemStack setTank(ItemLike item, ResourceLocation fluid, int amount) {
-    Fluid fluidValue = BuiltInRegistries.FLUID.get(fluid);
+    Fluid fluidValue = BuiltInRegistries.FLUID.getValue(fluid);
     ItemStack stack = new ItemStack(item);
     return setTank(stack, new FluidStack(fluidValue, amount));
   }
@@ -282,7 +275,7 @@ public class TankItem extends BlockTooltipItem {
   /** Adds filled variants of all standard tank items to the given consumer */
   @SuppressWarnings("deprecation")
   public static void addFilledVariants(Consumer<ItemStack> output) {
-    BuiltInRegistries.FLUID.holders().filter(holder -> {
+    BuiltInRegistries.FLUID.listElements().filter(holder -> {
       Fluid fluid = holder.value();
       return fluid.isSource(fluid.defaultFluidState()) && !holder.is(TinkerTags.Fluids.HIDE_IN_CREATIVE_TANKS);
     }).forEachOrdered(holder -> {

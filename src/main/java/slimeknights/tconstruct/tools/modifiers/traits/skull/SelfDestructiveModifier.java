@@ -65,7 +65,7 @@ public class SelfDestructiveModifier extends NoLevelsModifier implements Keybind
     }
 
     @Override
-    public boolean applyEffectTick(LivingEntity living, int amplifier) {
+    public boolean applyEffectTick(ServerLevel world, LivingEntity living, int amplifier) {
       // effect level is the explosion radius
       // TODO: is firing mob grief event with a player okay?
       if (living.level() instanceof ServerLevel level) {

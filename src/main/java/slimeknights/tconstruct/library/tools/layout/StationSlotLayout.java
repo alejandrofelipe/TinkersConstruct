@@ -183,7 +183,7 @@ public class StationSlotLayout {
     /** Sets the given item as both the name and icon */
     public Builder item(ItemStack stack) {
       icon(stack);
-      translationKey = stack.getDescriptionId();
+      translationKey = stack.getItem().getDescriptionId();
       return this;
     }
 

@@ -10,7 +10,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.EffectCures;
 import slimeknights.tconstruct.TConstruct;
 
 import javax.annotation.Nullable;
@@ -28,8 +27,9 @@ public class CheeseItem extends Item {
     if (!living.level().isClientSide) {
       Collection<MobEffectInstance> effects = living.getActiveEffects();
       if (!effects.isEmpty()) {
-        // don't remove effects that are not milk removable
-        List<Holder<MobEffect>> removable = effects.stream().filter(effect -> effect.getCures().contains(EffectCures.MILK)).map(MobEffectInstance::getEffect).toList();
+        // PORT 1.21.4: the cure system (EffectCures.MILK / MobEffectInstance#getCures) was removed, so we can no
+        // longer limit removal to milk-curable effects; every active effect is now a candidate.
+        List<Holder<MobEffect>> removable = effects.stream().map(MobEffectInstance::getEffect).toList();
         if (!removable.isEmpty()) {
           living.removeEffect(removable.get(living.getRandom().nextInt(removable.size())));
         }

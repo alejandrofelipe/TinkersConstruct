@@ -61,9 +61,9 @@ public class TagDifferencePresentCondition<T> implements ICondition {
 
   @Override
   public boolean test(IContext context) {
-    // get the base tag
-    Collection<Holder<T>> base = context.getTag(this.base);
-    if (base == null || base.isEmpty()) {
+    // PORT 1.21.4: IContext#getTag was removed; resolve tags through the registry access instead
+    net.minecraft.core.HolderSet.Named<T> base = context.registryAccess().lookupOrThrow(this.base.registry()).getOrThrow(this.base);
+    if (base.size() == 0) {
       return false;
     }
 
@@ -76,7 +76,7 @@ public class TagDifferencePresentCondition<T> implements ICondition {
     for (Holder<T> entry : base) {
       // find the first item contained in no subtracted tags
       for (TagKey<T> tag : subtracted) {
-        if (context.getTag(tag).contains(entry)) {
+        if (context.registryAccess().lookupOrThrow(tag.registry()).getOrThrow(tag).contains(entry)) {
           continue itemLoop;
         }
       }

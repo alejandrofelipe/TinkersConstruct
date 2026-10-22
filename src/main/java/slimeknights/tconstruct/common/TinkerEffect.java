@@ -9,9 +9,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
-import net.neoforged.neoforge.client.extensions.common.IClientMobEffectExtensions;
 
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /** Effect extension with a few helpers */
@@ -36,20 +34,8 @@ public class TinkerEffect extends MobEffect {
 
   /* Visibility */
 
-  @Override
-  public void initializeClient(Consumer<IClientMobEffectExtensions> consumer) {
-    consumer.accept(new IClientMobEffectExtensions() {
-      @Override
-      public boolean isVisibleInInventory(MobEffectInstance effect) {
-        return show;
-      }
-
-      @Override
-      public boolean isVisibleInGui(MobEffectInstance effect) {
-        return show;
-      }
-    });
-  }
+  // PORT 1.21.4: MobEffect#initializeClient (IClientMobEffectExtensions registration) was removed; the show/hide-in-GUI
+  // behaviour must be re-registered via RegisterClientExtensionsEvent in the client batch (Phase 4).
 
   /* Helpers */
 

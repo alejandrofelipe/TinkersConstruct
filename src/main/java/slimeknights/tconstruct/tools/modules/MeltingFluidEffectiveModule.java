@@ -58,7 +58,7 @@ public record MeltingFluidEffectiveModule(IJsonPredicate<BlockState> predicate, 
           return (!meltingResult.isEmpty() && (currentFluid.isEmpty() || FluidStack.isSameFluidSameComponents(currentFluid, meltingResult)))
                  // tier must also match. TierSortingRegistry.isCorrectTierForDrops was removed in 1.20.5+;
                  // 1.21 expresses harvestability via the tier's incorrect-blocks-for-drops tag.
-                 && (ignoreTier || !state.is(MiningTierToolHook.getTier(tool).getIncorrectBlocksForDrops()));
+                 && (ignoreTier || !state.is(MiningTierToolHook.getTier(tool).incorrectBlocksForDrops()));
         }
       }
     }

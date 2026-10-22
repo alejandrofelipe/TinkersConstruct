@@ -58,17 +58,19 @@ public class CreativeSlotItem extends Item {
     return stack;
   }
 
+  // PORT 1.21.4: the per-stack getDescriptionId(ItemStack) override point was removed; the slot-specific name now
+  // comes through getName(ItemStack) instead.
   @Override
-  public String getDescriptionId(ItemStack stack) {
+  public Component getName(ItemStack stack) {
     SlotType slot = getSlot(stack);
     String originalKey = getDescriptionId();
     if (slot != null) {
       String betterKey = originalKey + "." + slot.getName();
       if (Util.canTranslate(betterKey)) {
-        return betterKey;
+        return Component.translatable(betterKey);
       }
     }
-    return originalKey;
+    return Component.translatable(originalKey);
   }
 
   @Override

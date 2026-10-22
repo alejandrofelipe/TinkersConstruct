@@ -97,7 +97,8 @@ public record FireballModule(List<FireballType> options, DamageTypePair damageTy
       ModifierEntry.LOADABLE.list(0).defaultField("ammo_modifiers", List.of(), false, FireballType::ammoModifiers),
       FireballType::new);
     /** Empty instance to make cache easier */
-    public static final FireballType EMPTY = new FireballType(Ingredient.EMPTY, null, 1f, List.of());
+    // PORT 1.21.4: Ingredient.EMPTY was removed (no empty ingredient); the cache sentinel uses a never-matching ingredient.
+    public static final FireballType EMPTY = new FireballType(Ingredient.of(net.minecraft.world.item.Items.BARRIER), null, 1f, List.of());
 
     /** Gets the damage type with the given fallback */
     public DamageTypePair damageType(DamageTypePair fallback) {
@@ -258,7 +259,7 @@ public record FireballModule(List<FireballType> options, DamageTypePair damageTy
 
     /** Creates a new fireball option */
     public Fireball fireball(TagKey<Item> tag) {
-      return fireball(Ingredient.of(tag));
+      return fireball(Ingredient.of(net.minecraft.core.registries.BuiltInRegistries.ITEM.getOrThrow(tag)));
     }
 
     /** Creates a new fireball option */

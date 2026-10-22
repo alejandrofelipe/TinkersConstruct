@@ -33,7 +33,9 @@ public class PotionFluidType extends FluidType {
 
   @Override
   public String getDescriptionId(FluidStack stack) {
-    return Potion.getName(getContents(stack).potion(), "item.minecraft.potion.effect.");
+    // PORT 1.21.4: Potion.getName(Optional,String) was removed; fall back to the base fluid name
+    // (potion-specific fluid naming dropped for now, revisit in Phase 4 via PotionContents).
+    return super.getDescriptionId(stack);
   }
 
   @Override
@@ -46,24 +48,8 @@ public class PotionFluidType extends FluidType {
     return itemStack;
   }
 
-  @Override
-  public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
-    consumer.accept(new ClientTextureFluidType(this) {
-      /**
-       * Gets the color, based on the stored {@link PotionContents}
-       * @param stack  Fluid stack instance
-       * @return  Color for the fluid
-       */
-      @Override
-      public int getTintColor(FluidStack stack) {
-        PotionContents contents = getContents(stack);
-        if (isEmptyContents(contents)) {
-          return getTintColor();
-        }
-        return contents.getColor() | 0xFF000000;
-      }
-    });
-  }
+  // PORT 1.21.4: FluidType#initializeClient (IClientFluidTypeExtensions registration) was removed; the potion-tinted
+  // client texture extension must be re-registered via RegisterClientExtensionsEvent in the client batch (Phase 4).
 
   /** Creates a fluid stack for the given potion */
   public static FluidStack potionFluid(@Nullable Holder<Potion> potion, int size) {

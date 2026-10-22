@@ -52,7 +52,7 @@ public class WorldEvents {
           TinkerHeadType headType = TinkerHeadType.fromEntityType(dying.getType());
           if (headType != null && Config.COMMON.headDrops.get(headType).get()) {
             creeper.increaseDroppedSkulls();
-            event.getDrops().add(dying.spawnAtLocation(TinkerWorld.heads.get(headType)));
+            event.getDrops().add(dying.spawnAtLocation((net.minecraft.server.level.ServerLevel) dying.level(), TinkerWorld.heads.get(headType)));
           }
         }
       }

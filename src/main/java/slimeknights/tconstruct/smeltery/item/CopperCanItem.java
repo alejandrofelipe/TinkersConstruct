@@ -32,18 +32,8 @@ public class CopperCanItem extends Item {
     return new CopperCanFluidHandler(stack);
   }
 
-  @Override
-  public boolean hasCraftingRemainingItem(ItemStack stack) {
-    return getFluid(stack) != Fluids.EMPTY;
-  }
-
-  @Override
-  public ItemStack getCraftingRemainingItem(ItemStack stack) {
-    if (hasCraftingRemainingItem(stack)) {
-      return new ItemStack(this);
-    }
-    return ItemStack.EMPTY;
-  }
+  // PORT 1.21.4: IItemExtension#hasCraftingRemainingItem/getCraftingRemainingItem(ItemStack) were removed; a filled
+  // can no longer returns itself as a crafting remainder. Re-wire via the crafting-remainder data component in Phase 4.
 
   @Override
   public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
@@ -91,7 +81,7 @@ public class CopperCanItem extends Item {
   /** Adds filled variants of the copper can to the given consumer */
   @SuppressWarnings("deprecation")
   public static void addFilledVariants(Consumer<ItemStack> output) {
-    BuiltInRegistries.FLUID.holders().filter(holder -> {
+    BuiltInRegistries.FLUID.listElements().filter(holder -> {
       Fluid fluid = holder.value();
       return fluid.isSource(fluid.defaultFluidState()) && !holder.is(TinkerTags.Fluids.HIDE_IN_CREATIVE_TANKS);
     }).forEachOrdered(holder -> {

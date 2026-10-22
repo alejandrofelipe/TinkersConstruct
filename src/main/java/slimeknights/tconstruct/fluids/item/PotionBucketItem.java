@@ -3,6 +3,7 @@ package slimeknights.tconstruct.fluids.item;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -47,22 +48,10 @@ public class PotionBucketItem extends PotionItem {
   }
 
   @Override
-  public String getDescriptionId(ItemStack stack) {
-    String bucketKey = Potion.getName(getContents(stack).potion(), getDescriptionId() + ".effect.");
-    if (Util.canTranslate(bucketKey)) {
-      return bucketKey;
-    }
-    return super.getDescriptionId();
-  }
-
-  @Override
   public Component getName(ItemStack stack) {
-    String bucketKey = Potion.getName(getContents(stack).potion(), getDescriptionId() + ".effect.");
-    if (Util.canTranslate(bucketKey)) {
-      return Component.translatable(bucketKey);
-    }
-    // default to filling with the contents
-    return Component.translatable(getDescriptionId() + ".contents", Component.translatable(Potion.getName(getContents(stack).potion(), "item.minecraft.potion.effect.")));
+    // PORT 1.21.4: Potion.getName(Optional,String) and the per-stack getDescriptionId(ItemStack) override point were
+    // removed; PotionContents#getName provides the prefix+potion display name.
+    return getContents(stack).getName(getDescriptionId() + ".effect.");
   }
 
   @Override
@@ -83,7 +72,7 @@ public class PotionBucketItem extends PotionItem {
     if (!level.isClientSide) {
       getContents(stack).forEachEffect(effect -> {
         if (effect.getEffect().value().isInstantenous()) {
-          effect.getEffect().value().applyInstantenousEffect(player, player, living, effect.getAmplifier(), 2.5D);
+          effect.getEffect().value().applyInstantenousEffect((ServerLevel) level, player, player, living, effect.getAmplifier(), 2.5D);
         } else {
           MobEffectInstance newEffect = new MobEffectInstance(effect.getEffect(), effect.getDuration() * 5 / 2, effect.getAmplifier(), effect.isAmbient(), effect.isVisible(), effect.showIcon());
           living.addEffect(newEffect);

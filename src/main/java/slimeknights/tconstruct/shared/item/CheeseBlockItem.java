@@ -32,7 +32,7 @@ public class CheeseBlockItem extends BlockItem {
           player.drop(cheese, false);
         }
       } else {
-        living.spawnAtLocation(cheese);
+        living.spawnAtLocation((net.minecraft.server.level.ServerLevel) level, cheese);
       }
 
     }

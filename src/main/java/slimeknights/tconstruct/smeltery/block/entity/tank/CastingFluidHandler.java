@@ -179,7 +179,7 @@ public class CastingFluidHandler implements IFluidHandler {
       setFluid(FluidStack.parseOptional(registries, nbt.getCompound(TAG_FLUID)));
     }
     if (nbt.contains(TAG_FILTER, Tag.TAG_STRING)) {
-      Fluid fluid = BuiltInRegistries.FLUID.get(Objects.requireNonNull(ResourceLocation.tryParse(nbt.getString(TAG_FILTER))));
+      Fluid fluid = BuiltInRegistries.FLUID.getValue(Objects.requireNonNull(ResourceLocation.tryParse(nbt.getString(TAG_FILTER))));
       if (fluid != null) {
         filter = fluid;
       }

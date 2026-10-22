@@ -91,7 +91,7 @@ public enum Sounds {
   public static void registerSounds(RegisterEvent event) {
     event.register(Registries.SOUND_EVENT, helper -> {
       for (Sounds sound : values()) {
-        helper.register(sound.sound.getLocation(), sound.getSound());
+        helper.register(sound.sound.location(), sound.getSound());
       }
     });
   }

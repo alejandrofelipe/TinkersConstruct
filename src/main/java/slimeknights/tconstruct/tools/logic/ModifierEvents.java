@@ -183,7 +183,7 @@ public class ModifierEvents {
     }
     // this is the latest we can add slot markers to the items so we can return them to slots
     LivingEntity entity = event.getEntity();
-    if (!entity.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) && entity instanceof Player player && !(player instanceof FakePlayer)) {
+    if (entity.level() instanceof net.minecraft.server.level.ServerLevel keepInvLevel && !keepInvLevel.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) && entity instanceof Player player && !(player instanceof FakePlayer)) {
       // start with the hotbar, must be soulbound or soul belt
       boolean soulBelt = ArmorLevelModule.getLevel(player, TinkerDataKeys.SOUL_BELT) > 0;
       Inventory inventory = player.getInventory();
@@ -284,7 +284,7 @@ public class ModifierEvents {
   @SubscribeEvent
   static void onPotionStart(MobEffectEvent.Added event) {
     MobEffectInstance newEffect = event.getEffectInstance();
-    if (!newEffect.isInfiniteDuration() && !newEffect.getCures().isEmpty()) {
+    if (!newEffect.isInfiniteDuration()) {
       // use two different stats based on whether the effect is beneficial
       boolean beneficial = newEffect.getEffect().value().isBeneficial();
       LivingEntity entity = event.getEntity();
@@ -508,13 +508,8 @@ public class ModifierEvents {
             arrow.piercedAndKilledEntities.add(target);
           }
 
-          if (!level.isClientSide && arrow.shotFromCrossbow() && owner instanceof ServerPlayer player) {
-            if (arrow.piercedAndKilledEntities != null) {
-              CriteriaTriggers.KILLED_BY_CROSSBOW.trigger(player, arrow.piercedAndKilledEntities);
-            } else if (!target.isAlive()) {
-              CriteriaTriggers.KILLED_BY_CROSSBOW.trigger(player, List.of(target));
-            }
-          }
+          // PORT 1.21.4: AbstractArrow#shotFromCrossbow() and CriteriaTriggers.KILLED_BY_CROSSBOW were removed;
+          // the crossbow-kill advancement trigger is dropped here (revisit in Phase 4).
 
           arrow.playSound(arrow.soundEvent, 1.0F, 1.2F / (target.getRandom().nextFloat() * 0.2F + 0.9F));
           if (arrow.getPierceLevel() <= 0) {
@@ -528,7 +523,7 @@ public class ModifierEvents {
           arrow.yRotO += 180.0F;
           if (!level.isClientSide && arrow.getDeltaMovement().lengthSqr() < 1.0E-7D) {
             if (arrow.pickup == AbstractArrow.Pickup.ALLOWED) {
-              arrow.spawnAtLocation(arrow.getPickupItem(), 0.1F);
+              arrow.spawnAtLocation((net.minecraft.server.level.ServerLevel) level, arrow.getPickupItem(), 0.1F);
             }
 
             ReusableProjectile.discard(projectile);

@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.materials;
 import com.google.common.annotations.VisibleForTesting;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -241,11 +241,11 @@ public final class MaterialRegistry {
   /* Reloading */
 
   /** Adds the managers as datapack listeners */
-  private void addDataPackListeners(final AddReloadListenerEvent event) {
-    event.addListener(materialManager);
+  private void addDataPackListeners(final AddServerReloadListenersEvent event) {
+    event.addListener(slimeknights.tconstruct.TConstruct.getResource("materials"), materialManager);
     materialManager.setConditionContext(event.getConditionContext());
-    event.addListener(materialStatsManager);
-    event.addListener(materialTraitsManager);
+    event.addListener(slimeknights.tconstruct.TConstruct.getResource("material_stats"), materialStatsManager);
+    event.addListener(slimeknights.tconstruct.TConstruct.getResource("material_traits"), materialTraitsManager);
   }
 
   /** Sends all relevant packets to the given player */

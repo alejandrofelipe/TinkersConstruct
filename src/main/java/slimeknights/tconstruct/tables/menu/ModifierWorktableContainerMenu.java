@@ -63,7 +63,7 @@ public class ModifierWorktableContainerMenu extends TabbedContainerMenu<Modifier
     for (ArmorType slotType : ModifiableArmorMaterial.ARMOR_SLOTS) {
       this.addSlot(new ArmorSlot(inv, slotType.getSlot(), 152, 16 + slotType.ordinal() * 18));
     }
-    this.addSlot(new Slot(inv, 40, 132, 70).setBackground(InventoryMenu.BLOCK_ATLAS, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD));
+    this.addSlot(new Slot(inv, 40, 132, 70).setBackground(InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD));
 
     // other inventories
     this.addChestSideInventory();

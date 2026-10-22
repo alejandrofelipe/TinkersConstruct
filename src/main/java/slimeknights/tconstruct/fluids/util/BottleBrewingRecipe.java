@@ -26,6 +26,7 @@ public class BottleBrewingRecipe extends BrewingRecipe {
     if (from == Items.SPLASH_POTION && to == Items.LINGERING_POTION) {
       return Ingredient.of(Items.DRAGON_BREATH);
     }
-    return Ingredient.EMPTY;
+    // PORT 1.21.4: Ingredient.EMPTY was removed; this branch is unreachable (only known container conversions are passed)
+    throw new IllegalArgumentException("No vanilla brewing reagent for " + from + " -> " + to);
   }
 }

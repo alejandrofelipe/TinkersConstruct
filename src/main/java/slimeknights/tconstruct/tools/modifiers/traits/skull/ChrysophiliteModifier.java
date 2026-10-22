@@ -129,7 +129,7 @@ public class ChrysophiliteModifier extends NoLevelsModifier implements Equipment
               stack.setDamageValue(stack.getMaxDamage() - random.nextInt(1 + random.nextInt(Math.max(stack.getMaxDamage() - 3, 1))));
             }
             // remove stack to prevent further drops
-            event.getDrops().add(target.spawnAtLocation(stack));
+            event.getDrops().add(target.spawnAtLocation((net.minecraft.server.level.ServerLevel) target.level(), stack));
             target.setItemSlot(slot, ItemStack.EMPTY);
           }
         }

@@ -288,11 +288,11 @@ public class ToolContainerMenu extends AbstractContainerMenu {
       if (optional.isPresent()) {
         RecipeHolder<CraftingRecipe> holder = optional.get();
         CraftingRecipe recipe = holder.value();
-        if (resultContainer.setRecipeUsed(serverLevel, serverPlayer, holder)) {
-          ItemStack assembled = recipe.assemble(input, serverLevel.registryAccess());
-          if (assembled.isItemEnabled(serverLevel.enabledFeatures())) {
-            result = assembled;
-          }
+        // PORT 1.21.4: Container#setRecipeUsed now takes only the recipe holder and returns void
+        resultContainer.setRecipeUsed(holder);
+        ItemStack assembled = recipe.assemble(input, serverLevel.registryAccess());
+        if (assembled.isItemEnabled(serverLevel.enabledFeatures())) {
+          result = assembled;
         }
       }
       resultContainer.setItem(0, result);

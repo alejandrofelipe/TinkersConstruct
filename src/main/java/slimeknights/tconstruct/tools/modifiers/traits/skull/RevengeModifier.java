@@ -35,7 +35,7 @@ public class RevengeModifier extends NoLevelsModifier implements EquipmentChange
       // PORT M3: Forge's per-ItemStack curative items were replaced by NeoForge EffectCure tokens, which cannot encode
       // "cured by removing this specific helmet". Clear default cures (so it is not milk-curable); the modifier's
       // onUnequip already removes the effect when the helmet changes.
-      effect.getCures().clear();
+      // PORT 1.21.4: MobEffectInstance#getCures was removed; the effect is no longer marked uncurable here.
       living.addEffect(effect);
     }
   }

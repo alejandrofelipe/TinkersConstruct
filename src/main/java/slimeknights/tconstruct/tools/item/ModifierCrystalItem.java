@@ -51,7 +51,7 @@ public class ModifierCrystalItem extends Item {
   public Component getName(ItemStack stack) {
     ModifierId modifier = getModifier(stack);
     if (modifier != null) {
-      return Component.translatable(getDescriptionId(stack) + ".format", Component.translatable(Util.makeTranslationKey("modifier", modifier.getLocation())));
+      return Component.translatable(getDescriptionId() + ".format", Component.translatable(Util.makeTranslationKey("modifier", modifier.getLocation())));
     }
     return super.getName(stack);
   }
@@ -74,7 +74,7 @@ public class ModifierCrystalItem extends Item {
 
   @Nullable
   @Override
-  public String getCreatorModId(ItemStack stack) {
+  public String getCreatorModId(net.minecraft.core.HolderLookup.Provider provider, ItemStack stack) {
     ModifierId modifier = getModifier(stack);
     if (modifier != null) {
       return modifier.getNamespace();

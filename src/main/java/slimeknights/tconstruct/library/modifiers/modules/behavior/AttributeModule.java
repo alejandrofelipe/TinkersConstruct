@@ -89,7 +89,7 @@ public record AttributeModule(String unique, Attribute attribute, Operation oper
     // sized by slot count so EquipmentSlot#getFilterFlag (max 6 for BODY in 1.21) never overflows, here or in idsToSlots
     ResourceLocation[] slotIds = new ResourceLocation[EquipmentSlot.values().length];
     for (EquipmentSlot slot : slots) {
-      slotIds[slot.getFilterFlag()] = getId(name, slot);
+      slotIds[slot.getId()] = getId(name, slot);
     }
     return slotIds;
   }
@@ -98,7 +98,7 @@ public record AttributeModule(String unique, Attribute attribute, Operation oper
   public static Set<EquipmentSlot> idsToSlots(ResourceLocation[] ids) {
     Set<EquipmentSlot> set = EnumSet.noneOf(EquipmentSlot.class);
     for (EquipmentSlot slot : EquipmentSlot.values()) {
-      if (ids[slot.getFilterFlag()] != null) {
+      if (ids[slot.getId()] != null) {
         set.add(slot);
       }
     }
@@ -112,7 +112,7 @@ public record AttributeModule(String unique, Attribute attribute, Operation oper
   /** Gets the id for this slot */
   @Nullable
   private ResourceLocation getId(EquipmentSlot slot) {
-    return slotIds[slot.getFilterFlag()];
+    return slotIds[slot.getId()];
   }
 
   /** Creates an attribute for the given slot */

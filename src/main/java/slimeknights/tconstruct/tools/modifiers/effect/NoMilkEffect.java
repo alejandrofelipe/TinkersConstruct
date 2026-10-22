@@ -1,23 +1,16 @@
 package slimeknights.tconstruct.tools.modifiers.effect;
 
 import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.neoforged.neoforge.common.EffectCure;
 import slimeknights.tconstruct.common.TinkerEffect;
 
-import java.util.Set;
-
 /**
- * Effect that cannot be cured with milk
+ * Effect that cannot be cured with milk.
+ * PORT 1.21.4: the NeoForge cure system (EffectCure / fillEffectCures) was removed, so the uncurable behaviour is no
+ * longer expressible here and this effect is now milk-curable. Re-wire in Phase 4 if an equivalent gate returns.
  * TODO 1.21: move to {@link slimeknights.tconstruct.shared.effect}
  */
 public class NoMilkEffect extends TinkerEffect {
   public NoMilkEffect(MobEffectCategory typeIn, int color, boolean show) {
     super(typeIn, color, show);
-  }
-
-  @Override
-  public void fillEffectCures(Set<EffectCure> cures, MobEffectInstance effectInstance) {
-    // intentionally add no cures so this effect cannot be cured (e.g. by milk)
   }
 }

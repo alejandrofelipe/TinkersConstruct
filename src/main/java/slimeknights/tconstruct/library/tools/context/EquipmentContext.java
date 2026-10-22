@@ -39,7 +39,7 @@ public class EquipmentContext {
   /** Creates a context with an existing tool instance */
   public static EquipmentContext withTool(LivingEntity living, IToolStackView tool, EquipmentSlot slot) {
     EquipmentContext context = new EquipmentContext(living);
-    int index = slot.getFilterFlag();
+    int index = slot.getId();
     context.toolsInSlots[index] = tool;
     context.fetchedTool[index] = true;
     return context;
@@ -66,7 +66,7 @@ public class EquipmentContext {
    */
   @Nullable
   public IToolStackView getToolInSlot(EquipmentSlot slotType) {
-    int index = slotType.getFilterFlag();
+    int index = slotType.getId();
     if (!fetchedTool[index]) {
       toolsInSlots[index] = getToolStackIfModifiable(entity.getItemBySlot(slotType));
       fetchedTool[index] = true;
