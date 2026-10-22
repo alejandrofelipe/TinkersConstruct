@@ -18,6 +18,6 @@ public class FirebreathModifier extends NoLevelsModifier implements KeybindInter
 
   @Override
   protected void registerHooks(Builder hookBuilder) {
-    hookBuilder.addModule(FireballModule.builder().damageMultiplier(2.5f).fireball(Ingredient.of(TinkerTags.Items.FIREBALLS)).end().modifier(ModifierIds.fiery).build());
+    hookBuilder.addModule(FireballModule.builder().damageMultiplier(2.5f).fireball(Ingredient.of(net.minecraft.core.registries.BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.FIREBALLS))).end().modifier(ModifierIds.fiery).build());
   }
 }

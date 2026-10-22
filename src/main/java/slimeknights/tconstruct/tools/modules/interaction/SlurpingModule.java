@@ -81,7 +81,7 @@ public record SlurpingModule(LevelingValue strength, LevelingInt duration) imple
     if (!fluid.isEmpty()) {
       // sound and particles
       if (playSound) {
-        entity.playSound(SoundEvents.GENERIC_DRINK, 0.5F, entity.getRandom().nextFloat() * 0.1f + 0.9f);
+        entity.playSound(SoundEvents.GENERIC_DRINK.value(), 0.5F, entity.getRandom().nextFloat() * 0.1f + 0.9f);
       }
       addFluidParticles(entity, fluid, 16);
       // apply effect
@@ -166,7 +166,7 @@ public record SlurpingModule(LevelingValue strength, LevelingInt duration) imple
         addFluidParticles(entity, fluid, 5);
         // add drinking sounds if blocking or using another modifier
         if (notActive) {
-          entity.playSound(SoundEvents.GENERIC_DRINK, 0.5F, entity.getRandom().nextFloat() * 0.1f + 0.9f);
+          entity.playSound(SoundEvents.GENERIC_DRINK.value(), 0.5F, entity.getRandom().nextFloat() * 0.1f + 0.9f);
         }
       }
     }
@@ -226,7 +226,7 @@ public record SlurpingModule(LevelingValue strength, LevelingInt duration) imple
         }
         // sound is only every 4 ticks
         else if (timeLeft % 4 == 0) {
-          holder.playSound(SoundEvents.GENERIC_DRINK, 0.5F, holder.getRandom().nextFloat() * 0.1f + 0.9f);
+          holder.playSound(SoundEvents.GENERIC_DRINK.value(), 0.5F, holder.getRandom().nextFloat() * 0.1f + 0.9f);
           addFluidParticles(holder, TANK_HELPER.getFluid(tool), 5);
         }
       }
