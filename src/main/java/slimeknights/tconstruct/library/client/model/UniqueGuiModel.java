@@ -3,52 +3,60 @@ package slimeknights.tconstruct.library.client.model;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
-import lombok.RequiredArgsConstructor;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.DelegateBakedModel;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.client.resources.model.UnbakedModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.resources.model.ResolvableModel.Resolver;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.neoforged.neoforge.client.model.BakedModelWrapper;
-import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
-import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
-import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
+import net.neoforged.neoforge.client.model.AbstractUnbakedModel;
+import net.neoforged.neoforge.client.model.UnbakedModelLoader;
 import slimeknights.mantle.client.model.util.SimpleBlockModel;
 
-import java.util.function.Function;
-
-/** Model providing a variant for the GUI */
-@RequiredArgsConstructor
-public class UniqueGuiModel implements IUnbakedGeometry<UniqueGuiModel> {
+/**
+ * Model providing a variant for the GUI.
+ * <p>
+ * PORT 1.21.4: ported to the {@link AbstractUnbakedModel} API. In 1.21.4 {@link BakedModel#applyTransform} can only
+ * adjust the pose, not swap which model renders, so the GUI geometry swap is now the item-model's responsibility (the
+ * baked GUI variant is exposed via {@link Baked#getGui()} for the item {@code ItemModel} to select on
+ * {@link ItemDisplayContext#GUI}). {@code applyTransform} still routes GUI pose through the GUI model for correctness.
+ */
+public class UniqueGuiModel extends AbstractUnbakedModel {
   /** Shared loader instance */
-  public static final IGeometryLoader<UniqueGuiModel> LOADER = UniqueGuiModel::deserialize;
+  public static final UnbakedModelLoader<UniqueGuiModel> LOADER = UniqueGuiModel::deserialize;
 
   protected final SimpleBlockModel model;
   protected final SimpleBlockModel gui;
 
-  @Override
-  public void resolveParents(Function<ResourceLocation,UnbakedModel> modelGetter, IGeometryBakingContext context) {
-    model.resolveParents(modelGetter, context);
-    gui.resolveParents(modelGetter, context);
+  public UniqueGuiModel(SimpleBlockModel model, SimpleBlockModel gui) {
+    super(model.getParameters());
+    this.model = model;
+    this.gui = gui;
   }
 
   @Override
-  public BakedModel bake(IGeometryBakingContext owner, ModelBaker baker, Function<Material,TextureAtlasSprite> spriteGetter, ModelState transform, ItemOverrides overrides) {
+  public void resolveDependencies(Resolver resolver) {
+    super.resolveDependencies(resolver);
+    model.resolveDependencies(resolver);
+    gui.resolveDependencies(resolver);
+  }
+
+  @Override
+  public BakedModel bake(TextureSlots textures, ModelBaker baker, ModelState transform, boolean useAmbientOcclusion, boolean useBlockLight, ItemTransforms itemTransforms, ContextMap additionalProperties) {
     return new Baked(
-      model.bake(owner, baker, spriteGetter, transform, overrides),
-      gui.bake(owner, baker, spriteGetter, transform, overrides)
+      model.bake(textures, baker, transform, useAmbientOcclusion, useBlockLight, itemTransforms, additionalProperties),
+      gui.bake(textures, baker, transform, useAmbientOcclusion, useBlockLight, itemTransforms, additionalProperties)
     );
   }
 
   /**
-   * Wrapper that swaps the model for the GUI
+   * Wrapper exposing a distinct GUI variant.
    */
-  public static class Baked extends BakedModelWrapper<BakedModel> {
+  public static class Baked extends DelegateBakedModel {
     private final BakedModel gui;
 
     public Baked(BakedModel base, BakedModel gui) {
@@ -56,12 +64,19 @@ public class UniqueGuiModel implements IUnbakedGeometry<UniqueGuiModel> {
       this.gui = gui;
     }
 
+    /** Gets the GUI variant, for an item model to select on {@link ItemDisplayContext#GUI} */
+    public BakedModel getGui() {
+      return gui;
+    }
+
     @Override
-    public BakedModel applyTransform(ItemDisplayContext itemDisplay, PoseStack mat, boolean applyLeftHandTransform) {
+    public void applyTransform(ItemDisplayContext itemDisplay, PoseStack mat, boolean applyLeftHandTransform) {
+      // PORT 1.21.4: pose-only; the GUI quad swap now belongs to the item model (see class javadoc)
       if (itemDisplay == ItemDisplayContext.GUI) {
-        return gui.applyTransform(itemDisplay, mat, applyLeftHandTransform);
+        gui.applyTransform(itemDisplay, mat, applyLeftHandTransform);
+      } else {
+        parent.applyTransform(itemDisplay, mat, applyLeftHandTransform);
       }
-      return originalModel.applyTransform(itemDisplay, mat, applyLeftHandTransform);
     }
   }
 
