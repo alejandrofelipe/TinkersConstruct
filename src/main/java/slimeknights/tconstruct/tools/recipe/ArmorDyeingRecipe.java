@@ -7,9 +7,10 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.Tags.Items;
@@ -102,9 +103,9 @@ public class ArmorDyeingRecipe implements ITinkerStationRecipe, IMultiRecipe<IDi
         DyeColor dye = DyeColor.getColor(stack);
         if (dye != null) {
           int color = dye.getTextureDiffuseColor();
-          int r = FastColor.ARGB32.red(color);
-          int g = FastColor.ARGB32.green(color);
-          int b = FastColor.ARGB32.blue(color);
+          int r = ARGB.red(color);
+          int g = ARGB.green(color);
+          int b = ARGB.blue(color);
           brightness += Math.max(r, Math.max(g, b));
           nr += r;
           ng += g;
@@ -139,7 +140,7 @@ public class ArmorDyeingRecipe implements ITinkerStationRecipe, IMultiRecipe<IDi
   }
 
   @Override
-  public RecipeSerializer<?> getSerializer() {
+  public RecipeSerializer<? extends Recipe<ITinkerStationContainer>> getSerializer() {
     return TinkerModifiers.armorDyeingSerializer.get();
   }
 

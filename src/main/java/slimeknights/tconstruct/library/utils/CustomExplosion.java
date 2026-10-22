@@ -5,33 +5,43 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.Level.ExplosionInteraction;
+import net.minecraft.world.level.ServerExplosion;
+import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.EventHooks;
 import slimeknights.tconstruct.library.tools.helper.ToolAttackUtil;
 
 import javax.annotation.Nullable;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Predicate;
 
-/** Helper class for more control over explosions */
-public class CustomExplosion extends Explosion {
+/**
+ * Helper class for more control over explosions.
+ * <p>
+ * PORT 1.21.4: {@code Explosion} is now an interface and the block/entity machinery moved into the concrete
+ * {@link ServerExplosion}, whose fields and hooks are all private. We re-seat on {@link ServerExplosion} to inherit the
+ * {@link Explosion} contract and the damage source/block interaction state, but keep our own copies of the data the
+ * custom ray logic needs and reimplement {@code explode}/{@code finalizeExplosion} ourselves. Block drops go through
+ * {@link BlockState#onExplosionHit} so vanilla decay (driven by the inherited {@link #getBlockInteraction()}) is kept.
+ */
+public class CustomExplosion extends ServerExplosion {
   /** Size of the hollowed out cube determining the number of rays to cast */
   private static final int RAY_COUNT = 16;
   private static final int MAX_RAY = RAY_COUNT - 1;
@@ -39,10 +49,27 @@ public class CustomExplosion extends Explosion {
    * Default predicate for which entities to match.
    * PORT 1.21.1: {@code Entity#ignoreExplosion()} now takes the {@code Explosion} instance, so it cannot be
    * checked from a static predicate. The per-entity ignore behaviour is still applied by the vanilla
-   * {@link Explosion} machinery during {@link #damageAndPushEntities()}; here we only keep the
-   * stateless alive/spectator filters.
+   * {@link Explosion} machinery; here we only keep the stateless alive/spectator filters.
    */
   public static final Predicate<Entity> DEFAULT_ENTITY_PREDICATE = entity -> entity != null && entity.isAlive() && !entity.isSpectator();
+
+  /** Level copy, as {@link ServerExplosion#level()} is the only accessor and we use it heavily */
+  protected final ServerLevel level;
+  /** Source entity, nullable */
+  @Nullable
+  protected final Entity source;
+  protected final double x;
+  protected final double y;
+  protected final double z;
+  protected final float radius;
+  /** Whether the explosion places fire */
+  protected final boolean fire;
+  /** Block interaction mode, kept locally as {@link ServerExplosion}'s copy is private */
+  protected final BlockInteraction blockInteraction;
+  /** Damage calculator, kept locally as {@link ServerExplosion}'s copy is private with no accessor */
+  protected final ExplosionDamageCalculator damageCalculator;
+  /** List of blocks to remove, replacing the removed {@code Explosion#toBlow} field */
+  protected final List<BlockPos> toBlow = new ArrayList<>();
 
   /** Maximum damage to deal; setting to 7*2*radius will match the vanilla explosion. */
   protected final float damage;
@@ -53,13 +80,22 @@ public class CustomExplosion extends Explosion {
   /** If true, explosion damage bypasses the invulnerability time */
   protected final boolean bypassInvulnerableTime;
   /**
-   * PORT 1.21.1: {@code Explosion#damageSource} is now private with no accessor, so we keep our own copy.
+   * PORT 1.21.1: {@code Explosion#damageSource} is private with no accessor, so we keep our own copy.
    * Resolved the same way vanilla does: a null source falls back to the default explosion damage source.
    */
   protected final DamageSource customDamageSource;
 
   public CustomExplosion(Level level, Vec3 location, float radius, @Nullable Entity sourceEntity, @Nullable Predicate<Entity> entityPredicate, float damage, @Nullable DamageSource damageSource, float knockback, @Nullable ExplosionDamageCalculator damageCalculator, boolean placeFire, BlockInteraction blockInteraction, boolean bypassInvulnerableTime) {
-    super(level, sourceEntity, damageSource, damageCalculator, location.x, location.y, location.z, radius, placeFire, blockInteraction, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+    super((ServerLevel) level, sourceEntity, damageSource, damageCalculator, location, radius, placeFire, blockInteraction);
+    this.level = (ServerLevel) level;
+    this.source = sourceEntity;
+    this.x = location.x;
+    this.y = location.y;
+    this.z = location.z;
+    this.radius = radius;
+    this.fire = placeFire;
+    this.blockInteraction = blockInteraction;
+    this.damageCalculator = damageCalculator != null ? damageCalculator : new ExplosionDamageCalculator();
     this.customDamageSource = damageSource != null ? damageSource : Explosion.getDefaultDamageSource(level, sourceEntity);
     this.entityPredicate = Objects.requireNonNullElse(entityPredicate, DEFAULT_ENTITY_PREDICATE);
     this.damage = damage;
@@ -69,6 +105,11 @@ public class CustomExplosion extends Explosion {
 
   public CustomExplosion(Level level, Vec3 location, float radius, @Nullable Entity sourceEntity, @Nullable Predicate<Entity> entityPredicate, float damage, @Nullable DamageSource damageSource, float knockback, @Nullable ExplosionDamageCalculator damageCalculator, boolean placeFire, BlockInteraction blockInteraction) {
     this(level, location, radius, sourceEntity, entityPredicate ,damage, damageSource, knockback, damageCalculator, placeFire, blockInteraction, false);
+  }
+
+  /** Checks if this explosion interacts with blocks */
+  protected boolean interactsWithBlocks() {
+    return this.blockInteraction != BlockInteraction.KEEP;
   }
 
   @Override
@@ -85,7 +126,6 @@ public class CustomExplosion extends Explosion {
       return;
     }
 
-    Set<BlockPos> set = new HashSet<>();
     // loop over a hollowed out 16x cube
     for (int rayX = 0; rayX < RAY_COUNT; rayX++) {
       for (int rayY = 0; rayY < RAY_COUNT; rayY++) {
@@ -121,7 +161,7 @@ public class CustomExplosion extends Explosion {
               // remove block if power is high enough
               // optimization: skip air if not placing fires to save network traffic
               if ((fire || !block.isAir()) && power > 0 && damageCalculator.shouldBlockExplode(this, level, target, block, power)) {
-                set.add(target);
+                toBlow.add(target);
               }
 
               // vanilla difference - we moved the 0.3 multiplier to the original step variables to avoid needing to compute as often
@@ -133,7 +173,6 @@ public class CustomExplosion extends Explosion {
         }
       }
     }
-    toBlow.addAll(set);
   }
 
   /** Called to run the logic for damaging and blasting back entities in range */
@@ -154,7 +193,7 @@ public class CustomExplosion extends Explosion {
                Math.floor(this.y + diameter + 1),
                Math.floor(this.z + diameter + 1)),
       entityPredicate);
-    EventHooks.onExplosionDetonate(this.level, this, list, diameter);
+    EventHooks.onExplosionDetonate(this.level, this, list, this.toBlow);
 
     // start pushing entities
     // this logic is for the most part identical to vanilla, except taking better advantage of vec3
@@ -182,7 +221,7 @@ public class CustomExplosion extends Explosion {
             }
           }
 
-          // apply enchantment to reduce knockback
+          // apply knockback
           if (knockback != 0) {
             double adjustedStrength = strength * knockback;
             // PORT 1.21.1: ProtectionEnchantment.getExplosionKnockbackAfterDampener was removed; blast-protection
@@ -192,7 +231,7 @@ public class CustomExplosion extends Explosion {
             entity.setDeltaMovement(entity.getDeltaMovement().add(velocity));
             if (entity instanceof Player player) {
               if (!player.isCreative() || !player.getAbilities().flying) {
-                hitPlayers.put(player, velocity);
+                getHitPlayers().put(player, velocity);
               }
             }
           }
@@ -201,7 +240,27 @@ public class CustomExplosion extends Explosion {
     }
   }
 
-  /** Runs the logic on the server, syncing to the client. Based on {@link ServerLevel#explode(Entity, DamageSource, ExplosionDamageCalculator, double, double, double, float, boolean, ExplosionInteraction)}*/
+  /**
+   * Removes the blocks collected in {@link #toBlow} and optionally places fire.
+   * PORT 1.21.4: replaces the removed {@code Explosion#finalizeExplosion}. Block drops and removal go through
+   * {@link BlockState#onExplosionHit} so vanilla drop decay (via the inherited {@link #getBlockInteraction()}) is kept.
+   */
+  protected void finalizeExplosion(boolean spawnParticles) {
+    if (interactsWithBlocks()) {
+      for (BlockPos pos : toBlow) {
+        level.getBlockState(pos).onExplosionHit(level, pos, this, (stack, dropPos) -> Block.popResource(level, dropPos, stack));
+      }
+    }
+    if (fire) {
+      for (BlockPos pos : toBlow) {
+        if (level.random.nextInt(3) == 0 && level.getBlockState(pos).isAir() && level.getBlockState(pos.below()).isSolidRender()) {
+          level.setBlockAndUpdate(pos, BaseFireBlock.getState(level, pos));
+        }
+      }
+    }
+  }
+
+  /** Runs the logic on the server, syncing to the client. */
   public void handleServer() {
     // based on ServerLevel#explode
     if (!level.isClientSide) {
@@ -223,14 +282,10 @@ public class CustomExplosion extends Explosion {
 
   /** Syncs this explosion to the client */
   public void syncToClient() {
-    if (!level.isClientSide && level instanceof ServerLevel server) {
-      // skip position sync if there are no blocks to be removed
-      List<BlockPos> toBlow = interactsWithBlocks() ? getToBlow() : List.of();
-      Vec3 position = center();
-      for (ServerPlayer player : server.players()) {
-        if (player.distanceToSqr(position) < 4096.0D) {
-          player.connection.send(new ClientboundExplodePacket(x, y, z, radius, toBlow, hitPlayers.get(player), getBlockInteraction(), getSmallExplosionParticles(), getLargeExplosionParticles(), getExplosionSound()));
-        }
+    Vec3 position = center();
+    for (ServerPlayer player : level.players()) {
+      if (player.distanceToSqr(position) < 4096.0D) {
+        player.connection.send(new ClientboundExplodePacket(position, Optional.ofNullable(getHitPlayers().get(player)), isSmall() ? ParticleTypes.EXPLOSION : ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE));
       }
     }
   }
