@@ -4,15 +4,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
+
+import javax.annotation.Nullable;
 
 /**
  * Builder for a recipe to determine the material from an input
@@ -21,7 +27,8 @@ import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 @Accessors(chain = true)
 public class MaterialRecipeBuilder extends AbstractRecipeBuilder<MaterialRecipeBuilder> {
   private final MaterialVariantId material;
-  private Ingredient ingredient = Ingredient.EMPTY;
+  @Nullable
+  private Ingredient ingredient = null;
   @Setter
   private int value = 1;
   @Setter
@@ -35,7 +42,7 @@ public class MaterialRecipeBuilder extends AbstractRecipeBuilder<MaterialRecipeB
    * @return  Builder instance
    */
   public MaterialRecipeBuilder setIngredient(TagKey<Item> tag) {
-    return this.setIngredient(Ingredient.of(tag));
+    return this.setIngredient(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)));
   }
 
   /**
@@ -61,13 +68,11 @@ public class MaterialRecipeBuilder extends AbstractRecipeBuilder<MaterialRecipeB
   public void save(RecipeOutput consumerIn) {
     this.save(consumerIn, material.getId().getLocation());
   }
-
-  @Override
   public void save(RecipeOutput consumerIn, ResourceLocation id) {
     if (this.material == null) {
       throw new IllegalStateException("recipe " + id + " has no material associated with it");
     }
-    if (this.ingredient == Ingredient.EMPTY) {
+    if (this.ingredient == null) {
       throw new IllegalStateException("recipe " + id + " must have ingredient set");
     }
     if (this.value <= 0) {
@@ -77,6 +82,11 @@ public class MaterialRecipeBuilder extends AbstractRecipeBuilder<MaterialRecipeB
       throw new IllegalStateException("recipe " + id + " has no needed associated with it");
     }
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "materials");
-    consumerIn.accept(id, new MaterialRecipe(id, group, ingredient, value, needed, material, leftover), advancement);
+    consumerIn.accept(ResourceKey.create(Registries.RECIPE, id), new MaterialRecipe(id, group, ingredient, value, needed, material, leftover), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput consumerIn, ResourceKey<Recipe<?>> id) {
+    save(consumerIn, id.location());
   }
 }

@@ -4,9 +4,12 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
@@ -179,8 +182,6 @@ public class MeltingRecipeBuilder extends AbstractRecipeBuilder<MeltingRecipeBui
   public void save(RecipeOutput output) {
     save(output, BuiltInRegistries.FLUID.getKey(this.output.get().getFluid()));
   }
-
-  @Override
   public void save(RecipeOutput output, ResourceLocation id) {
     if (oreRate != null && unitSizes != null) {
       throw new IllegalStateException("Builder cannot be both ore and damagable");
@@ -189,11 +190,16 @@ public class MeltingRecipeBuilder extends AbstractRecipeBuilder<MeltingRecipeBui
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "melting");
     // based on properties, choose which recipe to build
     if (oreRate != null) {
-      output.accept(id, new OreMeltingRecipe(id, group, input, this.output, temperature, time, byproducts, oreRate, byproductRates), advancement);
+      output.accept(ResourceKey.create(Registries.RECIPE, id), new OreMeltingRecipe(id, group, input, this.output, temperature, time, byproducts, oreRate, byproductRates), advancement);
     } else if (unitSizes != null) {
-      output.accept(id, new DamageableMeltingRecipe(id, group, input, this.output, temperature, time, byproducts, unitSizes[0], List.of(Arrays.stream(unitSizes, 1, unitSizes.length).boxed().toArray(Integer[]::new))), advancement);
+      output.accept(ResourceKey.create(Registries.RECIPE, id), new DamageableMeltingRecipe(id, group, input, this.output, temperature, time, byproducts, unitSizes[0], List.of(Arrays.stream(unitSizes, 1, unitSizes.length).boxed().toArray(Integer[]::new))), advancement);
     } else {
-      output.accept(id, new MeltingRecipe(id, group, input, this.output, temperature, time, byproducts), advancement);
+      output.accept(ResourceKey.create(Registries.RECIPE, id), new MeltingRecipe(id, group, input, this.output, temperature, time, byproducts), advancement);
     }
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

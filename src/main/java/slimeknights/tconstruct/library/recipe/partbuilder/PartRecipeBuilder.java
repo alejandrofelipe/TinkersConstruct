@@ -5,9 +5,12 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 
@@ -41,8 +44,6 @@ public class PartRecipeBuilder extends AbstractRecipeBuilder<PartRecipeBuilder> 
   public void save(RecipeOutput consumerIn) {
     this.save(consumerIn, BuiltInRegistries.ITEM.getKey(this.output.asItem()));
   }
-
-  @Override
   public void save(RecipeOutput consumerIn, ResourceLocation id) {
     if (this.outputAmount <= 0) {
       throw new IllegalStateException("recipe " + id + " must output at least 1");
@@ -54,6 +55,11 @@ public class PartRecipeBuilder extends AbstractRecipeBuilder<PartRecipeBuilder> 
       throw new IllegalStateException("recipe " + id + " has no pattern associated with it");
     }
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "parts");
-    consumerIn.accept(id, new PartRecipe(id, group, new Pattern(pattern), patternItem, cost, allowUncraftable, output, outputAmount), advancement);
+    consumerIn.accept(ResourceKey.create(Registries.RECIPE, id), new PartRecipe(id, group, new Pattern(pattern), patternItem, cost, allowUncraftable, output, outputAmount), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput consumerIn, ResourceKey<Recipe<?>> id) {
+    save(consumerIn, id.location());
   }
 }

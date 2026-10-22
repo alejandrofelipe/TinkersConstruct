@@ -6,8 +6,11 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
 import slimeknights.mantle.recipe.helper.ItemOutput;
@@ -57,13 +60,17 @@ public class SeveringRecipeBuilder extends AbstractRecipeBuilder<SeveringRecipeB
     save(consumer, BuiltInRegistries.ITEM.getKey(output.get().getItem()));
   }
 
-  @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "severing");
     if (childOutput != null) {
-      consumer.accept(id, new AgeableSeveringRecipe(id, ingredient, output, childOutput, baseChance, lootingBonus), advancement);
+      consumer.accept(ResourceKey.create(Registries.RECIPE, id), new AgeableSeveringRecipe(id, ingredient, output, childOutput, baseChance, lootingBonus), advancement);
     } else {
-      consumer.accept(id, new SeveringRecipe(id, ingredient, output, baseChance, lootingBonus), advancement);
+      consumer.accept(ResourceKey.create(Registries.RECIPE, id), new SeveringRecipe(id, ingredient, output, baseChance, lootingBonus), advancement);
     }
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

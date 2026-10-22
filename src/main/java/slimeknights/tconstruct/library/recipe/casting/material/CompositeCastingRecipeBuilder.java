@@ -5,8 +5,11 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Recipe;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
 import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
@@ -42,10 +45,13 @@ public class CompositeCastingRecipeBuilder extends AbstractRecipeBuilder<Composi
   public void save(RecipeOutput consumer) {
     save(consumer, BuiltInRegistries.ITEM.getKey(result.asItem()));
   }
-
-  @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "casting");
-    consumer.accept(id, new CompositeCastingRecipe(serializer, id, group, itemCost, result, allowedMaterials, castingStatConflict), advancement);
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), new CompositeCastingRecipe(serializer, id, group, itemCost, result, allowedMaterials, castingStatConflict), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

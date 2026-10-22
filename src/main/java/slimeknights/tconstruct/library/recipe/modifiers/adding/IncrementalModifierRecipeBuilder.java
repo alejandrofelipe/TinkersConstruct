@@ -1,22 +1,29 @@
 package slimeknights.tconstruct.library.recipe.modifiers.adding;
 
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.modifiers.util.LazyModifier;
 
+import javax.annotation.Nullable;
+
 /** Recipe that supports not just adding multiple of an item, but also adding a partial amount */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class IncrementalModifierRecipeBuilder extends AbstractModifierRecipeBuilder<IncrementalModifierRecipeBuilder> {
-  private Ingredient input = Ingredient.EMPTY;
+  @Nullable
+  private Ingredient input = null;
   private int amountPerItem;
   private int neededPerLevel;
   private ItemOutput leftover = ItemOutput.EMPTY;
@@ -85,7 +92,7 @@ public class IncrementalModifierRecipeBuilder extends AbstractModifierRecipeBuil
    * @return  Builder instance
    */
   public IncrementalModifierRecipeBuilder setInput(TagKey<Item> tag, int amountPerItem, int neededPerLevel) {
-    return setInput(Ingredient.of(tag), amountPerItem, neededPerLevel);
+    return setInput(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)), amountPerItem, neededPerLevel);
   }
 
 
@@ -110,12 +117,16 @@ public class IncrementalModifierRecipeBuilder extends AbstractModifierRecipeBuil
 
   /* Building */
 
-  @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
-    if (input == Ingredient.EMPTY) {
+    if (input == null) {
       throw new IllegalStateException("Must set input");
     }
     AdvancementHolder advancement = buildOptionalAdvancement(id, "modifiers");
-    consumer.accept(id, new IncrementalModifierRecipe(id, input, amountPerItem, neededPerLevel, tools, maxToolSize, result, ModifierEntry.VALID_LEVEL.range(minLevel, maxLevel), slots, leftover, allowCrystal, checkTraitLevel), advancement);
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), new IncrementalModifierRecipe(id, input, amountPerItem, neededPerLevel, tools, maxToolSize, result, ModifierEntry.VALID_LEVEL.range(minLevel, maxLevel), slots, leftover, allowCrystal, checkTraitLevel), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

@@ -5,9 +5,12 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
 import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
@@ -50,12 +53,15 @@ public class PartSwapCastingRecipeBuilder extends AbstractRecipeBuilder<PartSwap
   @SuppressWarnings("deprecation")
   @Override
   public void save(RecipeOutput consumer) {
-    save(consumer, BuiltInRegistries.ITEM.getKey(tools.getItems()[0].getItem()));
+    save(consumer, BuiltInRegistries.ITEM.getKey(tools.items().findFirst().orElseThrow().value()));
+  }
+  public void save(RecipeOutput consumer, ResourceLocation id) {
+    AdvancementHolder advancement = this.buildOptionalAdvancement(id, "materials");
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), new PartSwapCastingRecipe(recipeSerializer, id, group, tools, itemCost, index, allowedMaterials), advancement);
   }
 
   @Override
-  public void save(RecipeOutput consumer, ResourceLocation id) {
-    AdvancementHolder advancement = this.buildOptionalAdvancement(id, "materials");
-    consumer.accept(id, new PartSwapCastingRecipe(recipeSerializer, id, group, tools, itemCost, index, allowedMaterials), advancement);
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

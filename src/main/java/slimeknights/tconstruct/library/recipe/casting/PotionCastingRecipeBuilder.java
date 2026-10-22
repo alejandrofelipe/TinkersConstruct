@@ -6,12 +6,15 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.Fluid;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
@@ -35,7 +38,8 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
   /** Factory for the modifier recipe variant (tipping vs tip-clearing); null for bottle-filling recipes. Must create the class matching {@link #recipeSerializer}'s loader, else serialization casts to the wrong type. */
   @Nullable
   private final TippingRecipeFactory tippingFactory;
-  private Ingredient bottle = Ingredient.EMPTY;
+  @Nullable
+  private Ingredient bottle = null;
   private FluidIngredient fluid = FluidIngredient.EMPTY;
   @Setter @Accessors(chain = true)
   private int coolingTime = 5;
@@ -141,7 +145,7 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
    * @return  Builder instance
    */
   public PotionCastingRecipeBuilder setBottle(TagKey<Item> tagIn) {
-    return this.setBottle(Ingredient.of(tagIn));
+    return this.setBottle(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tagIn)));
   }
 
   /**
@@ -171,8 +175,6 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
   public void save(RecipeOutput consumerIn) {
     this.save(consumerIn, BuiltInRegistries.ITEM.getKey(this.result));
   }
-
-  @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
     if (this.fluid == FluidIngredient.EMPTY) {
       throw new IllegalStateException("Casting recipes require a fluid input");
@@ -182,10 +184,15 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
     }
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "casting");
     if (modifier != null) {
-      consumer.accept(id, tippingFactory.create(recipeSerializer, id, group, bottle, fluid, coolingTime, modifier), advancement);
+      consumer.accept(ResourceKey.create(Registries.RECIPE, id), tippingFactory.create(recipeSerializer, id, group, bottle, fluid, coolingTime, modifier), advancement);
     } else {
-      consumer.accept(id, new PotionCastingRecipe(recipeSerializer, id, group, bottle, fluid, result, coolingTime), advancement);
+      consumer.accept(ResourceKey.create(Registries.RECIPE, id), new PotionCastingRecipe(recipeSerializer, id, group, bottle, fluid, result, coolingTime), advancement);
     }
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 
   /** Factory for the tipping/tip-clearing recipe variant; both recipe constructors share this signature */

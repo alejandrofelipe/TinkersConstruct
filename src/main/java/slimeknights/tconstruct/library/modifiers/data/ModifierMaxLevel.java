@@ -21,10 +21,10 @@ public class ModifierMaxLevel {
 
   /** Sets the given value in the structure */
   public void set(EquipmentSlot slot, float level) {
-    float oldLevel = levels[slot.getFilterFlag()];
+    float oldLevel = levels[slot.ordinal()];
     if (level != oldLevel) {
       // first, update level
-      levels[slot.getFilterFlag()] = level;
+      levels[slot.ordinal()] = level;
       // if larger than max, new max
       if (level >= max) {
         max = level;
@@ -33,7 +33,7 @@ public class ModifierMaxLevel {
         // if the old level was max, find new max
         max = 0;
         for (EquipmentSlot armorSlot : ModifiableArmorMaterial.EQUIPMENT_SLOTS) {
-          float value = levels[armorSlot.getFilterFlag()];
+          float value = levels[armorSlot.ordinal()];
           if (value > max) {
             max = value;
             maxSlot = armorSlot;

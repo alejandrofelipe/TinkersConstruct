@@ -5,9 +5,12 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
@@ -76,7 +79,6 @@ public class ToolBuildingRecipeBuilder extends AbstractRecipeBuilder<ToolBuildin
     this.save(consumerIn, BuiltInRegistries.ITEM.getKey(this.output.asItem()));
   }
 
-  @Override
   public void save(RecipeOutput consumerIn, ResourceLocation id) {
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "parts");
     if (tippedModifier != null) {
@@ -86,9 +88,14 @@ public class ToolBuildingRecipeBuilder extends AbstractRecipeBuilder<ToolBuildin
       if (extraRequirements.size() != 1) {
         throw new IllegalArgumentException("Must have exactly one ingredient for modifier transform");
       }
-      consumerIn.accept(id, new TippedToolTransformRecipe(id, group, output, layoutSlot, extraRequirements.get(0), extraMaterials, tippedModifier), advancement);
+      consumerIn.accept(ResourceKey.create(Registries.RECIPE, id), new TippedToolTransformRecipe(id, group, output, layoutSlot, extraRequirements.get(0), extraMaterials, tippedModifier), advancement);
     } else {
-      consumerIn.accept(id, new ToolBuildingRecipe(id, group, output, outputSize, layoutSlot, extraRequirements, partsOverride, extraMaterials), advancement);
+      consumerIn.accept(ResourceKey.create(Registries.RECIPE, id), new ToolBuildingRecipe(id, group, output, outputSize, layoutSlot, extraRequirements, partsOverride, extraMaterials), advancement);
     }
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

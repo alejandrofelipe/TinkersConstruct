@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.recipe.material;
 import lombok.NoArgsConstructor;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.neoforged.neoforge.common.conditions.ICondition;
@@ -34,7 +34,7 @@ public class ShapedMaterialConsumerBuilder {
   /** Recipe output that wraps a vanilla shaped recipe into a {@link ShapedMaterialRecipe} before forwarding */
   private record Wrapped(RecipeOutput delegate, List<MaterialVariantId> materials) implements RecipeOutput {
     @Override
-    public void accept(ResourceLocation id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions) {
+    public void accept(ResourceKey<Recipe<?>> id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions) {
       Recipe<?> wrapped = recipe instanceof ShapedRecipe shaped ? new ShapedMaterialRecipe(shaped, materials) : recipe;
       delegate.accept(id, wrapped, advancement, conditions);
     }
@@ -42,6 +42,11 @@ public class ShapedMaterialConsumerBuilder {
     @Override
     public net.minecraft.advancements.Advancement.Builder advancement() {
       return delegate.advancement();
+    }
+
+    @Override
+    public void includeRootAdvancement() {
+      delegate.includeRootAdvancement();
     }
   }
 }

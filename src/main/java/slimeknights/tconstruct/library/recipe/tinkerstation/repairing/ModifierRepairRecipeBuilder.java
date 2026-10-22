@@ -2,9 +2,12 @@ package slimeknights.tconstruct.library.recipe.tinkerstation.repairing;
 
 import lombok.RequiredArgsConstructor;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.modifiers.util.LazyModifier;
@@ -28,13 +31,17 @@ public class ModifierRepairRecipeBuilder extends AbstractRecipeBuilder<ModifierR
   /** Builds the recipe for the crafting table using a repair kit */
   public ModifierRepairRecipeBuilder buildCraftingTable(RecipeOutput consumer, ResourceLocation id) {
     AdvancementHolder advancement = buildOptionalAdvancement(id, "tinker_station");
-    consumer.accept(id, new ModifierRepairCraftingRecipe(id, modifier, ingredient, repairAmount), advancement);
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), new ModifierRepairCraftingRecipe(id, modifier, ingredient, repairAmount), advancement);
     return this;
   }
 
-  @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
     AdvancementHolder advancement = buildOptionalAdvancement(id, "tinker_station");
-    consumer.accept(id, new ModifierRepairTinkerStationRecipe(id, modifier, ingredient, repairAmount), advancement);
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), new ModifierRepairTinkerStationRecipe(id, modifier, ingredient, repairAmount), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

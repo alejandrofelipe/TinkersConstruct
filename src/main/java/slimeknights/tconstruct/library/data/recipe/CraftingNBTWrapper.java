@@ -4,7 +4,7 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
@@ -27,19 +27,27 @@ public record CraftingNBTWrapper(RecipeOutput original, DataComponentPatch patch
   }
 
   @Override
-  public void accept(ResourceLocation id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions) {
+  public void accept(ResourceKey<Recipe<?>> id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions) {
     original.accept(id, applyPatch(recipe), advancement, conditions);
+  }
+
+  @Override
+  public void includeRootAdvancement() {
+    original.includeRootAdvancement();
   }
 
   /** Applies the stored component patch to the recipe's result stack, where the recipe type exposes one */
   private Recipe<?> applyPatch(Recipe<?> recipe) {
     // vanilla shaped/shapeless expose a mutable result stack; apply the patch in place
-    if (recipe instanceof ShapedRecipe || recipe instanceof ShapelessRecipe) {
-      // PORT M3: result is fetched without a registry context during datagen; acceptable as components datagen does not need lookup
-      ItemStack result = recipe.getResultItem(null);
-      if (result != null && !result.isEmpty()) {
-        result.applyComponents(patch);
-      }
+    // 1.21.4: Recipe#getResultItem was removed; shaped/shapeless expose the result field directly
+    ItemStack result = null;
+    if (recipe instanceof ShapedRecipe shaped) {
+      result = shaped.result;
+    } else if (recipe instanceof ShapelessRecipe shapeless) {
+      result = shapeless.result;
+    }
+    if (result != null && !result.isEmpty()) {
+      result.applyComponents(patch);
     }
     return recipe;
   }

@@ -3,9 +3,12 @@ package slimeknights.tconstruct.tables.recipe;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
@@ -50,15 +53,19 @@ public class TinkerStationPartSwappingBuilder extends AbstractRecipeBuilder<Tink
 
   @Override
   public void save(RecipeOutput output) {
-    save(output, Loadables.ITEM.getKey(tools.getItems()[0].getItem()));
+    save(output, Loadables.ITEM.getKey(tools.items().findFirst().orElseThrow().value()));
+  }
+
+  public void save(RecipeOutput output, ResourceLocation id) {
+    if (fromTool) {
+      output.accept(ResourceKey.create(Registries.RECIPE, id), new ToolMaterialSwappingRecipe(id, tools, maxStackSize, extraRequirements), null);
+    } else {
+      output.accept(ResourceKey.create(Registries.RECIPE, id), new TinkerStationPartSwapping(id, tools, maxStackSize, extraRequirements), null);
+    }
   }
 
   @Override
-  public void save(RecipeOutput output, ResourceLocation id) {
-    if (fromTool) {
-      output.accept(id, new ToolMaterialSwappingRecipe(id, tools, maxStackSize, extraRequirements), null);
-    } else {
-      output.accept(id, new TinkerStationPartSwapping(id, tools, maxStackSize, extraRequirements), null);
-    }
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

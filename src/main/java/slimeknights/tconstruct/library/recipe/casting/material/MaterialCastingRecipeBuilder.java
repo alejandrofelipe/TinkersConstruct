@@ -5,11 +5,14 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
@@ -35,7 +38,8 @@ public class MaterialCastingRecipeBuilder extends AbstractRecipeBuilder<Material
   @Nullable
   private final IModifiable resultTool;
   private final TypeAwareRecipeSerializer<? extends AbstractMaterialCastingRecipe> recipeSerializer;
-  private Ingredient cast = Ingredient.EMPTY;
+  @Nullable
+  private Ingredient cast = null;
   @Setter
   private int itemCost = 0;
   private CastPurpose castPurpose = CastPurpose.CATALYST;
@@ -131,7 +135,7 @@ public class MaterialCastingRecipeBuilder extends AbstractRecipeBuilder<Material
    * @return  Builder instance
    */
   public MaterialCastingRecipeBuilder setCast(TagKey<Item> tag, boolean consumed) {
-    return this.setCast(Ingredient.of(tag), consumed);
+    return this.setCast(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)), consumed);
   }
 
   /**
@@ -153,19 +157,22 @@ public class MaterialCastingRecipeBuilder extends AbstractRecipeBuilder<Material
   public void save(RecipeOutput consumer) {
     this.save(consumer, BuiltInRegistries.ITEM.getKey(Objects.requireNonNull(this.result).asItem()));
   }
-
-  @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
     if (this.itemCost <= 0) {
       throw new IllegalStateException("Material casting recipes require a positive amount of fluid");
     }
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "casting");
     if (result != null) {
-      consumer.accept(id, new MaterialCastingRecipe(recipeSerializer, id, group, cast, itemCost, result, allowedMaterials, castPurpose != CastPurpose.CATALYST, switchSlots), advancement);
+      consumer.accept(ResourceKey.create(Registries.RECIPE, id), new MaterialCastingRecipe(recipeSerializer, id, group, cast, itemCost, result, allowedMaterials, castPurpose != CastPurpose.CATALYST, switchSlots), advancement);
     } else if (resultTool != null) {
-      consumer.accept(id, new ToolCastingRecipe(recipeSerializer, id, group, cast, itemCost, castPurpose, resultTool, allowedMaterials, extraMaterials), advancement);
+      consumer.accept(ResourceKey.create(Registries.RECIPE, id), new ToolCastingRecipe(recipeSerializer, id, group, cast, itemCost, castPurpose, resultTool, allowedMaterials, extraMaterials), advancement);
     } else {
       throw new IllegalArgumentException("Must have either result or result tool");
     }
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

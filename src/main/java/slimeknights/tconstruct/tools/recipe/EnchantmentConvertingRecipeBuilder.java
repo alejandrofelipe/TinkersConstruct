@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Recipe;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.json.predicate.modifier.ModifierPredicate;
@@ -35,12 +38,16 @@ public class EnchantmentConvertingRecipeBuilder extends AbstractSizedIngredientR
     save(output, TConstruct.getResource(name));
   }
 
-  @Override
   public void save(RecipeOutput output, ResourceLocation id) {
     if (inputs.isEmpty()) {
       throw new IllegalStateException("Must have at least one input");
     }
     AdvancementHolder advancement = buildOptionalAdvancement(id, "modifiers");
-    output.accept(id, new EnchantmentConvertingRecipe(id, name, inputs, matchBook, returnInput, modifierPredicate), advancement);
+    output.accept(ResourceKey.create(Registries.RECIPE, id), new EnchantmentConvertingRecipe(id, name, inputs, matchBook, returnInput, modifierPredicate), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

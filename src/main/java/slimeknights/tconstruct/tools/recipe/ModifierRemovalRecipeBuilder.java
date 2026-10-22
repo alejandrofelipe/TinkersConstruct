@@ -6,10 +6,13 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.mantle.recipe.ingredient.SizedIngredient;
@@ -82,12 +85,16 @@ public class ModifierRemovalRecipeBuilder extends AbstractSizedIngredientRecipeB
     save(output, BuiltInRegistries.ITEM.getKey(leftovers.get(0).getItem()));
   }
 
-  @Override
   public void save(RecipeOutput output, ResourceLocation id) {
     if (inputs.isEmpty()) {
       throw new IllegalStateException("Must have at least one input");
     }
     AdvancementHolder advancement = buildOptionalAdvancement(id, "modifiers");
-    output.accept(id, constructor.apply(id, name, tools, inputs, leftovers, modifierPredicate), advancement);
+    output.accept(ResourceKey.create(Registries.RECIPE, id), constructor.apply(id, name, tools, inputs, leftovers, modifierPredicate), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

@@ -1,19 +1,26 @@
 package slimeknights.tconstruct.library.recipe.modifiers.adding;
 
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 
+import javax.annotation.Nullable;
+
 /** Builder for {@link MultilevelIncrementalModifierRecipe} */
 public class MultilevelIncrementalModifierRecipeBuilder extends AbstractMultilevelModifierRecipeBuilder<MultilevelIncrementalModifierRecipeBuilder> {
-  private Ingredient input = Ingredient.EMPTY;
+  @Nullable
+  private Ingredient input = null;
   private int amountPerItem;
   private int neededPerLevel;
   private ItemOutput leftover = ItemOutput.EMPTY;
@@ -69,7 +76,7 @@ public class MultilevelIncrementalModifierRecipeBuilder extends AbstractMultilev
    * @return  Builder instance
    */
   public MultilevelIncrementalModifierRecipeBuilder setInput(TagKey<Item> tag, int amountPerItem, int neededPerLevel) {
-    return setInput(Ingredient.of(tag), amountPerItem, neededPerLevel);
+    return setInput(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)), amountPerItem, neededPerLevel);
   }
 
 
@@ -94,15 +101,19 @@ public class MultilevelIncrementalModifierRecipeBuilder extends AbstractMultilev
 
   /* Saving */
 
-  @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
-    if (input == Ingredient.EMPTY) {
+    if (input == null) {
       throw new IllegalStateException("Must set input");
     }
     if (levels.isEmpty()) {
       throw new IllegalStateException("Must have at least 1 level");
     }
     AdvancementHolder advancement = buildOptionalAdvancement(id, "modifiers");
-    consumer.accept(id, new MultilevelIncrementalModifierRecipe(id, input, amountPerItem, neededPerLevel, tools, maxToolSize, result, leftover, allowCrystal, levels, checkTraitLevel), advancement);
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), new MultilevelIncrementalModifierRecipe(id, input, amountPerItem, neededPerLevel, tools, maxToolSize, result, leftover, allowCrystal, levels, checkTraitLevel), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

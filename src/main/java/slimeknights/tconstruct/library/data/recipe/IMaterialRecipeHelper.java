@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.library.data.recipe;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -70,13 +71,13 @@ public interface IMaterialRecipeHelper extends IRecipeHelper {
     String matName = material.getLocation('/').getPath();
     // ingot
     TagKey<Item> ingotTag = getItemTag(COMMON, "ingots/" + name);
-    materialRecipe(wrapped, material, Ingredient.of(ingotTag), 1, 1, folder + matName + "/ingot");
+    materialRecipe(wrapped, material, Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(ingotTag)), 1, 1, folder + matName + "/ingot");
     // nugget
     wrapped = optional ? withCondition(consumer, tagCondition("nuggets/" + name)) : consumer;
-    materialRecipe(wrapped, material, Ingredient.of(getItemTag(COMMON, "nuggets/" + name)), 1, 9, folder + matName + "/nugget");
+    materialRecipe(wrapped, material, Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(getItemTag(COMMON, "nuggets/" + name))), 1, 9, folder + matName + "/nugget");
     // block
     wrapped = optional ? withCondition(consumer, tagCondition("storage_blocks/" + name)) : consumer;
-    materialRecipe(wrapped, material, Ingredient.of(getItemTag(COMMON, "storage_blocks/" + name)), 9, 1, ItemOutput.fromTag(ingotTag), folder + matName + "/block");
+    materialRecipe(wrapped, material, Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(getItemTag(COMMON, "storage_blocks/" + name))), 9, 1, ItemOutput.fromTag(ingotTag), folder + matName + "/block");
   }
 
   /** Adds recipes to melt a material */

@@ -5,9 +5,12 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
 import slimeknights.mantle.recipe.ingredient.SizedIngredient;
@@ -53,10 +56,13 @@ public class PartBuilderToolRecycleBuilder extends AbstractRecipeBuilder<PartBui
   public void save(RecipeOutput consumer) {
     save(consumer, BuiltInRegistries.ITEM.getKey(tools.getMatchingStacks().get(0).getItem()));
   }
-
-  @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
     AdvancementHolder advancement = buildOptionalAdvancement(id, "parts");
-    consumer.accept(id, new PartBuilderToolRecycle(tools, pattern, parts), advancement);
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), new PartBuilderToolRecycle(tools, pattern, parts), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput consumer, ResourceKey<Recipe<?>> id) {
+    save(consumer, id.location());
   }
 }

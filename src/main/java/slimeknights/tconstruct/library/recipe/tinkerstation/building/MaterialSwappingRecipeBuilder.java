@@ -3,11 +3,15 @@ package slimeknights.tconstruct.library.recipe.tinkerstation.building;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
@@ -52,7 +56,7 @@ public class MaterialSwappingRecipeBuilder extends AbstractRecipeBuilder<Materia
 
   /** Creates a builder for the given tool */
   public static MaterialSwappingRecipeBuilder tools(TagKey<Item> tag) {
-    return tools(Ingredient.of(tag));
+    return tools(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)));
   }
 
   /** Adds the given index to the recipe */
@@ -91,10 +95,9 @@ public class MaterialSwappingRecipeBuilder extends AbstractRecipeBuilder<Materia
 
   @Override
   public void save(RecipeOutput consumer) {
-    save(consumer, Loadables.ITEM.getKey(tools.getItems()[0].getItem()));
+    save(consumer, Loadables.ITEM.getKey(tools.items().findFirst().orElseThrow().value()));
   }
 
-  @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
     int[] indices = this.indices.stream().toArray();
     if (indices.length == 0) {
@@ -104,9 +107,14 @@ public class MaterialSwappingRecipeBuilder extends AbstractRecipeBuilder<Materia
       if (ingredient != SizedIngredient.EMPTY) {
         throw new IllegalStateException("Cannot set both part and ingredient");
       }
-      consumer.accept(id, new PartSwappingOverrideRecipe(id, tools, maxStackSize, part, indices, extraRequirements), null);
+      consumer.accept(ResourceKey.create(Registries.RECIPE, id), new PartSwappingOverrideRecipe(id, tools, maxStackSize, part, indices, extraRequirements), null);
     } else {
-      consumer.accept(id, new FixedMaterialSwappingRecipe(id, tools, maxStackSize, ingredient, material, indices, repairValue, extraRequirements), null);
+      consumer.accept(ResourceKey.create(Registries.RECIPE, id), new FixedMaterialSwappingRecipe(id, tools, maxStackSize, ingredient, material, indices, repairValue, extraRequirements), null);
     }
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

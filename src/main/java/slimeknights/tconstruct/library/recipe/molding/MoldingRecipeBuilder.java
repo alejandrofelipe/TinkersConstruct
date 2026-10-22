@@ -3,24 +3,31 @@ package slimeknights.tconstruct.library.recipe.molding;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
+import javax.annotation.Nullable;
+
 @SuppressWarnings("unused")
 @RequiredArgsConstructor(staticName = "molding")
 public class MoldingRecipeBuilder extends AbstractRecipeBuilder<MoldingRecipeBuilder> {
   private final ItemOutput output;
   private final TypeAwareRecipeSerializer<MoldingRecipe> serializer;
-  private Ingredient material = Ingredient.EMPTY;
-  private Ingredient pattern = Ingredient.EMPTY;
+  @Nullable
+  private Ingredient material = null;
+  @Nullable
+  private Ingredient pattern = null;
   private boolean patternConsumed = false;
 
   /**
@@ -56,7 +63,7 @@ public class MoldingRecipeBuilder extends AbstractRecipeBuilder<MoldingRecipeBui
 
   /** Sets the material item, on the table */
   public MoldingRecipeBuilder setMaterial(TagKey<Item> tag) {
-    return setMaterial(Ingredient.of(tag));
+    return setMaterial(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)));
   }
 
   /** Sets the mold item, in the players hand */
@@ -73,7 +80,7 @@ public class MoldingRecipeBuilder extends AbstractRecipeBuilder<MoldingRecipeBui
 
   /** Sets the mold item, in the players hand */
   public MoldingRecipeBuilder setPattern(TagKey<Item> tag, boolean consumed) {
-    return setPattern(Ingredient.of(tag), consumed);
+    return setPattern(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)), consumed);
   }
 
 
@@ -83,13 +90,16 @@ public class MoldingRecipeBuilder extends AbstractRecipeBuilder<MoldingRecipeBui
   public void save(RecipeOutput consumer) {
     save(consumer, BuiltInRegistries.ITEM.getKey(output.get().getItem()));
   }
-
-  @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
-    if (material == Ingredient.EMPTY) {
+    if (material == null) {
       throw new IllegalStateException("Missing material for molding recipe");
     }
     AdvancementHolder advancement = buildOptionalAdvancement(id, "molding");
-    consumer.accept(id, new MoldingRecipe(serializer, id, material, pattern, patternConsumed, output), advancement);
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), new MoldingRecipe(serializer, id, material, pattern, patternConsumed, output), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput consumer, ResourceKey<Recipe<?>> id) {
+    save(consumer, id.location());
   }
 }

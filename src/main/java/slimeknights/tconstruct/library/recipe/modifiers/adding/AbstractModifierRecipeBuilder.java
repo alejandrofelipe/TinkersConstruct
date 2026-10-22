@@ -4,7 +4,10 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -28,7 +31,7 @@ import static slimeknights.tconstruct.library.modifiers.ModifierEntry.VALID_LEVE
 public abstract class AbstractModifierRecipeBuilder<T extends AbstractModifierRecipeBuilder<T>> extends AbstractRecipeBuilder<T> {
   // shared
   protected final ModifierId result;
-  protected Ingredient tools = Ingredient.of(TinkerTags.Items.MODIFIABLE);
+  protected Ingredient tools = Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.MODIFIABLE));
   protected int maxToolSize = ITinkerStationRecipe.DEFAULT_TOOL_STACK_SIZE;
   @Nullable
   protected SlotCount slots;
@@ -66,7 +69,7 @@ public abstract class AbstractModifierRecipeBuilder<T extends AbstractModifierRe
    * @return  Builder instance
    */
   public T setTools(TagKey<Item> tag) {
-    return this.setTools(Ingredient.of(tag));
+    return this.setTools(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)));
   }
 
   /**
@@ -164,7 +167,7 @@ public abstract class AbstractModifierRecipeBuilder<T extends AbstractModifierRe
 
   @Override
   public void save(RecipeOutput consumer) {
-    save(consumer, result.getLocation());
+    save(consumer, ResourceKey.create(Registries.RECIPE, result.getLocation()));
   }
 
   /**
@@ -180,7 +183,7 @@ public abstract class AbstractModifierRecipeBuilder<T extends AbstractModifierRe
       throw new IllegalStateException("Must set modifier slots to apply modifier salvage.");
     }
     AdvancementHolder advancement = buildOptionalAdvancement(id, "modifiers");
-    consumer.accept(id, makeSalvage(id), advancement);
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), makeSalvage(id), advancement);
     return (T) this;
   }
 

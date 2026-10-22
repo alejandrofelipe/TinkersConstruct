@@ -2,8 +2,11 @@ package slimeknights.tconstruct.library.recipe.tinkerstation.repairing;
 
 import lombok.RequiredArgsConstructor;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Recipe;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
@@ -31,14 +34,18 @@ public class ModifierMaterialRepairRecipeBuilder extends AbstractRecipeBuilder<M
   @SuppressWarnings("removal")
   public ModifierMaterialRepairRecipeBuilder saveCraftingTable(RecipeOutput consumer, ResourceLocation id) {
     AdvancementHolder advancement = buildOptionalAdvancement(id, "tinker_station");
-    consumer.accept(id, new ModifierMaterialRepairKitRecipe(id, modifier, material, statType), advancement);
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), new ModifierMaterialRepairKitRecipe(id, modifier, material, statType), advancement);
     return this;
   }
 
   @SuppressWarnings("removal")
-  @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
     AdvancementHolder advancement = buildOptionalAdvancement(id, "tinker_station");
-    consumer.accept(id, new ModifierMaterialRepairRecipe(id, modifier, material, statType), advancement);
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), new ModifierMaterialRepairRecipe(id, modifier, material, statType), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

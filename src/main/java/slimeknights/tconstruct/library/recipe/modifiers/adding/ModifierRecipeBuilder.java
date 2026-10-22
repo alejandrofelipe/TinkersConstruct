@@ -1,11 +1,14 @@
 package slimeknights.tconstruct.library.recipe.modifiers.adding;
 
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.recipe.ingredient.SizedIngredient;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -103,12 +106,16 @@ public class ModifierRecipeBuilder extends AbstractModifierRecipeBuilder<Modifie
 
   /* Building */
 
-  @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
     if (inputs.isEmpty() && !allowCrystal) {
       throw new IllegalStateException("Must have at least 1 input");
     }
     AdvancementHolder advancement = buildOptionalAdvancement(id, "modifiers");
-    consumer.accept(id, new ModifierRecipe(id, inputs, tools, maxToolSize, result, ModifierEntry.VALID_LEVEL.range(minLevel, maxLevel), slots, allowCrystal, checkTraitLevel), advancement);
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), new ModifierRecipe(id, inputs, tools, maxToolSize, result, ModifierEntry.VALID_LEVEL.range(minLevel, maxLevel), slots, allowCrystal, checkTraitLevel), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

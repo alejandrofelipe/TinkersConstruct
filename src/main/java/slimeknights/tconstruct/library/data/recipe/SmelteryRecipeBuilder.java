@@ -8,6 +8,8 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -16,9 +18,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.conditions.AlwaysCondition;
 import net.neoforged.neoforge.common.conditions.ICondition;
-import net.neoforged.neoforge.common.conditions.ItemExistsCondition;
-import net.neoforged.neoforge.common.conditions.TrueCondition;
+import net.neoforged.neoforge.common.conditions.RegisteredCondition;
 import net.neoforged.neoforge.common.crafting.DifferenceIngredient;
 import net.neoforged.neoforge.common.crafting.IntersectionIngredient;
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -244,7 +246,7 @@ public class SmelteryRecipeBuilder {
   /** Adds a recipe for melting a list of items. Never optional */
   @SuppressWarnings("removal")
   private void minecraftArmorMelting(int cost, String prefix, String name) {
-    Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(prefix + '_' + name));
+    Item item = BuiltInRegistries.ITEM.getValue(ResourceLocation.parse(prefix + '_' + name));
     if (item == Items.AIR) {
       throw new IllegalArgumentException("Unknown item name minecraft:" + name);
     }
@@ -262,7 +264,7 @@ public class SmelteryRecipeBuilder {
     for (IByproduct byproduct : unitByproducts) {
       builder.addByproduct(byproduct.getFluid(scale));
     }
-    builder.save(withCondition(new ItemExistsCondition(itemName)), location(meltingFolder, output));
+    builder.save(withCondition(new RegisteredCondition<>(ResourceKey.create(Registries.ITEM, itemName))), location(meltingFolder, output));
   }
 
   /** Adds a recipe for melting an item from a tag */
@@ -273,7 +275,7 @@ public class SmelteryRecipeBuilder {
   /** Adds a recipe for melting an item from a tag */
   private void tagMelting(float scale, String output, float factor, ResourceLocation tagName, boolean damagable, boolean forceOptional) {
     RecipeOutput wrapped = optional || forceOptional ? withCondition(tagCondition(tagName)) : consumer;
-    MeltingRecipeBuilder builder = MeltingRecipeBuilder.melting(Ingredient.of(ItemTags.create(tagName)), result((int) (baseUnit * scale)), temperature, factor);
+    MeltingRecipeBuilder builder = MeltingRecipeBuilder.melting(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(ItemTags.create(tagName))), result((int) (baseUnit * scale)), temperature, factor);
     if (damagable) {
       builder.setDamagable(damageUnits());
     }
@@ -289,15 +291,15 @@ public class SmelteryRecipeBuilder {
     assert baseUnit != 0;
     String tagName = tagPrefix + this.name.getPath();
     RecipeOutput wrapped;
-    Ingredient baseIngredient = Ingredient.of(itemTag(tagName));
+    Ingredient baseIngredient = Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(itemTag(tagName)));
     Ingredient ingredient;
     // not everyone sets size, so treat singular as the fallback, means we want anything in the tag that is not sparse or dense
     if (size == Tags.Items.ORE_RATES_SINGULAR) {
-      ingredient = DifferenceIngredient.of(baseIngredient, Ingredient.of(TinkerTags.Items.NON_SINGULAR_ORE_RATES));
+      ingredient = DifferenceIngredient.of(baseIngredient, Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.NON_SINGULAR_ORE_RATES)));
       wrapped = withCondition(TagCombinationCondition.difference(itemTag(tagName), TinkerTags.Items.NON_SINGULAR_ORE_RATES));
       // size tag means we want an intersection between the tag and that size
     } else if (size != null) {
-      ingredient = IntersectionIngredient.of(baseIngredient, Ingredient.of(size));
+      ingredient = IntersectionIngredient.of(baseIngredient, Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(size)));
       wrapped = withCondition(TagCombinationCondition.intersection(itemTag(tagName), size));
       // default only need it to be in the tag
     } else {
@@ -324,7 +326,7 @@ public class SmelteryRecipeBuilder {
       for (IByproduct byproduct : oreByproducts) {
         // found an always present byproduct? no need to tag and we are done
         alwaysPresent = byproduct.isAlwaysPresent();
-        ICondition condition = alwaysPresent ? TrueCondition.INSTANCE : tagCondition("ingots/" + byproduct.getName());
+        ICondition condition = alwaysPresent ? AlwaysCondition.INSTANCE : tagCondition("ingots/" + byproduct.getName());
         RecipeOutput variantOutput = ConsumerWrapperBuilder.wrap().addCondition(condition).build(wrapped);
         supplier.get()
                 .addByproduct(byproduct.getFluid(scale))
@@ -337,7 +339,7 @@ public class SmelteryRecipeBuilder {
       }
       // not always present? add a recipe with no byproducts as a final fallback
       if (!alwaysPresent) {
-        RecipeOutput variantOutput = ConsumerWrapperBuilder.wrap().addCondition(TrueCondition.INSTANCE).build(wrapped);
+        RecipeOutput variantOutput = ConsumerWrapperBuilder.wrap().addCondition(AlwaysCondition.INSTANCE).build(wrapped);
         supplier.get().save(variantOutput, location.withSuffix("_" + index));
       }
     }
@@ -423,7 +425,7 @@ public class SmelteryRecipeBuilder {
 
   /** Adds melting and casting recipes for the given object */
   public SmelteryRecipeBuilder meltingCasting(float scale, String tagPrefix, String castMaterial, float factor, boolean forceOptional) {
-    return meltingCasting(scale, tagPrefix, Ingredient.of(itemTag(tagPrefix + "s/" + castMaterial)), factor, forceOptional);
+    return meltingCasting(scale, tagPrefix, Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(itemTag(tagPrefix + "s/" + castMaterial))), factor, forceOptional);
   }
 
 
@@ -534,7 +536,7 @@ public class SmelteryRecipeBuilder {
     baseUnit = FluidValues.INGOT;
     damageUnit = FluidValues.NUGGET;
     melting(9, "block", "storage_blocks", 3.0f, false, false);
-    blockCasting(9, Ingredient.EMPTY, false);
+    blockCasting(9, null, false);
     meltingCasting(1,      TinkerSmeltery.ingotCast,  1.0f, false);
     meltingCasting(1 / 9f, TinkerSmeltery.nuggetCast, 1 / 3f, false);
     // if we set byproducts, we are an ore
@@ -553,7 +555,7 @@ public class SmelteryRecipeBuilder {
     baseUnit = FluidValues.GEM;
     damageUnit = FluidValues.GEM_SHARD;
     melting(storageSize, "block", "storage_blocks", (float)Math.sqrt(storageSize), false, false);
-    blockCasting(storageSize, Ingredient.EMPTY, false);
+    blockCasting(storageSize, null, false);
     meltingCasting(1, TinkerSmeltery.gemCast, 1.0f, false);
     // if we set byproducts, we are an ore
     if (hasOre) {

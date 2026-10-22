@@ -6,11 +6,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.tconstruct.library.json.predicate.modifier.ModifierPredicate;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
@@ -44,7 +48,7 @@ public class ModifierSetWorktableRecipeBuilder extends AbstractSizedIngredientRe
 
   /** Sets the tool requirement for this recipe */
   public ModifierSetWorktableRecipeBuilder setTools(TagKey<Item> tag) {
-    return this.setTools(Ingredient.of(tag));
+    return this.setTools(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)));
   }
 
   /** Sets the recipe to allow traits */
@@ -58,15 +62,19 @@ public class ModifierSetWorktableRecipeBuilder extends AbstractSizedIngredientRe
     save(consumer, dataKey);
   }
 
-  @Override
   public void save(RecipeOutput consumer, ResourceLocation id) {
     if (inputs.isEmpty()) {
       throw new IllegalStateException("Must have at least one ingredient");
     }
-    if (tools == Ingredient.EMPTY) {
+    if (tools == null) {
       throw new IllegalStateException("Tools cannot be empty");
     }
     AdvancementHolder advancement = buildOptionalAdvancement(id, "modifiers");
-    consumer.accept(id, new ModifierSetWorktableRecipe(id, dataKey, inputs, tools, modifierPredicate, addToSet, allowTraits), advancement);
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), new ModifierSetWorktableRecipe(id, dataKey, inputs, tools, modifierPredicate, addToSet, allowTraits), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

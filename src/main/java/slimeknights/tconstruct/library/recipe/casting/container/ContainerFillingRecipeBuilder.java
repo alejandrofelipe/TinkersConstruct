@@ -4,8 +4,11 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
 import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
@@ -87,10 +90,13 @@ public class ContainerFillingRecipeBuilder extends AbstractRecipeBuilder<Contain
   public void save(RecipeOutput consumer) {
     this.save(consumer, this.result);
   }
-
-  @Override
   public void save(RecipeOutput consumerIn, ResourceLocation id) {
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "casting");
-    consumerIn.accept(id, new ContainerFillingRecipe(recipeSerializer, id, group, fluidAmount, BuiltInRegistries.ITEM.get(result)), advancement);
+    consumerIn.accept(ResourceKey.create(Registries.RECIPE, id), new ContainerFillingRecipe(recipeSerializer, id, group, fluidAmount, BuiltInRegistries.ITEM.getValue(result)), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

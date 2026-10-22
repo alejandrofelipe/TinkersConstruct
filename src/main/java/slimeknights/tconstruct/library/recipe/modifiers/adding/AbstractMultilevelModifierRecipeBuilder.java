@@ -3,7 +3,10 @@ package slimeknights.tconstruct.library.recipe.modifiers.adding;
 import com.google.gson.JsonSyntaxException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -26,7 +29,8 @@ public abstract class AbstractMultilevelModifierRecipeBuilder<T extends Abstract
   protected final ModifierId result;
   protected final List<LevelEntry> levels = new ArrayList<>();
   protected boolean allowCrystal = true;
-  protected Ingredient tools = Ingredient.EMPTY;
+  @Nullable
+  protected Ingredient tools = null;
   protected int maxToolSize = ITinkerStationRecipe.DEFAULT_TOOL_STACK_SIZE;
   protected boolean checkTraitLevel = false;
 
@@ -66,7 +70,7 @@ public abstract class AbstractMultilevelModifierRecipeBuilder<T extends Abstract
    * @return  Builder instance
    */
   public T setTools(TagKey<Item> tag) {
-    return this.setTools(Ingredient.of(tag));
+    return this.setTools(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)));
   }
 
 
@@ -155,7 +159,7 @@ public abstract class AbstractMultilevelModifierRecipeBuilder<T extends Abstract
     for (LevelEntry levelEntry : levels) {
       if (levelEntry.slots() != null) {
         ResourceLocation salvageId = id.withSuffix("_level_" + levelEntry.level().min());
-        consumer.accept(salvageId, new ModifierSalvage(
+        consumer.accept(ResourceKey.create(Registries.RECIPE, salvageId), new ModifierSalvage(
           salvageId,
           tools, maxToolSize, result, levelEntry.level(), levelEntry.slots()), null);
       }
@@ -165,6 +169,6 @@ public abstract class AbstractMultilevelModifierRecipeBuilder<T extends Abstract
 
   @Override
   public void save(RecipeOutput consumer) {
-    save(consumer, result.getLocation());
+    save(consumer, ResourceKey.create(Registries.RECIPE, result.getLocation()));
   }
 }

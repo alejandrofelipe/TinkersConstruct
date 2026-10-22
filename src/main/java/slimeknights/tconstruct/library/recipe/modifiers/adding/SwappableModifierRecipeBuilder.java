@@ -3,7 +3,9 @@ package slimeknights.tconstruct.library.recipe.modifiers.adding;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.modifiers.util.LazyModifier;
@@ -51,6 +53,6 @@ public class SwappableModifierRecipeBuilder extends ModifierRecipeBuilder {
       throw new IllegalStateException("Must have at least 1 input");
     }
     AdvancementHolder advancement = buildOptionalAdvancement(id, "modifiers");
-    consumer.accept(id, new SwappableModifierRecipe(id, inputs, tools, maxToolSize, result, value, variantFormatter, slots, allowCrystal), advancement);
+    consumer.accept(ResourceKey.create(Registries.RECIPE, id), new SwappableModifierRecipe(id, inputs, tools, maxToolSize, result, value, variantFormatter, slots, allowCrystal), advancement);
   }
 }

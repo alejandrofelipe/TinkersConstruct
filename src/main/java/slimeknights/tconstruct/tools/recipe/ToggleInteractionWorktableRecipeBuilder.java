@@ -4,9 +4,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.tconstruct.library.recipe.worktable.AbstractSizedIngredientRecipeBuilder;
 import slimeknights.tconstruct.library.recipe.worktable.AbstractWorktableRecipe;
@@ -20,15 +23,19 @@ public class ToggleInteractionWorktableRecipeBuilder extends AbstractSizedIngred
 
   @Override
   public void save(RecipeOutput output) {
-    save(output, Loadables.ITEM.getKey(tools.getItems()[0].getItem()));
+    save(output, Loadables.ITEM.getKey(tools.items().findFirst().orElseThrow().value()));
   }
 
-  @Override
   public void save(RecipeOutput output, ResourceLocation id) {
     if (inputs.isEmpty()) {
       throw new IllegalStateException("Must have at least one ingredient");
     }
     AdvancementHolder advancement = buildOptionalAdvancement(id, "modifiers");
-    output.accept(id, new ToggleInteractionWorktableRecipe(id, tools, inputs), advancement);
+    output.accept(ResourceKey.create(Registries.RECIPE, id), new ToggleInteractionWorktableRecipe(id, tools, inputs), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

@@ -6,8 +6,11 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Recipe;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
@@ -60,10 +63,13 @@ public class MeltingFuelBuilder extends AbstractRecipeBuilder<MeltingFuelBuilder
     }
     save(output, BuiltInRegistries.FLUID.getKey(input.getFluids().get(0).getFluid()));
   }
-
-  @Override
   public void save(RecipeOutput output, ResourceLocation id) {
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "melting_fuel");
-    output.accept(id, new MeltingFuel(id, input, duration, temperature, rate), advancement);
+    output.accept(ResourceKey.create(Registries.RECIPE, id), new MeltingFuel(id, input, duration, temperature, rate), advancement);
+  }
+
+  @Override
+  public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
+    save(output, id.location());
   }
 }

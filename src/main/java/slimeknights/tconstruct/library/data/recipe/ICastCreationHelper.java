@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.library.data.recipe;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -31,7 +32,7 @@ public interface ICastCreationHelper extends IRecipeHelper {
    * @param folder    Output folder
    */
   default void castCreation(RecipeOutput consumer, TagKey<Item> input, CastItemObject cast, String folder) {
-    castCreation(consumer, Ingredient.of(input), cast, folder, input.location().getPath());
+    castCreation(consumer, Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(input)), cast, folder, input.location().getPath());
   }
 
   /**
@@ -60,16 +61,16 @@ public interface ICastCreationHelper extends IRecipeHelper {
     // make sand casts in the part builder
     ResourceLocation pattern = cast.getName();
     ItemPartRecipeBuilder.item(pattern, ItemOutput.fromItem(cast.getSand()))
-                         .setPatternItem(Ingredient.of(TinkerTags.Items.SAND_CASTS))
+                         .setPatternItem(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.SAND_CASTS)))
                          .save(consumer, location(folder + "sand/builder_cast/" + name));
     ItemPartRecipeBuilder.item(pattern, ItemOutput.fromItem(cast.getRedSand()))
-                         .setPatternItem(Ingredient.of(TinkerTags.Items.RED_SAND_CASTS))
+                         .setPatternItem(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.RED_SAND_CASTS)))
                          .save(consumer, location(folder + "red_sand/builder_cast/" + name));
     ItemPartRecipeBuilder.item(pattern, ItemOutput.fromItem(cast.getSand(), 4))
-                         .setPatternItem(Ingredient.of(Tags.Items.SANDS_COLORLESS))
+                         .setPatternItem(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(Tags.Items.SANDS_COLORLESS)))
                          .save(consumer, location(folder + "sand/builder_block/" + name));
     ItemPartRecipeBuilder.item(pattern, ItemOutput.fromItem(cast.getRedSand(), 4))
-                         .setPatternItem(Ingredient.of(Tags.Items.SANDS_RED))
+                         .setPatternItem(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(Tags.Items.SANDS_RED)))
                          .save(consumer, location(folder + "red_sand/builder_block/" + name));
   }
 }
