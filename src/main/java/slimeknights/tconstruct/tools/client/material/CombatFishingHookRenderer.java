@@ -6,17 +6,17 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.client.renderer.entity.FishingHookRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.ItemAbilities;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier;
 import slimeknights.tconstruct.library.client.armor.texture.TintedArmorTexture;
@@ -25,13 +25,14 @@ import slimeknights.tconstruct.library.client.materials.MaterialRenderInfoLoader
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.utils.SimpleCache;
+import slimeknights.tconstruct.tools.client.material.CombatFishingHookRenderer.CombatFishingHookRenderState;
 import slimeknights.tconstruct.tools.entity.CombatFishingHook;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-/** Renderer for {@link CombatFishingHookRenderer}. Mostly a recreation of {@link net.minecraft.client.renderer.entity.FishingHookRenderer} */
-public class CombatFishingHookRenderer extends EntityRenderer<CombatFishingHook> {
+/** Renderer for {@link CombatFishingHook}. Mostly a recreation of {@link net.minecraft.client.renderer.entity.FishingHookRenderer} */
+public class CombatFishingHookRenderer extends EntityRenderer<CombatFishingHook, CombatFishingHookRenderState> {
   /** Texture under the local folder */
   private static final ResourceLocation LOCAL = TConstruct.getResource("fishing_hook/material");
   /** Easier to append material variants without root */
@@ -89,79 +90,94 @@ public class CombatFishingHookRenderer extends EntityRenderer<CombatFishingHook>
   }
 
   @Override
-  public void render(CombatFishingHook hook, float yaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-    Player player = hook.getPlayerOwner();
-    if (player != null) {
-      // setup rendering
-      poseStack.pushPose();
-      poseStack.pushPose();
-      poseStack.scale(0.5F, 0.5F, 0.5F);
-      poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
-      poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
+  public boolean shouldRender(CombatFishingHook hook, Frustum frustum, double camX, double camY, double camZ) {
+    return super.shouldRender(hook, frustum, camX, camY, camZ) && hook.getPlayerOwner() != null;
+  }
 
-      // select material
-      MaterialTexture texture = TEXTURE_CACHE.apply(hook.getMaterial());
-      VertexConsumer consumer = buffer.getBuffer(texture.texture);
-      int bobberLight = texture.applyLuminosity(packedLight);
-
-      // render bobber
-      PoseStack.Pose lastPose = poseStack.last();
-      texture.vertex(consumer, lastPose, bobberLight, 0f, 0, 0, 1);
-      texture.vertex(consumer, lastPose, bobberLight, 1f, 0, 1, 1);
-      texture.vertex(consumer, lastPose, bobberLight, 1f, 1, 1, 0);
-      texture.vertex(consumer, lastPose, bobberLight, 0f, 1, 0, 0);
-      poseStack.popPose();
-
-      // handle hand side
-      int sideOffset = player.getMainArm() == HumanoidArm.RIGHT ? 1 : -1;
-      ItemStack itemstack = player.getMainHandItem();
-      if (!itemstack.canPerformAction(ItemAbilities.FISHING_ROD_CAST)) {
-        sideOffset = -sideOffset;
-      }
-
-      // prepare string rendering
-      double playerXo, playerYo, playerZo;
-      float eyeHeight;
-      if (this.entityRenderDispatcher.options.getCameraType().isFirstPerson() && player == Minecraft.getInstance().player) {
-        double fov = 960.0 / this.entityRenderDispatcher.options.fov().get();
-        Vec3 point = this.entityRenderDispatcher.camera.getNearPlane().getPointOnPlane(sideOffset * 0.525f, -0.1f);
-        point = point.scale(fov);
-        float attackSin = Mth.sin(Mth.sqrt(player.getAttackAnim(partialTicks)) * (float)Math.PI);
-        point = point.yRot(attackSin * 0.5f);
-        point = point.xRot(-attackSin * 0.7f);
-        playerXo = Mth.lerp(partialTicks, player.xo, player.getX()) + point.x;
-        playerYo = Mth.lerp(partialTicks, player.yo, player.getY()) + point.y;
-        playerZo = Mth.lerp(partialTicks, player.zo, player.getZ()) + point.z;
-        eyeHeight = player.getEyeHeight();
-      } else {
-        float rotation = Mth.lerp(partialTicks, player.yBodyRotO, player.yBodyRot) * ((float)Math.PI / 180F);
-        double rotationSin = Mth.sin(rotation);
-        double rotationCos = Mth.cos(rotation);
-        double scaledSide = sideOffset * 0.35D;
-        playerXo = Mth.lerp(partialTicks, player.xo, player.getX()) - rotationCos * scaledSide - rotationSin * 0.8D;
-        playerYo = player.yo + player.getEyeHeight() + (player.getY() - player.yo) * (double)partialTicks - 0.45D;
-        playerZo = Mth.lerp(partialTicks, player.zo, player.getZ()) - rotationSin * scaledSide + rotationCos * 0.8D;
-        eyeHeight = player.isCrouching() ? -0.1875f : 0f;
-      }
-
-      // render the string
-      float hookXOff = (float)(playerXo - Mth.lerp(partialTicks, hook.xo, hook.getX()));
-      float hookYOff = (float)(playerYo - Mth.lerp(partialTicks, hook.yo, hook.getY()) - 0.25D) + eyeHeight;
-      float hookZOff = (float)(playerZo - Mth.lerp(partialTicks, hook.zo, hook.getZ()));
-      consumer = buffer.getBuffer(RenderType.lineStrip());
-      lastPose = poseStack.last();
-      for (int i = 0; i <= 16; i++) {
-        FishingHookRenderer.stringVertex(hookXOff, hookYOff, hookZOff, consumer, lastPose, i / 16f, (i + 1) / 16f);
-      }
-
-      poseStack.popPose();
-      super.render(hook, yaw, partialTicks, poseStack, buffer, packedLight);
+  /** Computes the player hand position the fishing line originates from, matching vanilla {@link FishingHookRenderer} */
+  private Vec3 getPlayerHandPos(Player player, float handAngle, float partialTick) {
+    int side = FishingHookRenderer.getHoldingArm(player) == HumanoidArm.RIGHT ? 1 : -1;
+    if (this.entityRenderDispatcher.options.getCameraType().isFirstPerson() && player == Minecraft.getInstance().player) {
+      double fov = 960.0 / this.entityRenderDispatcher.options.fov().get().intValue();
+      Vec3 point = this.entityRenderDispatcher
+        .camera
+        .getNearPlane()
+        .getPointOnPlane((float) side * 0.525F, -0.1F)
+        .scale(fov)
+        .yRot(handAngle * 0.5F)
+        .xRot(-handAngle * 0.7F);
+      return player.getEyePosition(partialTick).add(point);
+    } else {
+      float rotation = Mth.lerp(partialTick, player.yBodyRotO, player.yBodyRot) * (float) (Math.PI / 180.0);
+      double rotationSin = Mth.sin(rotation);
+      double rotationCos = Mth.cos(rotation);
+      float scale = player.getScale();
+      double scaledSide = (double) side * 0.35 * (double) scale;
+      double forward = 0.8 * (double) scale;
+      float crouchOffset = player.isCrouching() ? -0.1875F : 0.0F;
+      return player.getEyePosition(partialTick).add(-rotationCos * scaledSide - rotationSin * forward, (double) crouchOffset - 0.45 * (double) scale, -rotationSin * scaledSide + rotationCos * forward);
     }
   }
 
   @Override
-  public ResourceLocation getTextureLocation(CombatFishingHook pEntity) {
-    return BASE;
+  public CombatFishingHookRenderState createRenderState() {
+    return new CombatFishingHookRenderState();
+  }
+
+  @Override
+  public void extractRenderState(CombatFishingHook hook, CombatFishingHookRenderState state, float partialTicks) {
+    super.extractRenderState(hook, state, partialTicks);
+    state.texture = TEXTURE_CACHE.apply(hook.getMaterial());
+    Player player = hook.getPlayerOwner();
+    if (player == null) {
+      state.lineOriginOffset = Vec3.ZERO;
+    } else {
+      float attack = player.getAttackAnim(partialTicks);
+      float attackSin = Mth.sin(Mth.sqrt(attack) * (float) Math.PI);
+      Vec3 handPos = this.getPlayerHandPos(player, attackSin, partialTicks);
+      Vec3 hookPos = hook.getPosition(partialTicks).add(0.0, 0.25, 0.0);
+      state.lineOriginOffset = handPos.subtract(hookPos);
+    }
+  }
+
+  @Override
+  public void render(CombatFishingHookRenderState state, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+    // setup rendering
+    poseStack.pushPose();
+    poseStack.pushPose();
+    poseStack.scale(0.5F, 0.5F, 0.5F);
+    poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
+    poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
+
+    // render bobber using the material texture
+    MaterialTexture texture = state.texture;
+    VertexConsumer consumer = buffer.getBuffer(texture.texture);
+    int bobberLight = texture.applyLuminosity(packedLight);
+    PoseStack.Pose lastPose = poseStack.last();
+    texture.vertex(consumer, lastPose, bobberLight, 0f, 0, 0, 1);
+    texture.vertex(consumer, lastPose, bobberLight, 1f, 0, 1, 1);
+    texture.vertex(consumer, lastPose, bobberLight, 1f, 1, 1, 0);
+    texture.vertex(consumer, lastPose, bobberLight, 0f, 1, 0, 0);
+    poseStack.popPose();
+
+    // render the string from the stored hand-relative origin
+    float f = (float) state.lineOriginOffset.x;
+    float f1 = (float) state.lineOriginOffset.y;
+    float f2 = (float) state.lineOriginOffset.z;
+    consumer = buffer.getBuffer(RenderType.lineStrip());
+    lastPose = poseStack.last();
+    for (int i = 0; i <= 16; i++) {
+      FishingHookRenderer.stringVertex(f, f1, f2, consumer, lastPose, i / 16f, (i + 1) / 16f);
+    }
+
+    poseStack.popPose();
+    super.render(state, poseStack, buffer, packedLight);
+  }
+
+  /** Render state carrying the fishing line origin and bobber texture */
+  public static class CombatFishingHookRenderState extends EntityRenderState {
+    public Vec3 lineOriginOffset = Vec3.ZERO;
+    public MaterialTexture texture = MaterialTexture.EMPTY;
   }
 
   private record MaterialTexture(RenderType texture, int luminosity, int alpha, int red, int green, int blue) {
