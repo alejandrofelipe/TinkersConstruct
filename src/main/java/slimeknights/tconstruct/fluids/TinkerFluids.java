@@ -399,7 +399,7 @@ public final class TinkerFluids extends TinkerModule {
     PotionBrewing.Builder builder = event.getBuilder();
     // brew bottles into each other, bit weird but feels better than shapeless
     builder.addRecipe(new BottleBrewingRecipe(Ingredient.of(Items.GLASS_BOTTLE), Items.POTION, Items.SPLASH_POTION, new ItemStack(splashBottle)));
-    builder.addRecipe(new BottleBrewingRecipe(Ingredient.of(TinkerTags.Items.SPLASH_BOTTLE), Items.SPLASH_POTION, Items.LINGERING_POTION, new ItemStack(lingeringBottle)));
+    builder.addRecipe(new BottleBrewingRecipe(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.SPLASH_BOTTLE)), Items.SPLASH_POTION, Items.LINGERING_POTION, new ItemStack(lingeringBottle)));
     // brew congealed slime into bottles to get slime bottles, easy melting
     for (SlimeType slime : SlimeType.values()) {
       builder.addRecipe(new BrewingRecipe(Ingredient.of(Items.GLASS_BOTTLE), Ingredient.of(TinkerWorld.congealedSlime.get(slime)), new ItemStack(TinkerFluids.slimeBottle.get(slime))));
@@ -503,7 +503,7 @@ public final class TinkerFluids extends TinkerModule {
     acceptMolten(output, moltenBendalloy);
     acceptCompat(output, moltenSteeleaf, MaterialIds.steeleaf);
     acceptCompat(output, fieryLiquid, "fiery", MaterialIds.fiery);
-    BuiltInRegistries.POTION.holders().filter(holder ->
+    BuiltInRegistries.POTION.listElements().filter(holder ->
       !holder.is(Potions.WATER)
     ).forEachOrdered(holder ->
       output.accept(PotionFluidType.potionBucket(holder)));

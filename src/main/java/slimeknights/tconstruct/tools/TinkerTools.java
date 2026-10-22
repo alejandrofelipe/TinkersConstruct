@@ -304,7 +304,7 @@ public final class TinkerTools extends TinkerModule {
       DispenserBlock.registerBehavior(TinkerTools.throwingAxe.get(), ModifiableShurikenDispenserBehavior.INSTANCE);
       ModifierUtil.registerShieldDisabler(entity -> {
         if (entity instanceof Player player && player.isBlocking()) {
-          player.disableShield();
+          player.disableShield(player.getUseItem());
         }
       }, EntityType.PLAYER);
     });

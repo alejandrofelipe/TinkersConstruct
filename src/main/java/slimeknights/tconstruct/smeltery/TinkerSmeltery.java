@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.BlockBehaviour.StatePredicate;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
@@ -150,7 +151,7 @@ public final class TinkerSmeltery extends TinkerModule {
   private static final StatePredicate NEVER = Blocks::never;
 
   /** Data component register for smeltery item components */
-  private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(TConstruct.MOD_ID);
+  private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, TConstruct.MOD_ID);
   static {
     DATA_COMPONENTS.register(TConstruct.modBus);
   }

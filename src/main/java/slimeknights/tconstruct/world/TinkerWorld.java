@@ -2,6 +2,7 @@ package slimeknights.tconstruct.world;
 
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.core.dispenser.BlockSource;
+import net.minecraft.core.dispenser.EquipmentDispenseItemBehavior;
 import net.minecraft.core.Direction;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.dispenser.OptionalDispenseItemBehavior;
@@ -15,7 +16,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters;
 import net.minecraft.world.item.CreativeModeTab.Output;
@@ -372,7 +372,7 @@ public final class TinkerWorld extends TinkerModule {
       DispenseItemBehavior dispenseArmor = new OptionalDispenseItemBehavior() {
         @Override
         protected ItemStack execute(BlockSource source, ItemStack stack) {
-          this.setSuccess(ArmorItem.dispenseArmor(source, stack));
+          this.setSuccess(EquipmentDispenseItemBehavior.dispenseEquipment(source, stack));
           return stack;
         }
       };
@@ -517,7 +517,7 @@ public final class TinkerWorld extends TinkerModule {
 
   /** Creates a skull wall block for the given head type */
   private static WallSkullBlock makeWallHead(TinkerHeadType type) {
-    BlockBehaviour.Properties props = BlockBehaviour.Properties.of().strength(1.0F).lootFrom(() -> heads.get(type));
+    BlockBehaviour.Properties props = BlockBehaviour.Properties.of().strength(1.0F).overrideLootTable(heads.get(type).getLootTable());
     if (type.isPiglin()) {
       return new PiglinWallHeadBlock(type, props);
     }
@@ -530,7 +530,7 @@ public final class TinkerWorld extends TinkerModule {
     if (type == TinkerHeadType.ENDERMAN) {
       return new EndermanHeadItem(heads.get(type), wallHeads.get(type), properties, Direction.DOWN);
     }
-    return new StandingAndWallBlockItem(heads.get(type), wallHeads.get(type), properties, Direction.DOWN);
+    return new StandingAndWallBlockItem(heads.get(type), wallHeads.get(type), Direction.DOWN, properties);
   }
 
   /** Properties for a cluster of shards. */
