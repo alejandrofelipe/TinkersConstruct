@@ -19,7 +19,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import slimeknights.mantle.registration.object.EnumObject;
 import slimeknights.mantle.registration.object.FluidObject;
 import slimeknights.mantle.registration.object.IdAwareObject;
@@ -132,8 +131,8 @@ public class ItemTagProvider extends ItemTagsProvider {
   private static final TagKey<Item> BANNED_UNCRAFTABLE = ItemTags.create(ResourceLocation.fromNamespaceAndPath("twilightforest", "banned_uncraftables"));
   private final Function<ResourceLocation,IntrinsicTagAppender<Item>> MAKE_TAG = tag -> tag(ItemTags.create(tag));
 
-  public ItemTagProvider(PackOutput output, CompletableFuture<Provider> lookupProvider, CompletableFuture<TagLookup<Block>> blockTagProvider, ExistingFileHelper existingFileHelper) {
-    super(output, lookupProvider, blockTagProvider, TConstruct.MOD_ID, existingFileHelper);
+  public ItemTagProvider(PackOutput output, CompletableFuture<Provider> lookupProvider, CompletableFuture<TagLookup<Block>> blockTagProvider) {
+    super(output, lookupProvider, blockTagProvider, TConstruct.MOD_ID);
   }
 
   @Override
@@ -155,7 +154,7 @@ public class ItemTagProvider extends ItemTagsProvider {
     this.tag(TinkerTags.Items.GUIDEBOOKS).addTag(TinkerTags.Items.TINKERS_GUIDES);
     this.tag(TinkerTags.Items.BOOKS).addTag(TinkerTags.Items.GUIDEBOOKS);
 
-    TagAppender<Item> slimeballs = this.tag(Tags.Items.SLIMEBALLS);
+    TagAppender<Item> slimeballs = this.tag(Tags.Items.SLIME_BALLS);
     TagAppender<Item> slimeballAmmo = this.tag(TinkerTags.Items.SLIMEBALL_AMMO);
     for (SlimeType type : SlimeType.values()) {
       slimeballs.addTag(type.getSlimeballTag());

@@ -6,7 +6,6 @@ import net.minecraft.data.tags.EntityTypeTagsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.EntityType;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.tools.TinkerTools;
@@ -25,8 +24,8 @@ import static slimeknights.tconstruct.common.TinkerTags.EntityTypes.TRIDENTS;
 @SuppressWarnings("unchecked")
 public class EntityTypeTagProvider extends EntityTypeTagsProvider {
 
-  public EntityTypeTagProvider(PackOutput packOutput, CompletableFuture<Provider> lookupProvider, ExistingFileHelper existingFileHelper) {
-    super(packOutput, lookupProvider, TConstruct.MOD_ID, existingFileHelper);
+  public EntityTypeTagProvider(PackOutput packOutput, CompletableFuture<Provider> lookupProvider) {
+    super(packOutput, lookupProvider, TConstruct.MOD_ID);
   }
 
   @SuppressWarnings("removal")

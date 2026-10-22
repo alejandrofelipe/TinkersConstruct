@@ -2,7 +2,6 @@ package slimeknights.tconstruct.common.data.tags;
 
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.data.tinkering.AbstractMaterialTagProvider;
@@ -12,8 +11,8 @@ import slimeknights.tconstruct.tools.data.material.MaterialIds;
 import java.util.stream.Stream;
 
 public class MaterialTagProvider extends AbstractMaterialTagProvider {
-  public MaterialTagProvider(PackOutput packOutput, ExistingFileHelper existingFileHelper) {
-    super(packOutput, TConstruct.MOD_ID, existingFileHelper);
+  public MaterialTagProvider(PackOutput packOutput) {
+    super(packOutput, TConstruct.MOD_ID);
   }
 
   /** Maps typed IDs (MaterialId) to the wrapped resource locations for the {@code add(ResourceLocation...)} overload */

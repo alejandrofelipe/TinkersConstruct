@@ -39,7 +39,7 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -140,7 +140,7 @@ public class AdvancementsProvider extends GenericDataProvider {
     AdvancementHolder tinkerTool = builder(TinkerTools.pickaxe.get().getRenderTool(), resource("tools/tinker_tool"), tinkerStation, AdvancementType.TASK, builder ->
       builder.addCriterion("crafted_tool", hasTag(TinkerTags.Items.MULTIPART_TOOL)));
     AdvancementHolder harvestLevel = builder(Items.NETHERITE_INGOT, resource("tools/netherite_tier"), tinkerTool, AdvancementType.GOAL, builder ->
-      builder.addCriterion("harvest_level", toolCriterion(new StatInSetPredicate<>(ToolStats.HARVEST_TIER, Tiers.NETHERITE))));
+      builder.addCriterion("harvest_level", toolCriterion(new StatInSetPredicate<>(ToolStats.HARVEST_TIER, ToolMaterial.NETHERITE))));
     builder(Items.TARGET, resource("tools/perfect_aim"), tinkerTool, AdvancementType.GOAL, builder ->
       builder.addCriterion("accuracy", toolCriterion(ToolStackPredicate.and(
         ToolStackPredicate.tag(TinkerTags.Items.BOWS),
@@ -545,12 +545,12 @@ public class AdvancementsProvider extends GenericDataProvider {
 
   /** Criterion matching an item in the inventory */
   protected static Criterion<?> hasItem(ItemLike item) {
-    return inventoryTrigger(ItemPredicate.Builder.item().of(item));
+    return inventoryTrigger(ItemPredicate.Builder.item().of(BuiltInRegistries.ITEM, item));
   }
 
   /** Criterion matching any item in the given tag */
   protected static Criterion<?> hasTag(TagKey<Item> tag) {
-    return inventoryTrigger(ItemPredicate.Builder.item().of(tag));
+    return inventoryTrigger(ItemPredicate.Builder.item().of(BuiltInRegistries.ITEM, tag));
   }
 
   /** Criterion matching a Tinker tool against a tool-stack predicate (via the {@code tconstruct:tool} sub-predicate) */
@@ -586,13 +586,13 @@ public class AdvancementsProvider extends GenericDataProvider {
   /** Criterion firing when an item is used on the given entity type (piggybackpack). */
   protected static Criterion<?> itemUsedOnEntityCriterion(ItemLike item, EntityType<?> entity) {
     return PlayerInteractTrigger.TriggerInstance.itemUsedOnEntity(
-      ItemPredicate.Builder.item().of(item),
-      Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().of(entity).build())));
+      ItemPredicate.Builder.item().of(BuiltInRegistries.ITEM, item),
+      Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().of(BuiltInRegistries.ENTITY_TYPE, entity).build())));
   }
 
   /** Criterion matching an item whose tank is filled to capacity with the given fluid (exact DataComponentPredicate). */
   protected static Criterion<?> tankFluidCriterion(ItemLike block, Fluid fluid, int capacity, MinMaxBounds.Ints count) {
-    return inventoryTrigger(ItemPredicate.Builder.item().of(block).withCount(count).hasComponents(
+    return inventoryTrigger(ItemPredicate.Builder.item().of(BuiltInRegistries.ITEM, block).withCount(count).hasComponents(
       DataComponentPredicate.builder()
         .expect(TinkerSmeltery.TANK_FLUID.get(), SimpleFluidContent.copyOf(new FluidStack(fluid, capacity)))
         .build()));

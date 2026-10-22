@@ -9,7 +9,6 @@ import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagFile;
 import net.minecraft.tags.TagKey;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import slimeknights.mantle.data.GenericDataProvider;
 
 import java.util.List;
@@ -32,20 +31,16 @@ public abstract class AbstractTagProvider<T> extends GenericDataProvider {
   private final Predicate<ResourceLocation> staticValuePredicate;
   /** Function to get a key from a value */
   private final Function<T,ResourceLocation> keyGetter;
-  /** Checks for tags in other datapacks */
-  protected final ExistingFileHelper existingFileHelper;
-  /** Resource type for the existing file helper */
-  private final ExistingFileHelper.IResourceType resourceType;
 
   protected final Map<ResourceLocation, TagBuilder> builders = Maps.newLinkedHashMap();
 
-  protected AbstractTagProvider(PackOutput packOutput, String modId, String folder, Function<T,ResourceLocation> keyGetter, Predicate<ResourceLocation> staticValuePredicate, ExistingFileHelper existingFileHelper) {
+  // 1.21.4: ExistingFileHelper was removed; cross-datapack tag-reference validation is dropped (datagen no longer
+  // tracks generated files or validates required references against other packs).
+  protected AbstractTagProvider(PackOutput packOutput, String modId, String folder, Function<T,ResourceLocation> keyGetter, Predicate<ResourceLocation> staticValuePredicate) {
     super(packOutput, Target.DATA_PACK, folder);
     this.modId = modId;
     this.keyGetter = keyGetter;
     this.staticValuePredicate = staticValuePredicate;
-    this.existingFileHelper = existingFileHelper;
-    this.resourceType = new ExistingFileHelper.ResourceType(net.minecraft.server.packs.PackType.SERVER_DATA, ".json", folder);
   }
 
   /** Creates all tag instances */
@@ -70,12 +65,11 @@ public abstract class AbstractTagProvider<T> extends GenericDataProvider {
     }));
   }
 
-  /** Checks if a given reference exists in another data pack */
+  /**
+   * Checks if a given reference exists in another data pack. 1.21.4: {@code ExistingFileHelper} was removed, so we can
+   * no longer validate required references against other datapacks; treat everything as present.
+   */
   private boolean missing(TagEntry reference) {
-    if (reference.isRequired()) {
-      // forge has a separate element resource type here to allow generating tags to non-static values. We don't currently handle non-static tag value validation but its worth considering
-      return existingFileHelper == null || !existingFileHelper.exists(reference.getId(), resourceType);
-    }
     return false;
   }
 
@@ -89,10 +83,7 @@ public abstract class AbstractTagProvider<T> extends GenericDataProvider {
 
   /** Raw method to make a builder */
   protected TagBuilder getOrCreateRawBuilder(TagKey<T> pTag) {
-    return this.builders.computeIfAbsent(pTag.location(), location -> {
-      existingFileHelper.trackGenerated(location, resourceType);
-      return TagBuilder.create();
-    });
+    return this.builders.computeIfAbsent(pTag.location(), location -> TagBuilder.create());
   }
 
   /** Vanillas tag appender does not let us easily replace the key getter, so replace it */

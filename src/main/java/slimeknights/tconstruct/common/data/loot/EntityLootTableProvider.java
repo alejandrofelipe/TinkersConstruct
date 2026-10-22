@@ -26,6 +26,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyC
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.shared.block.SlimeType;
@@ -65,7 +66,7 @@ public class EntityLootTableProvider extends EntityLootSubProvider {
                                                                                           .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries, UniformGenerator.between(0.0F, 1.0F)))
                                                                                           .apply(SmeltItemFunction.smelted().when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, ENTITY_ON_FIRE))))));
 
-    LootItemCondition.Builder killedByFrog = killedByFrog();
+    LootItemCondition.Builder killedByFrog = killedByFrog(this.registries.lookupOrThrow(Registries.ENTITY_TYPE));
     this.add(TinkerWorld.terracubeEntity.get(),
              LootTable.lootTable()
                       .withPool(LootPool.lootPool()
@@ -96,7 +97,7 @@ public class EntityLootTableProvider extends EntityLootSubProvider {
   /** Drops slimeballs, and optionally nuggets for metal slimes. */
   private LootTable.Builder dropSlimeballs(SlimeType type, @Nullable Item nugget) {
     LootItemCondition.Builder small = LootItemEntityPropertyCondition.hasProperties(EntityTarget.THIS, EntityPredicate.Builder.entity().subPredicate(SlimePredicate.sized(MinMaxBounds.Ints.exactly(1))));
-    LootItemCondition.Builder killedByFrog = killedByFrog();
+    LootItemCondition.Builder killedByFrog = killedByFrog(this.registries.lookupOrThrow(Registries.ENTITY_TYPE));
     LootPool.Builder noFrog = LootPool.lootPool().setRolls(ConstantValue.exactly(1)).when(killedByFrog.invert()).when(small);
     LootPool.Builder frog = LootPool.lootPool().setRolls(ConstantValue.exactly(1)).when(killedByFrog).when(small);
     Item slimeball = TinkerCommons.slimeball.get(type);

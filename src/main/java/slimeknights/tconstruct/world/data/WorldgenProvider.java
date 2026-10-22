@@ -191,7 +191,7 @@ public class WorldgenProvider {
     // mangrove style
     register(context, enderSlimeTree, Feature.TREE,
              new TreeConfigurationBuilder(BlockStateProvider.simple(TinkerWorld.enderbark.getLog()),
-                                          new UpwardsBranchingTrunkPlacer(2, 1, 4, UniformInt.of(1, 4), 0.5F, UniformInt.of(0, 1), BuiltInRegistries.BLOCK.getOrCreateTag(TinkerTags.Blocks.ENDERBARK_LOGS_CAN_GROW_THROUGH)),
+                                          new UpwardsBranchingTrunkPlacer(2, 1, 4, UniformInt.of(1, 4), 0.5F, UniformInt.of(0, 1), BuiltInRegistries.BLOCK.getOrThrow(TinkerTags.Blocks.ENDERBARK_LOGS_CAN_GROW_THROUGH)),
                                           BlockStateProvider.simple(TinkerWorld.slimeLeaves.get(FoliageType.ENDER)),
                                           new RandomSpreadFoliagePlacer(ConstantInt.of(3), ConstantInt.of(0), ConstantInt.of(2), 70),
                                           ExtraRootVariantPlacer.builder()
@@ -206,7 +206,7 @@ public class WorldgenProvider {
                .build());
     register(context, enderSlimeTreeTall, Feature.TREE,
              new TreeConfigurationBuilder(BlockStateProvider.simple(TinkerWorld.enderbark.getLog()),
-                                          new UpwardsBranchingTrunkPlacer(4, 1, 9, UniformInt.of(1, 6), 0.5F, UniformInt.of(0, 1), BuiltInRegistries.BLOCK.getOrCreateTag(TinkerTags.Blocks.ENDERBARK_LOGS_CAN_GROW_THROUGH)),
+                                          new UpwardsBranchingTrunkPlacer(4, 1, 9, UniformInt.of(1, 6), 0.5F, UniformInt.of(0, 1), BuiltInRegistries.BLOCK.getOrThrow(TinkerTags.Blocks.ENDERBARK_LOGS_CAN_GROW_THROUGH)),
                                           BlockStateProvider.simple(TinkerWorld.slimeLeaves.get(FoliageType.ENDER)),
                                           new RandomSpreadFoliagePlacer(ConstantInt.of(3), ConstantInt.of(0), ConstantInt.of(2), 70),
                                           ExtraRootVariantPlacer.builder()

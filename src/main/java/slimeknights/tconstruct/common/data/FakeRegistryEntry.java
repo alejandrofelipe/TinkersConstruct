@@ -31,11 +31,11 @@ public class FakeRegistryEntry {
     if (!registry.containsKey(id)) {
       // game registries are frozen by datagen time; NeoForge lets us reopen them to add the placeholder
       if (registry instanceof MappedRegistry<?> mapped) {
-        mapped.unfreeze();
+        mapped.unfreeze(false);
       }
       return Registry.register(registry, id, constructor.get());
     }
-    return Objects.requireNonNull(registry.get(id));
+    return Objects.requireNonNull(registry.getValue(id));
   }
 
   /** Gets or creates a fake block with the given ID */

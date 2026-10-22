@@ -7,7 +7,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import slimeknights.mantle.datagen.MantleTags;
 import slimeknights.mantle.registration.object.FlowingFluidObject;
 import slimeknights.mantle.registration.object.FluidObject;
@@ -21,8 +20,8 @@ import java.util.concurrent.CompletableFuture;
 @SuppressWarnings("unchecked")
 public class FluidTagProvider extends FluidTagsProvider {
 
-  public FluidTagProvider(PackOutput packOutput, CompletableFuture<Provider> lookupProvider, ExistingFileHelper helper) {
-    super(packOutput, lookupProvider, TConstruct.MOD_ID, helper);
+  public FluidTagProvider(PackOutput packOutput, CompletableFuture<Provider> lookupProvider) {
+    super(packOutput, lookupProvider, TConstruct.MOD_ID);
   }
 
   @Override

@@ -10,7 +10,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -198,11 +198,11 @@ public class FluidEffectProvider extends AbstractFluidEffectProvider {
                                         .build());
 
     // gems - direct damage and mining //
-    addGem(TinkerFluids.moltenAmethyst).addBlockEffect(new HarvestTierPredicate(Tiers.STONE),     new BreakBlockFluidEffect(3));
-    addGem(TinkerFluids.moltenQuartz  ).addBlockEffect(new HarvestTierPredicate(Tiers.IRON),      new BreakBlockFluidEffect(5));
-    addGem(TinkerFluids.moltenEmerald ).addBlockEffect(new HarvestTierPredicate(Tiers.IRON),      new BreakBlockFluidEffect(10, Enchantments.SILK_TOUCH, 1));
-    addGem(TinkerFluids.moltenDiamond ).addBlockEffect(new HarvestTierPredicate(Tiers.DIAMOND),   new BreakBlockFluidEffect(10, Enchantments.FORTUNE, 3));
-    addMetal(TinkerFluids.moltenDebris).addBlockEffect(new HarvestTierPredicate(Tiers.NETHERITE), new BreakBlockFluidEffect(50));
+    addGem(TinkerFluids.moltenAmethyst).addBlockEffect(new HarvestTierPredicate(ToolMaterial.STONE),     new BreakBlockFluidEffect(3));
+    addGem(TinkerFluids.moltenQuartz  ).addBlockEffect(new HarvestTierPredicate(ToolMaterial.IRON),      new BreakBlockFluidEffect(5));
+    addGem(TinkerFluids.moltenEmerald ).addBlockEffect(new HarvestTierPredicate(ToolMaterial.IRON),      new BreakBlockFluidEffect(10, Enchantments.SILK_TOUCH, 1));
+    addGem(TinkerFluids.moltenDiamond ).addBlockEffect(new HarvestTierPredicate(ToolMaterial.DIAMOND),   new BreakBlockFluidEffect(10, Enchantments.FORTUNE, 3));
+    addMetal(TinkerFluids.moltenDebris).addBlockEffect(new HarvestTierPredicate(ToolMaterial.NETHERITE), new BreakBlockFluidEffect(50));
 
     // foods - setup to give equivalent saturation on a full bowl/bottle to their food counterparts, though hunger may be slightly different
     addFluid(TinkerFluids.honey.getTag(), FluidValues.SIP)

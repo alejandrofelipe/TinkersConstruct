@@ -3,6 +3,7 @@ package slimeknights.tconstruct.common.data.loot;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.EntityTypePredicate;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -68,7 +69,7 @@ public class GlobalLootModifiersProvider extends GlobalLootModifierProvider {
     add("tasty_bacon", AddEntryLootModifier.builder(LootItem.lootTableItem(TinkerCommons.bacon))
       // this target must be a bacon producer
       .addCondition(new HasLootContextSetCondition(LootContextParamSets.ENTITY))
-      .addCondition(LootItemEntityPropertyCondition.hasProperties(EntityTarget.THIS, EntityPredicate.Builder.entity().entityType(EntityTypePredicate.of(TinkerTags.EntityTypes.BACON_PRODUCER))).build())
+      .addCondition(LootItemEntityPropertyCondition.hasProperties(EntityTarget.THIS, EntityPredicate.Builder.entity().entityType(EntityTypePredicate.of(this.registries.lookupOrThrow(Registries.ENTITY_TYPE), TinkerTags.EntityTypes.BACON_PRODUCER))).build())
       .addCondition(new HasModifierLootCondition(ModifierIds.tasty))
       // 25% chance to drop
       .addFunction(SetItemCountFunction.setCount(UniformGenerator.between(-2, 1)).build())
@@ -79,7 +80,7 @@ public class GlobalLootModifiersProvider extends GlobalLootModifierProvider {
     // chrysophilite modifier hook
     add("chrysophilite_modifier", AddEntryLootModifier.builder(LootItem.lootTableItem(Items.GOLD_NUGGET))
       .addCondition(new BlockTagLootCondition(TinkerTags.Blocks.CHRYSOPHILITE_ORES))
-      .addCondition(new ContainsItemModifierLootCondition(Ingredient.of(TinkerTags.Items.CHRYSOPHILITE_ORES)).inverted())
+      .addCondition(new ContainsItemModifierLootCondition(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.CHRYSOPHILITE_ORES))).inverted())
       .addCondition(ChrysophiliteLootCondition.INSTANCE)
       .addFunction(SetItemCountFunction.setCount(UniformGenerator.between(2, 6)).build())
       .addFunction(ChrysophiliteBonusFunction.oreDrops(false).build())
@@ -105,7 +106,7 @@ public class GlobalLootModifiersProvider extends GlobalLootModifierProvider {
     ResourceLocation ores = commonResource("ores/" + name);
     AddEntryLootModifier.Builder builder = AddEntryLootModifier.builder(TagPreferenceLootEntry.tagPreference(nuggets));
     builder.addCondition(new BlockTagLootCondition(TagKey.create(Registries.BLOCK, ores)))
-           .addCondition(new ContainsItemModifierLootCondition(Ingredient.of(TagKey.create(Registries.ITEM, ores))).inverted());
+           .addCondition(new ContainsItemModifierLootCondition(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TagKey.create(Registries.ITEM, ores)))).inverted());
     if (optional) {
       builder.addCondition(new TagFilledCondition<>(nuggets));
     }

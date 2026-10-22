@@ -7,12 +7,11 @@ import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import slimeknights.mantle.datagen.MantleTags;
 import slimeknights.mantle.registration.object.BuildingBlockObject;
 import slimeknights.mantle.registration.object.EnumObject;
@@ -61,8 +60,21 @@ import static slimeknights.tconstruct.common.TinkerTags.Blocks.UNREPLACABLE_BY_L
 @SuppressWarnings({"unchecked", "SameParameterValue", "removal"})
 public class BlockTagProvider extends BlockTagsProvider {
 
-  public BlockTagProvider(PackOutput output, CompletableFuture<Provider> lookupProvider, ExistingFileHelper existingFileHelper) {
-    super(output, lookupProvider, TConstruct.MOD_ID, existingFileHelper);
+  public BlockTagProvider(PackOutput output, CompletableFuture<Provider> lookupProvider) {
+    super(output, lookupProvider, TConstruct.MOD_ID);
+  }
+
+  /**
+   * Maps a harvest tier to its "needs tool" block tag.
+   * 1.21.4: NeoForge's {@code Tier#getTag()} was removed along with the {@code Tiers} enum; replicate it per tier.
+   */
+  private static TagKey<Block> needsTag(ToolMaterial tier) {
+    if (tier == ToolMaterial.NETHERITE) return NEEDS_NETHERITE_TOOL;
+    if (tier == ToolMaterial.DIAMOND) return NEEDS_DIAMOND_TOOL;
+    if (tier == ToolMaterial.GOLD) return NEEDS_GOLD_TOOL;
+    if (tier == ToolMaterial.IRON) return NEEDS_IRON_TOOL;
+    if (tier == ToolMaterial.STONE) return NEEDS_STONE_TOOL;
+    return null;
   }
 
   @Override
@@ -451,17 +463,15 @@ public class BlockTagProvider extends BlockTagsProvider {
     // slime
     tagBlocks(MINEABLE_WITH_SHOVEL, TinkerWorld.congealedSlime, TinkerWorld.slimeDirt, TinkerWorld.vanillaSlimeGrass, TinkerWorld.earthSlimeGrass, TinkerWorld.skySlimeGrass, TinkerWorld.enderSlimeGrass, TinkerWorld.ichorSlimeGrass);
     // harvest tiers on shovel blocks
-    TinkerWorld.slimeDirt.forEach((type, block) -> this.tag(Objects.requireNonNull(type.getHarvestTier().getTag())).add(block));
+    TinkerWorld.slimeDirt.forEach((type, block) -> this.tag(Objects.requireNonNull(needsTag(type.getHarvestTier()))).add(block));
     for (DirtType dirt : DirtType.values()) {
       for (FoliageType grass : FoliageType.values()) {
-        Tiers dirtTier = dirt.getHarvestTier();
-        Tiers grassTier = grass.getHarvestTier();
+        ToolMaterial dirtTier = dirt.getHarvestTier();
+        ToolMaterial grassTier = grass.getHarvestTier();
         // PORT M3: Tiers.getLevel() was removed in 1.21 (mining level is tag-based now). Use the HarvestTiers
-        // ordering helper to pick the higher tier, which preserves the vanilla ordering fallback. Both inputs are
-        // vanilla Tiers, so max() returns one of them; cast to Tiers to reach NeoForge's getTag() (only injected
-        // on the Tiers enum, not the Tier interface).
-        Tiers tier = (Tiers) HarvestTiers.max(dirtTier, grassTier);
-        this.tag(Objects.requireNonNull(tier.getTag())).add(TinkerWorld.slimeGrass.get(dirt).get(grass));
+        // ordering helper to pick the higher tier, which preserves the vanilla ordering fallback.
+        ToolMaterial tier = HarvestTiers.max(dirtTier, grassTier);
+        this.tag(Objects.requireNonNull(needsTag(tier))).add(TinkerWorld.slimeGrass.get(dirt).get(grass));
       }
     }
 

@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.ItemAbilities;
 import slimeknights.mantle.data.predicate.block.BlockPredicate;
@@ -233,7 +233,7 @@ public class ToolDefinitionDataProvider extends AbstractToolDefinitionDataProvid
       // harvest
       .module(ToolActionsModule.of(ItemAbilities.PICKAXE_DIG, ItemAbilities.SHOVEL_DIG))
       .module(IsEffectiveModule.tag(TinkerTags.Blocks.MINABLE_WITH_PICKADZE))
-      .module(new MaxTierModule(Tiers.GOLD))
+      .module(new MaxTierModule(ToolMaterial.GOLD))
       .module(BoxAOEIterator.builder(0, 0, 0).addHeight(1).build());
 
     define(ToolDefinitions.EXCAVATOR)
@@ -803,7 +803,7 @@ public class ToolDefinitionDataProvider extends AbstractToolDefinitionDataProvid
       // stats
       .module(new SetStatsModule(StatsNBT.builder()
         .set(ToolStats.MINING_SPEED, 6f)
-        .set(ToolStats.HARVEST_TIER, Tiers.STONE)
+        .set(ToolStats.HARVEST_TIER, ToolMaterial.STONE)
         .set(ToolStats.KNOCKBACK_RESISTANCE, 0.1f)
         .set(ToolStats.BLOCK_AMOUNT, 10).build()))
       .module(ToolSlotsModule.builder()

@@ -7,8 +7,6 @@ import net.minecraft.data.tags.DamageTypeTagsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageType;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import org.jetbrains.annotations.Nullable;
 import slimeknights.tconstruct.TConstruct;
 
 import java.util.concurrent.CompletableFuture;
@@ -66,8 +64,8 @@ import static slimeknights.tconstruct.common.TinkerTags.DamageTypes.PROJECTILE_P
 
 @SuppressWarnings("removal")
 public class DamageTypeTagProvider extends DamageTypeTagsProvider {
-  public DamageTypeTagProvider(PackOutput packOutput, CompletableFuture<Provider> lookup, @Nullable ExistingFileHelper existingFileHelper) {
-    super(packOutput, lookup, TConstruct.MOD_ID, existingFileHelper);
+  public DamageTypeTagProvider(PackOutput packOutput, CompletableFuture<Provider> lookup) {
+    super(packOutput, lookup, TConstruct.MOD_ID);
   }
 
   @SuppressWarnings("unchecked")

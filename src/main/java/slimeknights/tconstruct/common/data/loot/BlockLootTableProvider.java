@@ -362,7 +362,7 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
     if (slime != null) {
       return builder.withPool(
         LootPool.lootPool().setRolls(ConstantValue.exactly(1))
-                .when(HAS_SHEARS.or(this.hasSilkTouch()).invert())
+                .when(SHEARS.or(this.hasSilkTouch()).invert())
                 .add(applyExplosionCondition(leaves, LootItem.lootTableItem(TinkerCommons.slimeball.get(slime)))
                        .when(BonusLevelTableCondition.bonusLevelFlatChance(fortune(), 1 / 50f, 1 / 45f, 1 / 40f, 1 / 30f, 1 / 20f))));
     }
@@ -448,7 +448,7 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
       block, LootItem.lootTableItem(drop)
         .apply(SetItemCountFunction.setCount(ConstantValue.exactly(4.0F)))
         .apply(ApplyBonusCount.addOreBonusCount(fortune()))
-        .when(MatchTool.toolMatches(ItemPredicate.Builder.item().of(ItemTags.CLUSTER_MAX_HARVESTABLES)))
+        .when(MatchTool.toolMatches(ItemPredicate.Builder.item().of(this.registries.lookupOrThrow(Registries.ITEM), ItemTags.CLUSTER_MAX_HARVESTABLES)))
         .otherwise(applyExplosionDecay(block, LootItem.lootTableItem(drop).apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F)))))));
   }
 

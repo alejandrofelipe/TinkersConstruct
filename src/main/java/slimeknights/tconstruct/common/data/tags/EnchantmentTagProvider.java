@@ -7,8 +7,6 @@ import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import org.jetbrains.annotations.Nullable;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.tools.TinkerModifiers;
@@ -17,8 +15,8 @@ import slimeknights.tconstruct.tools.data.ModifierIds;
 import java.util.concurrent.CompletableFuture;
 
 public class EnchantmentTagProvider extends TagsProvider<Enchantment> {
-  public EnchantmentTagProvider(PackOutput packOutput, CompletableFuture<Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
-    super(packOutput, Registries.ENCHANTMENT, lookupProvider, TConstruct.MOD_ID, existingFileHelper);
+  public EnchantmentTagProvider(PackOutput packOutput, CompletableFuture<Provider> lookupProvider) {
+    super(packOutput, Registries.ENCHANTMENT, lookupProvider, TConstruct.MOD_ID);
   }
 
   @Override
