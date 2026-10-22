@@ -3,7 +3,6 @@ package slimeknights.tconstruct.tools;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.item.ItemColors;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.player.Input;
@@ -17,11 +16,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
@@ -46,6 +45,7 @@ import slimeknights.tconstruct.library.client.armor.texture.TrimArmorTextureSupp
 import slimeknights.tconstruct.library.client.book.content.AbstractMaterialContent;
 import slimeknights.tconstruct.library.client.materials.MaterialTooltipCache;
 import slimeknights.tconstruct.library.client.model.DynamicTextureLoader;
+import slimeknights.tconstruct.library.client.model.FluidContainerModel;
 import slimeknights.tconstruct.library.client.model.TinkerItemProperties;
 import slimeknights.tconstruct.library.client.model.tools.MaterialBlockModel;
 import slimeknights.tconstruct.library.client.model.tools.MaterialModel;
@@ -89,7 +89,6 @@ import slimeknights.tconstruct.tools.network.TinkerControlPacket;
 import java.util.function.Consumer;
 
 import static slimeknights.tconstruct.TConstruct.getResource;
-import static slimeknights.tconstruct.library.client.model.tools.ToolModel.registerItemColors;
 
 @SuppressWarnings("unused")
 @EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.MOD)
@@ -104,25 +103,45 @@ public class ToolClientEvents extends ClientEventBase {
     ModifierManager.INSTANCE.getAllValues().forEach(modifier -> modifier.clearCache(PackType.CLIENT_RESOURCES));
   };
 
+  // PORT 1.21.4: RegisterClientReloadListenersEvent -> AddClientReloadListenersEvent; registerReloadListener(listener)
+  // -> addListener(key, listener). MaterialTooltipCache/ArmorModelManager .init are ported in their own batches.
   @SubscribeEvent
-  static void addResourceListener(RegisterClientReloadListenersEvent manager) {
+  static void addResourceListener(AddClientReloadListenersEvent manager) {
     ModifierModelManager.init(manager);
-    manager.registerReloadListener(ModifierModelMapManager.INSTANCE);
+    manager.addListener(getResource("modifier_model_map_manager"), ModifierModelMapManager.INSTANCE);
     MaterialTooltipCache.init(manager);
     DynamicTextureLoader.init(manager);
-    manager.registerReloadListener(MODIFIER_RELOAD_LISTENER);
-    manager.registerReloadListener(SlimeskullArmorModel.RELOAD_LISTENER);
-    manager.registerReloadListener(HarvestTiers.RELOAD_LISTENER);
+    manager.addListener(getResource("modifier_reload_listener"), MODIFIER_RELOAD_LISTENER);
+    manager.addListener(getResource("slimeskull_armor_model"), SlimeskullArmorModel.RELOAD_LISTENER);
+    manager.addListener(getResource("harvest_tiers"), HarvestTiers.RELOAD_LISTENER);
     ArmorModelManager.init(manager);
-    manager.registerReloadListener(TrimArmorTextureSupplier.CACHE_INVALIDATOR);
+    manager.addListener(getResource("trim_armor_texture"), TrimArmorTextureSupplier.CACHE_INVALIDATOR);
     ShieldBannerModifierSpriteSource.register();
   }
 
+  // PORT 1.21.4: block models register on ModelEvent.RegisterLoaders (UnbakedModelLoader), item models on
+  // RegisterItemModelsEvent (MapCodec). material/tool are now item-only; material_block is a block model with an item side.
   @SubscribeEvent
-  static void registerModelLoaders(RegisterGeometryLoaders event) {
-    event.register(getResource("material"), MaterialModel.LOADER);
-    event.register(getResource("tool"), ToolModel.LOADER);
+  static void registerBlockModelLoaders(ModelEvent.RegisterLoaders event) {
     event.register(getResource("material_block"), MaterialBlockModel.LOADER);
+  }
+
+  @SubscribeEvent
+  static void registerItemModels(RegisterItemModelsEvent event) {
+    event.register(getResource("material"), MaterialModel.Unbaked.MAP_CODEC);
+    event.register(getResource("tool"), ToolModel.Unbaked.MAP_CODEC);
+    event.register(getResource("material_block"), MaterialBlockModel.ItemUnbaked.MAP_CODEC);
+    event.register(getResource("fluid_container"), FluidContainerModel.Unbaked.MAP_CODEC);
+  }
+
+  @SubscribeEvent
+  static void registerConditionalProperties(net.neoforged.neoforge.client.event.RegisterConditionalItemModelPropertyEvent event) {
+    TinkerItemProperties.registerConditional(event);
+  }
+
+  @SubscribeEvent
+  static void registerRangeProperties(net.neoforged.neoforge.client.event.RegisterRangeSelectItemModelPropertyEvent event) {
+    TinkerItemProperties.registerRange(event);
   }
 
   @SubscribeEvent
@@ -133,9 +152,7 @@ public class ToolClientEvents extends ClientEventBase {
     event.registerModel(getResource("tank"), TankModifierModel.UNBAKED_INSTANCE);
     event.registerModel(getResource("material"), MaterialModifierModel.UNBAKED_INSTANCE);
     event.registerModel(getResource("dyed"), DyedModifierModel.UNBAKED_INSTANCE);
-    // trim shows up as valid on every tool, skip to reduce memory overhead on tools using the new system - add it using the new system if you want it
-    event.registerModel(getResource("trim"), TrimModifierModel.UNBAKED_INSTANCE);
-    ModifierModelMapManager.legacyBlacklist(TrimModifierModel.UNBAKED_INSTANCE);
+    // PORT 1.21.4: trim modifier model deferred to the armor/equipment batch (armor-trim API moved); re-add here then
     event.registerModel(getResource("potion"), PotionModifierModel.UNBAKED_INSTANCE);
     event.registerModel(getResource("smashing_fluid"), new FluidModifierModel.Unbaked(SmashingModule.TANK_HELPER));
   }
@@ -233,63 +250,9 @@ public class ToolClientEvents extends ClientEventBase {
     event.registerSpriteSet(TinkerTools.bonkAttackParticle.get(), factory);
   }
 
-  @SubscribeEvent
-  static void itemColors(RegisterColorHandlersEvent.Item event) {
-    final ItemColors colors = event.getItemColors();
-
-    // tint modifiers
-    // rock
-    registerItemColors(colors, TinkerTools.pickaxe);
-    registerItemColors(colors, TinkerTools.sledgeHammer);
-    registerItemColors(colors, TinkerTools.veinHammer);
-    // dirt
-    registerItemColors(colors, TinkerTools.mattock);
-    registerItemColors(colors, TinkerTools.pickadze);
-    registerItemColors(colors, TinkerTools.excavator);
-    // wood
-    registerItemColors(colors, TinkerTools.handAxe);
-    registerItemColors(colors, TinkerTools.broadAxe);
-    // scythe
-    registerItemColors(colors, TinkerTools.kama);
-    registerItemColors(colors, TinkerTools.scythe);
-    // weapon
-    registerItemColors(colors, TinkerTools.dagger);
-    registerItemColors(colors, TinkerTools.sword);
-    registerItemColors(colors, TinkerTools.cleaver);
-    // bow
-    registerItemColors(colors, TinkerTools.crossbow);
-    registerItemColors(colors, TinkerTools.longbow);
-    registerItemColors(colors, TinkerTools.fishingRod);
-    registerItemColors(colors, TinkerTools.javelin);
-    registerItemColors(colors, TinkerTools.arrow);
-    registerItemColors(colors, TinkerTools.shuriken);
-    registerItemColors(colors, TinkerTools.throwingAxe);
-    // ancient
-    registerItemColors(colors, TinkerTools.meltingPan);
-    registerItemColors(colors, TinkerTools.warPick);
-    registerItemColors(colors, TinkerTools.battlesign);
-    registerItemColors(colors, TinkerTools.swasher);
-    if (ModList.get().isLoaded("twilightforest")) {
-      registerItemColors(colors, TinkerTools.minotaurAxe);
-    }
-    // armor
-    registerItemColors(colors, TinkerTools.travelersShield);
-    registerItemColors(colors, TinkerTools.plateShield);
-    Consumer<Item> brokenConsumer = item -> event.register(ToolModel.COLOR_HANDLER, item);
-    TinkerTools.travelersGear.forEach(brokenConsumer);
-    TinkerTools.plateArmor.forEach(brokenConsumer);
-    TinkerTools.slimesuit.forEach(brokenConsumer);
-    registerItemColors(colors, TinkerTools.slimeWings);
-
-    // modifier crystal
-    event.register((stack, index) -> {
-      ModifierId modifier = ModifierCrystalItem.getModifier(stack);
-      if (modifier != null) {
-        return ResourceColorManager.getColor(Util.makeTranslationKey("modifier", modifier.getLocation()));
-      }
-      return -1;
-    }, TinkerModifiers.modifierCrystal);
-  }
+  // PORT 1.21.4: RegisterColorHandlersEvent.Item was removed; item tints now come from ItemTintSource entries in the
+  // item JSON. Tool colors are baked into the quads (decision #2), so no tool color handlers are needed. The modifier
+  // crystal's dynamic tint should move to a registered ItemTintSource referenced by its item model (deferred).
 
   // values to check if a key was being pressed last tick, safe as a static value as we only care about a single player client side
   /** If true, we were jumping last tick */
