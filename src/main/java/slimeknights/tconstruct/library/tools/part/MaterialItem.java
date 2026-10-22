@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.library.tools.part;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -84,7 +85,7 @@ public class MaterialItem extends Item implements IMaterialItem {
   public static Component getName(IMaterialItem self, ItemStack stack) {
     // if no material, return part name directly
     MaterialVariantId material = self.getMaterial(stack);
-    String key = self.asItem().getDescriptionId(stack);
+    String key = stack.getItem().getDescriptionId();
     if (material.equals(IMaterial.UNKNOWN_ID)) {
       return Component.translatable(key);
     }
@@ -139,7 +140,7 @@ public class MaterialItem extends Item implements IMaterialItem {
 
   @Nullable
   @Override
-  public String getCreatorModId(ItemStack stack) {
+  public String getCreatorModId(HolderLookup.Provider provider, ItemStack stack) {
     return getCreatorModId(this, stack);
   }
 

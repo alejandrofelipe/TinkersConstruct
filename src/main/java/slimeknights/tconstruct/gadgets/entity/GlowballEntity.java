@@ -6,6 +6,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -21,11 +22,11 @@ public class GlowballEntity extends ThrowableItemProjectile {
   }
 
   public GlowballEntity(Level worldIn, LivingEntity throwerIn) {
-    super(TinkerGadgets.glowBallEntity.get(), throwerIn, worldIn);
+    super(TinkerGadgets.glowBallEntity.get(), throwerIn, worldIn, ItemStack.EMPTY);
   }
 
   public GlowballEntity(Level worldIn, double x, double y, double z) {
-    super(TinkerGadgets.glowBallEntity.get(), x, y, z, worldIn);
+    super(TinkerGadgets.glowBallEntity.get(), x, y, z, worldIn, ItemStack.EMPTY);
   }
 
   @Override

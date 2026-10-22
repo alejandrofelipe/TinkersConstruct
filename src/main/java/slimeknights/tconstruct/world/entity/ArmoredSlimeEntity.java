@@ -134,7 +134,7 @@ public abstract class ArmoredSlimeEntity extends Slime {
           int max = stack.getMaxDamage();
           stack.setDamageValue(max - this.random.nextInt(1 + this.random.nextInt(Math.max(max - 3, 1))));
         }
-        this.spawnAtLocation(stack);
+        this.spawnAtLocation(level, stack);
         this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
       }
     }

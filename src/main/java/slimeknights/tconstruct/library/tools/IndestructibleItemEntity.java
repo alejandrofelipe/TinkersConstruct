@@ -5,8 +5,6 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerEntity;
-import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -28,6 +26,10 @@ public class IndestructibleItemEntity extends ItemEntity {
     // using setUnlimitedLifetime() makes the item no longer spin, dumb design
     // since age is a short, this value should never be reachable so the item will never despawn
     this.lifespan = Integer.MAX_VALUE;
+    // PORT 1.21.4: Entity#isInvulnerableTo is no longer overridable for item entities (ItemEntity#hurtServer is final).
+    // setInvulnerable(true) makes isInvulnerableToBase block every source except DamageTypeTags.BYPASSES_INVULNERABILITY
+    // (out of world), matching the previous override exactly.
+    this.setInvulnerable(true);
   }
 
   public IndestructibleItemEntity(Level worldIn, double x, double y, double z, ItemStack stack) {
@@ -54,12 +56,6 @@ public class IndestructibleItemEntity extends ItemEntity {
   @Override
   public boolean fireImmune() {
     return true;
-  }
-
-  @Override
-  public boolean isInvulnerableTo(DamageSource pSource) {
-    // prevent any damage besides out of world
-    return !pSource.is(DamageTypeTags.BYPASSES_INVULNERABILITY);
   }
 
   /** Checks if the given stack has a custom entity */

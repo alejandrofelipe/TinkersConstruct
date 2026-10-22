@@ -54,7 +54,7 @@ public class SlimePropaguleBlock extends SlimeSaplingBlock {
 
   @Override
   public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
-    Vec3 vec3 = pState.getOffset(pLevel, pPos);
+    Vec3 vec3 = pState.getOffset(pPos);
     VoxelShape voxelshape;
     if (pState.getValue(HANGING)) {
       voxelshape = SHAPE_PER_AGE[pState.getValue(AGE)];

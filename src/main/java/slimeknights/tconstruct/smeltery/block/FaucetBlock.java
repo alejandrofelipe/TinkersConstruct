@@ -29,7 +29,6 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.joml.Vector3f;
 import slimeknights.mantle.util.BlockEntityHelper;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.FaucetBlockEntity;
@@ -133,7 +132,7 @@ public class FaucetBlock extends Block implements EntityBlock {
 
   /* Display */
 
-  private static final Vector3f RED = new Vector3f(1.0F, 0.0F, 0.0F);
+  private static final int RED = 0xFF0000;
 
   /**
    * Adds particles to the faucet

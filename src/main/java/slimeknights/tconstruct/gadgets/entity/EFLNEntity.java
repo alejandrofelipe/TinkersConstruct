@@ -4,6 +4,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Explosion.BlockInteraction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
@@ -17,11 +18,11 @@ public class EFLNEntity extends ThrowableItemProjectile {
   }
 
   public EFLNEntity(Level level, LivingEntity thrower) {
-    super(TinkerGadgets.eflnEntity.get(), thrower, level);
+    super(TinkerGadgets.eflnEntity.get(), thrower, level, ItemStack.EMPTY);
   }
 
   public EFLNEntity(Level worldIn, double x, double y, double z) {
-    super(TinkerGadgets.eflnEntity.get(), x, y, z, worldIn);
+    super(TinkerGadgets.eflnEntity.get(), x, y, z, worldIn, ItemStack.EMPTY);
   }
 
   @Override

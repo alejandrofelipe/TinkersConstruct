@@ -26,8 +26,7 @@ public class MobEffectLiquidBlock extends LiquidBlock {
   public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
     if (entity.getFluidTypeHeight(this.fluid.getFluidType()) > 0 && entity instanceof LivingEntity living) {
       MobEffectInstance effect = this.effect.get();
-      // clear cures so the effect cannot be removed (replaces Forge's setCurativeItems(emptyList))
-      effect.getCures().clear();
+      // PORT 1.21.4: the curative-items API (MobEffectInstance#getCures) was removed; effects can no longer be marked uncurable here
       living.addEffect(effect);
     }
   }

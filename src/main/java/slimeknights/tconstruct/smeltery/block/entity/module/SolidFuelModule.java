@@ -50,7 +50,7 @@ public class SolidFuelModule extends FuelModule {
   private int trySolidFuel(IItemHandler handler, boolean consume) {
     for (int i = 0; i < handler.getSlots(); i++) {
       ItemStack stack = handler.getStackInSlot(i);
-      int time = stack.getBurnTime(TinkerRecipeTypes.FUEL.get()) / 4;
+      int time = stack.getBurnTime(TinkerRecipeTypes.FUEL.get(), parent.getLevel().fuelValues()) / 4;
       if (time > 0) {
         MeltingFuel solid = MeltingFuelLookup.getSolid();
         if (consume) {
@@ -62,7 +62,7 @@ public class SolidFuelModule extends FuelModule {
             rate = solid.getRate();
             parent.setChangedFast();
             // return the container
-            ItemStack container = extracted.getCraftingRemainingItem();
+            ItemStack container = extracted.getItem().getCraftingRemainder();
             if (!container.isEmpty()) {
               // if we cannot insert the container back, spit it on the ground
               ItemStack notInserted = ItemHandlerHelper.insertItem(handler, container, false);

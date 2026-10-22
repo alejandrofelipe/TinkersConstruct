@@ -1,7 +1,6 @@
 package slimeknights.tconstruct.smeltery.block.entity.tank;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -10,7 +9,6 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.mantle.inventory.SingleItemHandler;
-import slimeknights.mantle.util.RegistryHelper;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.network.InventorySlotSyncPacket;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
@@ -30,9 +28,9 @@ public class ProxyItemTank<T extends MantleBlockEntity & IFluidTankUpdater> exte
     // can only store items that are fluid handlers, though allow blacklist in case something is really broken
     // blacklist is mostly used for items that don't support incremental filling, as this block really isn't good at working with them
     // we check the container item so we don't have to put every bucket in the tag. Not bothering with complex container items; odds are item stack sensitive just returns the same item
-    Item craftRemainingItem = stack.getItem().getCraftingRemainingItem();
+    ItemStack craftRemaining = stack.getItem().getCraftingRemainder();
     return !stack.is(TinkerTags.Items.PROXY_TANK_BLACKLIST)
-      && (craftRemainingItem == null || !RegistryHelper.contains(TinkerTags.Items.PROXY_TANK_BLACKLIST, craftRemainingItem))
+      && (craftRemaining.isEmpty() || !craftRemaining.is(TinkerTags.Items.PROXY_TANK_BLACKLIST))
       && (stack.getCapability(Capabilities.FluidHandler.ITEM) != null);
   }
 

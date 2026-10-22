@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.world.entity;
 
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
@@ -29,9 +30,9 @@ public class EnderSlimeEntity extends TravelersPlateSlimeEntity {
   // re-wiring onto the new attack hook; the teleport-on-damage path below still works.
 
   @Override
-  protected void actuallyHurt(DamageSource damageSrc, float damageAmount) {
+  protected void actuallyHurt(ServerLevel level, DamageSource damageSrc, float damageAmount) {
     float oldHealth = getHealth();
-    super.actuallyHurt(damageSrc, damageAmount);
+    super.actuallyHurt(level, damageSrc, damageAmount);
     if (isAlive() && getHealth() < oldHealth) {
       TeleportHelper.randomNearbyTeleport(this, teleportPredicate);
     }

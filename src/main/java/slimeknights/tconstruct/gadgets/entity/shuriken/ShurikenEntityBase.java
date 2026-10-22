@@ -3,6 +3,7 @@ package slimeknights.tconstruct.gadgets.entity.shuriken;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -22,11 +23,11 @@ public abstract class ShurikenEntityBase extends ThrowableItemProjectile impleme
   }
 
   public ShurikenEntityBase(EntityType<? extends ShurikenEntityBase> type, double x, double y, double z, Level worldIn) {
-    super(type, x, y, z, worldIn);
+    super(type, x, y, z, worldIn, ItemStack.EMPTY);
   }
 
   public ShurikenEntityBase(EntityType<? extends ShurikenEntityBase> type, LivingEntity livingEntityIn, Level worldIn) {
-    super(type, livingEntityIn, worldIn);
+    super(type, livingEntityIn, worldIn, ItemStack.EMPTY);
   }
 
     /**
@@ -59,7 +60,9 @@ public abstract class ShurikenEntityBase extends ThrowableItemProjectile impleme
   protected void onHitBlock(BlockHitResult result) {
     super.onHitBlock(result);
 
-    this.spawnAtLocation(getDefaultItem());
+    if (level() instanceof ServerLevel server) {
+      this.spawnAtLocation(server, getDefaultItem());
+    }
   }
 
   @Override

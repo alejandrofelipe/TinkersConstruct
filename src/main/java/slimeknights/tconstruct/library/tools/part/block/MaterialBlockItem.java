@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.library.tools.part.block;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -40,7 +41,7 @@ public class MaterialBlockItem extends BlockItem implements IMaterialItem {
 
   @Nullable
   @Override
-  public String getCreatorModId(ItemStack stack) {
+  public String getCreatorModId(HolderLookup.Provider provider, ItemStack stack) {
     return MaterialItem.getCreatorModId(this, stack);
   }
 

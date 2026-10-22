@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -177,7 +178,7 @@ public class ThrownShuriken extends Projectile implements ToolProjectile, Projec
     }
 
     // update position
-    this.checkInsideBlocks();
+    this.applyEffectsFromBlocks();
     Vec3 movement = this.getDeltaMovement();
     double x = this.getX() + movement.x;
     double y = this.getY() + movement.y;
@@ -234,7 +235,7 @@ public class ThrownShuriken extends Projectile implements ToolProjectile, Projec
     Level level = level();
     if (!level.isClientSide) {
       if ((!hit || reclaim) && !this.isRemoved()) {
-        this.spawnAtLocation(stack.copy());
+        this.spawnAtLocation((ServerLevel) level, stack.copy());
       } else {
         level.broadcastEntityEvent(this, (byte) 3); // TODO: find the proper constant for this event ID
       }
@@ -247,8 +248,8 @@ public class ThrownShuriken extends Projectile implements ToolProjectile, Projec
     super.onHitBlock(result);
 
     // TODO: can we stick in the block like an arrow instead?
-    if (!this.isRemoved()) {
-      this.spawnAtLocation(stack.copy());
+    if (!this.isRemoved() && level() instanceof ServerLevel server) {
+      this.spawnAtLocation(server, stack.copy());
       this.discard();
     }
   }
