@@ -5,6 +5,7 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.SlimeRenderer;
+import net.minecraft.client.renderer.entity.state.SlimeRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.Slime;
 import slimeknights.tconstruct.TConstruct;
@@ -22,9 +23,24 @@ public class TinkerSlimeRenderer extends SlimeRenderer {
     addLayer(new SlimeArmorLayer<>(this, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR)), context.getModelSet(), false));
   }
 
+  // PORT 1.21.4: getTextureLocation now receives the extracted render state, not the entity. The metal flag is captured
+  // into ArmoredSlimeRenderState during extractRenderState (the entity is unavailable at texture-selection time).
   @Override
-  public ResourceLocation getTextureLocation(Slime entity) {
-    if (slime != metal && ((ArmoredSlimeEntity) entity).isMetal()) {
+  public SlimeRenderState createRenderState() {
+    return new ArmoredSlimeRenderState();
+  }
+
+  @Override
+  public void extractRenderState(Slime entity, SlimeRenderState state, float partialTick) {
+    super.extractRenderState(entity, state, partialTick);
+    if (state instanceof ArmoredSlimeRenderState armored && entity instanceof ArmoredSlimeEntity armoredEntity) {
+      armored.isMetal = armoredEntity.isMetal();
+    }
+  }
+
+  @Override
+  public ResourceLocation getTextureLocation(SlimeRenderState state) {
+    if (slime != metal && state instanceof ArmoredSlimeRenderState armored && armored.isMetal) {
       return metal;
     }
     return slime;
@@ -36,7 +52,7 @@ public class TinkerSlimeRenderer extends SlimeRenderer {
     }
 
     @Override
-    public EntityRenderer<Slime> create(Context context) {
+    public EntityRenderer<Slime, ?> create(Context context) {
       return new TinkerSlimeRenderer(context, slime, metal);
     }
   }

@@ -1,67 +1,41 @@
 package slimeknights.tconstruct.world.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
-import lombok.RequiredArgsConstructor;
-import net.minecraft.util.FastColor;
 import net.minecraft.client.model.SkullModelBase;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.ClientHooks;
-import org.joml.Quaternionf;
-import slimeknights.tconstruct.smeltery.client.util.TintedVertexBuilder;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Skull model instance for the sake of making a Slimeskull with a block item
  * Requires {@link net.minecraft.world.inventory.InventoryMenu#BLOCK_ATLAS} as the texture for the skull.
+ *
+ * <p>PORT 1.21.4: this used to render a baked item model inside the skull slot via the removed
+ * {@code ItemRenderer#getModel}/{@code renderModelLists}/{@code BakedModel} path, and overrode the now-final
+ * {@link SkullModelBase#renderToBuffer}. The whole item-model render pipeline moved to {@code ItemStackRenderState}
+ * (see {@code ItemModelUtil}/{@code ItemModelResolver}). Since the slimeskull render path that consumed this model
+ * ({@code SlimeskullArmorModel}) is itself vestigial in 1.21.4 (NeoForge no longer invokes the custom armor-model
+ * hook), this is reduced to an empty-root placeholder that compiles and registers; the item-as-skull render must be
+ * rebuilt on {@code ItemStackRenderState} in Phase-4 (uitest).
  **/
-@RequiredArgsConstructor
 public class BlockModelSkullRenderer extends SkullModelBase {
-  private final ItemRenderer itemRenderer;
-  private final BakedModel model;
   private final ItemStack stack;
-  private float yRot = 0;
-  private float xRot = 0;
 
   public BlockModelSkullRenderer(ItemRenderer itemRenderer, ItemStack stack) {
-    this(itemRenderer, itemRenderer.getModel(stack, null, null, 0), stack);
+    // empty root: this model no longer renders through the vanilla skull/model path (see class breadcrumb)
+    super(new ModelPart(List.of(), Map.of()));
+    this.stack = stack;
   }
 
   @Override
   public void setupAnim(float pMouthAnimation, float yRot, float xRot) {
-    this.yRot = yRot * ((float)Math.PI / 180F);
-    this.xRot = xRot * ((float)Math.PI / 180F);
+    // PORT 1.21.4: no-op; item-as-skull pose/render deferred to Phase-4 ItemStackRenderState reimplementation
   }
 
-  @Override
-  public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int light, int overlay, int color) {
-    float alpha = FastColor.ARGB32.alpha(color) / 255f;
-    float red = FastColor.ARGB32.red(color) / 255f;
-    float green = FastColor.ARGB32.green(color) / 255f;
-    float blue = FastColor.ARGB32.blue(color) / 255f;
-    poseStack.pushPose();
-
-    // from CustomHeadLayer#translateToHead, with final scale adjusted
-    poseStack.translate(0.0F, -0.25F, 0.0F);
-    poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
-    poseStack.scale(0.5F, -0.5F, -0.5F);
-
-    // simplified from ItemRender#render
-    BakedModel model = ClientHooks.handleCameraTransforms(poseStack, this.model, ItemDisplayContext.HEAD, false);
-    poseStack.translate(-0.5F, -0.5F, -0.5F);
-    // we don't really use rotation, but just in case
-    if (yRot != 0 || xRot != 0) {
-      poseStack.mulPose((new Quaternionf()).rotationZYX(0, yRot, xRot));
-    }
-    // applying tint is a pain with these, sop hope we don't need it
-    if (red != 1 || green != 1 || blue != 1 || alpha != 1) {
-      buffer = new TintedVertexBuilder(buffer, (int) (red * 255), (int) (green * 255), (int) (blue * 255), (int) (alpha * 255));
-    }
-    itemRenderer.renderModelLists(model, stack, light, overlay, poseStack, buffer);
-
-    poseStack.popPose();
+  /** @return the block item stack this placeholder would render as a skull */
+  public ItemStack getStack() {
+    return stack;
   }
 }

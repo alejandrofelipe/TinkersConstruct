@@ -1,138 +1,64 @@
 package slimeknights.tconstruct.world.client;
 
-import net.minecraft.world.item.equipment.ArmorType;
-
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.HierarchicalModel;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.model.Model;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
-import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.monster.Slime;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.DyedItemColor;
-import net.minecraft.world.item.component.ResolvableProfile;
-import net.minecraft.world.level.block.AbstractSkullBlock;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.renderer.entity.state.SlimeRenderState;
 import net.minecraft.world.level.block.SkullBlock;
-import net.minecraft.world.level.block.SkullBlock.Type;
-import net.neoforged.neoforge.client.ClientHooks;
 
+import java.util.HashMap;
 import java.util.Map;
 
-/** Generics do not match to use the vanilla armor layer, so this is a reimplementation of some of {@link HumanoidArmorLayer} */
-public class SlimeArmorLayer<T extends Slime, M extends HierarchicalModel<T>, A extends HumanoidModel<T>> extends RenderLayer<T,M> {
-  private final A armorModel;
-  public final Map<Type,SkullModelBase> skullModels;
+/**
+ * Renders a helmet worn by an armored slime, a reimplementation of parts of {@code HumanoidArmorLayer}.
+ *
+ * <p>PORT 1.21.4: this is a near-total rework. {@link RenderLayer} is now generic on the entity <i>render state</i>
+ * (not the entity), its {@code render} takes a 6-arg {@code (pose, buffers, light, state, limbSwing, limbSwingAmount)}
+ * signature, {@link HumanoidModel} must be typed to a {@link HumanoidRenderState} (no longer the entity), and the old
+ * armor pipeline it leaned on (per-{@code ArmorMaterial.Layer} textures, {@code ClientHooks.getArmorModel}, the
+ * {@code CustomHeadLayer}/{@code ItemInHandRenderer} head path) was removed in favor of {@code EquipmentLayerRenderer}
+ * driven by the {@code Equippable} component's {@code EquipmentClientInfo} assets. The layer is kept structurally present
+ * (correct generics, skull-model set and armor model baked as the Phase-4 inputs); the actual helmet/skull/item render
+ * is deferred: Phase-4 should drive the armor through {@code EntityRendererProvider.Context#getEquipmentRenderer()} and
+ * the skull branch through the new {@link SkullBlockRenderer#renderSkull} using the worn-head fields now carried on the
+ * {@link SlimeRenderState} ({@code wornHeadType}/{@code wornHeadProfile}/{@code headItem}).
+ */
+public class SlimeArmorLayer<M extends EntityModel<? super SlimeRenderState>> extends RenderLayer<SlimeRenderState, M> {
+  @SuppressWarnings("unused") // PORT 1.21.4: Phase-4 input - armor model for the EquipmentLayerRenderer re-seat
+  private final HumanoidModel<HumanoidRenderState> armorModel;
+  public final Map<SkullBlock.Type, SkullModelBase> skullModels;
+  @SuppressWarnings("unused") // PORT 1.21.4: Phase-4 input - lava slime squish offset for the worn helmet
   private final boolean lavaSlime;
-  public SlimeArmorLayer(RenderLayerParent<T,M> pRenderer, A armorModel, EntityModelSet modelSet, boolean lavaSlime) {
-    super(pRenderer);
+
+  public SlimeArmorLayer(RenderLayerParent<SlimeRenderState, M> renderer, HumanoidModel<HumanoidRenderState> armorModel, EntityModelSet modelSet, boolean lavaSlime) {
+    super(renderer);
     this.armorModel = armorModel;
-    this.skullModels = SkullBlockRenderer.createSkullRenderers(modelSet);
+    this.skullModels = buildSkullModels(modelSet);
     this.lavaSlime = lavaSlime;
   }
 
-  @Override
-  public void render(PoseStack matrices, MultiBufferSource buffer, int packedLight, T entity, float pLimbSwing, float swing, float partialTicks, float age, float headYaw, float headPitch) {
-    ItemStack helmet = entity.getItemBySlot(EquipmentSlot.HEAD);
-    if (!helmet.isEmpty()) {
-      matrices.pushPose();
-      if (lavaSlime) {
-        float squish = Mth.lerp(partialTicks, entity.oSquish, entity.squish);
-        if (squish < 0) {
-          squish = 0;
-        }
-        matrices.translate(0, 1.5 - 0.425 * squish, 0);
-      } else {
-        matrices.translate(0, 1.5, 0);
+  /** PORT 1.21.4: {@code SkullBlockRenderer.createSkullRenderers(modelSet)} was removed; build the per-type map via the new {@link SkullBlockRenderer#createModel}. */
+  private static Map<SkullBlock.Type, SkullModelBase> buildSkullModels(EntityModelSet modelSet) {
+    Map<SkullBlock.Type, SkullModelBase> map = new HashMap<>();
+    for (SkullBlock.Types type : SkullBlock.Types.values()) {
+      SkullModelBase model = SkullBlockRenderer.createModel(modelSet, type);
+      if (model != null) {
+        map.put(type, model);
       }
-      matrices.scale(0.9f, 0.9f, 0.9f);
-
-      Item item = helmet.getItem();
-      // helmet renderer, based on humanoid armor layer
-      if (item instanceof ArmorItem armor && armor.getType() == ArmorType.HELMET) {
-        this.getParentModel().copyPropertiesTo(armorModel);
-        armorModel.setAllVisible(false);
-        armorModel.head.visible = true;
-        armorModel.hat.visible = true;
-        //noinspection UnstableApiUsage  I am reimplementing vanilla stuff, I will call vanilla hooks
-        Model model = ClientHooks.getArmorModel(entity, helmet, EquipmentSlot.HEAD, armorModel);
-        boolean enchanted = helmet.hasFoil();
-        // 1.21: armor textures come from the material's layer list; dyeable layers receive the dye color
-        ArmorMaterial material = armor.getMaterial().value();
-        int dyeColor = DyedItemColor.getOrDefault(helmet, 0);
-        for (ArmorMaterial.Layer layer : material.layers()) {
-          float red = 1.0F, green = 1.0F, blue = 1.0F;
-          if (layer.dyeable() && dyeColor != 0) {
-            red = (dyeColor >> 16 & 255) / 255.0F;
-            green = (dyeColor >> 8 & 255) / 255.0F;
-            blue = (dyeColor & 255) / 255.0F;
-          }
-          renderModel(matrices, buffer, packedLight, enchanted, model, red, green, blue, getArmorResource(entity, helmet, layer));
-        }
-      } else {
-        // block model renderer, based on custom head layer
-
-        // skull block rendering
-        if (item instanceof BlockItem block && block.getBlock() instanceof AbstractSkullBlock skullBlock) {
-          matrices.scale(1.1875F, -1.1875F, -1.1875F);
-          // 1.21: the skull owner is stored in the PROFILE data component
-          ResolvableProfile profile = helmet.get(DataComponents.PROFILE);
-          matrices.translate(-0.5, 0.0, -0.5);
-          SkullBlock.Type type = skullBlock.getType();
-          SkullModelBase skullModel = this.skullModels.get(type);
-          RenderType renderType = SkullBlockRenderer.getRenderType(type, profile);
-          SkullBlockRenderer.renderSkull(null, 180.0F, pLimbSwing, matrices, buffer, packedLight, skullModel, renderType);
-        } else {
-          // standard rendering
-          CustomHeadLayer.translateToHead(matrices, false);
-          Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer().renderItem(entity, helmet, ItemDisplayContext.HEAD, false, matrices, buffer, packedLight);
-        }
-      }
-      matrices.popPose();
     }
+    return map;
   }
 
-  private static void renderModel(PoseStack matrices, MultiBufferSource buffer, int packedLight, boolean enchanted, Model model, float red, float green, float blue, ResourceLocation texture) {
-    VertexConsumer vertexconsumer = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.armorCutoutNoCull(texture), enchanted);
-    model.renderToBuffer(matrices, vertexconsumer, packedLight, OverlayTexture.NO_OVERLAY, FastColor.ARGB32.colorFromFloat(1.0F, red, green, blue));
-  }
-
-  /**
-   * Resolves the texture for a single armor material layer, letting items override it via the NeoForge hook.
-   *
-   * <p>1.21: armor textures are described by {@link ArmorMaterial.Layer} (the material separates the dyeable
-   * layers out itself), so we resolve through {@link ClientHooks#getArmorTexture} per layer rather than
-   * building the path from the material name.
-   *
-   * @param entity Entity wearing the armor
-   * @param stack  ItemStack for the armor
-   * @param layer  Armor material layer to resolve
-   * @return ResourceLocation pointing at the armor's texture
-   */
-  public static ResourceLocation getArmorResource(Entity entity, ItemStack stack, ArmorMaterial.Layer layer) {
-    // innerModel = false: head armor always uses the outer texture
-    return ClientHooks.getArmorTexture(entity, stack, layer, false, EquipmentSlot.HEAD);
+  @Override
+  public void render(PoseStack matrices, MultiBufferSource buffer, int packedLight, SlimeRenderState state, float limbSwing, float limbSwingAmount) {
+    // PORT 1.21.4: see class breadcrumb - the helmet/skull/item render path was removed and needs re-seating onto
+    // EquipmentLayerRenderer + the worn-head render-state fields in Phase-4 (uitest). No-op for now (compiles clean).
   }
 }
