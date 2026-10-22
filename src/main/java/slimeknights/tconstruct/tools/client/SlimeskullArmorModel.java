@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.model.Model;
 import net.minecraft.client.model.PiglinHeadModel;
 import net.minecraft.client.model.SkullModel;
 import net.minecraft.client.model.SkullModelBase;
@@ -14,11 +13,11 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.WalkAnimationState;
-import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Quaternionf;
 import slimeknights.mantle.data.listener.ISafeManagerReloadListener;
@@ -64,12 +63,17 @@ public class SlimeskullArmorModel extends MultilayerArmorModel {
   private SkullModelBase headModel;
   /** Current animation time for the skull */
   private float walkAnimation = 0;
+  /** Captured baby/crouching flags. PORT 1.21.4: HumanoidModel no longer exposes {@code young}/{@code crouching} (moved to HumanoidRenderState), so we snapshot them from the entity in {@link #setup}. */
+  private boolean young = false;
+  private boolean crouching = false;
 
   private SlimeskullArmorModel() {}
 
   /** Prepares the model */
-  public Model setup(LivingEntity living, ItemStack stack, HumanoidModel<?> base, ArmorModel model) {
+  public SlimeskullArmorModel setup(LivingEntity living, ItemStack stack, HumanoidModel<?> base, ArmorModel model) {
     super.setup(living, stack, EquipmentSlot.HEAD, base, model);
+    this.young = living.isBaby();
+    this.crouching = living.isCrouching();
     MaterialId materialId = MaterialIdNBT.from(stack).getMaterial(0).getId();
     if (!materialId.equals(IMaterial.UNKNOWN_ID)) {
       SkullModelBase skull = getHeadModel(materialId);
@@ -98,29 +102,35 @@ public class SlimeskullArmorModel extends MultilayerArmorModel {
     return this;
   }
 
+  /**
+   * Composites the slimeskull armor layers plus the embedded skull model.
+   * PORT 1.21.4: previously the {@code Model#renderToBuffer} override invoked by the custom-armor-model hook; kept as
+   * unwired scaffolding for the Phase-4 re-seat (the embedded skull in particular has no EquipmentClientInfo analog and
+   * needs a dedicated render-state hook).
+   */
   @Override
-  public void renderToBuffer(PoseStack matrixStackIn, VertexConsumer vertexBuilder, int packedLightIn, int packedOverlayIn, int color) {
+  public void renderArmor(PoseStack matrixStackIn, VertexConsumer vertexBuilder, int packedLightIn, int packedOverlayIn, int color) {
     if (base != null && buffer != null) {
       // 1.21 passes a single packed ARGB color; unpack to feed the float-based head render chain
-      float alpha = FastColor.ARGB32.alpha(color) / 255.0F;
-      float red = FastColor.ARGB32.red(color) / 255.0F;
-      float green = FastColor.ARGB32.green(color) / 255.0F;
-      float blue = FastColor.ARGB32.blue(color) / 255.0F;
+      float alpha = ARGB.alpha(color) / 255.0F;
+      float red = ARGB.red(color) / 255.0F;
+      float green = ARGB.green(color) / 255.0F;
+      float blue = ARGB.blue(color) / 255.0F;
       if (model != ArmorModel.EMPTY) {
         matrixStackIn.pushPose();
         // TODO: this offset messes with the rotation of the skull slightly, though it is barely noticable
-        matrixStackIn.translate(0.0D, base.young ? -0.015D : -0.02D, 0.0D);
+        matrixStackIn.translate(0.0D, young ? -0.015D : -0.02D, 0.0D);
         matrixStackIn.scale(1.01f, 1.1f, 1.01f);
-        super.renderToBuffer(matrixStackIn, vertexBuilder, packedLightIn, packedOverlayIn, color);
+        super.renderArmor(matrixStackIn, vertexBuilder, packedLightIn, packedOverlayIn, color);
         matrixStackIn.popPose();
       }
       if (headModel != null && headTexture != null) {
         VertexConsumer heaadBuffer = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.entityCutoutNoCullZOffset(headTexture), hasGlint);
         matrixStackIn.pushPose();
-        if (base.crouching) {
+        if (crouching) {
           matrixStackIn.translate(0, base.head.y / 16.0F, 0);
         }
-        if (base.young) {
+        if (young) {
           matrixStackIn.scale(0.85F, 0.85F, 0.85F);
           matrixStackIn.translate(0.0D, 1.0D, 0.0D);
         } else {
@@ -154,7 +164,7 @@ public class SlimeskullArmorModel extends MultilayerArmorModel {
 
   /** Registers a skull model using an item as the model */
   public static void registerBlockModel(MaterialId materialId, ItemStack stack) {
-    registerHeadModel(materialId, modelSet -> new BlockModelSkullRenderer(Minecraft.getInstance().getItemRenderer(), stack), InventoryMenu.BLOCK_ATLAS);
+    registerHeadModel(materialId, modelSet -> new BlockModelSkullRenderer(Minecraft.getInstance().getItemRenderer(), stack), TextureAtlas.LOCATION_BLOCKS);
   }
 
   /** Registers a head model and texture, using a custom skull model */

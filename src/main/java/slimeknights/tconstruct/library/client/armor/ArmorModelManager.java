@@ -3,19 +3,18 @@ package slimeknights.tconstruct.library.client.armor;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.Model;
+import net.minecraft.client.resources.model.EquipmentClientInfo;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
-import slimeknights.mantle.util.JsonHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier;
 import slimeknights.tconstruct.tools.client.material.CombatFishingHookRenderer;
@@ -29,7 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-public class ArmorModelManager extends SimpleJsonResourceReloadListener {
+public class ArmorModelManager extends SimpleJsonResourceReloadListener<JsonElement> {
   /** Folder containing the logic */
   public static final String FOLDER = "tinkering/armor_models";
 
@@ -52,12 +51,14 @@ public class ArmorModelManager extends SimpleJsonResourceReloadListener {
    * Initializes this manager, registering it with the resource manager
    * @param manager  Manager
    */
-  public static void init(RegisterClientReloadListenersEvent manager) {
-    manager.registerReloadListener(INSTANCE);
+  public static void init(AddClientReloadListenersEvent manager) {
+    manager.addListener(TConstruct.getResource("armor_model_manager"), INSTANCE);
   }
 
   private ArmorModelManager() {
-    super(JsonHelper.DEFAULT_GSON, FOLDER);
+    // PORT 1.21.4: SimpleJsonResourceReloadListener is now generic and takes a Codec + FileToIdConverter instead of
+    // Gson + folder string; ExtraCodecs.JSON keeps the raw JsonElement parsing the Mantle loadables expect.
+    super(ExtraCodecs.JSON, FileToIdConverter.json(FOLDER));
   }
 
   @Override
@@ -127,10 +128,17 @@ public class ArmorModelManager extends SimpleJsonResourceReloadListener {
       return model;
     }
 
+    // PORT 1.21.4: the custom-armor-model hook signature changed to (ItemStack, EquipmentClientInfo.LayerType, Model)
+    // and, more importantly, NeoForge 21.4 no longer invokes it - equipped armor renders through EquipmentLayerRenderer
+    // with static EquipmentClientInfo JSON layers. Returning the original model keeps vanilla rendering; Tinkers' dynamic
+    // multilayer compositing ({@link MultilayerArmorModel}) must be re-seated onto custom EquipmentClientInfo assets plus
+    // IClientItemExtensions#getArmorTexture/getArmorLayerTintColor in Phase-4. getModel(stack) is still exercised here to
+    // surface missing-model warnings and keep the cache warm for that re-seat.
     @Nonnull
     @Override
-    public Model getGenericArmorModel(LivingEntity living, ItemStack stack, EquipmentSlot slot, HumanoidModel<?> original) {
-      return MultilayerArmorModel.INSTANCE.setup(living, stack, slot, original, getModel(stack));
+    public Model getHumanoidArmorModel(ItemStack stack, EquipmentClientInfo.LayerType layerType, Model original) {
+      getModel(stack);
+      return original;
     }
   }
 }
