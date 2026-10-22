@@ -5,10 +5,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.EntityType;
@@ -17,7 +20,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.common.conditions.ICondition.IContext;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import slimeknights.mantle.data.loadable.Loadable;
@@ -37,7 +40,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /** Loads the list of mob equipment replacements from JSON */
-public class MobEquipmentManager extends SimpleJsonResourceReloadListener {
+public class MobEquipmentManager extends SimpleJsonResourceReloadListener<JsonElement> {
   public static final String FOLDER = "tinkering/mob_equipment";
   /** Singleton instance of the manager */
   private static final MobEquipmentManager INSTANCE = new MobEquipmentManager();
@@ -49,13 +52,13 @@ public class MobEquipmentManager extends SimpleJsonResourceReloadListener {
   private IContext context = IContext.EMPTY;
 
   private MobEquipmentManager() {
-    super(JsonHelper.DEFAULT_GSON, FOLDER);
+    super(ExtraCodecs.JSON, FileToIdConverter.json(FOLDER));
   }
 
   /** @apiNote no need for addons to call this */
   @Internal
   public static void init() {
-    NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, AddReloadListenerEvent.class, INSTANCE::addDataPackListeners);
+    NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, AddServerReloadListenersEvent.class, INSTANCE::addDataPackListeners);
     NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, FinalizeSpawnEvent.class, INSTANCE::finalizeSpawn);
   }
 
@@ -87,7 +90,7 @@ public class MobEquipmentManager extends SimpleJsonResourceReloadListener {
           if (type.charAt(0) == '#') {
             // need to use the condition context to fetch tag values as they are not yet in the mananger
             TagKey<EntityType<?>> tag = Loadables.ENTITY_TYPE_TAG.parseString(type.substring(1), "entity");
-            for (Holder<EntityType<?>> holder : context.getTag(tag)) {
+            for (Holder<EntityType<?>> holder : context.registryAccess().lookupOrThrow(Registries.ENTITY_TYPE).getTagOrEmpty(tag)) {
               parsed.computeIfAbsent(holder.value(), ifAbsent).addAll(equipment);
             }
           } else {
@@ -141,8 +144,8 @@ public class MobEquipmentManager extends SimpleJsonResourceReloadListener {
   /* Events */
 
   /** Adds the managers as datapack listeners */
-  private void addDataPackListeners(AddReloadListenerEvent event) {
-    event.addListener(this);
+  private void addDataPackListeners(AddServerReloadListenersEvent event) {
+    event.addListener(TConstruct.getResource("mob_equipment"), this);
     context = event.getConditionContext();
   }
 

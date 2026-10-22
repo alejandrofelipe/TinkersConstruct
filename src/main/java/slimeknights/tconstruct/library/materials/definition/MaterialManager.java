@@ -8,12 +8,14 @@ import com.google.gson.JsonObject;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.TagLoader;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.common.conditions.ICondition.IContext;
@@ -50,7 +52,7 @@ import static java.util.Objects.requireNonNullElse;
  * So if your mods name is "foobar", the location for your mods materials is "data/foobar/materials".
  */
 @Log4j2
-public class MaterialManager extends SimpleJsonResourceReloadListener {
+public class MaterialManager extends SimpleJsonResourceReloadListener<JsonElement> {
   /** Location of materials */
   public static final String FOLDER = "tinkering/materials/definition";
   /** Location of material tags */
@@ -84,7 +86,7 @@ public class MaterialManager extends SimpleJsonResourceReloadListener {
   private IContext conditionContext = IContext.EMPTY;
 
   public MaterialManager(Runnable onLoaded) {
-    super(GSON, FOLDER);
+    super(ExtraCodecs.JSON, FileToIdConverter.json(FOLDER));
     this.onLoaded = onLoaded;
   }
 
@@ -225,8 +227,8 @@ public class MaterialManager extends SimpleJsonResourceReloadListener {
 
 
     // load modifier tags
-    TagLoader<IMaterial> tagLoader = new TagLoader<>(id -> getMaterial(new MaterialId(id)), TAG_FOLDER);
-    this.tags = GenericTagUtil.mapLoaderResults(REGISTRY_KEY, tagLoader.loadAndBuild(resourceManagerIn));
+    TagLoader<IMaterial> tagLoader = new TagLoader<>((id, required) -> getMaterial(new MaterialId(id)), TAG_FOLDER);
+    this.tags = GenericTagUtil.mapLoaderResults(REGISTRY_KEY, tagLoader.build(tagLoader.load(resourceManagerIn)));
     this.reverseTags = GenericTagUtil.reverseTags(IMaterial::getIdentifier, tags);
     log.info("Loaded {} material tags for {} materials in {} ms", tags.size(), reverseTags.size(), (System.nanoTime() - timeStep) / 1000000f);
   }

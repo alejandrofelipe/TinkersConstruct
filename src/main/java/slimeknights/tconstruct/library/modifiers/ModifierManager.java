@@ -14,6 +14,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -21,6 +22,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.TagLoader;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -28,7 +30,7 @@ import com.mojang.serialization.JsonOps;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.common.conditions.ICondition.IContext;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.EventPriority;
@@ -67,7 +69,7 @@ import java.util.stream.Stream;
 
 /** Modifier registry and JSON loader */
 @Log4j2
-public class ModifierManager extends SimpleJsonResourceReloadListener {
+public class ModifierManager extends SimpleJsonResourceReloadListener<JsonElement> {
   /** Location of dynamic modifiers */
   public static final String FOLDER = "tinkering/modifiers";
   /** Location of modifier tags */
@@ -119,7 +121,7 @@ public class ModifierManager extends SimpleJsonResourceReloadListener {
   private IContext conditionContext = IContext.EMPTY;
 
   private ModifierManager() {
-    super(GSON, FOLDER);
+    super(ExtraCodecs.JSON, FileToIdConverter.json(FOLDER));
     // create the empty modifier
     defaultValue = new EmptyModifier();
     defaultValue.setId(EMPTY);
@@ -129,7 +131,7 @@ public class ModifierManager extends SimpleJsonResourceReloadListener {
   /** For internal use only */
   public void init() {
     TConstruct.modBus.addListener(EventPriority.NORMAL, false, FMLCommonSetupEvent.class, e -> e.enqueueWork(this::fireRegistryEvent));
-    NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, AddReloadListenerEvent.class, this::addDataPackListeners);
+    NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, AddServerReloadListenersEvent.class, this::addDataPackListeners);
     NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, OnDatapackSyncEvent.class, e -> JsonUtils.syncPackets(e, new UpdateModifiersPacket(this.dynamicModifiers, this.tags, this.enchantmentMap, this.enchantmentTagMap)));
   }
 
@@ -140,8 +142,8 @@ public class ModifierManager extends SimpleJsonResourceReloadListener {
   }
 
   /** Adds the managers as datapack listeners */
-  private void addDataPackListeners(final AddReloadListenerEvent event) {
-    event.addListener(this);
+  private void addDataPackListeners(final AddServerReloadListenersEvent event) {
+    event.addListener(TConstruct.getResource("modifiers"), this);
     conditionContext = event.getConditionContext();
   }
 
@@ -194,7 +196,7 @@ public class ModifierManager extends SimpleJsonResourceReloadListener {
     time = timeStep;
 
     // load modifier tags
-    TagLoader<Modifier> tagLoader = new TagLoader<>(id -> {
+    TagLoader<Modifier> tagLoader = new TagLoader<>((id, required) -> {
       Modifier modifier = ModifierManager.getValue(new ModifierId(id));
       // only allow the default modifier if it's explicitly set to empty
       if (modifier == defaultValue && !id.equals(EMPTY)) {
@@ -202,7 +204,7 @@ public class ModifierManager extends SimpleJsonResourceReloadListener {
       }
       return Optional.of(modifier);
     }, TAG_FOLDER);
-    this.tags = GenericTagUtil.mapLoaderResults(REGISTRY_KEY, tagLoader.loadAndBuild(pResourceManager));
+    this.tags = GenericTagUtil.mapLoaderResults(REGISTRY_KEY, tagLoader.build(tagLoader.load(pResourceManager)));
     this.reverseTags = GenericTagUtil.reverseTags(Modifier::getId, tags);
     timeStep = System.nanoTime();
     log.info("Loaded {} modifier tags for {} modifiers in {} ms", tags.size(), this.reverseTags.size(), (timeStep - time) / 1000000f);
