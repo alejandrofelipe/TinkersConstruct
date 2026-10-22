@@ -58,9 +58,9 @@ public record OffsettingSpriteTransformer(@Nullable ISpriteTransformer base, int
           int getX = localX - xOffset;
           int getY = localY - yOffset;
           if (0 <= getX && getX < width && 0 <= getY && getY < height) {
-            image.setPixelRGBA(localX, localY + frameOffset, image.getPixelRGBA(getX, getY));
+            image.setPixel(localX, localY + frameOffset, image.getPixel(getX, getY));
           } else {
-            image.setPixelRGBA(localX, localY + frameOffset, 0);
+            image.setPixel(localX, localY + frameOffset, 0);
           }
         }
       }

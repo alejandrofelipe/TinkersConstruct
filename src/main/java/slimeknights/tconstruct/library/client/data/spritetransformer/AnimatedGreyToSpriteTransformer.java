@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import slimeknights.mantle.data.loadable.primitive.IntLoadable;
 import slimeknights.mantle.util.JsonHelper;
 import slimeknights.tconstruct.TConstruct;
@@ -40,7 +40,7 @@ public class AnimatedGreyToSpriteTransformer extends GreyToSpriteTransformer {
   public int getNewColor(int color, int x, int y, int frame) {
     // if fully transparent, just return fully transparent
     // we do not do 0 alpha RGB values to save effort
-    if (FastColor.ABGR32.alpha(color) == 0) {
+    if (ARGB.alpha(color) == 0) {
       return 0x00000000;
     }
     int grey = GreyToColorMapping.getGrey(color);
@@ -63,7 +63,7 @@ public class AnimatedGreyToSpriteTransformer extends GreyToSpriteTransformer {
       for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
           // use first frame data to determine result, then save it to the proper frame location
-          image.setPixelRGBA(x, y + f * height, getNewColor(image.getPixelRGBA(x, y), x, y, f));
+          image.setPixel(x, y + f * height, getNewColor(image.getPixel(x, y), x, y, f));
         }
       }
     }

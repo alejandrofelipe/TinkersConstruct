@@ -65,7 +65,7 @@ public class FramesSpriteTransformer implements IRecolorSpriteTransformer {
       for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
           // use first frame data to determine result, then save it to the proper frame location
-          image.setPixelRGBA(x, y + f * height, transformer.getNewColor(image.getPixelRGBA(x, y), x, y, f % maxFrame));
+          image.setPixel(x, y + f * height, transformer.getNewColor(image.getPixel(x, y), x, y, f % maxFrame));
         }
       }
     }

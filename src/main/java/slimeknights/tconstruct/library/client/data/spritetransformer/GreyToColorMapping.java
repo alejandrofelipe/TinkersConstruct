@@ -21,13 +21,15 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.function.ToIntFunction;
 
-import static net.minecraft.util.FastColor.ABGR32.alpha;
-import static net.minecraft.util.FastColor.ABGR32.blue;
-import static net.minecraft.util.FastColor.ABGR32.color;
-import static net.minecraft.util.FastColor.ABGR32.green;
-import static net.minecraft.util.FastColor.ABGR32.red;
+import static net.minecraft.util.ARGB.alpha;
+import static net.minecraft.util.ARGB.blue;
+import static net.minecraft.util.ARGB.color;
+import static net.minecraft.util.ARGB.green;
+import static net.minecraft.util.ARGB.red;
 
-/** Color mcom.mojang.blaze3d.platform.NativeImager each value */
+// PORT 1.21.4: FastColor.ABGR32 -> net.minecraft.util.ARGB; NativeImage now works in ARGB packing (getPixel/setPixel),
+// so this whole pipeline is ARGB-native (previously ABGR). Palette colors are stored ARGB internally.
+/** Maps a greyscale value to a color from a palette */
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class GreyToColorMapping implements IColorMapping {
   public static final ResourceLocation NAME = TConstruct.getResource("grey_to_color");
@@ -83,7 +85,8 @@ public class GreyToColorMapping implements IColorMapping {
     for (ColorMapping mapping : mappings) {
       JsonObject pair = new JsonObject();
       pair.addProperty("grey", mapping.grey);
-      pair.addProperty("color", String.format("%08X", Util.translateColorBGR(mapping.color)));
+      // PORT 1.21.4: mappings are stored ARGB internally now, JSON is ARGB, so no translation needed
+      pair.addProperty("color", String.format("%08X", mapping.color));
       colors.add(pair);
     }
     object.add("palette", colors);
@@ -157,14 +160,15 @@ public class GreyToColorMapping implements IColorMapping {
     /** Adds a color to the palette in ABGR format */
     public Builder addABGR(int grey, int color) {
       checkGrey(grey);
-      builder.add(new ColorMapping(grey, color));
+      // PORT 1.21.4: pipeline is ARGB-native now, so convert the ABGR input to ARGB for storage
+      builder.add(new ColorMapping(grey, Util.translateColorBGR(color)));
       return this;
     }
 
     /** Adds a color to the palette in ARGB format */
     public Builder addARGB(int grey, int color) {
       checkGrey(grey);
-      builder.add(new ColorMapping(grey, Util.translateColorBGR(color)));
+      builder.add(new ColorMapping(grey, color));
       return this;
     }
 
@@ -211,7 +215,7 @@ public class GreyToColorMapping implements IColorMapping {
     int red   = interpolate(red(colorBefore),   red(colorAfter),   diff, divisor);
     int green = interpolate(green(colorBefore), green(colorAfter), diff, divisor);
     int blue  = interpolate(blue(colorBefore),  blue(colorAfter),  diff, divisor);
-    return color(alpha, blue, green, red);
+    return color(alpha, red, green, blue);
   }
 
   /** Gets the largest grey value for the given color */
@@ -227,12 +231,13 @@ public class GreyToColorMapping implements IColorMapping {
 
     // grey is based on largest, so scale down as needed
     // if any of RGB are lower than the max, scale it down
+    // PORT 1.21.4: ARGB byte order - red is 0x00FF0000, blue is 0x000000FF (swapped from the old ABGR layout)
     int red = red(original);
-    if (red   < grey) newColor = (newColor & 0xFFFFFF00) | (((newColor & 0x000000FF) * red   / grey) & 0x000000FF);
+    if (red   < grey) newColor = (newColor & 0xFF00FFFF) | (((newColor & 0x00FF0000) * red   / grey) & 0x00FF0000);
     int green = green(original);
     if (green < grey) newColor = (newColor & 0xFFFF00FF) | (((newColor & 0x0000FF00) * green / grey) & 0x0000FF00);
     int blue = blue(original);
-    if (blue  < grey) newColor = (newColor & 0xFF00FFFF) | (((newColor & 0x00FF0000) * blue  / grey) & 0x00FF0000);
+    if (blue  < grey) newColor = (newColor & 0xFFFFFF00) | (((newColor & 0x000000FF) * blue  / grey) & 0x000000FF);
 
     // final color
     return newColor;
