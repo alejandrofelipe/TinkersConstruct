@@ -3,7 +3,7 @@ package slimeknights.tconstruct.gadgets.data;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.data.PackOutput;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
@@ -30,11 +30,9 @@ import slimeknights.tconstruct.shared.block.SlimeType;
 import slimeknights.tconstruct.world.TinkerWorld;
 import slimeknights.tconstruct.world.block.FoliageType;
 
-import java.util.concurrent.CompletableFuture;
-
 public class GadgetRecipeProvider extends BaseRecipeProvider {
-  public GadgetRecipeProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
-    super(packOutput, registries);
+  public GadgetRecipeProvider(HolderLookup.Provider registries, RecipeOutput output) {
+    super(registries, output);
   }
 
   @Override
@@ -50,19 +48,19 @@ public class GadgetRecipeProvider extends BaseRecipeProvider {
                             .setCast(Items.SADDLE, true)
                             .setFluidAndTime(TinkerFluids.skySlime, FluidValues.SLIMEBALL * 4)
                             .save(consumer, prefix(TinkerGadgets.piggyBackpack, folder));
-    ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, TinkerGadgets.punji)
+    ShapedRecipeBuilder.shaped(itemLookup(), RecipeCategory.DECORATIONS, TinkerGadgets.punji)
                        .define('b', Items.BAMBOO)
                        .pattern(" b ")
                        .pattern("bbb")
                        .unlockedBy("has_item", has(Items.BAMBOO))
-                       .save(consumer, prefix(TinkerGadgets.punji, folder));
+                       .save(consumer, recipeKey(prefix(TinkerGadgets.punji, folder)));
 
     // frames
     folder = "gadgets/fancy_frame/";
     frameCrafting(consumer, Tags.Items.NUGGETS_GOLD, FrameType.GOLD);
     frameCrafting(consumer, TinkerMaterials.manyullyn.getNuggetTag(), FrameType.MANYULLYN);
     frameCrafting(consumer, TinkerTags.Items.NUGGETS_NETHERITE, FrameType.NETHERITE);
-    ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, TinkerGadgets.itemFrame.get(FrameType.DIAMOND))
+    ShapedRecipeBuilder.shaped(itemLookup(), RecipeCategory.DECORATIONS, TinkerGadgets.itemFrame.get(FrameType.DIAMOND))
                        .define('e', TinkerCommons.obsidianPane)
                        .define('M', Tags.Items.GEMS_DIAMOND)
                        .pattern(" e ")
@@ -70,8 +68,8 @@ public class GadgetRecipeProvider extends BaseRecipeProvider {
                        .pattern(" e ")
                        .unlockedBy("has_item", has(Tags.Items.GEMS_DIAMOND))
                        .group(prefix("fancy_item_frame"))
-                       .save(consumer, location("gadgets/frame/" + FrameType.DIAMOND.getSerializedName()));
-    ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, TinkerGadgets.itemFrame.get(FrameType.CLEAR))
+                       .save(consumer, recipeKey(location("gadgets/frame/" + FrameType.DIAMOND.getSerializedName())));
+    ShapedRecipeBuilder.shaped(itemLookup(), RecipeCategory.DECORATIONS, TinkerGadgets.itemFrame.get(FrameType.CLEAR))
                        .define('e', Tags.Items.GLASS_PANES_COLORLESS)
                        .define('M', Tags.Items.GLASS_BLOCKS_COLORLESS)
                        .pattern(" e ")
@@ -79,56 +77,56 @@ public class GadgetRecipeProvider extends BaseRecipeProvider {
                        .pattern(" e ")
                        .unlockedBy("has_item", has(Tags.Items.GLASS_PANES_COLORLESS))
                        .group(prefix("fancy_item_frame"))
-                       .save(consumer, location(folder + FrameType.CLEAR.getSerializedName()));
+                       .save(consumer, recipeKey(location(folder + FrameType.CLEAR.getSerializedName())));
     Item goldFrame = TinkerGadgets.itemFrame.get(FrameType.GOLD);
     Item reversedFrame = TinkerGadgets.itemFrame.get(FrameType.REVERSED_GOLD);
-    ShapelessRecipeBuilder.shapeless(RecipeCategory.DECORATIONS, reversedFrame)
+    ShapelessRecipeBuilder.shapeless(itemLookup(), RecipeCategory.DECORATIONS, reversedFrame)
                           .requires(goldFrame)
                           .requires(Items.REDSTONE_TORCH)
                           .unlockedBy("has_item", has(goldFrame))
                           .group(prefix("reverse_fancy_item_frame"))
-                          .save(consumer, location(folder + FrameType.REVERSED_GOLD.getSerializedName()));
-    ShapelessRecipeBuilder.shapeless(RecipeCategory.DECORATIONS, goldFrame)
+                          .save(consumer, recipeKey(location(folder + FrameType.REVERSED_GOLD.getSerializedName())));
+    ShapelessRecipeBuilder.shapeless(itemLookup(), RecipeCategory.DECORATIONS, goldFrame)
                           .requires(reversedFrame)
                           .requires(Items.REDSTONE_TORCH)
                           .unlockedBy("has_item", has(reversedFrame))
                           .group(prefix("reverse_fancy_item_frame"))
-                          .save(consumer, location(folder + "reversed_reversed_gold"));
+                          .save(consumer, recipeKey(location(folder + "reversed_reversed_gold")));
 
     String cakeFolder = "gadgets/cake/";
     TinkerGadgets.cake.forEach((foliage, cake) -> {
       if (foliage != FoliageType.ICHOR) {
         SlimeType slime = foliage.asSlime();
         ItemLike grass = TinkerWorld.slimeTallGrass.get(foliage);
-        ShapedRecipeBuilder.shaped(RecipeCategory.FOOD, cake)
+        ShapedRecipeBuilder.shaped(itemLookup(), RecipeCategory.FOOD, cake)
                            .define('M', slime != null ? TinkerFluids.slime.get(slime).getBucket() : TinkerFluids.honey.asItem())
                            .define('S', foliage.isNether()
-                             ? Ingredient.of(Tags.Items.DUSTS_GLOWSTONE)
-                             : foliage == FoliageType.ENDER ? Ingredient.of(Tags.Items.DUSTS_REDSTONE) : Ingredient.of(Items.SUGAR))
+                             ? Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(Tags.Items.DUSTS_GLOWSTONE))
+                             : foliage == FoliageType.ENDER ? Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(Tags.Items.DUSTS_REDSTONE)) : Ingredient.of(Items.SUGAR))
                            .define('E', Items.EGG)
                            .define('W', TinkerWorld.slimeTallGrass.get(foliage))
                            .pattern("MMM").pattern("SES").pattern("WWW")
                            .unlockedBy("has_slime", has(grass))
-                           .save(consumer, location(cakeFolder + foliage.getSerializedName()));
+                           .save(consumer, recipeKey(location(cakeFolder + foliage.getSerializedName())));
       }
     });
-    ShapedRecipeBuilder.shaped(RecipeCategory.FOOD, TinkerGadgets.cake.get(FoliageType.ICHOR))
+    ShapedRecipeBuilder.shaped(itemLookup(), RecipeCategory.FOOD, TinkerGadgets.cake.get(FoliageType.ICHOR))
       .define('M', TinkerFluids.ichor)
-      .define('S', Ingredient.of(Tags.Items.DUSTS_GLOWSTONE))
+      .define('S', Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(Tags.Items.DUSTS_GLOWSTONE)))
       .define('E', Items.EGG)
       .define('W', Blocks.WARPED_ROOTS) // TODO: switch to ichor foliage one day
       .pattern("WWW").pattern("SES").pattern("MMM")
       .unlockedBy("has_slime", has(TinkerFluids.ichor))
-      .save(consumer, location(cakeFolder + "ichor"));
+      .save(consumer, recipeKey(location(cakeFolder + "ichor")));
     Item bucket = TinkerFluids.magma.asItem();
-    ShapedRecipeBuilder.shaped(RecipeCategory.FOOD, TinkerGadgets.magmaCake)
+    ShapedRecipeBuilder.shaped(itemLookup(), RecipeCategory.FOOD, TinkerGadgets.magmaCake)
                        .define('M', bucket)
-                       .define('S', Ingredient.of(Tags.Items.DUSTS_GLOWSTONE))
+                       .define('S', Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(Tags.Items.DUSTS_GLOWSTONE)))
                        .define('E', Items.EGG)
                        .define('W', Blocks.CRIMSON_ROOTS)
                        .pattern("MMM").pattern("SES").pattern("WWW")
                        .unlockedBy("has_slime", has(bucket))
-                       .save(consumer, location(cakeFolder + "magma"));
+                       .save(consumer, recipeKey(location(cakeFolder + "magma")));
   }
 
 
@@ -145,17 +143,17 @@ public class GadgetRecipeProvider extends BaseRecipeProvider {
   private void foodCooking(RecipeOutput consumer, ItemLike input, ItemLike output, float experience, String folder) {
     SimpleCookingRecipeBuilder.campfireCooking(Ingredient.of(input), RecipeCategory.FOOD, output, experience, 600)
                               .unlockedBy("has_item", has(input))
-                              .save(consumer, wrap(id(output), folder, "_campfire"));
+                              .save(consumer, recipeKey(wrap(id(output), folder, "_campfire")));
     // furnace is 200 ticks
     ResourceLocation outputId = id(output);
     Criterion<InventoryChangeTrigger.TriggerInstance> criteria = has(input);
     SimpleCookingRecipeBuilder.smelting(Ingredient.of(input), RecipeCategory.FOOD, output, experience, 200)
                               .unlockedBy("has_item", criteria)
-                              .save(consumer, wrap(outputId, folder, "_furnace"));
+                              .save(consumer, recipeKey(wrap(outputId, folder, "_furnace")));
     // smoker 100 ticks
     SimpleCookingRecipeBuilder.smoking(Ingredient.of(input), RecipeCategory.FOOD, output, experience, 100)
                               .unlockedBy("has_item", criteria)
-                              .save(consumer, wrap(outputId, folder, "_smoker"));
+                              .save(consumer, recipeKey(wrap(outputId, folder, "_smoker")));
   }
 
   /**
@@ -165,7 +163,7 @@ public class GadgetRecipeProvider extends BaseRecipeProvider {
    * @param type      Frame type
    */
   private void frameCrafting(RecipeOutput consumer, TagKey<Item> edges, FrameType type) {
-    ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, TinkerGadgets.itemFrame.get(type))
+    ShapedRecipeBuilder.shaped(itemLookup(), RecipeCategory.DECORATIONS, TinkerGadgets.itemFrame.get(type))
                        .define('e', edges)
                        .define('M', TinkerCommons.obsidianPane)
                        .pattern(" e ")
@@ -173,6 +171,6 @@ public class GadgetRecipeProvider extends BaseRecipeProvider {
                        .pattern(" e ")
                        .unlockedBy("has_item", has(edges))
                        .group(prefix("fancy_item_frame"))
-                       .save(consumer, location("gadgets/frame/" + type.getSerializedName()));
+                       .save(consumer, recipeKey(location("gadgets/frame/" + type.getSerializedName())));
   }
 }
