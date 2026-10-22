@@ -75,9 +75,10 @@ public class PotionModifierModel implements SimpleModifierModel {
       if (toolData.contains(key, Tag.TAG_STRING)) {
         ResourceLocation id = ResourceLocation.tryParse(toolData.getString(key));
         if (id != null) {
-          Holder<Potion> potion = BuiltInRegistries.POTION.getHolder(id).orElse(null);
+          Holder<Potion> potion = BuiltInRegistries.POTION.get(id).orElse(null);
           if (potion != null) {
-            quadConsumer.accept(MantleItemLayerModel.getQuadsForSprite(0xFF000000 | PotionContents.getColor(potion), -1, spriteGetter.apply(texture), transforms, 0, pixels));
+            // PORT 1.21.4: PotionContents.getColor is now a no-arg instance method
+            quadConsumer.accept(MantleItemLayerModel.getQuadsForSprite(0xFF000000 | new PotionContents(potion).getColor(), -1, spriteGetter.apply(texture), transforms, 0, pixels));
           }
         }
       }

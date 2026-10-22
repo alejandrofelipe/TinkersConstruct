@@ -60,7 +60,8 @@ public class IncrementalFluidCuboid extends FluidCuboid {
     }
 
     // create the part with the fluid
-    return new BlockElement(from, to, faces, null, false);
+    // PORT 1.21.4: BlockElement gained a lightEmission arg (0 = none)
+    return new BlockElement(from, to, faces, null, false, 0);
   }
 
   /**

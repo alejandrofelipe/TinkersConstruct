@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.bus.api.IEventBus;
 
 import slimeknights.mantle.data.listener.IEarlySafeManagerReloadListener;
@@ -55,8 +55,8 @@ public class ModifierIconManager implements IEarlySafeManagerReloadListener {
   }
 
   /** Called on resource manager build to add the manager */
-  private static void onResourceManagerRegister(RegisterClientReloadListenersEvent manager) {
-    manager.registerReloadListener(INSTANCE);
+  private static void onResourceManagerRegister(AddClientReloadListenersEvent manager) {
+    manager.addListener(TConstruct.getResource("modifier_icon_manager"), INSTANCE);
   }
 
   @Override
@@ -118,17 +118,18 @@ public class ModifierIconManager implements IEarlySafeManagerReloadListener {
    * @param size      Size to render, 16 is default
    */
   public static void renderIcon(GuiGraphics graphics, Modifier modifier, int x, int y, int z, int size) {
-    TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
+    TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
 
+    // PORT 1.21.4: GuiGraphics.blit(x,y,z,w,h,sprite) -> blitSprite(renderType, sprite, x, y, w, h); depth is handled by the pose stack now
     List<ResourceLocation> icons = modifierIcons.getOrDefault(modifier.getId(), Collections.emptyList());
     if (!icons.isEmpty()) {
       for (ResourceLocation icon : icons) {
-        graphics.blit(x, y, z, size, size, atlas.getSprite(icon));
+        graphics.blitSprite(RenderType::guiTextured, atlas.getSprite(icon), x, y, size, size);
       }
     } else {
-      graphics.blit(x, y, z, size, size, atlas.getSprite(DEFAULT_PAGES));
+      graphics.blitSprite(RenderType::guiTextured, atlas.getSprite(DEFAULT_PAGES), x, y, size, size);
       RenderUtils.setColorRGBA(0xFF000000 | modifier.getColor());
-      graphics.blit(x, y, z, size, size, atlas.getSprite(DEFAULT_COVER));
+      graphics.blitSprite(RenderType::guiTextured, atlas.getSprite(DEFAULT_COVER), x, y, size, size);
       RenderUtils.setColorRGBA(-1);
     }
   }

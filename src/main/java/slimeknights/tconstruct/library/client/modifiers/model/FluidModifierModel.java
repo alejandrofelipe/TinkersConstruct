@@ -2,20 +2,15 @@ package slimeknights.tconstruct.library.client.modifiers.model;
 
 import com.mojang.math.Transformation;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockElement;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.client.model.QuadTransformers;
-import net.neoforged.neoforge.client.model.SimpleModelState;
-import net.neoforged.neoforge.client.model.geometry.UnbakedGeometryHelper;
 import net.neoforged.neoforge.fluids.FluidStack;
-import org.joml.Vector3f;
-import slimeknights.mantle.client.model.util.ColoredBlockModel;
+import slimeknights.mantle.client.model.util.MantleItemLayerModel;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.util.ItemLayerPixels;
 import slimeknights.tconstruct.TConstruct;
@@ -40,11 +35,6 @@ public record FluidModifierModel(Material small, @Nullable Material large, ToolT
 
   /** Location used for baking dynamic models, name does not matter so just using a constant */
   private static final ResourceLocation BAKE_LOCATION = TConstruct.getResource("dynamic_fluid_model");
-  /**
-   * The vanilla model bakery uses an orgin of 0.5,0.5,0.5, and forges dynamic fluid code uses the vanilla model bakery. (see{@link net.minecraft.client.renderer.block.model.FaceBakery} {@code #rotateVertexBy()} for vanilla bakery)
-   * However, item layer wants an origin of 0,0,0, which is what we expect in our tool models. So cancel out the origin.
-   */
-  private static final Vector3f ORIGIN = new Vector3f(-0.5f, -0.5f, -0.5f);
 
   /** Instance with default tank helper */
   public FluidModifierModel(Material small, @Nullable Material large) {
@@ -87,22 +77,14 @@ public record FluidModifierModel(Material small, @Nullable Material large, ToolT
     // must have texture for the proper state
     // fluid properties
     IClientFluidTypeExtensions attributes = IClientFluidTypeExtensions.of(fluid.getFluid());
-    TextureAtlasSprite fluidSprite = spriteGetter.apply(new Material(InventoryMenu.BLOCK_ATLAS, attributes.getStillTexture(fluid)));
+    TextureAtlasSprite fluidSprite = spriteGetter.apply(new Material(TextureAtlas.LOCATION_BLOCKS, attributes.getStillTexture(fluid)));
+    TextureAtlasSprite maskSprite = spriteGetter.apply(template);
 
-    // build fluid like the forge dynamic container model
-    List<BlockElement> unbaked = UnbakedGeometryHelper.createUnbakedItemMaskElements(-1, spriteGetter.apply(template)); // Use template as mask
-    // TODO: is there anything that can be done about the fluid? to prevent weird offsets?
-    List<BakedQuad> fluidQuads = UnbakedGeometryHelper.bakeElements(unbaked, mat -> fluidSprite, new SimpleModelState(transforms.applyOrigin(ORIGIN).compose(FluidContainerModel.FLUID_TRANSFORM), false)); // Bake with fluid texture
-
-    // apply brightness and color
+    // PORT 1.21.4: UnbakedGeometryHelper was removed; build the fluid clipped to the template shape via the Mantle
+    // masked item-layer baker (mask = template, texture = fluid). Color and luminosity are baked in.
     int luminosity = fluid.getFluid().getFluidType().getLightLevel(fluid);
-    if (luminosity > 0) {
-      QuadTransformers.settingEmissivity(luminosity).processInPlace(fluidQuads);
-    }
     int color = attributes.getTintColor(fluid);
-    if (color != -1) {
-      ColoredBlockModel.applyColorQuadTransformer(color).processInPlace(fluidQuads);
-    }
+    List<BakedQuad> fluidQuads = MantleItemLayerModel.getMaskedQuadsForSprite(color, -1, maskSprite, fluidSprite, transforms.compose(FluidContainerModel.FLUID_TRANSFORM), luminosity, null);
     quadConsumer.accept(fluidQuads);
   }
 }

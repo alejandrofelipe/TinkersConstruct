@@ -9,7 +9,6 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.neoforged.fml.ModLoader;
 import slimeknights.mantle.data.listener.MergingJsonDataLoader;
 import slimeknights.mantle.data.loadable.field.ContextKey;
@@ -52,8 +51,9 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
     super(JsonHelper.DEFAULT_GSON, FOLDER, id -> new Builder());
   }
 
+  // PORT 1.21.4: reload no longer receives ProfilerFiller args
   @Override
-  public CompletableFuture<Void> reload(PreparationBarrier stage, ResourceManager resourceManager, ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler, Executor backgroundExecutor, Executor gameExecutor) {
+  public CompletableFuture<Void> reload(PreparationBarrier stage, ResourceManager resourceManager, Executor backgroundExecutor, Executor gameExecutor) {
     // run in the first stage instead of the second stage
     return CompletableFuture.runAsync(() -> {
       if (!ModLoader.hasErrors()) {

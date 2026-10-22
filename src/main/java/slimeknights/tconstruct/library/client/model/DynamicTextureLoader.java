@@ -5,11 +5,11 @@ import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import slimeknights.mantle.data.listener.ResourceValidator;
+import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.config.Config;
 
 import java.util.concurrent.CompletableFuture;
@@ -37,14 +37,15 @@ public class DynamicTextureLoader extends ResourceValidator {
     }
   }
 
+  // PORT 1.21.4: reload no longer receives ProfilerFiller args
   @Override
-  public CompletableFuture<Void> reload(PreparationBarrier stage, ResourceManager resourceManager, ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler, Executor backgroundExecutor, Executor gameExecutor) {
-    return super.reload(stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor).thenRunAsync(this::clear);
+  public CompletableFuture<Void> reload(PreparationBarrier stage, ResourceManager resourceManager, Executor backgroundExecutor, Executor gameExecutor) {
+    return super.reload(stage, resourceManager, backgroundExecutor, gameExecutor).thenRunAsync(this::clear);
   }
 
   /** Registers this manager */
-  public static void init(RegisterClientReloadListenersEvent event) {
-    event.registerReloadListener(INSTANCE);
+  public static void init(AddClientReloadListenersEvent event) {
+    event.addListener(TConstruct.getResource("dynamic_texture_loader"), INSTANCE);
   }
 
   /**
@@ -61,7 +62,7 @@ public class DynamicTextureLoader extends ResourceValidator {
     } else {
       return mat -> {
         // to suppress logging, need to load from our own list. We just load it for `textures/item` on the block atlas
-        if (InventoryMenu.BLOCK_ATLAS.equals(mat.atlasLocation())) {
+        if (TextureAtlas.LOCATION_BLOCKS.equals(mat.atlasLocation())) {
           ResourceLocation texture = mat.texture();
           if (texture.getPath().startsWith("item/")) {
             return INSTANCE.test(mat.texture());
