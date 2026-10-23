@@ -279,6 +279,14 @@ public class ToolStack implements IToolStackView {
     // store our data directly to avoid going through verifyTagAfterLoad and rebuilding stats again
     setStackTag(stack, nbt);
     // damage value is already enforced via the stack creation above
+    // 1.21.4: vanilla damageability is now driven by the MAX_DAMAGE + DAMAGE data components (ItemStack#isDamageableItem).
+    // Modifiable tools register unstackable without a durability component (only the dagger passes durability(-1)), so mark
+    // the built stack damageable. The value is just a marker mirroring the dagger: the real max damage stays dynamic via
+    // ToolDamageUtil#getFakeMaxDamage (Item#getMaxDamage/getDamage overrides). Guarded so the dagger is not double-marked.
+    if (!stack.isDamageableItem()) {
+      stack.set(DataComponents.MAX_DAMAGE, -1);
+      stack.set(DataComponents.DAMAGE, 0);
+    }
     return stack;
   }
 
