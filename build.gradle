@@ -108,12 +108,23 @@ runs {
         // 1.21.4: NeoForge replaced the vanilla `data` run type with `clientData`/`serverData`
         // (the GatherDataEvent -> .Client/.Server split). Keep the block named `data` so the Gradle
         // task stays `runData`; point it at the `clientData` run type. `--all` still drives every
-        // registered provider. (Phase 3 revisits whether a separate serverData run is also needed.)
+        // registered provider.
+        // No --existing-mod: ExistingFileHelper was removed in 1.21.4 and neither the clientData nor the
+        // serverData launch target registers that option (it throws UnrecognizedOptionException). Existing
+        // resources are read through the GatherDataEvent ResourceManager instead.
         runType 'clientData'
         arguments.addAll '--mod', 'tconstruct', '--all',
             '--output', file('src/generated/resources/').getAbsolutePath(),
-            '--existing', file('src/main/resources/').getAbsolutePath(),
-            '--existing-mod', 'mantle'
+            '--existing', file('src/main/resources/').getAbsolutePath()
+    }
+    // 1.21.4: the GatherDataEvent.Client/.Server split needs a second run for the data-side providers
+    // (recipes/tags/loot/advancements/fluid_transfer). Mirrors `data` but on the `serverData` run type.
+    // Run BOTH (`runData` + `runServerData`) to regenerate.
+    serverData {
+        runType 'serverData'
+        arguments.addAll '--mod', 'tconstruct', '--all',
+            '--output', file('src/generated/resources/').getAbsolutePath(),
+            '--existing', file('src/main/resources/').getAbsolutePath()
     }
     gameTestServer {
         systemProperty 'neoforge.enabledGameTestNamespaces', 'tconstruct'

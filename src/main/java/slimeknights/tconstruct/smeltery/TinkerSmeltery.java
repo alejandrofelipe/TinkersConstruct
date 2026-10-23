@@ -525,7 +525,7 @@ public final class TinkerSmeltery extends TinkerModule {
   void gatherDataServer(final GatherDataEvent.Server event) {
     PackOutput packOutput = event.getGenerator().getPackOutput();
     event.addProvider(new BaseRecipeProvider.Runner(packOutput, event.getLookupProvider(), "Tinkers' Construct Smeltery Recipes", SmelteryRecipeProvider::new));
-    event.addProvider(new FluidContainerTransferProvider(packOutput));
+    event.addProvider(new FluidContainerTransferProvider(packOutput, event.getLookupProvider()));
     event.addProvider(new GameTestStructureProvider(packOutput));
   }
 
