@@ -14,7 +14,6 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.ClientEventBase;
 import slimeknights.tconstruct.shared.block.entity.TableBlockEntity;
 import slimeknights.tconstruct.tables.block.entity.chest.TinkersChestBlockEntity;
-import slimeknights.tconstruct.tables.item.TinkersChestBlockItem;
 import slimeknights.tconstruct.tables.client.inventory.CraftingStationScreen;
 import slimeknights.tconstruct.tables.client.inventory.ModifierWorktableScreen;
 import slimeknights.tconstruct.tables.client.inventory.PartBuilderScreen;
@@ -55,13 +54,7 @@ public class TableClientEvents extends ClientEventBase {
     }, TinkerTables.tinkersChest.get());
   }
 
-  @SubscribeEvent
-  static void registerItemColors(final RegisterColorHandlersEvent.Item event) {
-    event.register((stack, index) -> {
-      if (stack.getItem() instanceof TinkersChestBlockItem chestItem) {
-        return chestItem.getColor(stack);
-      }
-      return -1;
-    }, TinkerTables.tinkersChest.asItem());
-  }
+  // PORT 1.21.4: RegisterColorHandlersEvent.Item was removed. The tinkers chest block-item tinted itself from
+  // TinkersChestBlockItem#getColor via an item-color handler; this now belongs in the item model JSON as a custom
+  // ItemTintSource reading that component. Dropped the registration; re-add the tint source during Phase-4 rewiring.
 }

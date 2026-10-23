@@ -7,7 +7,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
@@ -17,7 +17,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.client.event.RecipesUpdatedEvent;
+import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
 import net.neoforged.neoforge.client.event.RenderBlockScreenEffectEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -78,7 +78,7 @@ public class TinkerClient {
     MaterialRenderInfoLoader.init();
 
     // add the recipe cache invalidator to the client
-    Consumer<RecipesUpdatedEvent> recipesUpdated = event -> RecipeCacheInvalidator.reload(true);
+    Consumer<RecipesReceivedEvent> recipesUpdated = event -> RecipeCacheInvalidator.reload(true);
     NeoForge.EVENT_BUS.addListener(recipesUpdated);
     // populate static recipe lookups from the synced recipe manager
     NeoForge.EVENT_BUS.addListener(RecipeLookupPopulator::onRecipesUpdated);
@@ -132,7 +132,8 @@ public class TinkerClient {
         TextureAtlasSprite texture = minecraft.getBlockRenderer().getBlockModelShaper().getTexture(state, minecraft.level, pos);
         RenderSystem.setShaderTexture(0, texture.atlasLocation());
         // changed: shader using pos tex
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        // PORT 1.21.4: GameRenderer.getPositionTexShader() removed; shaders moved to CoreShaders ShaderProgram handles
+        RenderSystem.setShader(CoreShaders.POSITION_TEX);
         Tesselator tesselator = Tesselator.getInstance();
 
         // change: handle brightness based on renderWater, and enable blend

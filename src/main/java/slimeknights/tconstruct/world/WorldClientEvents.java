@@ -1,10 +1,7 @@
 package slimeknights.tconstruct.world;
 
-import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.model.PiglinHeadModel;
 import net.minecraft.client.model.SkullModel;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
@@ -13,8 +10,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.common.util.Lazy;
@@ -44,9 +41,9 @@ import java.util.function.Supplier;
 @EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
 public class WorldClientEvents extends ClientEventBase {
   @SubscribeEvent
-  static void addResourceListener(RegisterClientReloadListenersEvent event) {
+  static void addResourceListener(AddClientReloadListenersEvent event) {
     for (FoliageType type : FoliageType.values()) {
-      event.registerReloadListener(new SlimeColorReloadListener(type));
+      event.addListener(TConstruct.getResource("slime_color_" + type.getSerializedName()), new SlimeColorReloadListener(type));
     }
   }
 
@@ -91,12 +88,13 @@ public class WorldClientEvents extends ClientEventBase {
 
   @SubscribeEvent
   static void registerSkullModels(EntityRenderersEvent.CreateSkullModels event) {
-    EntityModelSet modelSet = event.getEntityModelSet();
+    // PORT 1.21.4: CreateSkullModels no longer exposes an EntityModelSet; register the layer location plus a
+    // ModelPart->SkullModelBase factory and the event bakes the model itself.
     SkullModelHelper.HEAD_LAYERS.forEach((type, layer) -> {
       if (type.isPiglin()) {
-        event.registerSkullModel(type, new PiglinHeadModel(modelSet.bakeLayer(layer)));
+        event.registerSkullModel(type, layer, PiglinHeadModel::new);
       } else {
-        event.registerSkullModel(type, new SkullModel(modelSet.bakeLayer(layer)));
+        event.registerSkullModel(type, layer, SkullModel::new);
       }
     });
   }
@@ -165,23 +163,10 @@ public class WorldClientEvents extends ClientEventBase {
       TinkerWorld.enderSlimeVine.get());
   }
 
-  @SubscribeEvent
-  static void registerItemColorHandlers(RegisterColorHandlersEvent.Item event) {
-    BlockColors blockColors = event.getBlockColors();
-    ItemColors itemColors = event.getItemColors();
-    // slime grass items
-    registerBlockItemColorAlias(blockColors, itemColors, TinkerWorld.vanillaSlimeGrass);
-    registerBlockItemColorAlias(blockColors, itemColors, TinkerWorld.earthSlimeGrass);
-    registerBlockItemColorAlias(blockColors, itemColors, TinkerWorld.skySlimeGrass);
-    registerBlockItemColorAlias(blockColors, itemColors, TinkerWorld.enderSlimeGrass);
-    registerBlockItemColorAlias(blockColors, itemColors, TinkerWorld.ichorSlimeGrass);
-    // plant items
-    registerBlockItemColorAlias(blockColors, itemColors, TinkerWorld.slimeLeaves);
-    registerBlockItemColorAlias(blockColors, itemColors, TinkerWorld.slimeFern);
-    registerBlockItemColorAlias(blockColors, itemColors, TinkerWorld.slimeTallGrass);
-    registerBlockItemColorAlias(blockColors, itemColors, TinkerWorld.skySlimeVine);
-    registerBlockItemColorAlias(blockColors, itemColors, TinkerWorld.enderSlimeVine);
-  }
+  // PORT 1.21.4: RegisterColorHandlersEvent.Item and net.minecraft.client.color.item.ItemColors were removed. The slime
+  // grass/plant block-items were tinted to match their block color via an item-color alias; this now belongs in each
+  // item model JSON as an ItemTintSource (minecraft:constant / a custom tint source). Dropped the registration here;
+  // re-add the per-item tint in the item models during Phase-4 runtime rewiring.
 
   /**
    * Block colors for a slime type

@@ -5,7 +5,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.minecraft.client.particle.ParticleEngine;
-import net.minecraft.client.player.Input;
+import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.renderer.entity.ItemEntityRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -327,7 +327,8 @@ public class ToolClientEvents extends ClientEventBase {
       // next, add in deprecated key bonus
       speed = Mth.clamp(speed + ArmorStatModule.getStat(player, TinkerDataKeys.USE_ITEM_SPEED), 0, 1);
       // update speed, note if the armor stat is 0 and the held tool is not tinkers this is a no-op effectively
-      Input input = event.getInput();
+      // PORT 1.21.4: net.minecraft.client.player.Input was split; MovementInputUpdateEvent#getInput now returns ClientInput
+      ClientInput input = event.getInput();
       // multiply by 5 to cancel out the vanilla 20%
       input.leftImpulse *= (float) (speed * 5);
       input.forwardImpulse *= (float) (speed * 5);

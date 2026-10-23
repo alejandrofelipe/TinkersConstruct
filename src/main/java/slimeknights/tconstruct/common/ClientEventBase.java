@@ -1,45 +1,11 @@
 package slimeknights.tconstruct.common;
 
-import net.minecraft.world.level.block.Block;
-import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColors;
-import slimeknights.mantle.registration.object.EnumObject;
-
-import java.util.function.Supplier;
-
 /**
- * Contains helpers to use for registering client events
+ * Contains helpers to use for registering client events.
+ *
+ * <p>PORT 1.21.4: the {@code registerBlockItemColorAlias} helpers were removed. They depended on
+ * {@code net.minecraft.client.color.item.ItemColors} and {@code RegisterColorHandlersEvent.Item}, both removed in 1.21.4.
+ * Block-items that aliased their block color now express that tint through an {@code ItemTintSource} entry in the item
+ * model JSON; re-add those per-item tints during Phase-4 runtime rewiring.
  */
-public abstract class ClientEventBase {
-  /**
-   * Registers a block colors alias for the given block
-   * @param blockColors  BlockColors instance
-   * @param itemColors   ItemColors instance
-   * @param block        Block to register
-   */
-  protected static void registerBlockItemColorAlias(BlockColors blockColors, ItemColors itemColors, Block block) {
-    itemColors.register((stack, index) -> blockColors.getColor(block.defaultBlockState(), null, null, index), block);
-  }
-
-  /**
-   * Registers a block colors alias for the given block suppliers
-   * @param blockColors  BlockColors instance
-   * @param itemColors   ItemColors instance
-   * @param block        Block to register
-   */
-  protected static void registerBlockItemColorAlias(BlockColors blockColors, ItemColors itemColors, Supplier<? extends Block> block) {
-    registerBlockItemColorAlias(blockColors, itemColors, block.get());
-  }
-
-  /**
-   * Registers a block colors alias for all blocks in the given instance
-   * @param blockColors  BlockColors instance
-   * @param itemColors   ItemColors instance
-   * @param blocks       EnumBlock instance
-   */
-  protected static <B extends Block> void registerBlockItemColorAlias(BlockColors blockColors, ItemColors itemColors, EnumObject<?,B> blocks) {
-    for (B block : blocks.values()) {
-      registerBlockItemColorAlias(blockColors, itemColors, block);
-    }
-  }
-}
+public abstract class ClientEventBase {}
