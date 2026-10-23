@@ -332,8 +332,15 @@ public class ToolModel {
     private final boolean useAmbientOcclusion;
     private final boolean useBlockLight;
     private final net.minecraft.client.renderer.block.model.ItemTransforms itemTransforms;
-    /** Base (no material/modifier) variants */
-    private final BakedToolModel base;
+    /**
+     * Base (no material/modifier) variants.
+     * PORT 1.21.4: baked lazily. {@link #bakeInternal} composites quads via {@code Material::sprite} (the live block
+     * atlas), but {@code ItemModel.Unbaked#bake} runs during {@code ModelBakery.bakeModels} when that atlas is not yet
+     * initialized, so baking the base eagerly in the constructor threw "atlas is not initialized" and the whole tool
+     * item model failed to bake (-> missing texture). All bakes now happen on the render thread where the atlas is ready.
+     */
+    @Nullable
+    private volatile BakedToolModel base;
     private final Cache<ToolCacheKey, BakedToolModel> cache = CacheBuilder.newBuilder()
       .maximumSize(Math.max(64, slimeknights.tconstruct.library.client.materials.MaterialRenderInfoLoader.INSTANCE.getAllRenderInfos().size() * 3L / 2))
       .build();
@@ -350,7 +357,21 @@ public class ToolModel {
       this.useAmbientOcclusion = useAmbientOcclusion;
       this.useBlockLight = useBlockLight;
       this.itemTransforms = itemTransforms;
-      this.base = bake(List.of(), null);
+    }
+
+    /** Lazily bakes the base (no material/modifier) variant on first render, when the block atlas is initialized */
+    private BakedToolModel base() {
+      BakedToolModel result = base;
+      if (result == null) {
+        synchronized (this) {
+          result = base;
+          if (result == null) {
+            result = bake(List.of(), null);
+            base = result;
+          }
+        }
+      }
+      return result;
     }
 
     private BakedToolModel bake(List<MaterialVariantId> materials, @Nullable IToolStackView tool) {
@@ -368,7 +389,7 @@ public class ToolModel {
         if (modifier.forced) { anyForced = true; break; }
       }
       if (materialIds.isEmpty() && modifiers.isEmpty() && !anyForced) {
-        return base;
+        return base();
       }
       // build the cache key from the modifier-requested keys
       ImmutableList.Builder<Object> builder = ImmutableList.builder();
@@ -415,7 +436,7 @@ public class ToolModel {
         return cache.get(new ToolCacheKey(materialIds, builder.build()), () -> bake(materialIds, tool));
       } catch (ExecutionException e) {
         TConstruct.LOG.error("Failed to get tool model from cache", e);
-        return base;
+        return base();
       }
     }
 

@@ -48,7 +48,11 @@ public class TinkerItemModelProvider implements DataProvider {
   @SuppressWarnings("unused") // resourceManager kept for ctor parity with the client GatherDataEvent wiring
   public TinkerItemModelProvider(PackOutput output, ResourceManager resourceManager) {
     this.itemPath = output.createPathProvider(Target.RESOURCE_PACK, "items");
-    this.modelPath = output.createPathProvider(Target.RESOURCE_PACK, "models/item");
+    // PORT 1.21.4 fix: model keys from modelId() already carry the "item/" prefix (e.g. tconstruct:item/pick_head),
+    // which is also how the item definitions reference them. The path root must be "models" so a key of item/<id>
+    // writes to models/item/<id>.json (the location the model loader resolves). Using "models/item" here produced a
+    // double prefix (models/item/item/<id>.json), so every backing part/cast model failed to load -> missing texture.
+    this.modelPath = output.createPathProvider(Target.RESOURCE_PACK, "models");
   }
 
   protected void registerModels() {

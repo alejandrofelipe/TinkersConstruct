@@ -64,6 +64,12 @@ public class TinkerSpriteSourceProvider extends SpriteSourceProvider {
     SourceList blocks = atlas(BLOCKS_ATLAS)
       // We load our fluid textures from here
       .addSource(directory("fluid"))
+      // PORT 1.21.4: material part / tool textures are looked up dynamically by name at bake time
+      // (MaterialModel / ToolModel resolve item/tool/<part>_<material> and item/tool/<tool>/<part> against the
+      // block atlas). The removed IUnbakedGeometry system used to declare these as model texture dependencies so
+      // the stitcher picked them up; ItemModel.Unbaked has no such hook, so without this directory source the
+      // greyscale bases and the ~10k generated material permutations are absent from the atlas -> missing texture.
+      .addSource(directory("item/tool"))
       // patterns load from this directory
       .addSource(directory("gui/modifiers"))
       // we typically use this directory for modifier icons that are not items nor blocks

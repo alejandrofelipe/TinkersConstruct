@@ -469,7 +469,12 @@ public class TinkerBlockStateProvider extends ModelProvider {
     if (connected) {
       json.addProperty("loader", "mantle:connected");
       JsonObject connection = new JsonObject();
-      connection.add("textures", texture(connectName, ResourceLocation.parse("cornerless_full")));
+      // PORT 1.21.4 fix: the connection "type" is a bare registry name, not a ResourceLocation. ResourceLocation.parse
+      // added the default "minecraft:" namespace ("minecraft:cornerless_full"), which Mantle's ConnectedModelRegistry
+      // does not recognise ("Unknown connection type") -> the whole connected glass model failed to load (missing texture).
+      JsonObject connectionTextures = new JsonObject();
+      connectionTextures.addProperty(connectName, "cornerless_full");
+      connection.add("textures", connectionTextures);
       if (predicate != null) {
         connection.addProperty("predicate", predicate);
       }
