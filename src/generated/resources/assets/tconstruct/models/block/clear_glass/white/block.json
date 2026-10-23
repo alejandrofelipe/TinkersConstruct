@@ -2,7 +2,7 @@
   "parent": "minecraft:block/cube_all",
   "connection": {
     "textures": {
-      "all": "minecraft:cornerless_full"
+      "all": "cornerless_full"
     }
   },
   "loader": "mantle:connected",

@@ -8,7 +8,7 @@
   "connection": {
     "predicate": "pane",
     "textures": {
-      "pane": "minecraft:cornerless_full"
+      "pane": "cornerless_full"
     }
   },
   "loader": "mantle:connected",
