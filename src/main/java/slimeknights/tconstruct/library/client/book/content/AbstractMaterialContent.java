@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.client.book.HTMLUtils;
@@ -31,6 +32,7 @@ import slimeknights.mantle.util.html.HtmlGroup;
 import slimeknights.mantle.util.html.HtmlSerializable;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.library.client.book.elements.TinkerItemElement;
 import slimeknights.tconstruct.library.client.materials.MaterialTooltipCache;
 import slimeknights.tconstruct.library.materials.IMaterialRegistry;
@@ -60,7 +62,6 @@ import slimeknights.tconstruct.tools.TinkerToolParts;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -148,11 +149,16 @@ public abstract class AbstractMaterialContent extends PageContent {
       }
       // simply combine all items from all recipes
       MaterialVariantId material = getMaterialVariant();
-      repairStacks = RecipeHelper.getUIRecipes(world.getRecipeManager(), TinkerRecipeTypes.MATERIAL.get(), MaterialRecipe.class, recipe -> material.matchesVariant(recipe.getMaterial()))
-        .stream()
+      // PORT 1.21.4: Level#getRecipeManager and the RecipeManager-based RecipeHelper#getUIRecipes are gone; resolve the
+      // synced recipes via TinkerRecipeAccess, sorting by holder id first for cross-side determinism (as getUIRecipes did)
+      repairStacks = TinkerRecipeAccess.byType(TinkerRecipeTypes.MATERIAL.get(), world).stream()
+        .sorted(Comparator.comparing(holder -> holder.id().location()))
+        .map(RecipeHolder::value)
+        .filter(recipe -> material.matchesVariant(recipe.getMaterial()))
         // prefer 1 value 1 needed (ingots), then 1 value with higher needed (nuggets), then higher value (blocks)
         .sorted(Comparator.comparing(MaterialRecipe::getValue).thenComparing(MaterialRecipe::getNeeded))
-        .flatMap(recipe -> Arrays.stream(recipe.getIngredient().getItems()))
+        // PORT 1.21.4: Ingredient#getItems was removed; Ingredient#items yields Stream<Holder<Item>>
+        .flatMap(recipe -> recipe.getIngredient().items().map(ItemStack::new))
         .collect(Collectors.toList());
       // no repair items? use the fallbacks
       if (repairStacks.isEmpty()) {

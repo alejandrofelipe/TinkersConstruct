@@ -11,7 +11,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagFile;
-import net.minecraft.tags.TagManager;
 import slimeknights.mantle.Mantle;
 import slimeknights.mantle.command.GeneratePackHelper;
 import slimeknights.mantle.command.MantleCommand;

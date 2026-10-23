@@ -6,11 +6,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -286,7 +289,8 @@ public class ClientGeneratePartTexturesCommand {
   private static List<MaterialSpriteInfo> loadMaterialRenderInfoGenerators(ResourceManager manager, Predicate<MaterialVariantId> validMaterialId) {
     // first, we need to fetch all relevant JSON files
     Map<ResourceLocation,JsonElement> jsons = new HashMap<>();
-    SimpleJsonResourceReloadListener.scanDirectory(manager, MaterialRenderInfoLoader.FOLDER, JsonHelper.DEFAULT_GSON, jsons);
+    // PORT 1.21.4: the Gson+String scanDirectory overload was removed; use the FileToIdConverter + Codec<JsonElement> form
+    SimpleJsonResourceReloadListener.scanDirectory(manager, FileToIdConverter.json(MaterialRenderInfoLoader.FOLDER), JsonOps.INSTANCE, ExtraCodecs.JSON, jsons);
     // final results map from texture name to sprite info
     Map<ResourceLocation,MaterialSpriteInfo> builder = new HashMap<>();
 

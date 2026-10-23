@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.Holder;
 import net.minecraft.locale.Language;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -18,8 +18,10 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.core.registries.BuiltInRegistries;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.mantle.client.book.HTMLUtils;
 import slimeknights.mantle.client.book.data.BookData;
 import slimeknights.mantle.client.book.data.content.PageContent;
@@ -130,7 +132,8 @@ public class ContentTool extends PageContent {
       if (this.toolName == null) {
         this.toolName = this.parent.name;
       }
-      Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(this.toolName));
+      // PORT 1.21.4: Registry#get now returns Optional<Holder.Reference<T>>; unwrap to the value, null when absent
+      Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(this.toolName)).map(Holder::value).orElse(null);
       if (item instanceof IModifiableDisplay tool) {
         this.tool = tool;
       } else {
@@ -138,6 +141,17 @@ public class ContentTool extends PageContent {
       }
     }
     return this.tool;
+  }
+
+  /** PORT 1.21.4: Recipe#getResultItem was removed; read the result from the shaped/shapeless result field (AT-widened). */
+  private static ItemStack craftingResult(CraftingRecipe recipe) {
+    if (recipe instanceof ShapedRecipe shaped) {
+      return shaped.result;
+    }
+    if (recipe instanceof ShapelessRecipe shapeless) {
+      return shapeless.result;
+    }
+    return ItemStack.EMPTY;
   }
 
   @Nonnull
@@ -157,18 +171,18 @@ public class ContentTool extends PageContent {
       List<IToolPart> required = ToolPartsHook.parts(tool.getToolDefinition());
 
       // get the stacks for the first crafting table recipe, prefer this option over parts as it may not be craftable with said parts
+      // PORT 1.21.4: Level#getRecipeManager and Recipe#getResultItem were removed; resolve recipes through
+      // TinkerRecipeAccess and read the shaped/shapeless result field (AT-widened) to match the tool output
       CraftingRecipe recipe = Optional.ofNullable(Minecraft.getInstance().level)
-                                                 .flatMap(world -> {
-                                                   RegistryAccess access = world.registryAccess();
-                                                   return world.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING).stream()
+                                                 .flatMap(world -> TinkerRecipeAccess.byType(RecipeType.CRAFTING, world).stream()
                                                         .map(RecipeHolder::value)
-                                                        .filter(r -> r.getResultItem(access).getItem() == tool.asItem())
-                                                        .findFirst();
-                                                 })
+                                                        .filter(r -> craftingResult(r).getItem() == tool.asItem())
+                                                        .findFirst())
                                                  .orElse(null);
       if (recipe != null) {
         // parts is just the items in the recipe
-        this.parts = recipe.getIngredients().stream().map(ingredient -> ItemStackList.of(ingredient.getItems())).collect(Collectors.toList());
+        // PORT 1.21.4: Recipe#getIngredients was removed; read ingredients from placementInfo and Ingredient#items (Stream<Holder<Item>>)
+        this.parts = recipe.placementInfo().ingredients().stream().map(ingredient -> ItemStackList.of(ingredient.items().map(ItemStack::new).toList())).collect(Collectors.toList());
 
         // if we have a shaped recipe, display slots in order
         if (recipe instanceof ShapedRecipe shaped) {
@@ -183,13 +197,13 @@ public class ContentTool extends PageContent {
         }
         // fetch the tool building recipe for extra ingredients
         List<Ingredient> extraRequirements = Optional.ofNullable(Minecraft.getInstance().level)
-                                                     .flatMap(world -> world.getRecipeManager().getAllRecipesFor(TinkerRecipeTypes.TINKER_STATION.get()).stream()
+                                                     .flatMap(world -> TinkerRecipeAccess.byType(TinkerRecipeTypes.TINKER_STATION.get(), world).stream()
                                                                             .map(RecipeHolder::value)
                                                                             .filter(r -> r instanceof ToolBuildingRecipe toolRecipe && toolRecipe.getOutput() == tool)
                                                                             .map(r -> ((ToolBuildingRecipe)r).getExtraRequirements())
                                                                             .findFirst()).orElse(List.of());
         for (Ingredient ingredient : extraRequirements) {
-          partBuilder.add(ItemStackList.of(ingredient.getItems()));
+          partBuilder.add(ItemStackList.of(ingredient.items().map(ItemStack::new).toList()));
         }
         this.parts = partBuilder.build();
       }

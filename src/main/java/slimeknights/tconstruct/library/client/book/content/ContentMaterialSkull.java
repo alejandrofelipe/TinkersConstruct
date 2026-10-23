@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import net.minecraft.world.level.Level;
 import slimeknights.mantle.client.book.data.BookData;
 import slimeknights.mantle.client.screen.book.element.ItemElement;
@@ -69,7 +70,8 @@ public class ContentMaterialSkull extends AbstractMaterialContent {
   private IDisplayableCastingRecipe getSkullRecipe() {
     Level world = Minecraft.getInstance().level;
     if (!searchedSkullRecipe && world != null) {
-      skullRecipe = world.getRecipeManager().getAllRecipesFor(TinkerRecipeTypes.CASTING_BASIN.get()).stream()
+      // PORT 1.21.4: Level#getRecipeManager was removed; resolve recipes through TinkerRecipeAccess
+      skullRecipe = TinkerRecipeAccess.byType(TinkerRecipeTypes.CASTING_BASIN.get(), world).stream()
 												 .map(RecipeHolder::value)
 												 .filter(recipe -> recipe instanceof IDisplayableCastingRecipe)
 												 .map(recipe -> (IDisplayableCastingRecipe)recipe)
