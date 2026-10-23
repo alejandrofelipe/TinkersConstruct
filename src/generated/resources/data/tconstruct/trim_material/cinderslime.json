@@ -9,6 +9,5 @@
       }
     ]
   },
-  "ingredient": "tconstruct:cinderslime_ingot",
-  "item_model_index": 0.4
+  "ingredient": "tconstruct:cinderslime_ingot"
 }

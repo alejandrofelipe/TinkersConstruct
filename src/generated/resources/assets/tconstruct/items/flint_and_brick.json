@@ -1,0 +1,27 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:flint_and_brick"
+      ],
+      "textures": {
+        "tool": "tconstruct:item/tool/flint_and_brick/tool"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:flint_and_brick_broken",
+        "tconstruct:flint_and_brick"
+      ],
+      "textures": {
+        "tool": "tconstruct:item/tool/flint_and_brick/tool_broken"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "property": "tconstruct:broken"
+  }
+}

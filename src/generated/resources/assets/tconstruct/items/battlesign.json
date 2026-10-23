@@ -1,0 +1,49 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:battlesign"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 1,
+          "name": "handle"
+        }
+      ],
+      "textures": {
+        "handle": "tconstruct:item/tool/battlesign/handle",
+        "head": "tconstruct:item/tool/battlesign/head"
+      },
+      "transform_model": "tconstruct:item/base/battlesign"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:battlesign_broken",
+        "tconstruct:battlesign"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 1,
+          "name": "handle"
+        }
+      ],
+      "textures": {
+        "handle": "tconstruct:item/tool/battlesign/handle",
+        "head": "tconstruct:item/tool/battlesign/head_broken"
+      },
+      "transform_model": "tconstruct:item/base/battlesign"
+    },
+    "property": "tconstruct:broken"
+  }
+}

@@ -5,77 +5,77 @@
     "tconstruct:leather"
   ],
   "key": {
-    "c": [
-      {
-        "type": "tconstruct:material_value",
-        "material": {
-          "type": "mantle:and",
-          "predicates": [
-            {
-              "type": "mantle:or",
-              "predicates": [
-                "tconstruct:castable",
-                "tconstruct:composite"
-              ]
-            },
-            {
-              "type": "tconstruct:stat_type",
-              "stat_type": "tconstruct:plating_leggings"
-            }
-          ]
+    "c": {
+      "neoforge:ingredient_type": "neoforge:compound",
+      "children": [
+        {
+          "neoforge:ingredient_type": "tconstruct:material_value",
+          "material": {
+            "type": "mantle:and",
+            "predicates": [
+              {
+                "type": "mantle:or",
+                "predicates": [
+                  "tconstruct:castable",
+                  "tconstruct:composite"
+                ]
+              },
+              {
+                "type": "tconstruct:stat_type",
+                "stat_type": "tconstruct:plating_leggings"
+              }
+            ]
+          },
+          "max": 1,
+          "min": 1
         },
-        "max": 1,
-        "min": 1
-      },
-      {
-        "type": "tconstruct:material",
-        "match": {
-          "item": "tconstruct:fake_ingot"
-        },
-        "material": {
-          "type": "tconstruct:stat_type",
-          "stat_type": "tconstruct:plating_leggings"
+        {
+          "neoforge:ingredient_type": "tconstruct:material",
+          "match": "tconstruct:fake_ingot",
+          "material": {
+            "type": "tconstruct:stat_type",
+            "stat_type": "tconstruct:plating_leggings"
+          }
         }
-      }
-    ],
-    "l": {
-      "tag": "c:leathers"
-    }
+      ]
+    },
+    "l": "#c:leathers"
   },
   "parts": [
-    [
-      {
-        "type": "tconstruct:material_value",
-        "material": {
-          "type": "mantle:and",
-          "predicates": [
-            {
-              "type": "mantle:or",
-              "predicates": [
-                "tconstruct:castable",
-                "tconstruct:composite"
-              ]
-            },
-            {
-              "type": "tconstruct:stat_type",
-              "stat_type": "tconstruct:plating_leggings"
-            }
-          ]
+    {
+      "neoforge:ingredient_type": "neoforge:compound",
+      "children": [
+        {
+          "neoforge:ingredient_type": "tconstruct:material_value",
+          "material": {
+            "type": "mantle:and",
+            "predicates": [
+              {
+                "type": "mantle:or",
+                "predicates": [
+                  "tconstruct:castable",
+                  "tconstruct:composite"
+                ]
+              },
+              {
+                "type": "tconstruct:stat_type",
+                "stat_type": "tconstruct:plating_leggings"
+              }
+            ]
+          },
+          "max": 1,
+          "min": 1
         },
-        "max": 1,
-        "min": 1
-      },
-      {
-        "type": "tconstruct:material",
-        "match": {
-          "item": "tconstruct:fake_ingot"
-        },
-        "material": {
-          "type": "tconstruct:stat_type",
-          "stat_type": "tconstruct:plating_leggings"
+        {
+          "neoforge:ingredient_type": "tconstruct:material",
+          "match": "tconstruct:fake_ingot",
+          "material": {
+            "type": "tconstruct:stat_type",
+            "stat_type": "tconstruct:plating_leggings"
+          }
         }
-      }
-    ]
+      ]
+    }
   ],
   "pattern": [
     "lll",

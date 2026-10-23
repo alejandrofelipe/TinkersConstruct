@@ -1,0 +1,87 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "large": true,
+      "large_offset": [
+        -2,
+        2
+      ],
+      "modifier_maps": [
+        "tconstruct:javelin"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 3,
+          "name": "grip"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 2,
+          "name": "guard"
+        }
+      ],
+      "textures": {
+        "grip": "tconstruct:item/tool/javelin/grip",
+        "guard": "tconstruct:item/tool/javelin/guard",
+        "handle": "tconstruct:item/tool/javelin/handle",
+        "head": "tconstruct:item/tool/javelin/head",
+        "large_grip": "tconstruct:item/tool/javelin/large/grip",
+        "large_guard": "tconstruct:item/tool/javelin/large/guard",
+        "large_handle": "tconstruct:item/tool/javelin/large/handle",
+        "large_head": "tconstruct:item/tool/javelin/large/head"
+      },
+      "transform_model": "tconstruct:item/base/tall"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "large": true,
+      "large_offset": [
+        -2,
+        2
+      ],
+      "modifier_maps": [
+        "tconstruct:javelin_broken",
+        "tconstruct:javelin"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 3,
+          "name": "grip"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 2,
+          "name": "guard"
+        }
+      ],
+      "textures": {
+        "grip": "tconstruct:item/tool/javelin/grip",
+        "guard": "tconstruct:item/tool/javelin/guard",
+        "handle": "tconstruct:item/tool/javelin/handle",
+        "head": "tconstruct:item/tool/javelin/head_broken",
+        "large_grip": "tconstruct:item/tool/javelin/large/grip",
+        "large_guard": "tconstruct:item/tool/javelin/large/guard",
+        "large_handle": "tconstruct:item/tool/javelin/large/handle",
+        "large_head": "tconstruct:item/tool/javelin/large/head_broken"
+      },
+      "transform_model": "tconstruct:item/base/tall"
+    },
+    "property": "tconstruct:broken"
+  }
+}

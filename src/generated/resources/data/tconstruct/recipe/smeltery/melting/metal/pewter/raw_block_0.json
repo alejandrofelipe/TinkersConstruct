@@ -17,9 +17,7 @@
       "tag": "c:molten_tin"
     }
   ],
-  "ingredient": {
-    "tag": "c:storage_blocks/raw_pewter"
-  },
+  "ingredient": "#c:storage_blocks/raw_pewter",
   "rate": "metal",
   "result": {
     "amount": 810,

@@ -17,9 +17,7 @@
       "tag": "c:molten_tin"
     }
   ],
-  "ingredient": {
-    "tag": "c:raw_materials/zinc"
-  },
+  "ingredient": "#c:raw_materials/zinc",
   "rate": "metal",
   "result": {
     "amount": 90,

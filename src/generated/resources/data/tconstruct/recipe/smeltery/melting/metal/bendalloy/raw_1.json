@@ -5,13 +5,11 @@
       "tag": "c:raw_materials/bendalloy"
     },
     {
-      "type": "neoforge:true"
+      "type": "neoforge:always"
     }
   ],
   "type": "tconstruct:ore_melting",
-  "ingredient": {
-    "tag": "c:raw_materials/bendalloy"
-  },
+  "ingredient": "#c:raw_materials/bendalloy",
   "rate": "metal",
   "result": {
     "amount": 90,

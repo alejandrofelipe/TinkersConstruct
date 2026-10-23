@@ -17,9 +17,7 @@
       "tag": "c:molten_lead"
     }
   ],
-  "ingredient": {
-    "tag": "c:raw_materials/pewter"
-  },
+  "ingredient": "#c:raw_materials/pewter",
   "rate": "metal",
   "result": {
     "amount": 90,

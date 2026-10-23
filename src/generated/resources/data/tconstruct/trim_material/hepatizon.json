@@ -9,6 +9,5 @@
       }
     ]
   },
-  "ingredient": "tconstruct:hepatizon_ingot",
-  "item_model_index": 0.3
+  "ingredient": "tconstruct:hepatizon_ingot"
 }

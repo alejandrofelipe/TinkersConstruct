@@ -7,7 +7,7 @@
   ],
   "connection": {
     "textures": {
-      "all": "cornerless_full"
+      "all": "minecraft:cornerless_full"
     }
   },
   "loader": "mantle:connected",

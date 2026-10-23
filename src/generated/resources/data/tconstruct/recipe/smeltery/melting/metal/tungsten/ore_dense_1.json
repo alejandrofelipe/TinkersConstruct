@@ -8,7 +8,7 @@
       ]
     },
     {
-      "type": "neoforge:true"
+      "type": "neoforge:always"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -20,14 +20,10 @@
     }
   ],
   "ingredient": {
-    "type": "neoforge:intersection",
+    "neoforge:ingredient_type": "neoforge:intersection",
     "children": [
-      {
-        "tag": "c:ores/tungsten"
-      },
-      {
-        "tag": "c:ore_rates/dense"
-      }
+      "#c:ores/tungsten",
+      "#c:ore_rates/dense"
     ]
   },
   "rate": "metal",

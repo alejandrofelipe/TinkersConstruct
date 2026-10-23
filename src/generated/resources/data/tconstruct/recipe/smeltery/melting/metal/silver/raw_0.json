@@ -17,9 +17,7 @@
       "tag": "c:molten_lead"
     }
   ],
-  "ingredient": {
-    "tag": "c:raw_materials/silver"
-  },
+  "ingredient": "#c:raw_materials/silver",
   "rate": "metal",
   "result": {
     "amount": 90,

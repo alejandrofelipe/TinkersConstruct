@@ -1,0 +1,59 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:pickadze"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "pick"
+        },
+        {
+          "index": 2,
+          "name": "adze"
+        }
+      ],
+      "textures": {
+        "adze": "tconstruct:item/tool/pickadze/adze",
+        "handle": "tconstruct:item/tool/pickaxe/handle",
+        "pick": "tconstruct:item/tool/pickadze/pick"
+      },
+      "transform_model": "tconstruct:item/base/axe"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:pickadze_broken",
+        "tconstruct:pickadze"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "pick"
+        },
+        {
+          "index": 2,
+          "name": "adze"
+        }
+      ],
+      "textures": {
+        "adze": "tconstruct:item/tool/pickadze/adze",
+        "handle": "tconstruct:item/tool/pickaxe/handle",
+        "pick": "tconstruct:item/tool/pickadze/pick_broken"
+      },
+      "transform_model": "tconstruct:item/base/axe"
+    },
+    "property": "tconstruct:broken"
+  }
+}

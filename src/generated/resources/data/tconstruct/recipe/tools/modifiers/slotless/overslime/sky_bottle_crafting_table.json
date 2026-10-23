@@ -1,7 +1,5 @@
 {
   "type": "tconstruct:crafting_overslime_modifier",
-  "ingredient": {
-    "item": "tconstruct:sky_slime_bottle"
-  },
+  "ingredient": "tconstruct:sky_slime_bottle",
   "restore_amount": 50
 }

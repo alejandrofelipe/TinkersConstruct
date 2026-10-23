@@ -23,16 +23,6 @@
     },
     {
       "apply": {
-        "model": "tconstruct:block/smeltery/glass/pane_noside_edge"
-      },
-      "when": {
-        "east": "false",
-        "north": "false",
-        "west": "false"
-      }
-    },
-    {
-      "apply": {
         "model": "tconstruct:block/smeltery/glass/pane_side_alt"
       },
       "when": {
@@ -46,17 +36,6 @@
       },
       "when": {
         "south": "false"
-      }
-    },
-    {
-      "apply": {
-        "model": "tconstruct:block/smeltery/glass/pane_noside_edge",
-        "y": 180
-      },
-      "when": {
-        "east": "false",
-        "south": "false",
-        "west": "false"
       }
     },
     {
@@ -79,17 +58,6 @@
     },
     {
       "apply": {
-        "model": "tconstruct:block/smeltery/glass/pane_noside_edge",
-        "y": 270
-      },
-      "when": {
-        "north": "false",
-        "south": "false",
-        "west": "false"
-      }
-    },
-    {
-      "apply": {
         "model": "tconstruct:block/smeltery/glass/pane_side",
         "y": 90
       },
@@ -103,17 +71,6 @@
       },
       "when": {
         "east": "false"
-      }
-    },
-    {
-      "apply": {
-        "model": "tconstruct:block/smeltery/glass/pane_noside_edge",
-        "y": 90
-      },
-      "when": {
-        "east": "false",
-        "north": "false",
-        "south": "false"
       }
     }
   ]

@@ -17,9 +17,7 @@
       "tag": "c:molten_silver"
     }
   ],
-  "ingredient": {
-    "tag": "c:storage_blocks/raw_lead"
-  },
+  "ingredient": "#c:storage_blocks/raw_lead",
   "rate": "metal",
   "result": {
     "amount": 810,

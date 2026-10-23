@@ -5,13 +5,11 @@
       "tag": "c:raw_materials/nicrosil"
     },
     {
-      "type": "neoforge:true"
+      "type": "neoforge:always"
     }
   ],
   "type": "tconstruct:ore_melting",
-  "ingredient": {
-    "tag": "c:raw_materials/nicrosil"
-  },
+  "ingredient": "#c:raw_materials/nicrosil",
   "rate": "metal",
   "result": {
     "amount": 90,

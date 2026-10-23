@@ -8,7 +8,7 @@
       ]
     },
     {
-      "type": "neoforge:true"
+      "type": "neoforge:always"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -20,14 +20,10 @@
     }
   ],
   "ingredient": {
-    "type": "neoforge:intersection",
+    "neoforge:ingredient_type": "neoforge:intersection",
     "children": [
-      {
-        "tag": "c:ores/tin"
-      },
-      {
-        "tag": "c:ore_rates/sparse"
-      }
+      "#c:ores/tin",
+      "#c:ore_rates/sparse"
     ]
   },
   "rate": "metal",

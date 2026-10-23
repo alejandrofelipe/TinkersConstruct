@@ -8,7 +8,7 @@
       ]
     },
     {
-      "type": "neoforge:true"
+      "type": "neoforge:always"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -20,13 +20,9 @@
     }
   ],
   "ingredient": {
-    "type": "neoforge:difference",
-    "base": {
-      "tag": "c:ores/nickel"
-    },
-    "subtracted": {
-      "tag": "tconstruct:non_singular_ore_rates"
-    }
+    "neoforge:ingredient_type": "neoforge:difference",
+    "base": "#c:ores/nickel",
+    "subtracted": "#tconstruct:non_singular_ore_rates"
   },
   "rate": "metal",
   "result": {

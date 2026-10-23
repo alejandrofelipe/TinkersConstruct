@@ -1,0 +1,59 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:minotaur_axe"
+      ],
+      "parts": [
+        {
+          "index": 2,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "front"
+        },
+        {
+          "index": 1,
+          "name": "back"
+        }
+      ],
+      "textures": {
+        "back": "tconstruct:item/tool/minotaur_axe/back",
+        "front": "tconstruct:item/tool/minotaur_axe/front",
+        "handle": "tconstruct:item/tool/pickaxe/handle"
+      },
+      "transform_model": "tconstruct:item/base/axe"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:minotaur_axe_broken",
+        "tconstruct:minotaur_axe"
+      ],
+      "parts": [
+        {
+          "index": 2,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "front"
+        },
+        {
+          "index": 1,
+          "name": "back"
+        }
+      ],
+      "textures": {
+        "back": "tconstruct:item/tool/minotaur_axe/back",
+        "front": "tconstruct:item/tool/minotaur_axe/front_broken",
+        "handle": "tconstruct:item/tool/pickaxe/handle"
+      },
+      "transform_model": "tconstruct:item/base/axe"
+    },
+    "property": "tconstruct:broken"
+  }
+}

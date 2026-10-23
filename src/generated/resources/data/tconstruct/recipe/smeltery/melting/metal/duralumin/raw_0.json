@@ -17,9 +17,7 @@
       "tag": "c:molten_aluminum"
     }
   ],
-  "ingredient": {
-    "tag": "c:raw_materials/duralumin"
-  },
+  "ingredient": "#c:raw_materials/duralumin",
   "rate": "metal",
   "result": {
     "amount": 90,

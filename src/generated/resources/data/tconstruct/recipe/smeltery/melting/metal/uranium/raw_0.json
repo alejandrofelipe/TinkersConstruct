@@ -17,9 +17,7 @@
       "tag": "c:molten_lead"
     }
   ],
-  "ingredient": {
-    "tag": "c:raw_materials/uranium"
-  },
+  "ingredient": "#c:raw_materials/uranium",
   "rate": "metal",
   "result": {
     "amount": 90,

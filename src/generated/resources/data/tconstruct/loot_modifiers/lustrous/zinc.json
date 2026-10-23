@@ -43,9 +43,7 @@
       "type": "mantle:inverted",
       "condition": {
         "type": "mantle:contains_item",
-        "ingredient": {
-          "tag": "c:ores/zinc"
-        }
+        "ingredient": "#c:ores/zinc"
       }
     }
   ]

@@ -17,9 +17,7 @@
       "tag": "c:molten_lead"
     }
   ],
-  "ingredient": {
-    "tag": "c:raw_materials/cadmium"
-  },
+  "ingredient": "#c:raw_materials/cadmium",
   "rate": "metal",
   "result": {
     "amount": 90,

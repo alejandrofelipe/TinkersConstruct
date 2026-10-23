@@ -9,6 +9,5 @@
       }
     ]
   },
-  "ingredient": "tconstruct:manyullyn_ingot",
-  "item_model_index": 1.0
+  "ingredient": "tconstruct:manyullyn_ingot"
 }

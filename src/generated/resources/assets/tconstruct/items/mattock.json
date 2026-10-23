@@ -1,0 +1,59 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:mattock"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "axe"
+        },
+        {
+          "index": 2,
+          "name": "pick"
+        }
+      ],
+      "textures": {
+        "axe": "tconstruct:item/tool/mattock/axe",
+        "handle": "tconstruct:item/tool/pickaxe/handle",
+        "pick": "tconstruct:item/tool/mattock/pick"
+      },
+      "transform_model": "tconstruct:item/base/axe"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:mattock_broken",
+        "tconstruct:mattock"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "axe"
+        },
+        {
+          "index": 2,
+          "name": "pick"
+        }
+      ],
+      "textures": {
+        "axe": "tconstruct:item/tool/mattock/axe_broken",
+        "handle": "tconstruct:item/tool/pickaxe/handle",
+        "pick": "tconstruct:item/tool/mattock/pick_broken"
+      },
+      "transform_model": "tconstruct:item/base/axe"
+    },
+    "property": "tconstruct:broken"
+  }
+}

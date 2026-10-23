@@ -9,6 +9,5 @@
       }
     ]
   },
-  "ingredient": "tconstruct:knightmetal_ingot",
-  "item_model_index": 0.1
+  "ingredient": "tconstruct:knightmetal_ingot"
 }

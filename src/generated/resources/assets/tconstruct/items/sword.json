@@ -1,0 +1,59 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:sword"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 2,
+          "name": "guard"
+        }
+      ],
+      "textures": {
+        "guard": "tconstruct:item/tool/sword/guard",
+        "handle": "tconstruct:item/tool/sword/handle",
+        "head": "tconstruct:item/tool/sword/blade"
+      },
+      "transform_model": "neoforge:item/default-tool"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:sword_broken",
+        "tconstruct:sword"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 2,
+          "name": "guard"
+        }
+      ],
+      "textures": {
+        "guard": "tconstruct:item/tool/sword/guard",
+        "handle": "tconstruct:item/tool/sword/handle",
+        "head": "tconstruct:item/tool/sword/blade_broken"
+      },
+      "transform_model": "neoforge:item/default-tool"
+    },
+    "property": "tconstruct:broken"
+  }
+}

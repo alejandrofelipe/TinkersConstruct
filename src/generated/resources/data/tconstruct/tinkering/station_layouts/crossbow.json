@@ -17,27 +17,21 @@
   },
   "input_slots": [
     {
-      "filter": {
-        "item": "tconstruct:bow_limb"
-      },
+      "filter": "tconstruct:bow_limb",
       "icon": "tconstruct:bow_limb",
       "translation_key": "item.tconstruct.bow_limb",
       "x": 10,
       "y": 20
     },
     {
-      "filter": {
-        "item": "tconstruct:bow_grip"
-      },
+      "filter": "tconstruct:bow_grip",
       "icon": "tconstruct:bow_grip",
       "translation_key": "item.tconstruct.bow_grip",
       "x": 46,
       "y": 56
     },
     {
-      "filter": {
-        "item": "tconstruct:bowstring"
-      },
+      "filter": "tconstruct:bowstring",
       "icon": "tconstruct:bowstring",
       "translation_key": "item.tconstruct.bowstring",
       "x": 28,

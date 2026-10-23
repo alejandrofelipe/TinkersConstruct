@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "#": {
-      "item": "tconstruct:seared_brick"
-    },
-    "C": {
-      "tag": "c:ingots/copper"
-    }
+    "#": "tconstruct:seared_brick",
+    "C": "#c:ingots/copper"
   },
   "pattern": [
     "# #",

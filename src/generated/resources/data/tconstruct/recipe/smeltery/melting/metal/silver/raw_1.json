@@ -5,7 +5,7 @@
       "tag": "c:raw_materials/silver"
     },
     {
-      "type": "neoforge:true"
+      "type": "neoforge:always"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -16,9 +16,7 @@
       "tag": "c:molten_gold"
     }
   ],
-  "ingredient": {
-    "tag": "c:raw_materials/silver"
-  },
+  "ingredient": "#c:raw_materials/silver",
   "rate": "metal",
   "result": {
     "amount": 90,

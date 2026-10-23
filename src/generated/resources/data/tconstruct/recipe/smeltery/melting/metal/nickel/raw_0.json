@@ -17,9 +17,7 @@
       "tag": "c:molten_platinum"
     }
   ],
-  "ingredient": {
-    "tag": "c:raw_materials/nickel"
-  },
+  "ingredient": "#c:raw_materials/nickel",
   "rate": "metal",
   "result": {
     "amount": 90,

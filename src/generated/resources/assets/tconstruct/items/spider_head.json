@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "tconstruct:item/spider_head"
+    "model": "tconstruct:block/spider_head"
   }
 }

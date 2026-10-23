@@ -5,7 +5,7 @@
       "tag": "c:raw_materials/pewter"
     },
     {
-      "type": "neoforge:true"
+      "type": "neoforge:always"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -16,9 +16,7 @@
       "tag": "c:molten_iron"
     }
   ],
-  "ingredient": {
-    "tag": "c:raw_materials/pewter"
-  },
+  "ingredient": "#c:raw_materials/pewter",
   "rate": "metal",
   "result": {
     "amount": 90,

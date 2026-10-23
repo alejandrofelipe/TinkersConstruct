@@ -17,9 +17,7 @@
       "tag": "c:molten_silver"
     }
   ],
-  "ingredient": {
-    "tag": "c:raw_materials/electrum"
-  },
+  "ingredient": "#c:raw_materials/electrum",
   "rate": "metal",
   "result": {
     "amount": 90,

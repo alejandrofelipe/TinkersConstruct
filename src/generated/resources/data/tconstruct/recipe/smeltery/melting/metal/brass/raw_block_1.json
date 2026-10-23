@@ -5,7 +5,7 @@
       "tag": "c:storage_blocks/raw_brass"
     },
     {
-      "type": "neoforge:true"
+      "type": "neoforge:always"
     }
   ],
   "type": "tconstruct:ore_melting",
@@ -16,9 +16,7 @@
       "tag": "c:molten_copper"
     }
   ],
-  "ingredient": {
-    "tag": "c:storage_blocks/raw_brass"
-  },
+  "ingredient": "#c:storage_blocks/raw_brass",
   "rate": "metal",
   "result": {
     "amount": 810,

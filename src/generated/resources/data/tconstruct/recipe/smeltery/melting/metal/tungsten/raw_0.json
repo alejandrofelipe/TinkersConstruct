@@ -17,9 +17,7 @@
       "tag": "c:molten_platinum"
     }
   ],
-  "ingredient": {
-    "tag": "c:raw_materials/tungsten"
-  },
+  "ingredient": "#c:raw_materials/tungsten",
   "rate": "metal",
   "result": {
     "amount": 90,

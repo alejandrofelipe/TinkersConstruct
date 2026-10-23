@@ -1,0 +1,87 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "large": true,
+      "large_offset": [
+        -2,
+        2
+      ],
+      "modifier_maps": [
+        "tconstruct:scythe"
+      ],
+      "parts": [
+        {
+          "index": 3,
+          "name": "accessory"
+        },
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 2,
+          "name": "binding"
+        }
+      ],
+      "textures": {
+        "accessory": "tconstruct:item/tool/scythe/accessory",
+        "binding": "tconstruct:item/tool/scythe/binding",
+        "handle": "tconstruct:item/tool/scythe/handle",
+        "head": "tconstruct:item/tool/scythe/head",
+        "large_accessory": "tconstruct:item/tool/scythe/large/accessory",
+        "large_binding": "tconstruct:item/tool/scythe/large/binding",
+        "large_handle": "tconstruct:item/tool/scythe/large/handle",
+        "large_head": "tconstruct:item/tool/scythe/large/head"
+      },
+      "transform_model": "tconstruct:item/tool/scythe/display"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "large": true,
+      "large_offset": [
+        -2,
+        2
+      ],
+      "modifier_maps": [
+        "tconstruct:scythe_broken",
+        "tconstruct:scythe"
+      ],
+      "parts": [
+        {
+          "index": 3,
+          "name": "accessory"
+        },
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 2,
+          "name": "binding"
+        }
+      ],
+      "textures": {
+        "accessory": "tconstruct:item/tool/scythe/accessory",
+        "binding": "tconstruct:item/tool/scythe/binding",
+        "handle": "tconstruct:item/tool/scythe/handle",
+        "head": "tconstruct:item/tool/scythe/head_broken",
+        "large_accessory": "tconstruct:item/tool/scythe/large/accessory",
+        "large_binding": "tconstruct:item/tool/scythe/large/binding",
+        "large_handle": "tconstruct:item/tool/scythe/large/handle",
+        "large_head": "tconstruct:item/tool/scythe/large/head_broken"
+      },
+      "transform_model": "tconstruct:item/tool/scythe/display"
+    },
+    "property": "tconstruct:broken"
+  }
+}

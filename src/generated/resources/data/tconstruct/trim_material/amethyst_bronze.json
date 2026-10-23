@@ -9,6 +9,5 @@
       }
     ]
   },
-  "ingredient": "tconstruct:amethyst_bronze_ingot",
-  "item_model_index": 1.0
+  "ingredient": "tconstruct:amethyst_bronze_ingot"
 }

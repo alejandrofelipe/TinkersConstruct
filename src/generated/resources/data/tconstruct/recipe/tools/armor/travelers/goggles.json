@@ -5,80 +5,78 @@
     "tconstruct:leather"
   ],
   "key": {
-    "c": [
-      {
-        "type": "tconstruct:material_value",
-        "material": {
-          "type": "mantle:and",
-          "predicates": [
-            {
-              "type": "mantle:or",
-              "predicates": [
-                "tconstruct:castable",
-                "tconstruct:composite"
-              ]
-            },
-            {
-              "type": "tconstruct:stat_type",
-              "stat_type": "tconstruct:plating_helmet"
-            }
-          ]
+    "c": {
+      "neoforge:ingredient_type": "neoforge:compound",
+      "children": [
+        {
+          "neoforge:ingredient_type": "tconstruct:material_value",
+          "material": {
+            "type": "mantle:and",
+            "predicates": [
+              {
+                "type": "mantle:or",
+                "predicates": [
+                  "tconstruct:castable",
+                  "tconstruct:composite"
+                ]
+              },
+              {
+                "type": "tconstruct:stat_type",
+                "stat_type": "tconstruct:plating_helmet"
+              }
+            ]
+          },
+          "max": 1,
+          "min": 1
         },
-        "max": 1,
-        "min": 1
-      },
-      {
-        "type": "tconstruct:material",
-        "match": {
-          "item": "tconstruct:fake_ingot"
-        },
-        "material": {
-          "type": "tconstruct:stat_type",
-          "stat_type": "tconstruct:plating_helmet"
+        {
+          "neoforge:ingredient_type": "tconstruct:material",
+          "match": "tconstruct:fake_ingot",
+          "material": {
+            "type": "tconstruct:stat_type",
+            "stat_type": "tconstruct:plating_helmet"
+          }
         }
-      }
-    ],
-    "g": {
-      "tag": "c:glass_panes/colorless"
+      ]
     },
-    "l": {
-      "tag": "c:leathers"
-    }
+    "g": "#c:glass_panes/colorless",
+    "l": "#c:leathers"
   },
   "parts": [
-    [
-      {
-        "type": "tconstruct:material_value",
-        "material": {
-          "type": "mantle:and",
-          "predicates": [
-            {
-              "type": "mantle:or",
-              "predicates": [
-                "tconstruct:castable",
-                "tconstruct:composite"
-              ]
-            },
-            {
-              "type": "tconstruct:stat_type",
-              "stat_type": "tconstruct:plating_helmet"
-            }
-          ]
+    {
+      "neoforge:ingredient_type": "neoforge:compound",
+      "children": [
+        {
+          "neoforge:ingredient_type": "tconstruct:material_value",
+          "material": {
+            "type": "mantle:and",
+            "predicates": [
+              {
+                "type": "mantle:or",
+                "predicates": [
+                  "tconstruct:castable",
+                  "tconstruct:composite"
+                ]
+              },
+              {
+                "type": "tconstruct:stat_type",
+                "stat_type": "tconstruct:plating_helmet"
+              }
+            ]
+          },
+          "max": 1,
+          "min": 1
         },
-        "max": 1,
-        "min": 1
-      },
-      {
-        "type": "tconstruct:material",
-        "match": {
-          "item": "tconstruct:fake_ingot"
-        },
-        "material": {
-          "type": "tconstruct:stat_type",
-          "stat_type": "tconstruct:plating_helmet"
+        {
+          "neoforge:ingredient_type": "tconstruct:material",
+          "match": "tconstruct:fake_ingot",
+          "material": {
+            "type": "tconstruct:stat_type",
+            "stat_type": "tconstruct:plating_helmet"
+          }
         }
-      }
-    ]
+      ]
+    }
   ],
   "pattern": [
     "l l",

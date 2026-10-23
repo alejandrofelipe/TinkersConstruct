@@ -1,0 +1,87 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "large": true,
+      "large_offset": [
+        -2,
+        2
+      ],
+      "modifier_maps": [
+        "tconstruct:broad_axe"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 2,
+          "name": "back"
+        },
+        {
+          "index": 3,
+          "name": "binding"
+        }
+      ],
+      "textures": {
+        "back": "tconstruct:item/tool/broad_axe/back",
+        "binding": "tconstruct:item/tool/broad_axe/binding",
+        "handle": "tconstruct:item/tool/broad_axe/handle",
+        "head": "tconstruct:item/tool/broad_axe/blade",
+        "large_back": "tconstruct:item/tool/broad_axe/large/back",
+        "large_binding": "tconstruct:item/tool/broad_axe/large/binding",
+        "large_handle": "tconstruct:item/tool/broad_axe/large/handle",
+        "large_head": "tconstruct:item/tool/broad_axe/large/blade"
+      },
+      "transform_model": "tconstruct:item/base/tall_axe"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "large": true,
+      "large_offset": [
+        -2,
+        2
+      ],
+      "modifier_maps": [
+        "tconstruct:broad_axe_broken",
+        "tconstruct:broad_axe"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 2,
+          "name": "back"
+        },
+        {
+          "index": 3,
+          "name": "binding"
+        }
+      ],
+      "textures": {
+        "back": "tconstruct:item/tool/broad_axe/back_broken",
+        "binding": "tconstruct:item/tool/broad_axe/binding",
+        "handle": "tconstruct:item/tool/broad_axe/handle",
+        "head": "tconstruct:item/tool/broad_axe/blade_broken",
+        "large_back": "tconstruct:item/tool/broad_axe/large/back_broken",
+        "large_binding": "tconstruct:item/tool/broad_axe/large/binding",
+        "large_handle": "tconstruct:item/tool/broad_axe/large/handle",
+        "large_head": "tconstruct:item/tool/broad_axe/large/blade_broken"
+      },
+      "transform_model": "tconstruct:item/base/tall_axe"
+    },
+    "property": "tconstruct:broken"
+  }
+}

@@ -17,9 +17,7 @@
       "tag": "c:molten_chromium"
     }
   ],
-  "ingredient": {
-    "tag": "c:raw_materials/nicrosil"
-  },
+  "ingredient": "#c:raw_materials/nicrosil",
   "rate": "metal",
   "result": {
     "amount": 90,

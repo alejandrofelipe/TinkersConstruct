@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "#": {
-      "item": "tconstruct:scorched_brick"
-    },
-    "C": {
-      "item": "tconstruct:obsidian_pane"
-    },
-    "G": {
-      "tag": "c:gems/quartz"
-    }
+    "#": "tconstruct:scorched_brick",
+    "C": "tconstruct:obsidian_pane",
+    "G": "#c:gems/quartz"
   },
   "pattern": [
     "#G#",

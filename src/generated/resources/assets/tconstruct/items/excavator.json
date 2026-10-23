@@ -1,0 +1,87 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "large": true,
+      "large_offset": [
+        -2,
+        2
+      ],
+      "modifier_maps": [
+        "tconstruct:excavator"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 3,
+          "name": "grip"
+        },
+        {
+          "index": 2,
+          "name": "binding"
+        }
+      ],
+      "textures": {
+        "binding": "tconstruct:item/tool/excavator/binding",
+        "grip": "tconstruct:item/tool/excavator/grip",
+        "handle": "tconstruct:item/tool/excavator/handle",
+        "head": "tconstruct:item/tool/excavator/head",
+        "large_binding": "tconstruct:item/tool/excavator/large/binding",
+        "large_grip": "tconstruct:item/tool/excavator/large/grip",
+        "large_handle": "tconstruct:item/tool/excavator/large/handle",
+        "large_head": "tconstruct:item/tool/excavator/large/head"
+      },
+      "transform_model": "tconstruct:item/base/tall"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "large": true,
+      "large_offset": [
+        -2,
+        2
+      ],
+      "modifier_maps": [
+        "tconstruct:excavator_broken",
+        "tconstruct:excavator"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 3,
+          "name": "grip"
+        },
+        {
+          "index": 2,
+          "name": "binding"
+        }
+      ],
+      "textures": {
+        "binding": "tconstruct:item/tool/excavator/binding",
+        "grip": "tconstruct:item/tool/excavator/grip",
+        "handle": "tconstruct:item/tool/excavator/handle",
+        "head": "tconstruct:item/tool/excavator/head_broken",
+        "large_binding": "tconstruct:item/tool/excavator/large/binding",
+        "large_grip": "tconstruct:item/tool/excavator/large/grip",
+        "large_handle": "tconstruct:item/tool/excavator/large/handle",
+        "large_head": "tconstruct:item/tool/excavator/large/head_broken"
+      },
+      "transform_model": "tconstruct:item/base/tall"
+    },
+    "property": "tconstruct:broken"
+  }
+}

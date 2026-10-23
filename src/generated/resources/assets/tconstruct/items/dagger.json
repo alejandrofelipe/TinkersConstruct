@@ -1,0 +1,49 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:dagger"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 1,
+          "name": "crossguard"
+        }
+      ],
+      "textures": {
+        "crossguard": "tconstruct:item/tool/dagger/crossguard",
+        "head": "tconstruct:item/tool/dagger/blade"
+      },
+      "transform_model": "tconstruct:item/tool/dagger/display"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:dagger_broken",
+        "tconstruct:dagger"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 1,
+          "name": "crossguard"
+        }
+      ],
+      "textures": {
+        "crossguard": "tconstruct:item/tool/dagger/crossguard",
+        "head": "tconstruct:item/tool/dagger/blade_broken"
+      },
+      "transform_model": "tconstruct:item/tool/dagger/display"
+    },
+    "property": "tconstruct:broken"
+  }
+}

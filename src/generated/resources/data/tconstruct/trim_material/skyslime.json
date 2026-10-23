@@ -9,6 +9,5 @@
       }
     ]
   },
-  "ingredient": "tconstruct:sky_slime_crystal",
-  "item_model_index": 0.8
+  "ingredient": "tconstruct:sky_slime_crystal"
 }

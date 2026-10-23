@@ -17,9 +17,7 @@
       "tag": "c:molten_nickel"
     }
   ],
-  "ingredient": {
-    "tag": "c:raw_materials/tin"
-  },
+  "ingredient": "#c:raw_materials/tin",
   "rate": "metal",
   "result": {
     "amount": 90,

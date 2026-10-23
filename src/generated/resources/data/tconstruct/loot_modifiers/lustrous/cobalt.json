@@ -39,9 +39,7 @@
       "type": "mantle:inverted",
       "condition": {
         "type": "mantle:contains_item",
-        "ingredient": {
-          "tag": "c:ores/cobalt"
-        }
+        "ingredient": "#c:ores/cobalt"
       }
     }
   ]

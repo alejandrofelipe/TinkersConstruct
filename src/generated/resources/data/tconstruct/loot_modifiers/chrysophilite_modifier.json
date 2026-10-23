@@ -37,9 +37,7 @@
       "type": "mantle:inverted",
       "condition": {
         "type": "mantle:contains_item",
-        "ingredient": {
-          "tag": "tconstruct:chrysophilite_ores"
-        }
+        "ingredient": "#tconstruct:chrysophilite_ores"
       }
     }
   ]

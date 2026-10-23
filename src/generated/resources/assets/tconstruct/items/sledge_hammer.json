@@ -1,0 +1,87 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "large": true,
+      "large_offset": [
+        -2,
+        2
+      ],
+      "modifier_maps": [
+        "tconstruct:sledge_hammer"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 2,
+          "name": "back"
+        },
+        {
+          "index": 3,
+          "name": "front"
+        }
+      ],
+      "textures": {
+        "back": "tconstruct:item/tool/sledge_hammer/back",
+        "front": "tconstruct:item/tool/sledge_hammer/front",
+        "handle": "tconstruct:item/tool/sledge_hammer/handle",
+        "head": "tconstruct:item/tool/sledge_hammer/head",
+        "large_back": "tconstruct:item/tool/sledge_hammer/large/back",
+        "large_front": "tconstruct:item/tool/sledge_hammer/large/front",
+        "large_handle": "tconstruct:item/tool/sledge_hammer/large/handle",
+        "large_head": "tconstruct:item/tool/sledge_hammer/large/head"
+      },
+      "transform_model": "tconstruct:item/base/tall"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "large": true,
+      "large_offset": [
+        -2,
+        2
+      ],
+      "modifier_maps": [
+        "tconstruct:sledge_hammer_broken",
+        "tconstruct:sledge_hammer"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        },
+        {
+          "index": 2,
+          "name": "back"
+        },
+        {
+          "index": 3,
+          "name": "front"
+        }
+      ],
+      "textures": {
+        "back": "tconstruct:item/tool/sledge_hammer/back_broken",
+        "front": "tconstruct:item/tool/sledge_hammer/front_broken",
+        "handle": "tconstruct:item/tool/sledge_hammer/handle",
+        "head": "tconstruct:item/tool/sledge_hammer/head_broken",
+        "large_back": "tconstruct:item/tool/sledge_hammer/large/back_broken",
+        "large_front": "tconstruct:item/tool/sledge_hammer/large/front_broken",
+        "large_handle": "tconstruct:item/tool/sledge_hammer/large/handle",
+        "large_head": "tconstruct:item/tool/sledge_hammer/large/head_broken"
+      },
+      "transform_model": "tconstruct:item/base/tall"
+    },
+    "property": "tconstruct:broken"
+  }
+}

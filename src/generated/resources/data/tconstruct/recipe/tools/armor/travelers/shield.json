@@ -6,7 +6,7 @@
   ],
   "key": {
     "c": {
-      "type": "tconstruct:material_value",
+      "neoforge:ingredient_type": "tconstruct:material_value",
       "material": {
         "type": "tconstruct:stat_type",
         "stat_type": "tconstruct:shield_core"
@@ -14,13 +14,11 @@
       "max": 1,
       "min": 1
     },
-    "l": {
-      "tag": "c:leathers"
-    }
+    "l": "#c:leathers"
   },
   "parts": [
     {
-      "type": "tconstruct:material_value",
+      "neoforge:ingredient_type": "tconstruct:material_value",
       "material": {
         "type": "tconstruct:stat_type",
         "stat_type": "tconstruct:shield_core"

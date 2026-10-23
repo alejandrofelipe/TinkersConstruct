@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "tconstruct:item/blaze_head"
+    "model": "tconstruct:block/blaze_head"
   }
 }
