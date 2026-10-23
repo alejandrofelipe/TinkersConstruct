@@ -363,7 +363,7 @@ public final class TinkerModifiers extends TinkerModule {
    * Items
    */
   public static final ItemObject<Item> silkyCloth = ITEMS.register("silky_cloth", ITEM_PROPS);
-  public static final ItemObject<Item> dragonScale = ITEMS.register("dragon_scale", () -> new DragonScaleItem(new Item.Properties().rarity(Rarity.RARE)));
+  public static final ItemObject<Item> dragonScale = ITEMS.register("dragon_scale", DragonScaleItem::new, new Item.Properties().rarity(Rarity.RARE));
   // durability reinforcements
   public static final ItemObject<Item> emeraldReinforcement = ITEMS.register("emerald_reinforcement", ITEM_PROPS);
   public static final ItemObject<Item> slimesteelReinforcement = ITEMS.register("slimesteel_reinforcement", ITEM_PROPS);
@@ -374,8 +374,8 @@ public final class TinkerModifiers extends TinkerModule {
   public static final ItemObject<Item> cobaltReinforcement = ITEMS.register("cobalt_reinforcement", ITEM_PROPS);
   public static final ItemObject<Item> obsidianReinforcement = ITEMS.register("obsidian_reinforcement", ITEM_PROPS);
   // special
-  public static final ItemObject<Item> modifierCrystal = ITEMS.register("modifier_crystal", () -> new ModifierCrystalItem(new Item.Properties().stacksTo(16)));
-  public static final ItemObject<CreativeSlotItem> creativeSlotItem = ITEMS.register("creative_slot", () -> new CreativeSlotItem(ITEM_PROPS));
+  public static final ItemObject<Item> modifierCrystal = ITEMS.register("modifier_crystal", ModifierCrystalItem::new, new Item.Properties().stacksTo(16));
+  public static final ItemObject<CreativeSlotItem> creativeSlotItem = ITEMS.register("creative_slot", CreativeSlotItem::new, ITEM_PROPS);
 
   // entity
   public static final DeferredHolder<EntityType<?>,EntityType<FluidEffectProjectile>> fluidSpitEntity = ENTITIES.register("fluid_spit", () ->

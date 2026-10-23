@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.fluids;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.cauldron.CauldronInteraction;
@@ -106,7 +108,7 @@ public final class TinkerFluids extends TinkerModule {
 
   // basic
   public static final FlowingFluidObject<BaseFlowingFluid> venom = FLUIDS.register("venom").type(slime("venom").temperature(310)).bucket().block(createEffect(MapColor.QUARTZ, 0, () -> new MobEffectInstance(MobEffects.POISON, 5*20))).flowing();
-  public static final ItemObject<Item> venomBottle = ITEMS.register("venom_bottle", () -> new FluidContainerFoodItem(TinkerFood.VENOM_BOTTLE.apply(new Item.Properties().stacksTo(16).craftRemainder(Items.GLASS_BOTTLE)), () -> new FluidStack(venom.get(), FluidValues.BOTTLE)));
+  public static final ItemObject<Item> venomBottle = ITEMS.register("venom_bottle", p -> new FluidContainerFoodItem(p, () -> new FluidStack(venom.get(), FluidValues.BOTTLE)), TinkerFood.VENOM_BOTTLE.apply(new Item.Properties().stacksTo(16).craftRemainder(Items.GLASS_BOTTLE)));
   public static final FluidObject<UnplaceableFluid> powderedSnow = FLUIDS.register("powdered_snow").bucket(() -> Items.POWDER_SNOW_BUCKET).type(powder("powdered_snow").temperature(270)).commonTag().unplacable();
 
   // slime -  note second name parameter is forge tag name
@@ -117,9 +119,9 @@ public final class TinkerFluids extends TinkerModule {
   public static final FlowingFluidObject<InvertedFluid> ichor   = FLUIDS.registerSlime("ichor").invertedType(slime("ichor").temperature(1000).density(-1600)).bucket().block(MapColor.COLOR_ORANGE, 0).invertedFlowing();
   public static final EnumObject<SlimeType, Fluid> slime = new EnumObject.Builder<SlimeType, Fluid>(SlimeType.class).put(SlimeType.EARTH, earthSlime).put(SlimeType.SKY, skySlime).put(SlimeType.ENDER, enderSlime).put(SlimeType.ICHOR, ichor).build();
   // bottles of slime
-  public static final EnumObject<SlimeType, Item> slimeBottle = ITEMS.registerEnum(SlimeType.values(), "slime_bottle", type -> new FluidContainerFoodItem(
-      TinkerFood.getBottle(type).apply(new Item.Properties().stacksTo(16).craftRemainder(Items.GLASS_BOTTLE)), () -> new FluidStack(slime.get(type), FluidValues.BOTTLE)));
-  public static final ItemObject<Item> magmaBottle = ITEMS.register("magma_bottle", () -> new MagmaBottleItem(new Item.Properties().stacksTo(16).craftRemainder(Items.GLASS_BOTTLE), 15));
+  public static final EnumObject<SlimeType, Item> slimeBottle = ITEMS.registerEnum(SlimeType.values(), "slime_bottle", (key, type) -> new FluidContainerFoodItem(
+      TinkerFood.getBottle(type).apply(new Item.Properties().stacksTo(16).craftRemainder(Items.GLASS_BOTTLE)).setId(key), () -> new FluidStack(slime.get(type), FluidValues.BOTTLE)));
+  public static final ItemObject<Item> magmaBottle = ITEMS.register("magma_bottle", p -> new MagmaBottleItem(p, 15), new Item.Properties().stacksTo(16).craftRemainder(Items.GLASS_BOTTLE));
 
   // foods
   public static FlowingFluidObject<BaseFlowingFluid> honey        = FLUIDS.registerSlime("honey").type(slime("honey").temperature(301)).bucket().block(createEffect(MapColor.COLOR_ORANGE, 0, () -> new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 5*20))).commonTag().flowing();
@@ -127,12 +129,12 @@ public final class TinkerFluids extends TinkerModule {
   public static FlowingFluidObject<BaseFlowingFluid> mushroomStew = FLUIDS.register("mushroom_stew").type(cool("mushroom_stew").temperature(400)).bucket().block(MapColor.DIRT, 0).commonTag().flowing();
   public static FlowingFluidObject<BaseFlowingFluid> rabbitStew   = FLUIDS.register("rabbit_stew").type(cool("rabbit_stew").temperature(400)).bucket().block(MapColor.PODZOL, 0).commonTag().flowing();
   public static FlowingFluidObject<BaseFlowingFluid> meatSoup     = FLUIDS.register("meat_soup").type(cool("meat_soup").temperature(400)).bucket().block(MapColor.CRIMSON_NYLIUM, 0).flowing();
-  public static final ItemObject<Item> meatSoupBowl = ITEMS.register("meat_soup", () -> new ContainerFoodItem(new Item.Properties().food(TinkerFood.MEAT_SOUP).stacksTo(1).craftRemainder(Items.BOWL)));
+  public static final ItemObject<Item> meatSoupBowl = ITEMS.register("meat_soup", ContainerFoodItem::new, new Item.Properties().food(TinkerFood.MEAT_SOUP).stacksTo(1).craftRemainder(Items.BOWL));
 
   // potion
   public static final FluidObject<UnplaceableFluid> potion = FLUIDS.register("potion").type(() -> new PotionFluidType(cool().descriptionId("item.minecraft.potion.effect.empty").density(1100).viscosity(1100).temperature(315).sound(SoundActions.BUCKET_FILL, SoundEvents.BOTTLE_FILL).sound(SoundActions.BUCKET_EMPTY, SoundEvents.BOTTLE_EMPTY))).bucket(fluid -> new PotionBucketItem(fluid, RegistrationHelper.BUCKET_PROPS)).commonTag().unplacable();
-  public static final ItemObject<Item> splashBottle = ITEMS.register("splash_bottle", () -> new BottleItem(Items.SPLASH_POTION, ITEM_PROPS));
-  public static final ItemObject<Item> lingeringBottle = ITEMS.register("lingering_bottle", () -> new BottleItem(Items.LINGERING_POTION, ITEM_PROPS));
+  public static final ItemObject<Item> splashBottle = ITEMS.register("splash_bottle", p -> new BottleItem(Items.SPLASH_POTION, p), ITEM_PROPS);
+  public static final ItemObject<Item> lingeringBottle = ITEMS.register("lingering_bottle", p -> new BottleItem(Items.LINGERING_POTION, p), ITEM_PROPS);
 
   // base molten fluids
   public static final FlowingFluidObject<BaseFlowingFluid> searedStone   = FLUIDS.registerStone("seared_stone").type(hot("seared_stone").temperature(900).lightLevel(6)).block(createBurning(MapColor.DEEPSLATE, 6, 8, 2f)).bucket().flowing();
@@ -399,7 +401,7 @@ public final class TinkerFluids extends TinkerModule {
     PotionBrewing.Builder builder = event.getBuilder();
     // brew bottles into each other, bit weird but feels better than shapeless
     builder.addRecipe(new BottleBrewingRecipe(Ingredient.of(Items.GLASS_BOTTLE), Items.POTION, Items.SPLASH_POTION, new ItemStack(splashBottle)));
-    builder.addRecipe(new BottleBrewingRecipe(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.SPLASH_BOTTLE)), Items.SPLASH_POTION, Items.LINGERING_POTION, new ItemStack(lingeringBottle)));
+    builder.addRecipe(new BottleBrewingRecipe(LazyTagIngredient.of(TinkerTags.Items.SPLASH_BOTTLE), Items.SPLASH_POTION, Items.LINGERING_POTION, new ItemStack(lingeringBottle)));
     // brew congealed slime into bottles to get slime bottles, easy melting
     for (SlimeType slime : SlimeType.values()) {
       builder.addRecipe(new BrewingRecipe(Ingredient.of(Items.GLASS_BOTTLE), Ingredient.of(TinkerWorld.congealedSlime.get(slime)), new ItemStack(TinkerFluids.slimeBottle.get(slime))));

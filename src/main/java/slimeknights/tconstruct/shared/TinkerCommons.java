@@ -113,55 +113,55 @@ public final class TinkerCommons extends TinkerModule {
   /*
    * Blocks
    */
-  public static final ItemObject<GlowBlock> glowBlock = BLOCKS.register("glow", () -> new GlowBlock(builder(MapColor.NONE, SoundType.WOOL).noCollission().pushReaction(PushReaction.DESTROY).replaceable().strength(0.0F).lightLevel(s -> 14).noOcclusion()), BLOCK_ITEM);
+  public static final ItemObject<GlowBlock> glowBlock = BLOCKS.register("glow", GlowBlock::new, builder(MapColor.NONE, SoundType.WOOL).noCollission().pushReaction(PushReaction.DESTROY).replaceable().strength(0.0F).lightLevel(s -> 14).noOcclusion(), BLOCK_ITEM);
   /**
    * @deprecated Use {@link #glowBlock}
    */
   @Deprecated(forRemoval = true)
   public static final DeferredHolder<Block,GlowBlock> glow = DeferredHolder.create(Registries.BLOCK, glowBlock.getId());
   // glass
-  public static final ItemObject<TransparentBlock> clearGlass = BLOCKS.register("clear_glass", () -> new TransparentBlock(glassBuilder(MapColor.NONE)), BLOCK_ITEM);
-  public static final ItemObject<TintedGlassBlock> clearTintedGlass = BLOCKS.register("clear_tinted_glass", () -> new TintedGlassBlock(glassBuilder(MapColor.COLOR_GRAY).noOcclusion().isValidSpawn(Blocks::never).isRedstoneConductor(Blocks::never).isSuffocating(Blocks::never).isViewBlocking(Blocks::never)), BLOCK_ITEM);
-  public static final ItemObject<ClearGlassPaneBlock> clearGlassPane = BLOCKS.register("clear_glass_pane", () -> new ClearGlassPaneBlock(glassBuilder(MapColor.NONE)), BLOCK_ITEM);
-  public static final EnumObject<GlassColor,ClearStainedGlassBlock> clearStainedGlass = BLOCKS.registerEnum(GlassColor.values(), "clear_stained_glass", (color) -> new ClearStainedGlassBlock(glassBuilder(color.getDye().getMapColor()), color), BLOCK_ITEM);
-  public static final EnumObject<GlassColor,ClearStainedGlassPaneBlock> clearStainedGlassPane = BLOCKS.registerEnum(GlassColor.values(), "clear_stained_glass_pane", (color) -> new ClearStainedGlassPaneBlock(glassBuilder(color.getDye().getMapColor()), color), BLOCK_ITEM);
-  public static final ItemObject<SoulGlassBlock> soulGlass = BLOCKS.register("soul_glass", () -> new SoulGlassBlock(glassBuilder(MapColor.COLOR_BROWN).speedFactor(0.2F).noCollission().isViewBlocking((state, getter, pos) -> true)), TOOLTIP_BLOCK_ITEM);
-  public static final ItemObject<ClearGlassPaneBlock> soulGlassPane = BLOCKS.register("soul_glass_pane", () -> new SoulGlassPaneBlock(glassBuilder(MapColor.COLOR_BROWN).speedFactor(0.2F)), TOOLTIP_BLOCK_ITEM);
+  public static final ItemObject<TransparentBlock> clearGlass = BLOCKS.register("clear_glass", TransparentBlock::new, glassBuilder(MapColor.NONE), BLOCK_ITEM);
+  public static final ItemObject<TintedGlassBlock> clearTintedGlass = BLOCKS.register("clear_tinted_glass", TintedGlassBlock::new, glassBuilder(MapColor.COLOR_GRAY).noOcclusion().isValidSpawn(Blocks::never).isRedstoneConductor(Blocks::never).isSuffocating(Blocks::never).isViewBlocking(Blocks::never), BLOCK_ITEM);
+  public static final ItemObject<ClearGlassPaneBlock> clearGlassPane = BLOCKS.register("clear_glass_pane", ClearGlassPaneBlock::new, glassBuilder(MapColor.NONE), BLOCK_ITEM);
+  public static final EnumObject<GlassColor,ClearStainedGlassBlock> clearStainedGlass = BLOCKS.registerEnum(GlassColor.values(), "clear_stained_glass", (key, color) -> new ClearStainedGlassBlock(glassBuilder(color.getDye().getMapColor()).setId(key), color), BLOCK_ITEM);
+  public static final EnumObject<GlassColor,ClearStainedGlassPaneBlock> clearStainedGlassPane = BLOCKS.registerEnum(GlassColor.values(), "clear_stained_glass_pane", (key, color) -> new ClearStainedGlassPaneBlock(glassBuilder(color.getDye().getMapColor()).setId(key), color), BLOCK_ITEM);
+  public static final ItemObject<SoulGlassBlock> soulGlass = BLOCKS.register("soul_glass", SoulGlassBlock::new, glassBuilder(MapColor.COLOR_BROWN).speedFactor(0.2F).noCollission().isViewBlocking((state, getter, pos) -> true), TOOLTIP_BLOCK_ITEM);
+  public static final ItemObject<ClearGlassPaneBlock> soulGlassPane = BLOCKS.register("soul_glass_pane", SoulGlassPaneBlock::new, glassBuilder(MapColor.COLOR_BROWN).speedFactor(0.2F), TOOLTIP_BLOCK_ITEM);
   // panes
-  public static final ItemObject<IronBarsBlock> goldBars = BLOCKS.register("gold_bars", () -> new IronBarsBlock(builder(MapColor.NONE, SoundType.METAL).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion()), TOOLTIP_BLOCK_ITEM);
-  public static final ItemObject<BetterPaneBlock> obsidianPane = BLOCKS.register("obsidian_pane", () -> new BetterPaneBlock(builder(MapColor.COLOR_BLACK, SoundType.STONE).requiresCorrectToolForDrops().instrument(NoteBlockInstrument.BASEDRUM).noOcclusion().strength(25.0F, 400.0F)), BLOCK_ITEM);
+  public static final ItemObject<IronBarsBlock> goldBars = BLOCKS.register("gold_bars", IronBarsBlock::new, builder(MapColor.NONE, SoundType.METAL).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion(), TOOLTIP_BLOCK_ITEM);
+  public static final ItemObject<BetterPaneBlock> obsidianPane = BLOCKS.register("obsidian_pane", BetterPaneBlock::new, builder(MapColor.COLOR_BLACK, SoundType.STONE).requiresCorrectToolForDrops().instrument(NoteBlockInstrument.BASEDRUM).noOcclusion().strength(25.0F, 400.0F), BLOCK_ITEM);
   // platforms
-  public static final ItemObject<PlatformBlock> goldPlatform = BLOCKS.register("gold_platform", () -> new PlatformBlock(builder(MapColor.GOLD, SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion()), TOOLTIP_BLOCK_ITEM);
-  public static final ItemObject<PlatformBlock> ironPlatform = BLOCKS.register("iron_platform", () -> new PlatformBlock(builder(MapColor.METAL, SoundType.COPPER).requiresCorrectToolForDrops().strength(5.0F, 6.0F).noOcclusion()), BLOCK_ITEM);
-  public static final ItemObject<PlatformBlock> cobaltPlatform = BLOCKS.register("cobalt_platform", () -> new PlatformBlock(builder(MapColor.COLOR_BLUE, SoundType.COPPER).requiresCorrectToolForDrops().strength(5.0f).noOcclusion()), BLOCK_ITEM);
+  public static final ItemObject<PlatformBlock> goldPlatform = BLOCKS.register("gold_platform", PlatformBlock::new, builder(MapColor.GOLD, SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion(), TOOLTIP_BLOCK_ITEM);
+  public static final ItemObject<PlatformBlock> ironPlatform = BLOCKS.register("iron_platform", PlatformBlock::new, builder(MapColor.METAL, SoundType.COPPER).requiresCorrectToolForDrops().strength(5.0F, 6.0F).noOcclusion(), BLOCK_ITEM);
+  public static final ItemObject<PlatformBlock> cobaltPlatform = BLOCKS.register("cobalt_platform", PlatformBlock::new, builder(MapColor.COLOR_BLUE, SoundType.COPPER).requiresCorrectToolForDrops().strength(5.0f).noOcclusion(), BLOCK_ITEM);
   public static final EnumObject<WeatherState,PlatformBlock> copperPlatform = new EnumObject.Builder<WeatherState,PlatformBlock>(WeatherState.class)
-    .put(WeatherState.UNAFFECTED, BLOCKS.register("copper_platform",           () -> new WeatheringPlatformBlock(WeatherState.UNAFFECTED, builder(MapColor.COLOR_ORANGE,          SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion()), BLOCK_ITEM))
-    .put(WeatherState.EXPOSED,    BLOCKS.register("exposed_copper_platform",   () -> new WeatheringPlatformBlock(WeatherState.EXPOSED,    builder(MapColor.TERRACOTTA_LIGHT_GRAY, SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion()), BLOCK_ITEM))
-    .put(WeatherState.WEATHERED,  BLOCKS.register("weathered_copper_platform", () -> new WeatheringPlatformBlock(WeatherState.WEATHERED,  builder(MapColor.WARPED_STEM,           SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion()), BLOCK_ITEM))
-    .put(WeatherState.OXIDIZED,   BLOCKS.register("oxidized_copper_platform",  () -> new WeatheringPlatformBlock(WeatherState.OXIDIZED,   builder(MapColor.WARPED_NYLIUM,         SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion()), BLOCK_ITEM))
+    .put(WeatherState.UNAFFECTED, BLOCKS.register("copper_platform",           p -> new WeatheringPlatformBlock(WeatherState.UNAFFECTED, p), builder(MapColor.COLOR_ORANGE,          SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion(), BLOCK_ITEM))
+    .put(WeatherState.EXPOSED,    BLOCKS.register("exposed_copper_platform",   p -> new WeatheringPlatformBlock(WeatherState.EXPOSED,    p), builder(MapColor.TERRACOTTA_LIGHT_GRAY, SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion(), BLOCK_ITEM))
+    .put(WeatherState.WEATHERED,  BLOCKS.register("weathered_copper_platform", p -> new WeatheringPlatformBlock(WeatherState.WEATHERED,  p), builder(MapColor.WARPED_STEM,           SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion(), BLOCK_ITEM))
+    .put(WeatherState.OXIDIZED,   BLOCKS.register("oxidized_copper_platform",  p -> new WeatheringPlatformBlock(WeatherState.OXIDIZED,   p), builder(MapColor.WARPED_NYLIUM,         SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion(), BLOCK_ITEM))
     .build();
   public static final EnumObject<WeatherState,PlatformBlock> waxedCopperPlatform = new EnumObject.Builder<WeatherState,PlatformBlock>(WeatherState.class)
-    .put(WeatherState.UNAFFECTED, BLOCKS.register("waxed_copper_platform",           () -> new WaxedPlatformBlock(WeatherState.UNAFFECTED, builder(MapColor.COLOR_ORANGE,          SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion()), BLOCK_ITEM))
-    .put(WeatherState.EXPOSED,    BLOCKS.register("waxed_exposed_copper_platform",   () -> new WaxedPlatformBlock(WeatherState.EXPOSED,    builder(MapColor.TERRACOTTA_LIGHT_GRAY, SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion()), BLOCK_ITEM))
-    .put(WeatherState.WEATHERED,  BLOCKS.register("waxed_weathered_copper_platform", () -> new WaxedPlatformBlock(WeatherState.WEATHERED,  builder(MapColor.WARPED_STEM,           SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion()), BLOCK_ITEM))
-    .put(WeatherState.OXIDIZED,   BLOCKS.register("waxed_oxidized_copper_platform",  () -> new WaxedPlatformBlock(WeatherState.OXIDIZED,   builder(MapColor.WARPED_NYLIUM,         SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion()), BLOCK_ITEM))
+    .put(WeatherState.UNAFFECTED, BLOCKS.register("waxed_copper_platform",           p -> new WaxedPlatformBlock(WeatherState.UNAFFECTED, p), builder(MapColor.COLOR_ORANGE,          SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion(), BLOCK_ITEM))
+    .put(WeatherState.EXPOSED,    BLOCKS.register("waxed_exposed_copper_platform",   p -> new WaxedPlatformBlock(WeatherState.EXPOSED,    p), builder(MapColor.TERRACOTTA_LIGHT_GRAY, SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion(), BLOCK_ITEM))
+    .put(WeatherState.WEATHERED,  BLOCKS.register("waxed_weathered_copper_platform", p -> new WaxedPlatformBlock(WeatherState.WEATHERED,  p), builder(MapColor.WARPED_STEM,           SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion(), BLOCK_ITEM))
+    .put(WeatherState.OXIDIZED,   BLOCKS.register("waxed_oxidized_copper_platform",  p -> new WaxedPlatformBlock(WeatherState.OXIDIZED,   p), builder(MapColor.WARPED_NYLIUM,         SoundType.COPPER).requiresCorrectToolForDrops().strength(3.0F, 6.0F).noOcclusion(), BLOCK_ITEM))
     .build();
 
 
   /*
    * Items
    */
-  public static final ItemObject<EdibleItem> bacon = ITEMS.register("bacon", () -> new EdibleItem(TinkerFood.BACON));
-  public static final ItemObject<EdibleItem> jeweledApple = ITEMS.register("jeweled_apple", () -> new EdibleItem(TinkerFood.JEWELED_APPLE.apply(new Properties())));
-  public static final ItemObject<Item> cheeseIngot = ITEMS.register("cheese_ingot", () -> new CheeseItem(new Properties().food(TinkerFood.CHEESE)));
-  public static final ItemObject<Block> cheeseBlock = BLOCKS.register("cheese_block", () -> new HalfTransparentBlock(builder(MapColor.COLOR_YELLOW, SoundType.HONEY_BLOCK).strength(1.5F, 3.0F).speedFactor(0.4F).jumpFactor(0.5F).noOcclusion()), block -> new CheeseBlockItem(block, new Properties().food(TinkerFood.CHEESE)));
+  public static final ItemObject<EdibleItem> bacon = ITEMS.register("bacon", EdibleItem::new, new Properties().food(TinkerFood.BACON));
+  public static final ItemObject<EdibleItem> jeweledApple = ITEMS.register("jeweled_apple", EdibleItem::new, TinkerFood.JEWELED_APPLE.apply(new Properties()));
+  public static final ItemObject<Item> cheeseIngot = ITEMS.register("cheese_ingot", CheeseItem::new, new Properties().food(TinkerFood.CHEESE));
+  public static final ItemObject<Block> cheeseBlock = BLOCKS.register("cheese_block", HalfTransparentBlock::new, builder(MapColor.COLOR_YELLOW, SoundType.HONEY_BLOCK).strength(1.5F, 3.0F).speedFactor(0.4F).jumpFactor(0.5F).noOcclusion(), block -> new CheeseBlockItem(block, new Properties().food(TinkerFood.CHEESE).setId(blockItemKey(block))));
 
-  public static final ItemObject<TinkerBookItem> materialsAndYou  = ITEMS.register("materials_and_you", () -> new TinkerBookItem(UNSTACKABLE_PROPS, BookType.MATERIALS_AND_YOU));
-  public static final ItemObject<TinkerBookItem> punySmelting     = ITEMS.register("puny_smelting",     () -> new TinkerBookItem(UNSTACKABLE_PROPS, BookType.PUNY_SMELTING));
-  public static final ItemObject<TinkerBookItem> mightySmelting   = ITEMS.register("mighty_smelting",   () -> new TinkerBookItem(UNSTACKABLE_PROPS, BookType.MIGHTY_SMELTING));
-  public static final ItemObject<TinkerBookItem> tinkersGadgetry  = ITEMS.register("tinkers_gadgetry",  () -> new TinkerBookItem(UNSTACKABLE_PROPS, BookType.TINKERS_GADGETRY));
-  public static final ItemObject<TinkerBookItem> fantasticFoundry = ITEMS.register("fantastic_foundry", () -> new TinkerBookItem(UNSTACKABLE_PROPS, BookType.FANTASTIC_FOUNDRY));
-  public static final ItemObject<TinkerBookItem> encyclopedia     = ITEMS.register("encyclopedia",      () -> new TinkerBookItem(UNSTACKABLE_PROPS, BookType.ENCYCLOPEDIA));
+  public static final ItemObject<TinkerBookItem> materialsAndYou  = ITEMS.register("materials_and_you", p -> new TinkerBookItem(p, BookType.MATERIALS_AND_YOU), UNSTACKABLE_PROPS);
+  public static final ItemObject<TinkerBookItem> punySmelting     = ITEMS.register("puny_smelting",     p -> new TinkerBookItem(p, BookType.PUNY_SMELTING), UNSTACKABLE_PROPS);
+  public static final ItemObject<TinkerBookItem> mightySmelting   = ITEMS.register("mighty_smelting",   p -> new TinkerBookItem(p, BookType.MIGHTY_SMELTING), UNSTACKABLE_PROPS);
+  public static final ItemObject<TinkerBookItem> tinkersGadgetry  = ITEMS.register("tinkers_gadgetry",  p -> new TinkerBookItem(p, BookType.TINKERS_GADGETRY), UNSTACKABLE_PROPS);
+  public static final ItemObject<TinkerBookItem> fantasticFoundry = ITEMS.register("fantastic_foundry", p -> new TinkerBookItem(p, BookType.FANTASTIC_FOUNDRY), UNSTACKABLE_PROPS);
+  public static final ItemObject<TinkerBookItem> encyclopedia     = ITEMS.register("encyclopedia",      p -> new TinkerBookItem(p, BookType.ENCYCLOPEDIA), UNSTACKABLE_PROPS);
 
   public static final DeferredHolder<ParticleType<?>,ParticleType<FluidParticleData>> fluidParticle = PARTICLE_TYPES.register("fluid", FluidParticleData.Type::new);
 
@@ -181,7 +181,7 @@ public final class TinkerCommons extends TinkerModule {
   /* Slime Balls are edible, believe it or not */
   public static final EnumObject<SlimeType, Item> slimeball = new EnumObject.Builder<SlimeType, Item>(SlimeType.class)
     .put(SlimeType.EARTH, () -> Items.SLIME_BALL)
-    .putAll(ITEMS.registerEnum(SlimeType.TINKER, "slime_ball", type -> new Item(ITEM_PROPS)))
+    .putAll(ITEMS.registerEnum(SlimeType.TINKER, "slime_ball", (key, type) -> new Item(ITEM_PROPS.setId(key))))
     .build();
 
   public static final BlockContainerOpenedTrigger CONTAINER_OPENED_TRIGGER = new BlockContainerOpenedTrigger();

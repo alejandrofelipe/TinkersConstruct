@@ -81,10 +81,18 @@ public abstract class TinkerModule {
   // base item properties
   protected static final Item.Properties ITEM_PROPS = new Item.Properties();
   protected static final Item.Properties UNSTACKABLE_PROPS = new Item.Properties().stacksTo(1);
-  protected static final Function<Block,? extends BlockItem> BLOCK_ITEM = (b) -> new BlockItem(b, ITEM_PROPS);
-  protected static final Function<Block,? extends BlockItem> TOOLTIP_BLOCK_ITEM = (b) -> new BlockTooltipItem(b, ITEM_PROPS);
-  protected static final Function<Block,? extends BlockItem> UNSTACKABLE_BLOCK_ITEM = (b) -> new BlockTooltipItem(b, UNSTACKABLE_PROPS);
-  protected static final Supplier<Item> TOOLTIP_ITEM = () -> new TooltipItem(ITEM_PROPS);
+  // 1.21.4: block items need their id set on the Properties before construction. These functions own the item
+  // Properties, so they set the id from the (already-registered) block's registry name, matching Mantle's registerWood.
+  protected static final Function<Block,? extends BlockItem> BLOCK_ITEM = (b) -> new BlockItem(b, ITEM_PROPS.setId(blockItemKey(b)));
+  protected static final Function<Block,? extends BlockItem> TOOLTIP_BLOCK_ITEM = (b) -> new BlockTooltipItem(b, ITEM_PROPS.setId(blockItemKey(b)));
+  protected static final Function<Block,? extends BlockItem> UNSTACKABLE_BLOCK_ITEM = (b) -> new BlockTooltipItem(b, UNSTACKABLE_PROPS.setId(blockItemKey(b)));
+  /** Factory form so the id can be set by the register call; use via {@code ITEMS.register(name, TOOLTIP_ITEM, ITEM_PROPS)} */
+  protected static final Function<Item.Properties,Item> TOOLTIP_ITEM = TooltipItem::new;
+
+  /** Creates an item resource key matching the registry name of the given (already registered) block, for its block item */
+  protected static ResourceKey<Item> blockItemKey(Block block) {
+    return ResourceKey.create(Registries.ITEM, BuiltInRegistries.BLOCK.getKey(block));
+  }
 
   /** Called during construction to initialize the registers for this mod */
   public static void initRegisters() {

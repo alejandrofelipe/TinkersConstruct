@@ -95,26 +95,26 @@ public final class TinkerTables extends TinkerModule {
   public static final ItemObject<TableBlock> craftingStation, tinkerStation, partBuilder, tinkersChest, partChest;
   static {
     Block.Properties WOOD_TABLE = builder(MapColor.WOOD, SoundType.WOOD).instrument(NoteBlockInstrument.BASS).strength(1.0F, 5.0F).noOcclusion();
-    craftingStation = BLOCKS.register("crafting_station", () -> new CraftingStationBlock(WOOD_TABLE), BLOCK_ITEM);
-    tinkerStation = BLOCKS.register("tinker_station", () -> new TinkerStationBlock(WOOD_TABLE, 4), BLOCK_ITEM);
-    partBuilder = BLOCKS.register("part_builder", () -> new GenericTableBlock(WOOD_TABLE, PartBuilderBlockEntity::new), BLOCK_ITEM);
-    tinkersChest = BLOCKS.register("tinkers_chest", () -> new TinkersChestBlock(WOOD_TABLE, TinkersChestBlockEntity::new, true), block -> new TinkersChestBlockItem(block, ITEM_PROPS));
-    partChest = BLOCKS.register("part_chest", () -> new ChestBlock(WOOD_TABLE, PartChestBlockEntity::new, true), BLOCK_ITEM);
+    craftingStation = BLOCKS.register("crafting_station", CraftingStationBlock::new, WOOD_TABLE, BLOCK_ITEM);
+    tinkerStation = BLOCKS.register("tinker_station", p -> new TinkerStationBlock(p, 4), WOOD_TABLE, BLOCK_ITEM);
+    partBuilder = BLOCKS.register("part_builder", p -> new GenericTableBlock(p, PartBuilderBlockEntity::new), WOOD_TABLE, BLOCK_ITEM);
+    tinkersChest = BLOCKS.register("tinkers_chest", p -> new TinkersChestBlock(p, TinkersChestBlockEntity::new, true), WOOD_TABLE, block -> new TinkersChestBlockItem(block, ITEM_PROPS.setId(blockItemKey(block))));
+    partChest = BLOCKS.register("part_chest", p -> new ChestBlock(p, PartChestBlockEntity::new, true), WOOD_TABLE, BLOCK_ITEM);
   }
 
   public static final ItemObject<TableBlock> castChest, modifierWorktable;
   static {
     Block.Properties STONE_TABLE = builder(MapColor.COLOR_GRAY, SoundType.METAL).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(3.0F, 9.0F).noOcclusion();
-    castChest = BLOCKS.register("cast_chest", () -> new ChestBlock(STONE_TABLE, CastChestBlockEntity::new, false), BLOCK_ITEM);
-    modifierWorktable = BLOCKS.register("modifier_worktable", () -> new GenericTableBlock(STONE_TABLE, ModifierWorktableBlockEntity::new), BLOCK_ITEM);
+    castChest = BLOCKS.register("cast_chest", p -> new ChestBlock(p, CastChestBlockEntity::new, false), STONE_TABLE, BLOCK_ITEM);
+    modifierWorktable = BLOCKS.register("modifier_worktable", p -> new GenericTableBlock(p, ModifierWorktableBlockEntity::new), STONE_TABLE, BLOCK_ITEM);
   }
 
   public static final ItemObject<TableBlock> tinkersAnvil, scorchedAnvil;
   static {
     Block.Properties METAL_TABLE = builder(MapColor.COLOR_GRAY, SoundType.ANVIL).pushReaction(PushReaction.BLOCK).requiresCorrectToolForDrops().strength(5.0F, 1200.0F).noOcclusion();
-    Function<Block, BlockItem> blockItem = block -> new AnvilBlockItem(block, ITEM_PROPS, TinkerToolParts.fakeStorageBlockItem, TinkerTags.Materials.COMPATABILITY_ALLOYS);
-    tinkersAnvil = BLOCKS.register("tinkers_anvil", () -> new TinkersAnvilBlock(METAL_TABLE, 6), blockItem);
-    scorchedAnvil = BLOCKS.register("scorched_anvil", () -> new ScorchedAnvilBlock(METAL_TABLE, 6), blockItem);
+    Function<Block, BlockItem> blockItem = block -> new AnvilBlockItem(block, ITEM_PROPS.setId(blockItemKey(block)), TinkerToolParts.fakeStorageBlockItem, TinkerTags.Materials.COMPATABILITY_ALLOYS);
+    tinkersAnvil = BLOCKS.register("tinkers_anvil", p -> new TinkersAnvilBlock(p, 6), METAL_TABLE, blockItem);
+    scorchedAnvil = BLOCKS.register("scorched_anvil", p -> new ScorchedAnvilBlock(p, 6), METAL_TABLE, blockItem);
   }
   /*
    * Items

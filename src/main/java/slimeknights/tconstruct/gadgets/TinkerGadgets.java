@@ -56,13 +56,13 @@ public final class TinkerGadgets extends TinkerModule {
   /*
    * Blocks
    */
-  public static final ItemObject<PunjiBlock> punji = BLOCKS.register("punji", () -> new PunjiBlock(builder(MapColor.PLANT, SoundType.GRASS).strength(3.0F).speedFactor(0.4F).noOcclusion().pushReaction(PushReaction.DESTROY)), TOOLTIP_BLOCK_ITEM);
+  public static final ItemObject<PunjiBlock> punji = BLOCKS.register("punji", PunjiBlock::new, builder(MapColor.PLANT, SoundType.GRASS).strength(3.0F).speedFactor(0.4F).noOcclusion().pushReaction(PushReaction.DESTROY), TOOLTIP_BLOCK_ITEM);
 
   /*
    * Items
    */
-  public static final ItemObject<PiggyBackPackItem> piggyBackpack = ITEMS.register("piggy_backpack", () -> new PiggyBackPackItem(new Properties().stacksTo(16)));
-  public static final EnumObject<FrameType,FancyItemFrameItem> itemFrame = ITEMS.registerEnum(FrameType.values(), "item_frame", (type) -> new FancyItemFrameItem(ITEM_PROPS, (world, pos, dir) -> new FancyItemFrameEntity(world, pos, dir, type)));
+  public static final ItemObject<PiggyBackPackItem> piggyBackpack = ITEMS.register("piggy_backpack", PiggyBackPackItem::new, new Properties().stacksTo(16));
+  public static final EnumObject<FrameType,FancyItemFrameItem> itemFrame = ITEMS.registerEnum(FrameType.values(), "item_frame", (key, type) -> new FancyItemFrameItem(ITEM_PROPS.setId(key), (world, pos, dir) -> new FancyItemFrameEntity(world, pos, dir, type)));
 
   // throwballs
   @Deprecated
@@ -73,10 +73,10 @@ public final class TinkerGadgets extends TinkerModule {
   public static final ItemObject<ShurikenItem> quartzShuriken, flintShuriken;
   static {
     Item.Properties THROWABLE_PROPS = new Item.Properties().stacksTo(16);
-    glowBall = ITEMS.register("glow_ball", () -> new GlowBallItem(THROWABLE_PROPS));
-    efln = ITEMS.register("efln_ball", () -> new EFLNItem(THROWABLE_PROPS));
-    quartzShuriken = ITEMS.register("quartz_shuriken", () -> new ShurikenItem(THROWABLE_PROPS, QuartzShurikenEntity::new));
-    flintShuriken = ITEMS.register("flint_shuriken", () -> new ShurikenItem(THROWABLE_PROPS, FlintShurikenEntity::new));
+    glowBall = ITEMS.register("glow_ball", GlowBallItem::new, THROWABLE_PROPS);
+    efln = ITEMS.register("efln_ball", EFLNItem::new, THROWABLE_PROPS);
+    quartzShuriken = ITEMS.register("quartz_shuriken", p -> new ShurikenItem(p, QuartzShurikenEntity::new), THROWABLE_PROPS);
+    flintShuriken = ITEMS.register("flint_shuriken", p -> new ShurikenItem(p, FlintShurikenEntity::new), THROWABLE_PROPS);
 
   }
 
@@ -85,13 +85,13 @@ public final class TinkerGadgets extends TinkerModule {
   public static final ItemObject<FoodCakeBlock> magmaCake;
   static {
     BlockBehaviour.Properties CAKE = builder(SoundType.WOOL).forceSolidOn().strength(0.5F).sound(SoundType.WOOL).pushReaction(PushReaction.DESTROY);
-    cake = BLOCKS.registerEnum(FoliageType.values(), "cake", type -> {
+    cake = BLOCKS.registerEnum(FoliageType.values(), "cake", (key, type) -> {
       if (type == FoliageType.ICHOR) {
-        return new InvertedCakeBlock(CAKE, TinkerFood.ICHOR_CAKE, EffectCombination.BLOCK);
+        return new InvertedCakeBlock(CAKE.setId(key), TinkerFood.ICHOR_CAKE, EffectCombination.BLOCK);
       }
-      return new FoodCakeBlock(CAKE, TinkerFood.getCake(type), type == FoliageType.ENDER ? EffectCombination.ADD : EffectCombination.BLOCK);
+      return new FoodCakeBlock(CAKE.setId(key), TinkerFood.getCake(type), type == FoliageType.ENDER ? EffectCombination.ADD : EffectCombination.BLOCK);
     }, UNSTACKABLE_BLOCK_ITEM);
-    magmaCake = BLOCKS.register("magma_cake", () -> new FoodCakeBlock(CAKE, TinkerFood.MAGMA_CAKE, EffectCombination.BLOCK), UNSTACKABLE_BLOCK_ITEM);
+    magmaCake = BLOCKS.register("magma_cake", p -> new FoodCakeBlock(p, TinkerFood.MAGMA_CAKE, EffectCombination.BLOCK), CAKE, UNSTACKABLE_BLOCK_ITEM);
   }
 
   // Shurikens

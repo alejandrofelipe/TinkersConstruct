@@ -1,6 +1,9 @@
 package slimeknights.tconstruct.common.registration;
 
 import lombok.Getter;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -41,16 +44,17 @@ public class GeodeItemObject extends ItemObject<Item> {
       return state -> calculated;
     };
     String name = shard.getId().getPath();
-    Function<Block, ? extends BlockItem> blockItem = block -> new BlockItem(block, props);
+    // 1.21.4: block items own their Properties, so set the id from the block's registry name before construction
+    Function<Block, ? extends BlockItem> blockItem = block -> new BlockItem(block, props.setId(ResourceKey.create(Registries.ITEM, BuiltInRegistries.BLOCK.getKey(block))));
     ToIntFunction<BlockState> crystalLight = light.apply(0);
-    block = register.register(name + "_block", () -> new CrystalBlock(chimeSound, BlockBehaviour.Properties.of().mapColor(color).lightLevel(crystalLight).strength(1.5F).sound(blockSound).requiresCorrectToolForDrops()), blockItem);
-    budding = register.register("budding_" + name, () -> new BuddingCrystalBlock(this, chimeSound, BlockBehaviour.Properties.of().mapColor(color).randomTicks().lightLevel(crystalLight).strength(1.5F).sound(blockSound).requiresCorrectToolForDrops().pushReaction(PushReaction.DESTROY)), blockItem);
+    block = register.register(name + "_block", p -> new CrystalBlock(chimeSound, p), BlockBehaviour.Properties.of().mapColor(color).lightLevel(crystalLight).strength(1.5F).sound(blockSound).requiresCorrectToolForDrops(), blockItem);
+    budding = register.register("budding_" + name, p -> new BuddingCrystalBlock(this, chimeSound, p), BlockBehaviour.Properties.of().mapColor(color).randomTicks().lightLevel(crystalLight).strength(1.5F).sound(blockSound).requiresCorrectToolForDrops().pushReaction(PushReaction.DESTROY), blockItem);
     // buds
     Supplier<BlockBehaviour.Properties> budProps = () -> BlockBehaviour.Properties.of().mapColor(color).forceSolidOn().noOcclusion().randomTicks().strength(1.5F).requiresCorrectToolForDrops().pushReaction(PushReaction.DESTROY);
-    cluster   = register.register(name + "_cluster", () -> new CrystalClusterBlock(chimeSound, 7, 3, budProps.get().lightLevel(light.apply(5)).sound(clusterSounds.get(BudSize.CLUSTER))), blockItem);
-    smallBud  = register.register("small_" + name + "_bud",  () -> new CrystalClusterBlock(chimeSound, 3, 3, budProps.get().lightLevel(light.apply(1)).sound(clusterSounds.get(BudSize.SMALL))),  blockItem);
-    mediumBud = register.register("medium_" + name + "_bud", () -> new CrystalClusterBlock(chimeSound, 4, 3, budProps.get().lightLevel(light.apply(2)).sound(clusterSounds.get(BudSize.MEDIUM))), blockItem);
-    largeBud  = register.register("large_" + name + "_bud",  () -> new CrystalClusterBlock(chimeSound, 5, 3, budProps.get().lightLevel(light.apply(4)).sound(clusterSounds.get(BudSize.LARGE))),  blockItem);
+    cluster   = register.register(name + "_cluster", p -> new CrystalClusterBlock(chimeSound, 7, 3, p), budProps.get().lightLevel(light.apply(5)).sound(clusterSounds.get(BudSize.CLUSTER)), blockItem);
+    smallBud  = register.register("small_" + name + "_bud",  p -> new CrystalClusterBlock(chimeSound, 3, 3, p), budProps.get().lightLevel(light.apply(1)).sound(clusterSounds.get(BudSize.SMALL)),  blockItem);
+    mediumBud = register.register("medium_" + name + "_bud", p -> new CrystalClusterBlock(chimeSound, 4, 3, p), budProps.get().lightLevel(light.apply(2)).sound(clusterSounds.get(BudSize.MEDIUM)), blockItem);
+    largeBud  = register.register("large_" + name + "_bud",  p -> new CrystalClusterBlock(chimeSound, 5, 3, p), budProps.get().lightLevel(light.apply(4)).sound(clusterSounds.get(BudSize.LARGE)),  blockItem);
   }
 
   /** Gets the block form of this */

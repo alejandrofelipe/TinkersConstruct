@@ -6,7 +6,7 @@ import slimeknights.mantle.registration.object.ItemObject;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 import slimeknights.tconstruct.library.tools.part.PartCastItem;
 
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 public class ItemDeferredRegisterExtension extends ItemDeferredRegister {
   public ItemDeferredRegisterExtension(String modID) {
@@ -14,15 +14,17 @@ public class ItemDeferredRegisterExtension extends ItemDeferredRegister {
   }
 
   /**
-   * Registers a set of three cast items at once
+   * Registers a set of three cast items at once. 1.21.4: the factory receives the per-cast Properties so each cast gets
+   * its own id set via the props-form register.
    * @param name         Base name of cast
-   * @param constructor  Item constructor
+   * @param constructor  Item factory from properties
+   * @param props        Item properties
    * @return  Object containing casts
    */
-  public CastItemObject registerCast(String name, Supplier<? extends Item> constructor) {
-    ItemObject<Item> cast = register(name + "_cast", constructor);
-    ItemObject<Item> sandCast = register(name + "_sand_cast", constructor);
-    ItemObject<Item> redSandCast = register(name + "_red_sand_cast", constructor);
+  public CastItemObject registerCast(String name, Function<Item.Properties,? extends Item> constructor, Item.Properties props) {
+    ItemObject<Item> cast = register(name + "_cast", constructor, props);
+    ItemObject<Item> sandCast = register(name + "_sand_cast", constructor, props);
+    ItemObject<Item> redSandCast = register(name + "_red_sand_cast", constructor, props);
     return new CastItemObject(resource(name), cast, sandCast, redSandCast);
   }
 
@@ -33,7 +35,7 @@ public class ItemDeferredRegisterExtension extends ItemDeferredRegister {
    * @return  Object containing casts
    */
   public CastItemObject registerCast(String name, Item.Properties props) {
-    return registerCast(name, () -> new Item(props));
+    return registerCast(name, Item::new, props);
   }
 
   /**
@@ -43,6 +45,6 @@ public class ItemDeferredRegisterExtension extends ItemDeferredRegister {
    * @return  Object containing casts
    */
   public CastItemObject registerCast(ItemObject<? extends IMaterialItem> item, Item.Properties props) {
-    return registerCast(item.getId().getPath(), () -> new PartCastItem(props, item));
+    return registerCast(item.getId().getPath(), p -> new PartCastItem(p, item), props);
   }
 }
