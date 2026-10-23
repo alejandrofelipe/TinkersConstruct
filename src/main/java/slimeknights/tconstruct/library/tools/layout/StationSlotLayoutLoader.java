@@ -12,7 +12,10 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -175,16 +178,31 @@ public class StationSlotLayoutLoader extends SimpleJsonResourceReloadListener<Js
     NeoForge.EVENT_BUS.addListener(INSTANCE::onDatapackSync);
   }
 
-  /** GSON serializer for ingredients */
+  /**
+   * GSON serializer for ingredients.
+   * 1.21.4: an {@link Ingredient} filter is a {@code HolderSet<Item>}, so {@link Ingredient#CODEC} must run on a
+   * registry-aware ops or it throws "Can't decode element without registry". Items live in the built-in registry
+   * (frozen before datapacks load, with tags bound), so a {@link RegistryOps} backed by {@link BuiltInRegistries}
+   * resolves both direct item entries and item tags, server-side and in tests alike.
+   */
   private static class IngredientSerializer implements JsonSerializer<Ingredient>, JsonDeserializer<Ingredient> {
+    private static RegistryOps<JsonElement> registryOps;
+
+    private static RegistryOps<JsonElement> ops() {
+      if (registryOps == null) {
+        registryOps = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY).createSerializationContext(JsonOps.INSTANCE);
+      }
+      return registryOps;
+    }
+
     @Override
     public Ingredient deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-      return Ingredient.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(JsonParseException::new);
+      return Ingredient.CODEC.parse(ops(), json).getOrThrow(JsonParseException::new);
     }
 
     @Override
     public JsonElement serialize(Ingredient ingredient, Type typeOfSrc, JsonSerializationContext context) {
-      return Ingredient.CODEC.encodeStart(JsonOps.INSTANCE, ingredient).getOrThrow();
+      return Ingredient.CODEC.encodeStart(ops(), ingredient).getOrThrow();
     }
   }
 }
