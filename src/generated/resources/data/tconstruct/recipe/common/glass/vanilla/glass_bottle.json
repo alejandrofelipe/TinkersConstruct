@@ -8,9 +8,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "#": {
-      "tag": "c:glass_blocks/colorless"
-    }
+    "#": "#c:glass_blocks/colorless"
   },
   "pattern": [
     "# #",

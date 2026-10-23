@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "tconstruct:material",
+    "model": "tconstruct:item/fletching",
+    "offset": [
+      4,
+      -5
+    ]
+  }
+}

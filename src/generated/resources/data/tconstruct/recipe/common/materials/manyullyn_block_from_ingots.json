@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "tconstruct:manyullyn_block",
   "key": {
-    "#": {
-      "tag": "c:ingots/manyullyn"
-    },
-    "*": {
-      "item": "tconstruct:manyullyn_ingot"
-    }
+    "#": "#c:ingots/manyullyn",
+    "*": "tconstruct:manyullyn_ingot"
   },
   "pattern": [
     "###",

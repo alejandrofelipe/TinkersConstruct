@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:cinderslime_ingot",
   "ingredients": [
-    {
-      "item": "tconstruct:cinderslime_block"
-    }
+    "tconstruct:cinderslime_block"
   ],
   "result": {
     "count": 9,

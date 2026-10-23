@@ -63,7 +63,7 @@ public abstract class AbstractSizedIngredientRecipeBuilder<T extends AbstractSiz
    * @return  Builder instance
    */
   public T addInput(TagKey<Item> tag, int amount) {
-    return addInput(SizedIngredient.fromTag(tag, amount));
+    return addInput(SizedIngredient.of(slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient.of(tag), amount));
   }
 
   /**

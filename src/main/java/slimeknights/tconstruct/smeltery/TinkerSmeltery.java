@@ -181,11 +181,11 @@ public final class TinkerSmeltery extends TinkerModule {
   public static final ItemObject<Block> searedCrackedBricks, searedFancyBricks, searedTriangleBricks;
   static {
     Properties properties = searedSolidProps(1);
-    Supplier<SearedBlock> searedBlock = () -> new SearedBlock(properties, false);
-    searedStone = BLOCKS.registerBuilding("seared_stone", searedBlock, TOOLTIP_BLOCK_ITEM);
-    searedCobble = BLOCKS.registerWallBuilding("seared_cobble", searedBlock, TOOLTIP_BLOCK_ITEM);
-    searedPaver = BLOCKS.registerBuilding("seared_paver", searedBlock, TOOLTIP_BLOCK_ITEM);
-    searedBricks = BLOCKS.registerWallBuilding("seared_bricks", searedBlock, TOOLTIP_BLOCK_ITEM);
+    java.util.function.Function<Properties,SearedBlock> searedBlock = p -> new SearedBlock(p, false);
+    searedStone = BLOCKS.registerBuilding("seared_stone", searedBlock, properties, TOOLTIP_BLOCK_ITEM);
+    searedCobble = BLOCKS.registerWallBuilding("seared_cobble", searedBlock, properties, TOOLTIP_BLOCK_ITEM);
+    searedPaver = BLOCKS.registerBuilding("seared_paver", searedBlock, properties, TOOLTIP_BLOCK_ITEM);
+    searedBricks = BLOCKS.registerWallBuilding("seared_bricks", searedBlock, properties, TOOLTIP_BLOCK_ITEM);
     searedCrackedBricks = BLOCKS.register("seared_cracked_bricks", p -> new SearedBlock(p, false), properties, TOOLTIP_BLOCK_ITEM);
     searedFancyBricks = BLOCKS.register("seared_fancy_bricks", p -> new SearedBlock(p, false), properties, TOOLTIP_BLOCK_ITEM);
     searedTriangleBricks = BLOCKS.register("seared_triangle_bricks", p -> new SearedBlock(p, false), properties, TOOLTIP_BLOCK_ITEM);
@@ -200,9 +200,9 @@ public final class TinkerSmeltery extends TinkerModule {
     Properties properties = scorchedSolidProps(1);
     scorchedStone = BLOCKS.register("scorched_stone", p -> new SearedPillarBlock(p, false), properties, TOOLTIP_BLOCK_ITEM);
     polishedScorchedStone = BLOCKS.register("polished_scorched_stone", p -> new SearedPillarBlock(p, false), properties, TOOLTIP_BLOCK_ITEM);
-    Supplier<SearedBlock> block = () -> new SearedBlock(properties, false);
-    scorchedBricks = BLOCKS.registerFenceBuilding("scorched_bricks", block, TOOLTIP_BLOCK_ITEM);
-    scorchedRoad = BLOCKS.registerBuilding("scorched_road", block, TOOLTIP_BLOCK_ITEM);
+    java.util.function.Function<Properties,SearedBlock> block = p -> new SearedBlock(p, false);
+    scorchedBricks = BLOCKS.registerFenceBuilding("scorched_bricks", block, properties, TOOLTIP_BLOCK_ITEM);
+    scorchedRoad = BLOCKS.registerBuilding("scorched_road", block, properties, TOOLTIP_BLOCK_ITEM);
     chiseledScorchedBricks = BLOCKS.register("chiseled_scorched_bricks", p -> new SearedBlock(p, false), properties, TOOLTIP_BLOCK_ITEM);
   }
   public static final ItemObject<Block> scorchedLamp = BLOCKS.register("scorched_lamp", p -> new SearedBlock(p, false), scorchedSolidProps(1).lightLevel(state -> 15), TOOLTIP_BLOCK_ITEM);

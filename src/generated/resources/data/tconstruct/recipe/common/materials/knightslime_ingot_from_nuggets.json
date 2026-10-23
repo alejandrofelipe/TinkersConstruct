@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "tconstruct:knightslime_ingot",
   "key": {
-    "#": {
-      "tag": "c:nuggets/knightslime"
-    },
-    "*": {
-      "item": "tconstruct:knightslime_nugget"
-    }
+    "#": "#c:nuggets/knightslime",
+    "*": "tconstruct:knightslime_nugget"
   },
   "pattern": [
     "###",

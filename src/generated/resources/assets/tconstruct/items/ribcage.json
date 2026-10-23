@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "tconstruct:material",
+    "model": "tconstruct:item/ribcage",
+    "offset": [
+      0,
+      3
+    ]
+  }
+}

@@ -4,12 +4,8 @@
   "cookingtime": 200,
   "experience": 1.5,
   "ingredient": [
-    {
-      "item": "tconstruct:raw_cobalt"
-    },
-    {
-      "item": "tconstruct:cobalt_ore"
-    }
+    "tconstruct:raw_cobalt",
+    "tconstruct:cobalt_ore"
   ],
   "result": {
     "count": 1,

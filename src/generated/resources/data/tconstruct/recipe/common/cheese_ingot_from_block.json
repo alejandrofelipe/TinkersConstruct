@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "tconstruct:cheese_block"
-    }
+    "tconstruct:cheese_block"
   ],
   "result": {
     "count": 4,

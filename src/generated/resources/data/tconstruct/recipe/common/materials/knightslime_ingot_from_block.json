@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:knightslime_ingot",
   "ingredients": [
-    {
-      "item": "tconstruct:knightslime_block"
-    }
+    "tconstruct:knightslime_block"
   ],
   "result": {
     "count": 9,

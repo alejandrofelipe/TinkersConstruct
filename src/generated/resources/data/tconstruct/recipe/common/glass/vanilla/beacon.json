@@ -8,15 +8,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "G": {
-      "tag": "c:glass_blocks/colorless"
-    },
-    "O": {
-      "item": "minecraft:obsidian"
-    },
-    "S": {
-      "item": "minecraft:nether_star"
-    }
+    "G": "#c:glass_blocks/colorless",
+    "O": "minecraft:obsidian",
+    "S": "minecraft:nether_star"
   },
   "pattern": [
     "GGG",

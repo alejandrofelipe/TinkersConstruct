@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "sign",
   "key": {
-    "#": {
-      "item": "tconstruct:skyroot_planks"
-    },
-    "X": {
-      "tag": "c:rods/wooden"
-    }
+    "#": "tconstruct:skyroot_planks",
+    "X": "#c:rods/wooden"
   },
   "pattern": [
     "###",

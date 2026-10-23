@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "tconstruct:material",
+    "model": "tconstruct:item/helmet_plating",
+    "offset": [
+      0,
+      2
+    ]
+  }
+}

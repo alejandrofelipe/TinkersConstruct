@@ -103,7 +103,7 @@ public class TableRecipeProvider extends BaseRecipeProvider {
         .pattern("p")
         .pattern("w")
         .unlockedBy("has_item", has(TinkerTables.pattern)))
-      .setSource(ItemTags.LOGS)
+      .setSource(LazyTagIngredient.of(ItemTags.LOGS))
       .build(consumer, wrap(TinkerTables.craftingStation, folder, "_from_logs"));
     ShapedRetexturedRecipeBuilder.fromShaped(
       ShapedRecipeBuilder.shaped(itemLookup(), RecipeCategory.DECORATIONS, TinkerTables.craftingStation)
@@ -123,7 +123,7 @@ public class TableRecipeProvider extends BaseRecipeProvider {
         .pattern("pp")
         .pattern("ww")
         .unlockedBy("has_item", has(TinkerTables.pattern)))
-      .setSource(TinkerTags.Items.PLANKLIKE)
+      .setSource(LazyTagIngredient.of(TinkerTags.Items.PLANKLIKE))
       .setMatchAll()
       .build(consumer, prefix(TinkerTables.partBuilder, folder));
 
@@ -136,7 +136,7 @@ public class TableRecipeProvider extends BaseRecipeProvider {
         .pattern("w w")
         .pattern("w w")
         .unlockedBy("has_item", has(TinkerTables.pattern)))
-      .setSource(TinkerTags.Items.PLANKLIKE)
+      .setSource(LazyTagIngredient.of(TinkerTags.Items.PLANKLIKE))
       .setMatchAll()
       .build(consumer, prefix(TinkerTables.tinkerStation, folder));
 
@@ -183,7 +183,7 @@ public class TableRecipeProvider extends BaseRecipeProvider {
         .pattern("r r")
         .pattern("r r")
         .unlockedBy("has_item", has(TinkerTags.Items.SEARED_BLOCKS)))
-      .setSource(TinkerTags.Items.WORKSTATION_ROCK)
+      .setSource(LazyTagIngredient.of(TinkerTags.Items.WORKSTATION_ROCK))
       .setMatchAll()
       .build(consumer, prefix(TinkerTables.modifierWorktable, folder));
 
@@ -196,7 +196,7 @@ public class TableRecipeProvider extends BaseRecipeProvider {
         .pattern(" s ")
         .pattern("sss")
         .unlockedBy("has_item", has(TinkerTags.Items.ANVIL_METAL)))
-      .setSource(TinkerTags.Items.ANVIL_METAL)
+      .setSource(LazyTagIngredient.of(TinkerTags.Items.ANVIL_METAL))
       .setMatchAll()
       .build(consumer, prefix(TinkerTables.tinkersAnvil, folder));
     ShapedRetexturedRecipeBuilder.fromShaped(
@@ -207,7 +207,7 @@ public class TableRecipeProvider extends BaseRecipeProvider {
         .pattern(" s ")
         .pattern("sss")
         .unlockedBy("has_item", has(TinkerTags.Items.ANVIL_METAL)))
-      .setSource(TinkerTags.Items.ANVIL_METAL)
+      .setSource(LazyTagIngredient.of(TinkerTags.Items.ANVIL_METAL))
       .setMatchAll()
       .build(consumer, prefix(TinkerTables.scorchedAnvil, folder));
 
@@ -225,7 +225,7 @@ public class TableRecipeProvider extends BaseRecipeProvider {
         .pattern("mtm")
         .pattern("m m")
         .unlockedBy("has_item", has(TinkerTags.Items.ANVIL_METAL)))
-      .setSource(TinkerTags.Items.ANVIL_METAL)
+      .setSource(LazyTagIngredient.of(TinkerTags.Items.ANVIL_METAL))
       .setMatchAll()
       .build(toolForge, location(folder + "tinkers_forge"));
     ShapedRetexturedRecipeBuilder.fromShaped(
@@ -237,7 +237,7 @@ public class TableRecipeProvider extends BaseRecipeProvider {
         .pattern("mtm")
         .pattern("m m")
         .unlockedBy("has_item", has(TinkerTags.Items.ANVIL_METAL)))
-      .setSource(TinkerTags.Items.ANVIL_METAL)
+      .setSource(LazyTagIngredient.of(TinkerTags.Items.ANVIL_METAL))
       .setMatchAll()
       .build(toolForge, location(folder + "scorched_forge"));
 

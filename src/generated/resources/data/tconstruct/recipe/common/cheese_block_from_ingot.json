@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "#": {
-      "item": "tconstruct:cheese_ingot"
-    }
+    "#": "tconstruct:cheese_ingot"
   },
   "pattern": [
     "##",

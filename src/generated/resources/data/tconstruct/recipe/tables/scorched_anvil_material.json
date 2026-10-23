@@ -3,25 +3,19 @@
   "category": "misc",
   "key": {
     "m": {
-      "type": "tconstruct:material",
-      "match": {
-        "item": "tconstruct:fake_storage_block"
-      },
+      "neoforge:ingredient_type": "tconstruct:material",
+      "match": "tconstruct:fake_storage_block",
       "material": {
         "type": "mantle:tag",
         "tag": "tconstruct:compatibility_metals/alloys"
       }
     },
-    "s": {
-      "tag": "tconstruct:scorched_blocks"
-    }
+    "s": "#tconstruct:scorched_blocks"
   },
   "parts": [
     {
-      "type": "tconstruct:material",
-      "match": {
-        "item": "tconstruct:fake_storage_block"
-      },
+      "neoforge:ingredient_type": "tconstruct:material",
+      "match": "tconstruct:fake_storage_block",
       "material": {
         "type": "mantle:tag",
         "tag": "tconstruct:compatibility_metals/alloys"

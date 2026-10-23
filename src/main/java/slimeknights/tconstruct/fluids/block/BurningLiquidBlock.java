@@ -36,8 +36,8 @@ public class BurningLiquidBlock extends LiquidBlock {
     }
   }
 
-  /** Creates a new block supplier */
-  public static Function<Supplier<? extends FlowingFluid>, LiquidBlock> createBurning(MapColor color, int lightLevel, int burnTime, float damage) {
-    return fluid -> new BurningLiquidBlock(fluid, FluidDeferredRegister.createProperties(color, lightLevel), burnTime, damage);
+  /** Creates a new block supplier, setting the block id (1.21.4 requirement) */
+  public static java.util.function.BiFunction<net.minecraft.resources.ResourceKey<net.minecraft.world.level.block.Block>, Supplier<? extends FlowingFluid>, LiquidBlock> createBurning(MapColor color, int lightLevel, int burnTime, float damage) {
+    return (key, fluid) -> new BurningLiquidBlock(fluid, FluidDeferredRegister.createProperties(color, lightLevel).setId(key), burnTime, damage);
   }
 }

@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "tconstruct:material",
+    "model": "tconstruct:item/bow_grip",
+    "offset": [
+      -2,
+      -2
+    ]
+  }
+}

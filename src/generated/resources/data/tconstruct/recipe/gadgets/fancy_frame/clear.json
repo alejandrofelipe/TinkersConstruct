@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "tconstruct:fancy_item_frame",
   "key": {
-    "M": {
-      "tag": "c:glass_blocks/colorless"
-    },
-    "e": {
-      "tag": "c:glass_panes/colorless"
-    }
+    "M": "#c:glass_blocks/colorless",
+    "e": "#c:glass_panes/colorless"
   },
   "pattern": [
     " e ",

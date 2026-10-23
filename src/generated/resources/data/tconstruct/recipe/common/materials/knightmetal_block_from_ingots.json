@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "tconstruct:knightmetal_block",
   "key": {
-    "#": {
-      "tag": "c:ingots/knightmetal"
-    },
-    "*": {
-      "item": "tconstruct:knightmetal_ingot"
-    }
+    "#": "#c:ingots/knightmetal",
+    "*": "tconstruct:knightmetal_ingot"
   },
   "pattern": [
     "###",

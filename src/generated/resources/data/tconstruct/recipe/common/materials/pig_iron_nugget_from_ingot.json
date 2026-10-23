@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:pig_iron_nugget",
   "ingredients": [
-    {
-      "item": "tconstruct:pig_iron_ingot"
-    }
+    "tconstruct:pig_iron_ingot"
   ],
   "result": {
     "count": 9,

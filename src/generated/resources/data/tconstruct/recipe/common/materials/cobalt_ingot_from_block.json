@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:cobalt_ingot",
   "ingredients": [
-    {
-      "item": "tconstruct:cobalt_block"
-    }
+    "tconstruct:cobalt_block"
   ],
   "result": {
     "count": 9,

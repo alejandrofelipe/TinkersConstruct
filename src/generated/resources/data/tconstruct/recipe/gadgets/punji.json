@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "b": {
-      "item": "minecraft:bamboo"
-    }
+    "b": "minecraft:bamboo"
   },
   "pattern": [
     " b ",

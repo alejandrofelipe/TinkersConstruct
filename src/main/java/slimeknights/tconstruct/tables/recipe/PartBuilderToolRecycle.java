@@ -66,7 +66,7 @@ public class PartBuilderToolRecycle implements IPartBuilderRecipe, IMultiRecipe<
   /** Error for trying to recycle a tool that cannot be */
   public static final List<Component> NO_MODIFIERS = Collections.singletonList(TConstruct.makeTranslation("recipe", "tool_recycling.no_modifiers").withStyle(ChatFormatting.RED));
   /** Default tool field */
-  public static final SizedIngredient DEFAULT_TOOLS = SizedIngredient.fromTag(TinkerTags.Items.MULTIPART_TOOL);
+  public static final SizedIngredient DEFAULT_TOOLS = SizedIngredient.of(slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient.of(TinkerTags.Items.MULTIPART_TOOL));
 
   /** Loader instance */
   public static final RecordLoadable<PartBuilderToolRecycle> LOADER = RecordLoadable.create(

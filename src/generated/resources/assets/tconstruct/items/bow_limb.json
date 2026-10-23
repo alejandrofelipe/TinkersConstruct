@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "tconstruct:material",
+    "model": "tconstruct:item/bow_limb",
+    "offset": [
+      5,
+      -2
+    ]
+  }
+}

@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "tconstruct:hepatizon_block",
   "key": {
-    "#": {
-      "tag": "c:ingots/hepatizon"
-    },
-    "*": {
-      "item": "tconstruct:hepatizon_ingot"
-    }
+    "#": "#c:ingots/hepatizon",
+    "*": "tconstruct:hepatizon_ingot"
   },
   "pattern": [
     "###",

@@ -203,9 +203,9 @@ public final class TinkerTools extends TinkerModule {
   public static final ItemObject<ModifiableItem> kama = ITEMS.register("kama", p -> new ModifiableItem(p, ToolDefinitions.KAMA), UNSTACKABLE_PROPS);
   public static final ItemObject<ModifiableItem> scythe = ITEMS.register("scythe", p -> new ModifiableItem(p, ToolDefinitions.SCYTHE), UNSTACKABLE_PROPS);
 
-  // setting durability to -1 makes sure its not 0 for the defaultDurability call in the TieredItem constructor, but is still less than 0 for the stacksTo call to work
-  // problem is setting the durability sets the max stack size, and we don't want that. And we need TieredItem to work with piglins
-  public static final ItemObject<ModifiableItem> dagger = ITEMS.register("dagger", p -> new ModifiableSwordItem(p, ToolDefinitions.DAGGER, 2), new Item.Properties().durability(-1).stacksTo(2));
+  // 1.21.4: ModifiableItem no longer extends the removed TieredItem, so the old durability(-1) hack is gone (it also
+  // conflicts with stacksTo now); the dagger is simply stackable to 2 and manages durability via tool NBT
+  public static final ItemObject<ModifiableItem> dagger = ITEMS.register("dagger", p -> new ModifiableSwordItem(p, ToolDefinitions.DAGGER, 2), new Item.Properties().stacksTo(2));
   public static final ItemObject<ModifiableItem> sword = ITEMS.register("sword", p -> new ModifiableSwordItem(p, ToolDefinitions.SWORD), UNSTACKABLE_PROPS);
   public static final ItemObject<ModifiableItem> cleaver = ITEMS.register("cleaver", p -> new ModifiableSwordItem(p, ToolDefinitions.CLEAVER), UNSTACKABLE_PROPS);
 

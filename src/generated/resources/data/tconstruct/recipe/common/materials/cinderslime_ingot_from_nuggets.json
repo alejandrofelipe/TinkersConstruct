@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "tconstruct:cinderslime_ingot",
   "key": {
-    "#": {
-      "tag": "c:nuggets/cinderslime"
-    },
-    "*": {
-      "item": "tconstruct:cinderslime_nugget"
-    }
+    "#": "#c:nuggets/cinderslime",
+    "*": "tconstruct:cinderslime_nugget"
   },
   "pattern": [
     "###",

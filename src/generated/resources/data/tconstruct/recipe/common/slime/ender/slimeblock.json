@@ -3,9 +3,7 @@
   "category": "redstone",
   "group": "slime_blocks",
   "key": {
-    "#": {
-      "tag": "c:slimeball/ender"
-    }
+    "#": "#c:slimeball/ender"
   },
   "pattern": [
     "###",

@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:manyullyn_nugget",
   "ingredients": [
-    {
-      "item": "tconstruct:manyullyn_ingot"
-    }
+    "tconstruct:manyullyn_ingot"
   ],
   "result": {
     "count": 9,

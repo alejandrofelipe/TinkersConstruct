@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "tconstruct:netherite_scrap",
   "key": {
-    "#": {
-      "tag": "c:nuggets/netherite_scrap"
-    },
-    "*": {
-      "item": "tconstruct:debris_nugget"
-    }
+    "#": "#c:nuggets/netherite_scrap",
+    "*": "tconstruct:debris_nugget"
   },
   "pattern": [
     "###",

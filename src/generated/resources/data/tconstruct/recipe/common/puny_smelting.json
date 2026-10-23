@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:book"
-    },
-    {
-      "item": "tconstruct:grout"
-    }
+    "minecraft:book",
+    "tconstruct:grout"
   ],
   "result": {
     "count": 1,

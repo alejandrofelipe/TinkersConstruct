@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "tconstruct:material",
+    "model": "tconstruct:item/shell",
+    "offset": [
+      0,
+      -1
+    ]
+  }
+}

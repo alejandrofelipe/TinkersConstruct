@@ -31,8 +31,8 @@ public class MobEffectLiquidBlock extends LiquidBlock {
     }
   }
 
-  /** Creates a new block supplier */
-  public static Function<Supplier<? extends FlowingFluid>, LiquidBlock> createEffect(MapColor color, int lightLevel, Supplier<MobEffectInstance> effect) {
-    return fluid -> new MobEffectLiquidBlock(fluid, FluidDeferredRegister.createProperties(color, lightLevel), effect);
+  /** Creates a new block supplier, setting the block id (1.21.4 requirement) */
+  public static java.util.function.BiFunction<net.minecraft.resources.ResourceKey<net.minecraft.world.level.block.Block>, Supplier<? extends FlowingFluid>, LiquidBlock> createEffect(MapColor color, int lightLevel, Supplier<MobEffectInstance> effect) {
+    return (key, fluid) -> new MobEffectLiquidBlock(fluid, FluidDeferredRegister.createProperties(color, lightLevel).setId(key), effect);
   }
 }

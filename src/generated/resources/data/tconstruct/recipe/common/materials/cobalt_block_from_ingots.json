@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "tconstruct:cobalt_block",
   "key": {
-    "#": {
-      "tag": "c:ingots/cobalt"
-    },
-    "*": {
-      "item": "tconstruct:cobalt_ingot"
-    }
+    "#": "#c:ingots/cobalt",
+    "*": "tconstruct:cobalt_ingot"
   },
   "pattern": [
     "###",

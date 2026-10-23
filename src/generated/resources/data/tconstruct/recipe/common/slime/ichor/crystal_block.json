@@ -3,9 +3,7 @@
   "category": "building",
   "group": "tconstruct:slime_crystal_block",
   "key": {
-    "#": {
-      "item": "tconstruct:ichor_slime_crystal"
-    }
+    "#": "tconstruct:ichor_slime_crystal"
   },
   "pattern": [
     "##",

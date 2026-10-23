@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:slime_balls",
   "ingredients": [
-    {
-      "item": "tconstruct:ender_slime"
-    }
+    "tconstruct:ender_slime"
   ],
   "result": {
     "count": 9,

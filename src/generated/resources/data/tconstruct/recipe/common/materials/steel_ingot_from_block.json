@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:steel_ingot",
   "ingredients": [
-    {
-      "item": "tconstruct:steel_block"
-    }
+    "tconstruct:steel_block"
   ],
   "result": {
     "count": 9,

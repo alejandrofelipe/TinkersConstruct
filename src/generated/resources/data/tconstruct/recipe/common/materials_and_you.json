@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:book"
-    },
-    {
-      "item": "tconstruct:pattern"
-    }
+    "minecraft:book",
+    "tconstruct:pattern"
   ],
   "result": {
     "count": 1,

@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:slime_balls",
   "ingredients": [
-    {
-      "item": "tconstruct:earth_congealed_slime"
-    }
+    "tconstruct:earth_congealed_slime"
   ],
   "result": {
     "count": 4,

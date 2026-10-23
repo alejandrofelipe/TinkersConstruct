@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "tconstruct:queens_slime_ingot",
   "key": {
-    "#": {
-      "tag": "c:nuggets/queens_slime"
-    },
-    "*": {
-      "item": "tconstruct:queens_slime_nugget"
-    }
+    "#": "#c:nuggets/queens_slime",
+    "*": "tconstruct:queens_slime_nugget"
   },
   "pattern": [
     "###",

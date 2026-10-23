@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:stained_clear_glass_pane",
   "key": {
-    "#": {
-      "item": "tconstruct:lime_clear_stained_glass"
-    }
+    "#": "tconstruct:lime_clear_stained_glass"
   },
   "pattern": [
     "###",

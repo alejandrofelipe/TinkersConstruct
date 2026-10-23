@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "tconstruct:slimesteel_block",
   "key": {
-    "#": {
-      "tag": "c:ingots/slimesteel"
-    },
-    "*": {
-      "item": "tconstruct:slimesteel_ingot"
-    }
+    "#": "#c:ingots/slimesteel",
+    "*": "tconstruct:slimesteel_ingot"
   },
   "pattern": [
     "###",

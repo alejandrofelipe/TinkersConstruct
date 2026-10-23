@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "sign",
   "key": {
-    "#": {
-      "item": "tconstruct:greenheart_planks"
-    },
-    "X": {
-      "tag": "c:rods/wooden"
-    }
+    "#": "tconstruct:greenheart_planks",
+    "X": "#c:rods/wooden"
   },
   "pattern": [
     "###",

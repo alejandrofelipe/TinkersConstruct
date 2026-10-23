@@ -47,10 +47,39 @@ import static slimeknights.tconstruct.TConstruct.getResource;
 @SuppressWarnings({"SameParameterValue", "UnusedReturnValue"})
 public class TinkerBlockStateProvider extends ModelProvider {
   private BlockModelGenerators blocks;
+  private final ResourceManager resourceManager;
 
-  @SuppressWarnings("unused") // resourceManager kept for ctor parity with the client GatherDataEvent wiring
   public TinkerBlockStateProvider(PackOutput output, ResourceManager resourceManager) {
     super(output, TConstruct.MOD_ID);
+    this.resourceManager = resourceManager;
+  }
+
+  /** True if the given block/item path already has a hand-authored (non-generated) asset at the given folder */
+  private boolean hasResource(ResourceLocation id, String folder) {
+    return resourceManager.getResource(ResourceLocation.fromNamespaceAndPath(id.getNamespace(), folder + "/" + id.getPath() + ".json")).isPresent();
+  }
+
+  /**
+   * 1.21.4: vanilla {@link ModelProvider} validates that every known block has a generated blockstate. Tinkers only
+   * datagens a subset here (wood, glass, geodes, …); the remaining blocks ship hand-authored blockstate JSON in
+   * {@code src/main/resources}. Exclude those so validation only requires what this provider actually generates.
+   */
+  @Override
+  protected java.util.stream.Stream<? extends net.minecraft.core.Holder<Block>> getKnownBlocks() {
+    return BuiltInRegistries.BLOCK.listElements()
+      .filter(holder -> holder.getKey().location().getNamespace().equals(TConstruct.MOD_ID))
+      .filter(holder -> !hasResource(holder.getKey().location(), "blockstates"));
+  }
+
+  /**
+   * Item-model validation: only the block-items for the blocks this provider generates. Regular items (tool parts, casts,
+   * materials) and hand-authored block items are produced elsewhere (TinkerItemModelProvider / static resources).
+   */
+  @Override
+  protected java.util.stream.Stream<? extends net.minecraft.core.Holder<net.minecraft.world.item.Item>> getKnownItems() {
+    java.util.Set<Block> known = getKnownBlocks().map(net.minecraft.core.Holder::value).collect(java.util.stream.Collectors.toSet());
+    return BuiltInRegistries.ITEM.listElements()
+      .filter(holder -> holder.value() instanceof net.minecraft.world.item.BlockItem blockItem && known.contains(blockItem.getBlock()));
   }
 
   @Override

@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:rose_gold_ingot",
   "ingredients": [
-    {
-      "item": "tconstruct:rose_gold_block"
-    }
+    "tconstruct:rose_gold_block"
   ],
   "result": {
     "count": 9,

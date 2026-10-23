@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:queens_slime_nugget",
   "ingredients": [
-    {
-      "item": "tconstruct:queens_slime_ingot"
-    }
+    "tconstruct:queens_slime_ingot"
   ],
   "result": {
     "count": 9,

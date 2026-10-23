@@ -3,9 +3,7 @@
   "category": "building",
   "group": "tconstruct:congealed_slime",
   "key": {
-    "#": {
-      "tag": "c:slimeball/earth"
-    }
+    "#": "#c:slimeball/earth"
   },
   "pattern": [
     "##",

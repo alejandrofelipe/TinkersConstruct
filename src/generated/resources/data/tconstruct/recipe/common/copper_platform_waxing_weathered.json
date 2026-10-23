@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "tconstruct:wax_copper_platform",
   "ingredients": [
-    {
-      "item": "tconstruct:weathered_copper_platform"
-    },
-    {
-      "item": "minecraft:honeycomb"
-    }
+    "tconstruct:weathered_copper_platform",
+    "minecraft:honeycomb"
   ],
   "result": {
     "count": 1,

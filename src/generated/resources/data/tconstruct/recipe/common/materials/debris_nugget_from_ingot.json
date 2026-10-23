@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:debris_nugget",
   "ingredients": [
-    {
-      "item": "minecraft:netherite_scrap"
-    }
+    "minecraft:netherite_scrap"
   ],
   "result": {
     "count": 9,

@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "tconstruct:material",
+    "model": "tconstruct:item/adze_head",
+    "offset": [
+      -5,
+      1
+    ]
+  }
+}

@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "tconstruct:steel_ingot",
   "key": {
-    "#": {
-      "tag": "c:nuggets/steel"
-    },
-    "*": {
-      "item": "tconstruct:steel_nugget"
-    }
+    "#": "#c:nuggets/steel",
+    "*": "tconstruct:steel_nugget"
   },
   "pattern": [
     "###",

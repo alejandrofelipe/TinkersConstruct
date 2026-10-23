@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:hepatizon_ingot",
   "ingredients": [
-    {
-      "item": "tconstruct:hepatizon_block"
-    }
+    "tconstruct:hepatizon_block"
   ],
   "result": {
     "count": 9,

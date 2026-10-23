@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:knightmetal_ingot",
   "ingredients": [
-    {
-      "item": "tconstruct:knightmetal_block"
-    }
+    "tconstruct:knightmetal_block"
   ],
   "result": {
     "count": 9,

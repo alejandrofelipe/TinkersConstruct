@@ -3,9 +3,7 @@
   "category": "misc",
   "group": "tconstruct:raw_cobalt",
   "ingredients": [
-    {
-      "item": "tconstruct:raw_cobalt_block"
-    }
+    "tconstruct:raw_cobalt_block"
   ],
   "result": {
     "count": 9,
