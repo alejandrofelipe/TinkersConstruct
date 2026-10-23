@@ -36,7 +36,7 @@ class BookStructureTemplateTest extends BaseMcTest {
       StructureTemplate template = new StructureTemplate();
       try (InputStream in = resource.openStream()) {
         CompoundTag nbt = NbtIo.readCompressed(in, NbtAccounter.unlimitedHeap());
-        template.load(BuiltInRegistries.BLOCK.asLookup(), nbt);
+        template.load(BuiltInRegistries.BLOCK, nbt);
       }
 
       var size = template.getSize();

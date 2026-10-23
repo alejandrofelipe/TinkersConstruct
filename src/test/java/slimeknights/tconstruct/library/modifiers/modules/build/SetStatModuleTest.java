@@ -3,8 +3,7 @@ package slimeknights.tconstruct.library.modifiers.modules.build;
 import com.google.gson.JsonObject;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.ToolMaterial;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
@@ -23,15 +22,15 @@ class SetStatModuleTest extends BaseMcTest {
 
   @Test
   void addToolStats_conditionMatches_updatesStat() {
-    SetStatModule<Tier> module = SetStatModule.set(ToolStats.HARVEST_TIER).value(Tiers.DIAMOND);
+    SetStatModule<ToolMaterial> module = SetStatModule.set(ToolStats.HARVEST_TIER).value(ToolMaterial.DIAMOND);
     ModifierStatsBuilder builder = ModifierStatsBuilder.builder();
     module.addToolStats(mock(IToolContext.class), LEVEL_1, builder);
-    assertThat(builder.getStat(ToolStats.HARVEST_TIER)).isEqualTo(Tiers.DIAMOND);
+    assertThat(builder.getStat(ToolStats.HARVEST_TIER)).isEqualTo(ToolMaterial.DIAMOND);
   }
 
   @Test
   void addToolStats_conditionFails_leavesDefaultValue() {
-    SetStatModule<Tier> module = new SetStatModule<>(ToolStats.HARVEST_TIER, Tiers.DIAMOND, ModifierCondition.ANY_CONTEXT.minLevel(5));
+    SetStatModule<ToolMaterial> module = new SetStatModule<>(ToolStats.HARVEST_TIER, ToolMaterial.DIAMOND, ModifierCondition.ANY_CONTEXT.minLevel(5));
     ModifierStatsBuilder builder = ModifierStatsBuilder.builder();
     module.addToolStats(mock(IToolContext.class), LEVEL_1, builder);
     assertThat(builder.getStat(ToolStats.HARVEST_TIER)).isEqualTo(ToolStats.HARVEST_TIER.getDefaultValue());
@@ -41,11 +40,11 @@ class SetStatModuleTest extends BaseMcTest {
   void addToolStats_tierStat_stillHonorsLargestTierWinsSemantic() {
     // SetStatModule.addToolStats() just delegates to the stat's own update(); for a tier stat that keeps the
     // largest tier seen so far - confirms this module doesn't bypass that semantic.
-    SetStatModule<Tier> module = SetStatModule.set(ToolStats.HARVEST_TIER).value(Tiers.IRON);
+    SetStatModule<ToolMaterial> module = SetStatModule.set(ToolStats.HARVEST_TIER).value(ToolMaterial.IRON);
     ModifierStatsBuilder builder = ModifierStatsBuilder.builder();
-    ToolStats.HARVEST_TIER.update(builder, Tiers.DIAMOND);
+    ToolStats.HARVEST_TIER.update(builder, ToolMaterial.DIAMOND);
     module.addToolStats(mock(IToolContext.class), LEVEL_1, builder);
-    assertThat(builder.getStat(ToolStats.HARVEST_TIER)).isEqualTo(Tiers.DIAMOND);
+    assertThat(builder.getStat(ToolStats.HARVEST_TIER)).isEqualTo(ToolMaterial.DIAMOND);
   }
 
   @Test
@@ -58,22 +57,22 @@ class SetStatModuleTest extends BaseMcTest {
 
   @Test
   void builder_set_defaultsToAnyContextCondition() {
-    SetStatModule<Tier> module = SetStatModule.set(ToolStats.HARVEST_TIER).value(Tiers.WOOD);
+    SetStatModule<ToolMaterial> module = SetStatModule.set(ToolStats.HARVEST_TIER).value(ToolMaterial.WOOD);
     assertThat(module.condition()).isEqualTo(ModifierCondition.ANY_CONTEXT);
     assertThat(module.stat()).isSameAs(ToolStats.HARVEST_TIER);
-    assertThat(module.value()).isEqualTo(Tiers.WOOD);
+    assertThat(module.value()).isEqualTo(ToolMaterial.WOOD);
   }
 
   @Test
   void loader_jsonRoundTrips() {
-    SetStatModule<Tier> original = SetStatModule.set(ToolStats.HARVEST_TIER).minLevel(2).value(Tiers.NETHERITE);
+    SetStatModule<ToolMaterial> original = SetStatModule.set(ToolStats.HARVEST_TIER).minLevel(2).value(ToolMaterial.NETHERITE);
     JsonObject json = new JsonObject();
     SetStatModule.LOADER.serialize(original, json);
     SetStatModule<?> parsed = SetStatModule.LOADER.deserialize(json);
 
     ModifierStatsBuilder passingBuilder = ModifierStatsBuilder.builder();
     parsed.addToolStats(mock(IToolContext.class), new ModifierEntry(new ModifierId("test", "foo"), 3), passingBuilder);
-    assertThat(passingBuilder.getStat(ToolStats.HARVEST_TIER)).isEqualTo(Tiers.NETHERITE);
+    assertThat(passingBuilder.getStat(ToolStats.HARVEST_TIER)).isEqualTo(ToolMaterial.NETHERITE);
 
     ModifierStatsBuilder failingBuilder = ModifierStatsBuilder.builder();
     parsed.addToolStats(mock(IToolContext.class), LEVEL_1, failingBuilder);
@@ -94,7 +93,7 @@ class SetStatModuleTest extends BaseMcTest {
 
   @Test
   void getLoader_returnsStaticLoader() {
-    SetStatModule<Tier> module = SetStatModule.set(ToolStats.HARVEST_TIER).value(Tiers.WOOD);
+    SetStatModule<ToolMaterial> module = SetStatModule.set(ToolStats.HARVEST_TIER).value(ToolMaterial.WOOD);
     assertThat(module.getLoader()).isSameAs(SetStatModule.LOADER);
   }
 }

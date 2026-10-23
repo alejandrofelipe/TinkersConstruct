@@ -4,7 +4,7 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.ToolMaterial;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +38,7 @@ class StatsNBTTest extends BaseMcTest {
     StatsNBT stats = StatsNBT
       .builder()
       .set(ToolStats.DURABILITY, 6f)
-      .set(ToolStats.HARVEST_TIER, Tiers.STONE)
+      .set(ToolStats.HARVEST_TIER, ToolMaterial.STONE)
       .set(ToolStats.ATTACK_DAMAGE, 4f)
       .set(ToolStats.MINING_SPEED, 3.5f)
       .set(ToolStats.ATTACK_SPEED, 2f)
@@ -47,7 +47,7 @@ class StatsNBTTest extends BaseMcTest {
 
     assertThat(stats.getContainedStats()).hasSize(6);
     assertThat(stats.get(ToolStats.DURABILITY)).isEqualTo(6);
-    assertThat(stats.get(ToolStats.HARVEST_TIER)).isEqualTo(Tiers.STONE);
+    assertThat(stats.get(ToolStats.HARVEST_TIER)).isEqualTo(ToolMaterial.STONE);
     assertThat(stats.get(ToolStats.ATTACK_DAMAGE)).isEqualTo(4);
     assertThat(stats.get(ToolStats.MINING_SPEED)).isEqualTo(3.5f);
     assertThat(stats.get(ToolStats.ATTACK_SPEED)).isEqualTo(2);
@@ -59,7 +59,7 @@ class StatsNBTTest extends BaseMcTest {
     StatsNBT stats = StatsNBT
       .builder()
       .set(ToolStats.DURABILITY, 4f)
-      .set(ToolStats.HARVEST_TIER, Tiers.IRON)
+      .set(ToolStats.HARVEST_TIER, ToolMaterial.IRON)
       .set(ToolStats.ATTACK_DAMAGE, 3.5f)
       .set(ToolStats.MINING_SPEED, 8f)
       .set(ToolStats.ATTACK_SPEED, 2f)
@@ -71,7 +71,7 @@ class StatsNBTTest extends BaseMcTest {
 
     assertThat(decoded.getContainedStats()).hasSize(5);
     assertThat(decoded.get(ToolStats.DURABILITY)).isEqualTo(4f);
-    assertThat(decoded.get(ToolStats.HARVEST_TIER)).isEqualTo(Tiers.IRON);
+    assertThat(decoded.get(ToolStats.HARVEST_TIER)).isEqualTo(ToolMaterial.IRON);
     assertThat(decoded.get(ToolStats.ATTACK_DAMAGE)).isEqualTo(3.5f);
     assertThat(decoded.get(ToolStats.MINING_SPEED)).isEqualTo(8);
     assertThat(decoded.get(ToolStats.ATTACK_SPEED)).isEqualTo(2);
@@ -82,7 +82,7 @@ class StatsNBTTest extends BaseMcTest {
     StatsNBT testStatsNBT = StatsNBT
       .builder()
       .set(ToolStats.DURABILITY, 1f)
-      .set(ToolStats.HARVEST_TIER, Tiers.NETHERITE)
+      .set(ToolStats.HARVEST_TIER, ToolMaterial.NETHERITE)
       .set(ToolStats.ATTACK_DAMAGE, 3f)
       .set(ToolStats.MINING_SPEED, 4f)
       .set(ToolStats.ATTACK_SPEED, 5f)
@@ -90,7 +90,7 @@ class StatsNBTTest extends BaseMcTest {
     CompoundTag nbt = testStatsNBT.serializeToNBT();
     
     assertThat(nbt.getInt(ToolStats.DURABILITY.getName().toString())).isEqualTo(1);
-    assertThat(nbt.getString(ToolStats.HARVEST_TIER.getName().toString())).isEqualTo(Objects.requireNonNull(HarvestTiers.tierName(Tiers.NETHERITE)).toString());
+    assertThat(nbt.getString(ToolStats.HARVEST_TIER.getName().toString())).isEqualTo(Objects.requireNonNull(HarvestTiers.tierName(ToolMaterial.NETHERITE)).toString());
     assertThat(nbt.getFloat(ToolStats.ATTACK_DAMAGE.getName().toString())).isEqualTo(3);
     assertThat(nbt.getFloat(ToolStats.MINING_SPEED.getName().toString())).isEqualTo(4);
     assertThat(nbt.getFloat(ToolStats.ATTACK_SPEED.getName().toString())).isEqualTo(5);
@@ -107,7 +107,7 @@ class StatsNBTTest extends BaseMcTest {
   void deserialize() {
     CompoundTag nbt = new CompoundTag();
     nbt.putInt(ToolStats.DURABILITY.getName().toString(), 6);
-    nbt.putString(ToolStats.HARVEST_TIER.getName().toString(), Objects.requireNonNull(HarvestTiers.tierName(Tiers.GOLD)).toString());
+    nbt.putString(ToolStats.HARVEST_TIER.getName().toString(), Objects.requireNonNull(HarvestTiers.tierName(ToolMaterial.GOLD)).toString());
     nbt.putFloat(ToolStats.ATTACK_DAMAGE.getName().toString(), 4);
     nbt.putFloat(ToolStats.MINING_SPEED.getName().toString(), 3.5f);
     nbt.putFloat(ToolStats.ATTACK_SPEED.getName().toString(), 2);
@@ -116,7 +116,7 @@ class StatsNBTTest extends BaseMcTest {
 
     assertThat(statsNBT.getContainedStats()).hasSize(5);
     assertThat(statsNBT.getInt(ToolStats.DURABILITY)).isEqualTo(6);
-    assertThat(statsNBT.get(ToolStats.HARVEST_TIER)).isEqualTo(Tiers.GOLD);
+    assertThat(statsNBT.get(ToolStats.HARVEST_TIER)).isEqualTo(ToolMaterial.GOLD);
     assertThat(statsNBT.get(ToolStats.ATTACK_DAMAGE)).isEqualTo(4);
     assertThat(statsNBT.get(ToolStats.MINING_SPEED)).isEqualTo(3.5f);
     assertThat(statsNBT.get(ToolStats.ATTACK_SPEED)).isEqualTo(2);

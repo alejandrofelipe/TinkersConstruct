@@ -8,9 +8,9 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.neoforged.neoforge.common.conditions.FalseCondition;
+import net.neoforged.neoforge.common.conditions.AlwaysCondition;
 import net.neoforged.neoforge.common.conditions.ICondition;
-import net.neoforged.neoforge.common.conditions.TrueCondition;
+import net.neoforged.neoforge.common.conditions.NeverCondition;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -48,8 +48,8 @@ class MaterialManagerTest extends BaseMcTest {
   @BeforeAll
   static void setUp() {
     materialManager = new MaterialManager();
-    ensureSerializerRegistered(ResourceLocation.fromNamespaceAndPath("forge", "false"), FalseCondition.CODEC);
-    ensureSerializerRegistered(ResourceLocation.fromNamespaceAndPath("forge", "true"), TrueCondition.CODEC);
+    ensureSerializerRegistered(ResourceLocation.fromNamespaceAndPath("forge", "false"), NeverCondition.CODEC);
+    ensureSerializerRegistered(ResourceLocation.fromNamespaceAndPath("forge", "true"), AlwaysCondition.CODEC);
   }
 
   @Test

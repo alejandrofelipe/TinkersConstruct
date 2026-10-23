@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.json.predicate.tool;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.ToolMaterial;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.fixture.RegistrationFixture;
@@ -23,7 +23,7 @@ class ToolItemSubPredicateTest extends BaseMcTest {
   @Test
   void codec_roundTrips() {
     ToolItemSubPredicate original = ToolItemSubPredicate.ofTool(
-      new StatInSetPredicate<>(ToolStats.HARVEST_TIER, Tiers.NETHERITE));
+      new StatInSetPredicate<>(ToolStats.HARVEST_TIER, ToolMaterial.NETHERITE));
     var encoded = ToolItemSubPredicate.CODEC.encodeStart(JsonOps.INSTANCE, original).getOrThrow();
     ToolItemSubPredicate decoded = ToolItemSubPredicate.CODEC.parse(JsonOps.INSTANCE, encoded).getOrThrow();
     var reEncoded = ToolItemSubPredicate.CODEC.encodeStart(JsonOps.INSTANCE, decoded).getOrThrow();

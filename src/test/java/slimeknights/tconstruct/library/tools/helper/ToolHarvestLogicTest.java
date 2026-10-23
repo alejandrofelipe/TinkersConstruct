@@ -2,6 +2,8 @@ package slimeknights.tconstruct.library.tools.helper;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -32,8 +34,9 @@ class ToolHarvestLogicTest extends ToolItemTest {
   synchronized static void beforeAllToolLogic() {
     MaterialItemFixture.init();
     if (pickaxeTool == null) {
-      pickaxeTool = new ModifiableItem(new Item.Properties().stacksTo(1), ToolDefinitionFixture.getStandardToolDefinition());
-      Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath("test", "pickaxe"), pickaxeTool);
+      ResourceLocation id = ResourceLocation.fromNamespaceAndPath("test", "pickaxe");
+      pickaxeTool = new ModifiableItem(new Item.Properties().stacksTo(1).setId(ResourceKey.create(Registries.ITEM, id)), ToolDefinitionFixture.getStandardToolDefinition());
+      Registry.register(BuiltInRegistries.ITEM, id, pickaxeTool);
     }
   }
 
@@ -90,8 +93,9 @@ class ToolHarvestLogicTest extends ToolItemTest {
                          .module(new MultiplyStatsModule(MultiplierNBT.builder().set(ToolStats.MINING_SPEED, modifier).build()))
                          .build());
 
-    ModifiableItem toolWithMiningModifier = new ModifiableItem(new Item.Properties(), definition);
-    Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath("test", "tool_with_mining_modifier"), toolWithMiningModifier);
+    ResourceLocation toolId = ResourceLocation.fromNamespaceAndPath("test", "tool_with_mining_modifier");
+    ModifiableItem toolWithMiningModifier = new ModifiableItem(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, toolId)), definition);
+    Registry.register(BuiltInRegistries.ITEM, toolId, toolWithMiningModifier);
     ItemStack tool = buildTestTool(toolWithMiningModifier);
 
     // boosted by correct block

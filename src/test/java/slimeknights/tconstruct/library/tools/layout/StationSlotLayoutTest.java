@@ -44,7 +44,7 @@ class StationSlotLayoutTest extends BaseMcTest {
     assertThat(decoded.getY()).isEqualTo(6);
     Ingredient ingredient = decoded.getFilter();
     assertThat(ingredient).isNotNull();
-    ItemStack[] stacks = ingredient.getItems();
+    ItemStack[] stacks = ingredient.items().map(ItemStack::new).toArray(ItemStack[]::new);
     assertThat(stacks).hasSize(1);
     assertThat(stacks[0].getItem()).isEqualTo(Items.BOOK);
     assertThat(TestHelper.getTag(stacks[0])).isNull();

@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.library.tools.stat;
 
-import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.ToolMaterial;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.library.tools.nbt.StatsNBT;
@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ToolStatsModifierBuilderTest extends BaseMcTest {
   private final StatsNBT testStatsNBT = StatsNBT.builder()
                                                 .set(ToolStats.DURABILITY, 100f)
-                                                .set(ToolStats.HARVEST_TIER, Tiers.STONE)
+                                                .set(ToolStats.HARVEST_TIER, ToolMaterial.STONE)
                                                 .set(ToolStats.ATTACK_DAMAGE, 2f)
                                                 .set(ToolStats.MINING_SPEED, 3f)
                                                 .set(ToolStats.ATTACK_SPEED, 5f)
@@ -42,24 +42,24 @@ class ToolStatsModifierBuilderTest extends BaseMcTest {
   @Test
   void tierToolStat_set() {
     ModifierStatsBuilder builder = ModifierStatsBuilder.builder();
-    ToolStats.HARVEST_TIER.update(builder, Tiers.DIAMOND);
+    ToolStats.HARVEST_TIER.update(builder, ToolMaterial.DIAMOND);
     StatsNBT nbt = builder.build();
-    assertThat(nbt.get(ToolStats.HARVEST_TIER)).isEqualTo(Tiers.DIAMOND);
+    assertThat(nbt.get(ToolStats.HARVEST_TIER)).isEqualTo(ToolMaterial.DIAMOND);
   }
 
   @Test
   void tierToolStat_largest() {
     ModifierStatsBuilder builder = ModifierStatsBuilder.builder();
-    ToolStats.HARVEST_TIER.update(builder, Tiers.IRON);
-    ToolStats.HARVEST_TIER.update(builder, Tiers.DIAMOND);
+    ToolStats.HARVEST_TIER.update(builder, ToolMaterial.IRON);
+    ToolStats.HARVEST_TIER.update(builder, ToolMaterial.DIAMOND);
     StatsNBT nbt = builder.build();
-    assertThat(nbt.get(ToolStats.HARVEST_TIER)).isEqualTo(Tiers.DIAMOND);
+    assertThat(nbt.get(ToolStats.HARVEST_TIER)).isEqualTo(ToolMaterial.DIAMOND);
 
     builder = ModifierStatsBuilder.builder();
-    ToolStats.HARVEST_TIER.update(builder, Tiers.NETHERITE);
-    ToolStats.HARVEST_TIER.update(builder, Tiers.DIAMOND);
+    ToolStats.HARVEST_TIER.update(builder, ToolMaterial.NETHERITE);
+    ToolStats.HARVEST_TIER.update(builder, ToolMaterial.DIAMOND);
     nbt = builder.build();
-    assertThat(nbt.get(ToolStats.HARVEST_TIER)).isEqualTo(Tiers.NETHERITE);
+    assertThat(nbt.get(ToolStats.HARVEST_TIER)).isEqualTo(ToolMaterial.NETHERITE);
   }
 
 

@@ -2,6 +2,8 @@ package slimeknights.tconstruct.library.tools.item;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -31,8 +33,9 @@ public abstract class ToolItemTest extends BaseMcTest {
     ModifierFixture.init();
     TagFixture.init();
     if (tool == null) {
-      tool = new ModifiableItem(new Item.Properties().stacksTo(1), ToolDefinitionFixture.getStandardToolDefinition());
-      Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath("test", "toolcore"), tool);
+      ResourceLocation id = ResourceLocation.fromNamespaceAndPath("test", "toolcore");
+      tool = new ModifiableItem(new Item.Properties().stacksTo(1).setId(ResourceKey.create(Registries.ITEM, id)), ToolDefinitionFixture.getStandardToolDefinition());
+      Registry.register(BuiltInRegistries.ITEM, id, tool);
     }
     setupTierSorting();
     // ModifierStatsBuilder.disableFilter();
