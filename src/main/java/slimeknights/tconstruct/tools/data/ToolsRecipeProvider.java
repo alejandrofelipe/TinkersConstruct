@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.tools.data;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import net.minecraft.world.item.equipment.ArmorType;
 
 import net.minecraft.core.HolderLookup;
@@ -319,7 +321,7 @@ public class ToolsRecipeProvider extends BaseRecipeProvider implements IMaterial
     String folder = "tools/recycling/";
 
     // main recycling recipe - uses tool definition for parts list
-    PartBuilderToolRecycleBuilder.tools(SizedIngredient.of(DifferenceIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.MULTIPART_TOOL)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.UNRECYCLABLE)))))
+    PartBuilderToolRecycleBuilder.tools(SizedIngredient.of(DifferenceIngredient.of(LazyTagIngredient.of(TinkerTags.Items.MULTIPART_TOOL), LazyTagIngredient.of(TinkerTags.Items.UNRECYCLABLE))))
         .save(consumer, location(folder + "general"));
     // daggers want to enforce stack size 2 when recycling to prevent dupes
     PartBuilderToolRecycleBuilder.tools(SizedIngredient.fromItems(2, TinkerTools.dagger))
@@ -468,7 +470,7 @@ public class ToolsRecipeProvider extends BaseRecipeProvider implements IMaterial
     uncastablePart(consumer, TinkerToolParts.shell.get(), 2, PlatingMaterialStats.SHIELD.getStatId(), partFolder);
     uncastablePart(consumer, TinkerToolParts.laces.get(), 2, PlatingMaterialStats.SHIELD.getStatId(), partFolder);
     // arrow parts are just part builder, no composite currently
-    Ingredient arrowPattern = CompoundIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DEFAULT_PATTERNS)), Ingredient.of(TinkerSmeltery.arrowCast));
+    Ingredient arrowPattern = CompoundIngredient.of(LazyTagIngredient.of(TinkerTags.Items.DEFAULT_PATTERNS), Ingredient.of(TinkerSmeltery.arrowCast));
     PartRecipeBuilder.partRecipe(TinkerToolParts.arrowHead.get())
       .setPattern(TinkerToolParts.arrowHead.getId())
       .setPatternItem(arrowPattern)

@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.recipe.casting.material;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -135,7 +137,7 @@ public class MaterialCastingRecipeBuilder extends AbstractRecipeBuilder<Material
    * @return  Builder instance
    */
   public MaterialCastingRecipeBuilder setCast(TagKey<Item> tag, boolean consumed) {
-    return this.setCast(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)), consumed);
+    return this.setCast(LazyTagIngredient.of(tag), consumed);
   }
 
   /**

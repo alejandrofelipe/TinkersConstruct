@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.recipe.casting;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import lombok.RequiredArgsConstructor;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -213,7 +215,7 @@ public class ItemCastingRecipeBuilder extends AbstractRecipeBuilder<ItemCastingR
    * @return  Builder instance
    */
   public ItemCastingRecipeBuilder setCast(TagKey<Item> tagIn, boolean consumed) {
-    return this.setCast(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tagIn)), consumed);
+    return this.setCast(LazyTagIngredient.of(tagIn), consumed);
   }
 
   /**

@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.common.data.loot;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.EntityTypePredicate;
 import net.minecraft.core.HolderLookup;
@@ -80,7 +82,7 @@ public class GlobalLootModifiersProvider extends GlobalLootModifierProvider {
     // chrysophilite modifier hook
     add("chrysophilite_modifier", AddEntryLootModifier.builder(LootItem.lootTableItem(Items.GOLD_NUGGET))
       .addCondition(new BlockTagLootCondition(TinkerTags.Blocks.CHRYSOPHILITE_ORES))
-      .addCondition(new ContainsItemModifierLootCondition(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.CHRYSOPHILITE_ORES))).inverted())
+      .addCondition(new ContainsItemModifierLootCondition(LazyTagIngredient.of(TinkerTags.Items.CHRYSOPHILITE_ORES)).inverted())
       .addCondition(ChrysophiliteLootCondition.INSTANCE)
       .addFunction(SetItemCountFunction.setCount(UniformGenerator.between(2, 6)).build())
       .addFunction(ChrysophiliteBonusFunction.oreDrops(false).build())
@@ -106,7 +108,7 @@ public class GlobalLootModifiersProvider extends GlobalLootModifierProvider {
     ResourceLocation ores = commonResource("ores/" + name);
     AddEntryLootModifier.Builder builder = AddEntryLootModifier.builder(TagPreferenceLootEntry.tagPreference(nuggets));
     builder.addCondition(new BlockTagLootCondition(TagKey.create(Registries.BLOCK, ores)))
-           .addCondition(new ContainsItemModifierLootCondition(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TagKey.create(Registries.ITEM, ores)))).inverted());
+           .addCondition(new ContainsItemModifierLootCondition(LazyTagIngredient.of(TagKey.create(Registries.ITEM, ores))).inverted());
     if (optional) {
       builder.addCondition(new TagFilledCondition<>(nuggets));
     }

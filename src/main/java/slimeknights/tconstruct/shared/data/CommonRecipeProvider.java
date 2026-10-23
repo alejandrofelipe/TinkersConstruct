@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.shared.data;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -298,10 +300,10 @@ public class CommonRecipeProvider extends BaseRecipeProvider implements ICommonR
       .unlockedBy("has_item", has(TinkerWorld.steelShard))
       .save(consumer, recipeKey(location(folder + "steel_nugget_blasting")));
     // knightmetal - normally would not use the tag, but we know TF does not provide nuggets for armor shards
-    SimpleCookingRecipeBuilder.smelting(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.KNIGHTMETAL_SHARD)), RecipeCategory.MISC, TinkerMaterials.knightmetal.getNugget(), 0.2f, 50)
+    SimpleCookingRecipeBuilder.smelting(LazyTagIngredient.of(TinkerTags.Items.KNIGHTMETAL_SHARD), RecipeCategory.MISC, TinkerMaterials.knightmetal.getNugget(), 0.2f, 50)
       .unlockedBy("has_item", has(TinkerWorld.knightmetalShard))
       .save(consumer, recipeKey(location(folder + "knightmetal_nugget_smelting")));
-    SimpleCookingRecipeBuilder.blasting(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.KNIGHTMETAL_SHARD)), RecipeCategory.MISC, TinkerMaterials.knightmetal.getNugget(), 0.2f, 25)
+    SimpleCookingRecipeBuilder.blasting(LazyTagIngredient.of(TinkerTags.Items.KNIGHTMETAL_SHARD), RecipeCategory.MISC, TinkerMaterials.knightmetal.getNugget(), 0.2f, 25)
       .unlockedBy("has_item", has(TinkerWorld.knightmetalShard))
       .save(consumer, recipeKey(location(folder + "knightmetal_nugget_blasting")));
 

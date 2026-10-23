@@ -61,6 +61,6 @@ public class NoContainerIngredient extends NestedIngredient {
 
   /** Creates an instance from the given tag */
   public static Ingredient of(TagKey<Item> tag) {
-    return of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)));
+    return of(LazyTagIngredient.of(tag));
   }
 }

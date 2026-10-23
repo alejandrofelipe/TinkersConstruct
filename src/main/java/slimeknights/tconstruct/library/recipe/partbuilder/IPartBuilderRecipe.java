@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.recipe.partbuilder;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -22,7 +24,7 @@ import java.util.stream.Stream;
 /** Common interface for part builder recipes */
 public interface IPartBuilderRecipe extends ICommonRecipe<IPartBuilderContainer> {
   /** Default patterns in a part builder recipe, Forge has cache invalidation for vanilla, so this is fine as long as that persists */
-  Ingredient DEFAULT_PATTERNS = Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DEFAULT_PATTERNS));
+  Ingredient DEFAULT_PATTERNS = LazyTagIngredient.of(TinkerTags.Items.DEFAULT_PATTERNS);
   /** Pattern to use for recipes that don't implement the standard pattern behavior */
   Pattern MISSING = new Pattern(TConstruct.MOD_ID, "missingno");
 

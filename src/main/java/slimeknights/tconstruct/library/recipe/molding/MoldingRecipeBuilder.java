@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.recipe.molding;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import lombok.RequiredArgsConstructor;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -63,7 +65,7 @@ public class MoldingRecipeBuilder extends AbstractRecipeBuilder<MoldingRecipeBui
 
   /** Sets the material item, on the table */
   public MoldingRecipeBuilder setMaterial(TagKey<Item> tag) {
-    return setMaterial(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)));
+    return setMaterial(LazyTagIngredient.of(tag));
   }
 
   /** Sets the mold item, in the players hand */
@@ -80,7 +82,7 @@ public class MoldingRecipeBuilder extends AbstractRecipeBuilder<MoldingRecipeBui
 
   /** Sets the mold item, in the players hand */
   public MoldingRecipeBuilder setPattern(TagKey<Item> tag, boolean consumed) {
-    return setPattern(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)), consumed);
+    return setPattern(LazyTagIngredient.of(tag), consumed);
   }
 
 

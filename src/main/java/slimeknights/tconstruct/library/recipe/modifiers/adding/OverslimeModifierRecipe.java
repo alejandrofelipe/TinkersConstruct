@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.recipe.modifiers.adding;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import lombok.Getter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -44,7 +46,7 @@ public class OverslimeModifierRecipe implements ITinkerStationRecipe, IDisplayMo
   private static final String KEY_AMOUNT = TConstruct.makeTranslationKey("recipe", "modifier.amount");
   public static final RecordLoadable<OverslimeModifierRecipe> LOADER = RecordLoadable.create(
     ContextKey.ID.nullableField(),
-    IngredientLoadable.DISALLOW_EMPTY.defaultField("tools", Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY)), true, r -> r.tools),
+    IngredientLoadable.DISALLOW_EMPTY.defaultField("tools", LazyTagIngredient.of(TinkerTags.Items.DURABILITY), true, r -> r.tools),
     IngredientLoadable.DISALLOW_EMPTY.requiredField("ingredient", r -> r.ingredient),
     IntLoadable.FROM_ONE.requiredField("restore_amount", r -> r.restoreAmount),
     OverslimeModifierRecipe::new);
@@ -66,7 +68,7 @@ public class OverslimeModifierRecipe implements ITinkerStationRecipe, IDisplayMo
   /** @deprecated use {@link #OverslimeModifierRecipe(ResourceLocation, Ingredient, Ingredient, int)} */
   @Deprecated(forRemoval = true)
   public OverslimeModifierRecipe(ResourceLocation id, Ingredient ingredient, int restoreAmount) {
-    this(id, Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY)), ingredient, restoreAmount);
+    this(id, LazyTagIngredient.of(TinkerTags.Items.DURABILITY), ingredient, restoreAmount);
   }
 
   @Override

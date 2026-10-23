@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.recipe.casting;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -145,7 +147,7 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
    * @return  Builder instance
    */
   public PotionCastingRecipeBuilder setBottle(TagKey<Item> tagIn) {
-    return this.setBottle(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tagIn)));
+    return this.setBottle(LazyTagIngredient.of(tagIn));
   }
 
   /**

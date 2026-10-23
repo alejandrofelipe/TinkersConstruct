@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.tools.data;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -213,7 +215,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                          .setSlots(SlotType.UPGRADE, 1)
                          .saveSalvage(consumer, prefix(ModifierIds.diamond.getLocation(), upgradeSalvage))
                          .save(consumer, prefix(ModifierIds.diamond.getLocation(), upgradeFolder));
-    Ingredient multiuse = DifferenceIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.MODIFIABLE)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.SINGLE_USE)));
+    Ingredient multiuse = DifferenceIngredient.of(LazyTagIngredient.of(TinkerTags.Items.MODIFIABLE), LazyTagIngredient.of(TinkerTags.Items.SINGLE_USE));
     ModifierRecipeBuilder.modifier(ModifierIds.worldbound)
       .setTools(multiuse)
       .addInput(TinkerTags.Items.INGOTS_NETHERITE_SCRAP)
@@ -241,7 +243,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                          .save(consumer, prefix(ModifierIds.netherite.getLocation(), upgradeFolder));
 
     // overslime
-    Ingredient overslimeTools = Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY));
+    Ingredient overslimeTools = LazyTagIngredient.of(TinkerTags.Items.DURABILITY);
     for (SlimeType type : SlimeType.values()) {
       int amount;
       switch (type) {
@@ -624,7 +626,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                          .setSlots(SlotType.ABILITY, 1)
                          .setTools(TinkerTags.Items.BOWS)
                          .saveSalvage(consumer, prefix(ModifierIds.trickQuiver.getLocation(), abilitySalvage))
-                         .setTools(IntersectionIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.BOWS)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.INTERACTABLE))))
+                         .setTools(IntersectionIngredient.of(LazyTagIngredient.of(TinkerTags.Items.BOWS), LazyTagIngredient.of(TinkerTags.Items.INTERACTABLE)))
                          .save(consumer, prefix(ModifierIds.trickQuiver.getLocation(), abilityFolder));
     ModifierRecipeBuilder.modifier(ModifierIds.sliver)
       .addInput(TinkerModifiers.silkyCloth)
@@ -633,7 +635,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
       .addInput(TinkerWorld.skySlimeVine)
       .addInput(TinkerWorld.skySlimeVine)
       .setSlots(SlotType.ABILITY, 1)
-      .setTools(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.STAFFS)))
+      .setTools(LazyTagIngredient.of(TinkerTags.Items.STAFFS))
       .saveSalvage(consumer, prefix(ModifierIds.sliver.getLocation(), abilitySalvage))
       .save(consumer, prefix(ModifierIds.sliver.getLocation(), abilityFolder));
     ModifierRecipeBuilder.modifier(ModifierIds.ballista)
@@ -699,7 +701,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                          .addInput(TinkerMaterials.slimesteel.getIngotTag())
                          .setMaxLevel(1).checkTraitLevel()
                          .setSlots(SlotType.UPGRADE, 1)
-                         .setTools(IntersectionIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.CROSSBOWS)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.INTERACTABLE_LEFT)))) // this is the same recipes as dual wielding, but crossbows do not interact on left
+                         .setTools(IntersectionIngredient.of(LazyTagIngredient.of(TinkerTags.Items.CROSSBOWS), LazyTagIngredient.of(TinkerTags.Items.INTERACTABLE_LEFT))) // this is the same recipes as dual wielding, but crossbows do not interact on left
                          .saveSalvage(consumer, prefix(TinkerModifiers.sinistral, upgradeSalvage))
                          .save(consumer, prefix(TinkerModifiers.sinistral, upgradeFolder));
     ModifierRecipeBuilder.modifier(ModifierIds.scope)
@@ -753,8 +755,8 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
     Ingredient bowLimb = MaterialIngredient.of(TinkerToolParts.bowLimb.get());
     ModifierRecipeBuilder.modifier(ModifierIds.throwing)
       .setTools(IntersectionIngredient.of(
-        Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY)),
-        Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.INTERACTABLE_CHARGE)),
+        LazyTagIngredient.of(TinkerTags.Items.DURABILITY),
+        LazyTagIngredient.of(TinkerTags.Items.INTERACTABLE_CHARGE),
         ingredientFromTags(TinkerTags.Items.MELEE_WEAPON, TinkerTags.Items.HARVEST)
       ))
       .addInput(bowLimb)
@@ -825,7 +827,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
     IncrementalModifierRecipeBuilder.modifier(ModifierIds.blockade)
       .setInput(TinkerCommons.obsidianPane, 1, 10)
       .setSlots(SlotType.UPGRADE, 1)
-      .setTools(IntersectionIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.INTERACTABLE_CHARGE)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY))))
+      .setTools(IntersectionIngredient.of(LazyTagIngredient.of(TinkerTags.Items.INTERACTABLE_CHARGE), LazyTagIngredient.of(TinkerTags.Items.DURABILITY)))
       .setMaxLevel(3)
       .saveSalvage(consumer, prefix(ModifierIds.blockade.getLocation(), upgradeSalvage))
       .save(consumer, prefix(ModifierIds.blockade.getLocation(), upgradeFolder));
@@ -930,7 +932,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
       .saveSalvage(consumer, prefix(ModifierIds.minimap.getLocation(), upgradeSalvage))
       .save(consumer, prefix(ModifierIds.minimap.getLocation(), upgradeFolder));
     // upgrade - leggings
-    hasteRecipes(consumer, ModifierIds.speedy, Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.LEGGINGS)), 3, upgradeFolder, upgradeSalvage);
+    hasteRecipes(consumer, ModifierIds.speedy, LazyTagIngredient.of(TinkerTags.Items.LEGGINGS), 3, upgradeFolder, upgradeSalvage);
     // leaping changes slot type on level 2
     MultilevelIncrementalModifierRecipeBuilder.modifier(ModifierIds.leaping)
       .setTools(TinkerTags.Items.LEGGINGS)
@@ -1208,7 +1210,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                          .save(consumer, prefix(ModifierIds.snowdrift.getLocation(), abilityFolder));
 
     // transform ingredients
-    Ingredient bootsWithDuraibility = IntersectionIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.BOOTS)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY)));
+    Ingredient bootsWithDuraibility = IntersectionIngredient.of(LazyTagIngredient.of(TinkerTags.Items.BOOTS), LazyTagIngredient.of(TinkerTags.Items.DURABILITY));
     ModifierRecipeBuilder.modifier(ModifierIds.flamewake)
                          .setTools(bootsWithDuraibility)
                          .addInput(Items.FLINT)
@@ -1376,7 +1378,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                          .addInput(Tags.Items.INGOTS_COPPER)
                          .addInput(Tags.Items.INGOTS_COPPER)
                          .setSlots(SlotType.ABILITY, 1)
-                         .setTools(IntersectionIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.INTERACTABLE))))
+                         .setTools(IntersectionIngredient.of(LazyTagIngredient.of(TinkerTags.Items.DURABILITY), LazyTagIngredient.of(TinkerTags.Items.INTERACTABLE)))
                          .saveSalvage(consumer, prefix(ModifierIds.splashing.getLocation(), abilitySalvage))
                          .save(consumer, prefix(ModifierIds.splashing.getLocation(), abilityFolder));
     ModifierRecipeBuilder.modifier(TinkerModifiers.bursting)
@@ -1397,8 +1399,8 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
       .setMaxLevel(3).checkTraitLevel()
       // swasher gets spitting to get multishot, rest get to spit with their non-spit. No spitting with arrows
       .setTools(IntersectionIngredient.of(
-        Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY)),
-        Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.INTERACTABLE_CHARGE_MODIFIER))
+        LazyTagIngredient.of(TinkerTags.Items.DURABILITY),
+        LazyTagIngredient.of(TinkerTags.Items.INTERACTABLE_CHARGE_MODIFIER)
       ))
       .saveSalvage(consumer, prefix(ModifierIds.spitting.getLocation(), abilitySalvage))
       .save(consumer, prefix(ModifierIds.spitting.getLocation(), abilityFolder));
@@ -1444,8 +1446,8 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                          .saveSalvage(consumer, prefix(ModifierIds.reach.getLocation(), abilitySalvage))
                          .save(consumer, prefix(ModifierIds.reach.getLocation(), abilityFolder));
     // block transformers
-    Ingredient interactableWithDurability = IntersectionIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.INTERACTABLE)));
-    Ingredient interactableBootsWithDurability = IntersectionIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY)), ingredientFromTags(TinkerTags.Items.INTERACTABLE, TinkerTags.Items.BOOTS));
+    Ingredient interactableWithDurability = IntersectionIngredient.of(LazyTagIngredient.of(TinkerTags.Items.DURABILITY), LazyTagIngredient.of(TinkerTags.Items.INTERACTABLE));
+    Ingredient interactableBootsWithDurability = IntersectionIngredient.of(LazyTagIngredient.of(TinkerTags.Items.DURABILITY), ingredientFromTags(TinkerTags.Items.INTERACTABLE, TinkerTags.Items.BOOTS));
     SizedIngredient roundPlate = SizedIngredient.of(MaterialIngredient.of(TinkerToolParts.adzeHead.get()));
     SizedIngredient smallBlade = SizedIngredient.of(MaterialIngredient.of(TinkerToolParts.smallBlade.get()));
     SizedIngredient toolBinding = SizedIngredient.of(MaterialIngredient.of(TinkerToolParts.toolBinding.get()));
@@ -1477,7 +1479,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                          .saveSalvage(consumer, prefix(ModifierIds.tilling.getLocation(), abilitySalvage))
                          .save(consumer, prefix(ModifierIds.tilling.getLocation(), abilityFolder));
     ModifierRecipeBuilder.modifier(ModifierIds.brushing)
-      .setTools(IntersectionIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.INTERACTABLE_RIGHT))))
+      .setTools(IntersectionIngredient.of(LazyTagIngredient.of(TinkerTags.Items.DURABILITY), LazyTagIngredient.of(TinkerTags.Items.INTERACTABLE_RIGHT)))
       .addInput(Tags.Items.FEATHERS)
       .addInput(Tags.Items.INGOTS_COPPER)
       .setMaxLevel(1).checkTraitLevel()
@@ -1512,7 +1514,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                          .saveSalvage(consumer, prefix(ModifierIds.fireprimer.getLocation(), upgradeSalvage))
                          .save(consumer, prefix(ModifierIds.fireprimer.getLocation(), upgradeFolder));
     // slings
-    Ingredient blockWhileCharging = IntersectionIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.INTERACTABLE_CHARGE)));
+    Ingredient blockWhileCharging = IntersectionIngredient.of(LazyTagIngredient.of(TinkerTags.Items.DURABILITY), LazyTagIngredient.of(TinkerTags.Items.INTERACTABLE_CHARGE));
     ModifierRecipeBuilder.modifier(ModifierIds.flinging)
                          .setTools(blockWhileCharging)
                          .addInput(Blocks.VINE)
@@ -1577,12 +1579,12 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                          .addInput(TinkerMaterials.slimesteel.getIngotTag())
                          .setMaxLevel(1).checkTraitLevel()
                          .setSlots(SlotType.ABILITY, 1)
-                         .setTools(DifferenceIngredient.of(IntersectionIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.MELEE_WEAPON)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.INTERACTABLE_RIGHT))), Ingredient.of(TinkerTools.dagger)))
+                         .setTools(DifferenceIngredient.of(IntersectionIngredient.of(LazyTagIngredient.of(TinkerTags.Items.MELEE_WEAPON), LazyTagIngredient.of(TinkerTags.Items.INTERACTABLE_RIGHT)), Ingredient.of(TinkerTools.dagger)))
                          .saveSalvage(consumer, prefix(TinkerModifiers.dualWielding, abilitySalvage))
                          .save(consumer, prefix(TinkerModifiers.dualWielding, abilityFolder));
     ModifierRecipeBuilder.modifier(ModifierIds.blocking)
                          .setTools(DifferenceIngredient.of(
-                           IntersectionIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.INTERACTABLE_CHARGE)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY))),
+                           IntersectionIngredient.of(LazyTagIngredient.of(TinkerTags.Items.INTERACTABLE_CHARGE), LazyTagIngredient.of(TinkerTags.Items.DURABILITY)),
                            ingredientFromTags(TinkerTags.Items.PARRY, TinkerTags.Items.SHIELDS)))
                          .addInput(ItemTags.PLANKS)
                          .addInput(TinkerMaterials.steel.getIngotTag())
@@ -1627,14 +1629,14 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                          .addInput(Tags.Items.MUSIC_DISCS)
                          .setMaxLevel(1)
                          .save(consumer, prefix(ModifierIds.harmonious.getLocation(), slotlessFolder));
-    Ingredient bonusNoSkull = DifferenceIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.BONUS_SLOTS)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.SKULLS)));
-    SizedIngredient standardSkulls = SizedIngredient.of(DifferenceIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(ItemTags.SKULLS)), Ingredient.of(Items.DRAGON_HEAD)));
+    Ingredient bonusNoSkull = DifferenceIngredient.of(LazyTagIngredient.of(TinkerTags.Items.BONUS_SLOTS), LazyTagIngredient.of(TinkerTags.Items.SKULLS));
+    SizedIngredient standardSkulls = SizedIngredient.of(DifferenceIngredient.of(LazyTagIngredient.of(ItemTags.SKULLS), Ingredient.of(Items.DRAGON_HEAD)));
     ModifierRecipeBuilder.modifier(ModifierIds.recapitated)
       .setTools(bonusNoSkull)
       .addInput(standardSkulls)
       .setMaxLevel(1)
       .save(consumer, prefix(ModifierIds.recapitated.getLocation(), slotlessFolder));
-    Ingredient bonusSkulls = IntersectionIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.BONUS_SLOTS)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.SKULLS)));
+    Ingredient bonusSkulls = IntersectionIngredient.of(LazyTagIngredient.of(TinkerTags.Items.BONUS_SLOTS), LazyTagIngredient.of(TinkerTags.Items.SKULLS));
     ModifierRecipeBuilder.modifier(ModifierIds.recapitated)
       .setTools(bonusSkulls)
       .addInput(standardSkulls).addInput(Tags.Items.SLIME_BALLS)
@@ -1681,7 +1683,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
       .disallowCrystal()
       .save(consumer, wrap(ModifierIds.rebalanced.getLocation(), slotlessFolder, "_" + SlotType.UPGRADE.getName()));
     SwappableModifierRecipeBuilder.modifier(ModifierIds.rebalanced, SlotType.DEFENSE.getName())
-      .setTools(IntersectionIngredient.of(ingredientFromTags(TinkerTags.Items.ARMOR, TinkerTags.Items.HELD), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.BONUS_SLOTS))))
+      .setTools(IntersectionIngredient.of(ingredientFromTags(TinkerTags.Items.ARMOR, TinkerTags.Items.HELD), LazyTagIngredient.of(TinkerTags.Items.BONUS_SLOTS)))
       .addInput(TinkerMaterials.cobalt.getNuggetTag())
       .addInput(Items.END_CRYSTAL)
       .addInput(TinkerMaterials.cobalt.getNuggetTag())
@@ -1752,7 +1754,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
     IJsonPredicate<ModifierId> extractBlacklist = ModifierPredicate.tag(TinkerTags.Modifiers.EXTRACT_MODIFIER_BLACKLIST).inverted();
     for (boolean dagger : new boolean[]{false, true}) {
       String suffix = dagger ? "_dagger" : "";
-      SizedIngredient tools = dagger ? SizedIngredient.fromItems(2, TinkerTools.dagger) : SizedIngredient.of(DifferenceIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.MODIFIABLE)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.UNSALVAGABLE))));
+      SizedIngredient tools = dagger ? SizedIngredient.fromItems(2, TinkerTools.dagger) : SizedIngredient.of(DifferenceIngredient.of(LazyTagIngredient.of(TinkerTags.Items.MODIFIABLE), LazyTagIngredient.of(TinkerTags.Items.UNSALVAGABLE)));
       ModifierRemovalRecipeBuilder.extract()
                                   .setTools(tools)
                                   .setName("slotless")
@@ -1812,7 +1814,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
 
     // swapping hands
     ToggleInteractionWorktableRecipeBuilder.builder()
-      .tools(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.INTERACTABLE_DUAL)))
+      .tools(LazyTagIngredient.of(TinkerTags.Items.INTERACTABLE_DUAL))
       .addInput(Items.LEVER)
       .save(consumer, location(worktableFolder + "toggle_interaction_modifier"));
 
@@ -1877,7 +1879,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
     };
     headlight.accept(Ingredient.of(Blocks.LANTERN), "15");
     headlight.accept(Ingredient.of(Blocks.SOUL_LANTERN), "10");
-    headlight.accept(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(ItemTags.CANDLES)), "5");
+    headlight.accept(LazyTagIngredient.of(ItemTags.CANDLES), "5");
   }
 
   private void addTextureRecipes(RecipeOutput consumer) {
@@ -2105,7 +2107,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
   private static Ingredient ingredientFromTags(TagKey<Item>... tags) {
     Ingredient[] tagIngredients = new Ingredient[tags.length];
     for (int i = 0; i < tags.length; i++) {
-      tagIngredients[i] = Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tags[i]));
+      tagIngredients[i] = LazyTagIngredient.of(tags[i]);
     }
     return CompoundIngredient.of(tagIngredients);
   }

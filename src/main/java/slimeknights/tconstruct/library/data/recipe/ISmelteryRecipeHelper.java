@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.data.recipe;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -53,7 +55,7 @@ public interface ISmelteryRecipeHelper extends ICastCreationHelper {
    */
   default void tagMelting(RecipeOutput consumer, FluidOutput fluid, int temperature, String tagName, float factor, String recipePath, boolean isOptional) {
     RecipeOutput wrapped = isOptional ? withCondition(consumer, tagCondition(tagName)) : consumer;
-    MeltingRecipeBuilder.melting(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(getItemTag(COMMON, tagName))), fluid, temperature, factor)
+    MeltingRecipeBuilder.melting(LazyTagIngredient.of(getItemTag(COMMON, tagName)), fluid, temperature, factor)
                         .save(wrapped, location(recipePath));
   }
 

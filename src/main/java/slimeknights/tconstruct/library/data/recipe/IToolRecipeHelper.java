@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.data.recipe;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -113,7 +115,7 @@ public interface IToolRecipeHelper extends ICastCreationHelper {
     ResourceLocation id = id(part);
     PartRecipeBuilder.partRecipe(part)
                      .setPattern(id)
-                     .setPatternItem(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DEFAULT_PATTERNS)))
+                     .setPatternItem(LazyTagIngredient.of(TinkerTags.Items.DEFAULT_PATTERNS))
                      .setCost(cost)
                      .save(consumer, location(partFolder + "builder/" + id.getPath()));
     CompositeCastingRecipeBuilder.table(part, cost)
@@ -139,7 +141,7 @@ public interface IToolRecipeHelper extends ICastCreationHelper {
     // dummy part builder recipe
     ItemPartRecipeBuilder.item(cast.getName(), ItemOutput.fromItem(dummyPart))
                          .material(MaterialIds.rock, cost)
-                         .setPatternItem(CompoundIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DEFAULT_PATTERNS)), Ingredient.of(cast.get())))
+                         .setPatternItem(CompoundIngredient.of(LazyTagIngredient.of(TinkerTags.Items.DEFAULT_PATTERNS), Ingredient.of(cast.get())))
                          .save(consumer, location(partFolder + "builder/" + cast.getName().getPath()));
   }
 
@@ -156,7 +158,7 @@ public interface IToolRecipeHelper extends ICastCreationHelper {
     // Part Builder
     PartRecipeBuilder.partRecipe(part)
                      .setPattern(id)
-                     .setPatternItem(CompoundIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DEFAULT_PATTERNS)), Ingredient.of(cast.get())))
+                     .setPatternItem(CompoundIngredient.of(LazyTagIngredient.of(TinkerTags.Items.DEFAULT_PATTERNS), Ingredient.of(cast.get())))
                      .setCost(cost)
                      .save(consumer, location(partFolder + "builder/" + id.getPath()));
     // casting

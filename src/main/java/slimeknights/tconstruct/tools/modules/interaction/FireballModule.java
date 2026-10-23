@@ -259,7 +259,7 @@ public record FireballModule(List<FireballType> options, DamageTypePair damageTy
 
     /** Creates a new fireball option */
     public Fireball fireball(TagKey<Item> tag) {
-      return fireball(Ingredient.of(net.minecraft.core.registries.BuiltInRegistries.ITEM.getOrThrow(tag)));
+      return fireball(slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient.of(tag));
     }
 
     /** Creates a new fireball option */

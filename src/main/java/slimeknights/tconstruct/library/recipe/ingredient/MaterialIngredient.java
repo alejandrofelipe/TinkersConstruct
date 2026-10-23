@@ -86,7 +86,7 @@ public class MaterialIngredient extends NestedIngredient {
 
   /** Creates an ingredient matching the items in the given item tag (1.21.4: {@code Ingredient.of(TagKey)} was removed) */
   private static Ingredient ofTag(TagKey<Item> tag) {
-    return Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag));
+    return LazyTagIngredient.of(tag);
   }
 
   /**

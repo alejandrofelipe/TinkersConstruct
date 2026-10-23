@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.recipe.modifiers.adding;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -24,7 +26,7 @@ import slimeknights.tconstruct.common.TinkerTags;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class OverslimeModifierRecipeBuilder extends AbstractRecipeBuilder<OverslimeModifierRecipeBuilder> {
   @Setter @Accessors(chain = true)
-  private Ingredient tools = Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY));
+  private Ingredient tools = LazyTagIngredient.of(TinkerTags.Items.DURABILITY);
   private final Ingredient ingredient;
   private final int restoreAmount;
 

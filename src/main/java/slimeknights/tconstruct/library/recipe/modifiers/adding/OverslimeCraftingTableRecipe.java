@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.recipe.modifiers.adding;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import lombok.Getter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -29,7 +31,7 @@ import java.util.function.Predicate;
 public class OverslimeCraftingTableRecipe extends CustomRecipe {
   public static final RecordLoadable<OverslimeCraftingTableRecipe> LOADER = RecordLoadable.create(
     ContextKey.ID.nullableField(),
-    IngredientLoadable.DISALLOW_EMPTY.defaultField("tools", Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.DURABILITY)), r -> r.tools),
+    IngredientLoadable.DISALLOW_EMPTY.defaultField("tools", LazyTagIngredient.of(TinkerTags.Items.DURABILITY), r -> r.tools),
     IngredientLoadable.DISALLOW_EMPTY.requiredField("ingredient", r -> r.ingredient),
     IntLoadable.FROM_ONE.requiredField("restore_amount", r -> r.restoreAmount),
     OverslimeCraftingTableRecipe::new);

@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.recipe.tinkerstation.building;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -56,7 +58,7 @@ public class MaterialSwappingRecipeBuilder extends AbstractRecipeBuilder<Materia
 
   /** Creates a builder for the given tool */
   public static MaterialSwappingRecipeBuilder tools(TagKey<Item> tag) {
-    return tools(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)));
+    return tools(LazyTagIngredient.of(tag));
   }
 
   /** Adds the given index to the recipe */

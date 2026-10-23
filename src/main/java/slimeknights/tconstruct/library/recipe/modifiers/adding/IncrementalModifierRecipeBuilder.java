@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.recipe.modifiers.adding;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -92,7 +94,7 @@ public class IncrementalModifierRecipeBuilder extends AbstractModifierRecipeBuil
    * @return  Builder instance
    */
   public IncrementalModifierRecipeBuilder setInput(TagKey<Item> tag, int amountPerItem, int neededPerLevel) {
-    return setInput(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)), amountPerItem, neededPerLevel);
+    return setInput(LazyTagIngredient.of(tag), amountPerItem, neededPerLevel);
   }
 
 

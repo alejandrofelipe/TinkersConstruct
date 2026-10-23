@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.data.recipe;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import lombok.AccessLevel;
@@ -275,7 +277,7 @@ public class SmelteryRecipeBuilder {
   /** Adds a recipe for melting an item from a tag */
   private void tagMelting(float scale, String output, float factor, ResourceLocation tagName, boolean damagable, boolean forceOptional) {
     RecipeOutput wrapped = optional || forceOptional ? withCondition(tagCondition(tagName)) : consumer;
-    MeltingRecipeBuilder builder = MeltingRecipeBuilder.melting(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(ItemTags.create(tagName))), result((int) (baseUnit * scale)), temperature, factor);
+    MeltingRecipeBuilder builder = MeltingRecipeBuilder.melting(LazyTagIngredient.of(ItemTags.create(tagName)), result((int) (baseUnit * scale)), temperature, factor);
     if (damagable) {
       builder.setDamagable(damageUnits());
     }
@@ -291,15 +293,15 @@ public class SmelteryRecipeBuilder {
     assert baseUnit != 0;
     String tagName = tagPrefix + this.name.getPath();
     RecipeOutput wrapped;
-    Ingredient baseIngredient = Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(itemTag(tagName)));
+    Ingredient baseIngredient = LazyTagIngredient.of(itemTag(tagName));
     Ingredient ingredient;
     // not everyone sets size, so treat singular as the fallback, means we want anything in the tag that is not sparse or dense
     if (size == Tags.Items.ORE_RATES_SINGULAR) {
-      ingredient = DifferenceIngredient.of(baseIngredient, Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.NON_SINGULAR_ORE_RATES)));
+      ingredient = DifferenceIngredient.of(baseIngredient, LazyTagIngredient.of(TinkerTags.Items.NON_SINGULAR_ORE_RATES));
       wrapped = withCondition(TagCombinationCondition.difference(itemTag(tagName), TinkerTags.Items.NON_SINGULAR_ORE_RATES));
       // size tag means we want an intersection between the tag and that size
     } else if (size != null) {
-      ingredient = IntersectionIngredient.of(baseIngredient, Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(size)));
+      ingredient = IntersectionIngredient.of(baseIngredient, LazyTagIngredient.of(size));
       wrapped = withCondition(TagCombinationCondition.intersection(itemTag(tagName), size));
       // default only need it to be in the tag
     } else {
@@ -425,7 +427,7 @@ public class SmelteryRecipeBuilder {
 
   /** Adds melting and casting recipes for the given object */
   public SmelteryRecipeBuilder meltingCasting(float scale, String tagPrefix, String castMaterial, float factor, boolean forceOptional) {
-    return meltingCasting(scale, tagPrefix, Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(itemTag(tagPrefix + "s/" + castMaterial))), factor, forceOptional);
+    return meltingCasting(scale, tagPrefix, LazyTagIngredient.of(itemTag(tagPrefix + "s/" + castMaterial)), factor, forceOptional);
   }
 
 

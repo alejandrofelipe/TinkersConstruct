@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.library.recipe.worktable;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -27,7 +29,7 @@ import java.util.List;
  */
 @RequiredArgsConstructor
 public abstract class AbstractWorktableRecipe implements IModifierWorktableRecipe {
-  public static final Ingredient DEFAULT_TOOLS = Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.MODIFIABLE));
+  public static final Ingredient DEFAULT_TOOLS = LazyTagIngredient.of(TinkerTags.Items.MODIFIABLE);
   protected static final LoadableField<Ingredient,AbstractWorktableRecipe> TOOL_FIELD = IngredientLoadable.DISALLOW_EMPTY.defaultField("tools", DEFAULT_TOOLS, true, r -> r.toolRequirement);
   protected static final LoadableField<List<SizedIngredient>,AbstractWorktableRecipe> INPUTS_FIELD = SizedIngredient.LOADABLE.list(1).requiredField("inputs", r -> r.inputs);
 

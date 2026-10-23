@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.tools.data;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Item;
@@ -23,7 +25,7 @@ public class StationSlotLayoutProvider extends AbstractStationSlotLayoutProvider
   @Override
   protected void addLayouts() {
     // stations
-    Ingredient modifiable = Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.MODIFIABLE));
+    Ingredient modifiable = LazyTagIngredient.of(TinkerTags.Items.MODIFIABLE);
     define(TinkerTables.tinkerStation)
       .translationKey(TConstruct.makeTranslationKey("gui", "tinker_station.repair_limited"))
       .icon(Patterns.REPAIR)

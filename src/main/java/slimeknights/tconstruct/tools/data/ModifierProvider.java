@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.tools.data;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import net.minecraft.world.item.equipment.ArmorType;
 
 import net.minecraft.core.particles.ParticleTypes;
@@ -1048,7 +1050,7 @@ public class ModifierProvider extends AbstractModifierProvider {
       .priority(175) // higher than overslime, to ensure this is removed first
       .addModule(new CapacityBarModule(LevelingInt.eachLevel(100), ToolStats.DURABILITY))
       .addModule(new DurabilityShieldModule(0x7F7F7F))
-      .addModule(LootToCapacityModule.consume(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.STONESHIELDS))).amount(3).eachLevel(0.2f));
+      .addModule(LootToCapacityModule.consume(LazyTagIngredient.of(TinkerTags.Items.STONESHIELDS)).amount(3).eachLevel(0.2f));
     buildModifier(ModifierIds.barkskin)
       .levelDisplay(ModifierLevelDisplay.NO_LEVELS)
       .priority(200) // higher than all other forms of durability shields

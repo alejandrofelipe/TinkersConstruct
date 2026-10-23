@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.tables.data;
 
+import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -88,7 +90,7 @@ public class TableRecipeProvider extends BaseRecipeProvider {
     // crafting station -> crafting table upgrade
     ShapedRecipeBuilder.shaped(itemLookup(), RecipeCategory.DECORATIONS, TinkerTables.craftingStation)
       .define('p', TinkerTables.pattern)
-      .define('w', DifferenceIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.WORKBENCHES)), Ingredient.of(TinkerTables.craftingStation.get())))
+      .define('w', DifferenceIngredient.of(LazyTagIngredient.of(TinkerTags.Items.WORKBENCHES), Ingredient.of(TinkerTables.craftingStation.get())))
       .pattern("p")
       .pattern("w")
       .unlockedBy("has_item", has(TinkerTables.pattern))
@@ -106,11 +108,11 @@ public class TableRecipeProvider extends BaseRecipeProvider {
     ShapedRetexturedRecipeBuilder.fromShaped(
       ShapedRecipeBuilder.shaped(itemLookup(), RecipeCategory.DECORATIONS, TinkerTables.craftingStation)
         .define('p', TinkerTables.pattern)
-        .define('w', DifferenceIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.TABLES)), Ingredient.of(TinkerTables.craftingStation.get())))
+        .define('w', DifferenceIngredient.of(LazyTagIngredient.of(TinkerTags.Items.TABLES), Ingredient.of(TinkerTables.craftingStation.get())))
         .pattern("p")
         .pattern("w")
         .unlockedBy("has_item", has(TinkerTables.pattern)))
-      .setSource(DifferenceIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.TABLES)), Ingredient.of(TinkerTables.craftingStation.get())))
+      .setSource(DifferenceIngredient.of(LazyTagIngredient.of(TinkerTags.Items.TABLES), Ingredient.of(TinkerTables.craftingStation.get())))
       .build(consumer, wrap(TinkerTables.craftingStation, folder, "_from_tables"));
 
     // part builder
@@ -279,9 +281,9 @@ public class TableRecipeProvider extends BaseRecipeProvider {
       .save(materialConsumer, recipeKey(location(folder + "scorched_forge_material")));
 
     // part swapping
-    TinkerStationPartSwappingBuilder.tools(DifferenceIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.MULTIPART_TOOL)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.UNSWAPPABLE_PARTS))))
+    TinkerStationPartSwappingBuilder.tools(DifferenceIngredient.of(LazyTagIngredient.of(TinkerTags.Items.MULTIPART_TOOL), LazyTagIngredient.of(TinkerTags.Items.UNSWAPPABLE_PARTS)))
       .save(consumer, location(folder + "tinker_station_part_swapping"));
-    TinkerStationPartSwappingBuilder.tools(DifferenceIngredient.of(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.MULTIPART_TOOL)), Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.UNSWAPPABLE_TOOLS))))
+    TinkerStationPartSwappingBuilder.tools(DifferenceIngredient.of(LazyTagIngredient.of(TinkerTags.Items.MULTIPART_TOOL), LazyTagIngredient.of(TinkerTags.Items.UNSWAPPABLE_TOOLS)))
       .fromTool().save(consumer, location(folder + "tool_material_swapping"));
     TinkerStationPartSwappingBuilder.tools(Ingredient.of(TinkerTools.arrow.get(), TinkerTools.shuriken.get()))
       .maxStackSize(4)
