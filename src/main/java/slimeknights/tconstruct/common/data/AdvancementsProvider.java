@@ -115,6 +115,8 @@ public class AdvancementsProvider extends GenericDataProvider {
   private final Map<ResourceLocation, List<ICondition>> conditions = new HashMap<>();
   /** Structure holder getter from the datagen registry set (island advancements resolve ResourceKey→Holder here). */
   private HolderGetter<Structure> structures;
+  /** Item holder getter from the datagen registry set; resolves item tags lazily (BuiltInRegistries has none bound at datagen). */
+  private HolderGetter<Item> items;
 
   public AdvancementsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
     super(output, Target.DATA_PACK, "advancement");
@@ -472,6 +474,7 @@ public class AdvancementsProvider extends GenericDataProvider {
       this.advancements.clear();
       this.conditions.clear();
       this.structures = provider.lookupOrThrow(Registries.STRUCTURE);
+      this.items = provider.lookupOrThrow(Registries.ITEM);
       generate();
       // NeoForge's datagen provider overrides createSerializationContext to recognise built-in (mod) item
       // holders; RegistryOps.create(..) would not, failing HolderSet serialization ("not valid in registry set").
@@ -548,9 +551,9 @@ public class AdvancementsProvider extends GenericDataProvider {
     return inventoryTrigger(ItemPredicate.Builder.item().of(BuiltInRegistries.ITEM, item));
   }
 
-  /** Criterion matching any item in the given tag */
-  protected static Criterion<?> hasTag(TagKey<Item> tag) {
-    return inventoryTrigger(ItemPredicate.Builder.item().of(BuiltInRegistries.ITEM, tag));
+  /** Criterion matching any item in the given tag. Instance method: uses the datagen item lookup, which resolves tags lazily. */
+  protected Criterion<?> hasTag(TagKey<Item> tag) {
+    return inventoryTrigger(ItemPredicate.Builder.item().of(items, tag));
   }
 
   /** Criterion matching a Tinker tool against a tool-stack predicate (via the {@code tconstruct:tool} sub-predicate) */

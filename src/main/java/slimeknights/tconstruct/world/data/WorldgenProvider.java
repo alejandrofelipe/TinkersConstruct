@@ -6,7 +6,6 @@ import net.minecraft.core.HolderOwner;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.core.Vec3i;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.TreeFeatures;
@@ -159,6 +158,9 @@ public class WorldgenProvider {
   /** Registers all configured features */
   @SuppressWarnings("deprecation")
   private static void registerConfiguredFeatures(BootstrapContext<ConfiguredFeature<?,?>> context) {
+    // 1.21.4: resolve block tags through the bootstrap lookup, which returns a lazy tag HolderSet. BuiltInRegistries
+    // is unbound for tags at datagen, so getOrThrow there fails with "Missing tag".
+    HolderGetter<Block> blocks = context.lookup(Registries.BLOCK);
     // sapling trees
     register(context, earthSlimeTree, slimeTree,
              new SlimeTreeConfig.Builder()
@@ -191,13 +193,13 @@ public class WorldgenProvider {
     // mangrove style
     register(context, enderSlimeTree, Feature.TREE,
              new TreeConfigurationBuilder(BlockStateProvider.simple(TinkerWorld.enderbark.getLog()),
-                                          new UpwardsBranchingTrunkPlacer(2, 1, 4, UniformInt.of(1, 4), 0.5F, UniformInt.of(0, 1), BuiltInRegistries.BLOCK.getOrThrow(TinkerTags.Blocks.ENDERBARK_LOGS_CAN_GROW_THROUGH)),
+                                          new UpwardsBranchingTrunkPlacer(2, 1, 4, UniformInt.of(1, 4), 0.5F, UniformInt.of(0, 1), blocks.getOrThrow(TinkerTags.Blocks.ENDERBARK_LOGS_CAN_GROW_THROUGH)),
                                           BlockStateProvider.simple(TinkerWorld.slimeLeaves.get(FoliageType.ENDER)),
                                           new RandomSpreadFoliagePlacer(ConstantInt.of(3), ConstantInt.of(0), ConstantInt.of(2), 70),
                                           ExtraRootVariantPlacer.builder()
                                                                 .trunkOffset(UniformInt.of(1, 3))
                                                                 .rootBlock(TinkerWorld.enderbarkRoots.get())
-                                                                .canGrowThroughTag(TinkerTags.Blocks.ENDERBARK_ROOTS_CAN_GROW_THROUGH)
+                                                                .canGrowThroughTag(blocks, TinkerTags.Blocks.ENDERBARK_ROOTS_CAN_GROW_THROUGH)
                                                                 .slimyRoots(TinkerWorld.slimyEnderbarkRoots)
                                                                 .buildOptional(),
                                           new TwoLayersFeatureSize(2, 0, 2))
@@ -206,13 +208,13 @@ public class WorldgenProvider {
                .build());
     register(context, enderSlimeTreeTall, Feature.TREE,
              new TreeConfigurationBuilder(BlockStateProvider.simple(TinkerWorld.enderbark.getLog()),
-                                          new UpwardsBranchingTrunkPlacer(4, 1, 9, UniformInt.of(1, 6), 0.5F, UniformInt.of(0, 1), BuiltInRegistries.BLOCK.getOrThrow(TinkerTags.Blocks.ENDERBARK_LOGS_CAN_GROW_THROUGH)),
+                                          new UpwardsBranchingTrunkPlacer(4, 1, 9, UniformInt.of(1, 6), 0.5F, UniformInt.of(0, 1), blocks.getOrThrow(TinkerTags.Blocks.ENDERBARK_LOGS_CAN_GROW_THROUGH)),
                                           BlockStateProvider.simple(TinkerWorld.slimeLeaves.get(FoliageType.ENDER)),
                                           new RandomSpreadFoliagePlacer(ConstantInt.of(3), ConstantInt.of(0), ConstantInt.of(2), 70),
                                           ExtraRootVariantPlacer.builder()
                                                                 .trunkOffset(UniformInt.of(3, 7))
                                                                 .rootBlock(TinkerWorld.enderbarkRoots.get())
-                                                                .canGrowThroughTag(TinkerTags.Blocks.ENDERBARK_ROOTS_CAN_GROW_THROUGH)
+                                                                .canGrowThroughTag(blocks, TinkerTags.Blocks.ENDERBARK_ROOTS_CAN_GROW_THROUGH)
                                                                 .slimyRoots(TinkerWorld.slimyEnderbarkRoots)
                                                                 .buildOptional(),
                                           new TwoLayersFeatureSize(3, 0, 2))

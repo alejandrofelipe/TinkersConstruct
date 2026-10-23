@@ -9,6 +9,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.EntityLootSubProvider;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -49,9 +50,11 @@ public class EntityLootTableProvider extends EntityLootSubProvider {
   @Override
   protected Stream<EntityType<?>> getKnownEntityTypes() {
     return BuiltInRegistries.ENTITY_TYPE.entrySet().stream()
-                                   // remove earth slime entity, we redirect to the vanilla loot table
                                    .filter(entry -> TConstruct.MOD_ID.equals(entry.getKey().location().getNamespace()))
-                                   .map(Entry::getValue);
+                                   .map(Entry::getValue)
+                                   // MISC entities (projectiles, hooks, dropped items) have no loot table; skip them
+                                   // from the coverage validation (they still generate if explicitly added above)
+                                   .filter(type -> type.getCategory() != MobCategory.MISC);
   }
 
   @Override

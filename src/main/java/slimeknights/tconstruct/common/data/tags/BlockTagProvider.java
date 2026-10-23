@@ -38,7 +38,6 @@ import slimeknights.tconstruct.world.TinkerWorld;
 import slimeknights.tconstruct.world.block.DirtType;
 import slimeknights.tconstruct.world.block.FoliageType;
 
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -53,6 +52,7 @@ import static net.minecraft.tags.BlockTags.NEEDS_IRON_TOOL;
 import static net.minecraft.tags.BlockTags.NEEDS_STONE_TOOL;
 import static net.neoforged.neoforge.common.Tags.Blocks.NEEDS_GOLD_TOOL;
 import static net.neoforged.neoforge.common.Tags.Blocks.NEEDS_NETHERITE_TOOL;
+import static net.neoforged.neoforge.common.Tags.Blocks.NEEDS_WOOD_TOOL;
 import static slimeknights.mantle.Mantle.commonResource;
 import static slimeknights.tconstruct.common.TinkerTags.Blocks.MINEABLE_MELTING_BLACKLIST;
 import static slimeknights.tconstruct.common.TinkerTags.Blocks.UNREPLACABLE_BY_LIQUID;
@@ -74,6 +74,7 @@ public class BlockTagProvider extends BlockTagsProvider {
     if (tier == ToolMaterial.GOLD) return NEEDS_GOLD_TOOL;
     if (tier == ToolMaterial.IRON) return NEEDS_IRON_TOOL;
     if (tier == ToolMaterial.STONE) return NEEDS_STONE_TOOL;
+    if (tier == ToolMaterial.WOOD) return NEEDS_WOOD_TOOL;
     return null;
   }
 
@@ -462,8 +463,13 @@ public class BlockTagProvider extends BlockTagsProvider {
 
     // slime
     tagBlocks(MINEABLE_WITH_SHOVEL, TinkerWorld.congealedSlime, TinkerWorld.slimeDirt, TinkerWorld.vanillaSlimeGrass, TinkerWorld.earthSlimeGrass, TinkerWorld.skySlimeGrass, TinkerWorld.enderSlimeGrass, TinkerWorld.ichorSlimeGrass);
-    // harvest tiers on shovel blocks
-    TinkerWorld.slimeDirt.forEach((type, block) -> this.tag(Objects.requireNonNull(needsTag(type.getHarvestTier()))).add(block));
+    // harvest tiers on shovel blocks; a wood-tier block needs no "needs tool" tag (needsTag returns null)
+    TinkerWorld.slimeDirt.forEach((type, block) -> {
+      TagKey<Block> needs = needsTag(type.getHarvestTier());
+      if (needs != null) {
+        this.tag(needs).add(block);
+      }
+    });
     for (DirtType dirt : DirtType.values()) {
       for (FoliageType grass : FoliageType.values()) {
         ToolMaterial dirtTier = dirt.getHarvestTier();
@@ -471,7 +477,10 @@ public class BlockTagProvider extends BlockTagsProvider {
         // PORT M3: Tiers.getLevel() was removed in 1.21 (mining level is tag-based now). Use the HarvestTiers
         // ordering helper to pick the higher tier, which preserves the vanilla ordering fallback.
         ToolMaterial tier = HarvestTiers.max(dirtTier, grassTier);
-        this.tag(Objects.requireNonNull(needsTag(tier))).add(TinkerWorld.slimeGrass.get(dirt).get(grass));
+        TagKey<Block> needs = needsTag(tier);
+        if (needs != null) {
+          this.tag(needs).add(TinkerWorld.slimeGrass.get(dirt).get(grass));
+        }
       }
     }
 

@@ -3,6 +3,8 @@ package slimeknights.tconstruct.common.data;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -40,12 +42,14 @@ public class FakeRegistryEntry {
 
   /** Gets or creates a fake block with the given ID */
   public static Block block(ResourceLocation id) {
-    return getOrCreate(BuiltInRegistries.BLOCK, id, () -> new Block(BlockBehaviour.Properties.of()));
+    // 1.21.4: Block.Properties requires an id (used for drops/loot) before the Block is constructed
+    return getOrCreate(BuiltInRegistries.BLOCK, id, () -> new Block(BlockBehaviour.Properties.of().setId(ResourceKey.create(Registries.BLOCK, id))));
   }
 
   /** Gets or creates a fake item with the given ID */
   public static Item item(ResourceLocation id) {
-    return getOrCreate(BuiltInRegistries.ITEM, id, () -> new Item(new Item.Properties()));
+    // 1.21.4: Item.Properties requires an id before the Item is constructed
+    return getOrCreate(BuiltInRegistries.ITEM, id, () -> new Item(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id))));
   }
 
   /** Gets or creates a fake mob effect with the given ID */

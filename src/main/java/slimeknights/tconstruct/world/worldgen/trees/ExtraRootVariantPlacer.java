@@ -8,6 +8,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -139,11 +140,14 @@ public class ExtraRootVariantPlacer extends MangroveRootPlacer {
       return this;
     }
 
-    /** Sets the blocks that the roots can grow though */
-    @SuppressWarnings("deprecation")
+    /**
+     * Sets the blocks that the roots can grow though.
+     * 1.21.4: resolve via the datagen bootstrap {@link HolderGetter} (a lazy tag HolderSet); block tags are unbound in
+     * {@link BuiltInRegistries} at datagen, so getOrThrow there fails with "Missing tag".
+     */
     @CanIgnoreReturnValue
-    public Builder canGrowThroughTag(TagKey<Block> tag) {
-      return canGrowThrough(BuiltInRegistries.BLOCK.getOrThrow(tag));
+    public Builder canGrowThroughTag(HolderGetter<Block> blocks, TagKey<Block> tag) {
+      return canGrowThrough(blocks.getOrThrow(tag));
     }
 
     /** Builds the final placer */
