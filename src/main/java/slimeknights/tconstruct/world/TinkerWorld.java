@@ -380,7 +380,8 @@ public final class TinkerWorld extends TinkerModule {
       };
       TinkerWorld.heads.forEach(head -> DispenserBlock.registerBehavior(head, dispenseArmor));
       // heads in firework stars
-      TinkerWorld.heads.forEach(head -> FireworkStarRecipe.SHAPE_BY_ITEM.put(head.asItem(), FireworkExplosion.Shape.CREEPER));
+      // PORT 1.21.4: FireworkStarRecipe.SHAPE_BY_ITEM is now an immutable Map.of with no extension hook, so the custom
+      // heads can no longer register a creeper firework-star shape here (cosmetic only). Flagged for Phase-4.
       // inject heads into the tile entity type
       event.enqueueWork(() -> {
         ImmutableSet.Builder<Block> builder = ImmutableSet.builder();
