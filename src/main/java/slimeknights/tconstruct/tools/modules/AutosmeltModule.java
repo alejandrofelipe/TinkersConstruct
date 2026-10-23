@@ -17,6 +17,7 @@ import slimeknights.mantle.data.loadable.array.ArrayLoadable;
 import slimeknights.mantle.data.loadable.primitive.FloatLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
 import slimeknights.tconstruct.library.modifiers.hook.behavior.ProcessLootModifierHook;
@@ -86,7 +87,7 @@ public class AutosmeltModule implements ModifierModule, ProcessLootModifierHook 
     // try each recipe type to see if we have a recipe for any of them
     Optional<? extends AbstractCookingRecipe> recipe = Optional.empty();
     for (RecipeType<? extends AbstractCookingRecipe> recipeType : recipeTypes) {
-      recipe = world.getServer().getRecipeManager().getRecipeFor(recipeType, input, world).map(RecipeHolder::value);
+      recipe = TinkerRecipeAccess.getRecipeFor(recipeType, input, world).map(RecipeHolder::value);
       if (recipe.isPresent()) {
         break;
       }

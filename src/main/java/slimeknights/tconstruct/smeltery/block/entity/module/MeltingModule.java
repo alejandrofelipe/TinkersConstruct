@@ -11,6 +11,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.common.network.InventorySlotSyncPacket;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer;
@@ -178,7 +179,7 @@ public class MeltingModule implements IMeltingContainer, ContainerData {
       return last;
     }
     // if that fails, try to find a new recipe
-    Optional<IMeltingRecipe> newRecipe = world.getServer().getRecipeManager().getRecipeFor(TinkerRecipeTypes.MELTING.get(), this, world).map(RecipeHolder::value);
+    Optional<IMeltingRecipe> newRecipe = TinkerRecipeAccess.getRecipeFor(TinkerRecipeTypes.MELTING.get(), this, world).map(RecipeHolder::value);
     if (newRecipe.isPresent()) {
       lastRecipe = newRecipe.get();
       return lastRecipe;

@@ -53,7 +53,7 @@ public enum SeveringModule implements ModifierModule, ProcessLootModifierHook {
       if (generatedLoot.stream().noneMatch(stack -> stack.is(ItemTags.SKULLS))) {
         // find proper recipe
         Level world = context.getLevel();
-        List<SeveringRecipe> recipes = SeveringRecipeCache.findRecipe(world.getServer().getRecipeManager(), entity.getType());
+        List<SeveringRecipe> recipes = SeveringRecipeCache.findRecipe(world, entity.getType());
         if (!recipes.isEmpty()) {
           float level = modifier.getEffectiveLevel();
           // PORT M3 (looting): LootContext.getLootingModifier() was removed in 1.21; loot bonus is now driven by the

@@ -27,6 +27,7 @@ import slimeknights.tconstruct.library.modifiers.modules.util.ModifierCondition.
 import slimeknights.tconstruct.library.modifiers.modules.util.ModuleBuilder;
 import slimeknights.tconstruct.library.module.HookProvider;
 import slimeknights.tconstruct.library.module.ModuleHook;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.entitymelting.EntityMeltingRecipe;
 import slimeknights.tconstruct.library.recipe.entitymelting.EntityMeltingRecipeCache;
@@ -116,7 +117,7 @@ public record MeltingModule(LevelingInt temperature, LevelingInt nuggetsPerMetal
     // first, update inventory
     IMeltingRecipe recipe = lastRecipe;
     if (recipe == null || !recipe.matches(this, world)) {
-      recipe = world.getServer().getRecipeManager().getRecipeFor(TinkerRecipeTypes.MELTING.get(), this, world).map(net.minecraft.world.item.crafting.RecipeHolder::value).orElse(null);
+      recipe = TinkerRecipeAccess.getRecipeFor(TinkerRecipeTypes.MELTING.get(), this, world).map(net.minecraft.world.item.crafting.RecipeHolder::value).orElse(null);
       if (recipe == null) {
         MeltingModule.stack = ItemStack.EMPTY;
         return FluidStack.EMPTY;
@@ -204,7 +205,7 @@ public record MeltingModule(LevelingInt temperature, LevelingInt nuggetsPerMetal
     if (damageDealt > 0 && condition.matches(tool, modifier)) {
       // first, find the proper recipe
       if (target != null) {
-        EntityMeltingRecipe recipe = EntityMeltingRecipeCache.findRecipe(target.level().getServer().getRecipeManager(), target.getType());
+        EntityMeltingRecipe recipe = EntityMeltingRecipeCache.findRecipe(target.level(), target.getType());
         FluidStack output;
         int damagePerOutput;
         if (recipe != null) {

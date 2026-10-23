@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.alloying.AlloyRecipe;
 import slimeknights.tconstruct.library.recipe.alloying.IMutableAlloyTank;
@@ -33,12 +34,9 @@ public class SingleAlloyingModule implements IAlloyingModule {
     }
     // fetch the first recipe that matches the inputs and fits in the tank
     // means if for some reason two recipes both are vaiud, the tank contents can be used to choose
-    Optional<AlloyRecipe> recipe = world.getServer().getRecipeManager()
-                                        .getRecipes()
+    Optional<AlloyRecipe> recipe = TinkerRecipeAccess.byType(TinkerRecipeTypes.ALLOYING.get(), world)
                                         .stream()
                                         .map(RecipeHolder::value)
-                                        .filter(r -> r.getType() == TinkerRecipeTypes.ALLOYING.get())
-                                        .map(r -> (AlloyRecipe) r)
                                         .filter(r -> alloyTank.canFit(r.getOutput(), 0) && r.canPerform(alloyTank))
                                         .findAny();
     // if found, cache and return

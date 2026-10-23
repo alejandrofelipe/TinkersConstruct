@@ -38,6 +38,7 @@ import slimeknights.mantle.util.JsonHelper;
 import slimeknights.mantle.util.typed.TypedMap;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.library.json.TinkerLoadables;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
@@ -130,7 +131,7 @@ public record SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeT
         return lastRecipe;
       }
       // if that failed, do a recipe lookup
-      AbstractCookingRecipe recipe = level.getServer().getRecipeManager().getRecipeFor(recipeType, input, level).map(RecipeHolder::value).orElse(null);
+      AbstractCookingRecipe recipe = TinkerRecipeAccess.getRecipeFor(recipeType, input, level).map(RecipeHolder::value).orElse(null);
       if (recipe != null) {
         lastRecipe = recipe;
       }

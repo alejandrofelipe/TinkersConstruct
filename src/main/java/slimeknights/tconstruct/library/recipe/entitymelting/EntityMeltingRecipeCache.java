@@ -3,9 +3,10 @@ package slimeknights.tconstruct.library.recipe.entitymelting;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.crafting.RecipeManager;
-import slimeknights.mantle.recipe.helper.RecipeHelper;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.level.Level;
 import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator;
+import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 
 import javax.annotation.Nullable;
@@ -25,18 +26,19 @@ public class EntityMeltingRecipeCache {
 
   /**
    * Gets the recipe for the given type
-   * @param manager  Recipe manager
-   * @param type     Entity type
+   * @param level  Level, used for side-agnostic recipe access
+   * @param type   Entity type
    * @return  Recipe, or null if no recipe for this type
    */
   @Nullable
-  public static EntityMeltingRecipe findRecipe(RecipeManager manager, EntityType<?> type) {
+  public static EntityMeltingRecipe findRecipe(Level level, EntityType<?> type) {
     if (CACHE.containsKey(type)) {
       return CACHE.get(type);
     }
 
     // find a recipe if none exist
-    for (EntityMeltingRecipe recipe : RecipeHelper.getRecipes(manager, TinkerRecipeTypes.ENTITY_MELTING.get(), EntityMeltingRecipe.class)) {
+    for (RecipeHolder<EntityMeltingRecipe> holder : TinkerRecipeAccess.byType(TinkerRecipeTypes.ENTITY_MELTING.get(), level)) {
+      EntityMeltingRecipe recipe = holder.value();
       if (recipe.matches(type)) {
         CACHE.put(type, recipe);
         return recipe;
