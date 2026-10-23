@@ -49,7 +49,8 @@ public enum InteractWithAirPacket implements IThreadsafePacket {
         ItemStack held = player.getItemInHand(hand);
         if (held.is(TinkerTags.Items.INTERACTABLE_LEFT)) {
           InteractionResult result = InteractionHandler.onLeftClickInteraction(player, held, hand);
-          if (result.shouldSwing()) {
+          // PORT 1.21.4: InteractionResult#shouldSwing was removed; on the server swing when the Success swing source is SERVER
+          if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.SERVER) {
             player.swing(hand, true);
           }
         }
@@ -57,7 +58,8 @@ public enum InteractWithAirPacket implements IThreadsafePacket {
         ItemStack chestplate = player.getItemBySlot(EquipmentSlot.CHEST);
         if (chestplate.is(TinkerTags.Items.INTERACTABLE_ARMOR) && player.getItemInHand(hand).isEmpty()) {
           InteractionResult result = InteractionHandler.onChestplateUse(player, chestplate, hand);
-          if (result.shouldSwing()) {
+          // PORT 1.21.4: InteractionResult#shouldSwing was removed; on the server swing when the Success swing source is SERVER
+          if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.SERVER) {
             player.swing(hand, true);
           }
         }

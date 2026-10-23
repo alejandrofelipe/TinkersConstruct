@@ -27,7 +27,8 @@ public class ConstantFluidContainerWrapper implements IFluidHandlerItem {
   }
 
   public ConstantFluidContainerWrapper(FluidStack fluid, ItemStack container) {
-    this(fluid, container, container.getCraftingRemainingItem());
+    // PORT 1.21.4: ItemStack#getCraftingRemainingItem was removed; the remainder now lives on the Item
+    this(fluid, container, container.getItem().getCraftingRemainder());
   }
 
   @Override

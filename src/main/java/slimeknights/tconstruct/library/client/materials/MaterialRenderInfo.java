@@ -4,7 +4,7 @@ import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import slimeknights.mantle.data.loadable.common.ColorLoadable;
 import slimeknights.mantle.data.loadable.primitive.IntLoadable;
 import slimeknights.mantle.data.loadable.primitive.StringLoadable;
@@ -89,7 +89,7 @@ public record MaterialRenderInfo(MaterialVariantId id, @Nullable ResourceLocatio
    * @return  Material instance
    */
   private static Material getMaterial(ResourceLocation texture, String suffix) {
-    return new Material(InventoryMenu.BLOCK_ATLAS, Objects.requireNonNull(ResourceLocation.tryBuild(texture.getNamespace(), texture.getPath() + "_" + suffix)));
+    return new Material(TextureAtlas.LOCATION_BLOCKS, Objects.requireNonNull(ResourceLocation.tryBuild(texture.getNamespace(), texture.getPath() + "_" + suffix)));
   }
 
   /**

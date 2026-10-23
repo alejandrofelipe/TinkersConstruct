@@ -4,9 +4,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.mojang.serialization.JsonOps;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.GsonHelper;
@@ -17,7 +20,6 @@ import net.neoforged.fml.ModLoader;
 import slimeknights.mantle.data.datamap.RegistryDataMapLoader;
 import slimeknights.mantle.data.listener.IEarlySafeManagerReloadListener;
 import slimeknights.mantle.data.loadable.field.ContextKey;
-import slimeknights.mantle.util.JsonHelper;
 import slimeknights.mantle.util.typed.TypedMap;
 import slimeknights.mantle.util.typed.TypedMapBuilder;
 import slimeknights.tconstruct.TConstruct;
@@ -113,7 +115,8 @@ public class MaterialRenderInfoLoader implements IEarlySafeManagerReloadListener
   public void onReloadSafe(ResourceManager manager) {
     // first, we need to fetch all relevant JSON files
     Map<ResourceLocation,JsonElement> jsons = new HashMap<>();
-    SimpleJsonResourceReloadListener.scanDirectory(manager, FOLDER, JsonHelper.DEFAULT_GSON, jsons);
+    // PORT 1.21.4: the Gson+String scanDirectory overload was removed; use the FileToIdConverter + Codec<JsonElement> form
+    SimpleJsonResourceReloadListener.scanDirectory(manager, FileToIdConverter.json(FOLDER), JsonOps.INSTANCE, ExtraCodecs.JSON, jsons);
     // final result map
     Map<MaterialVariantId,MaterialRenderInfo> map = new HashMap<>();
 

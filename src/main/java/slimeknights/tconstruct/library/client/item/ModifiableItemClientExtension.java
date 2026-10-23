@@ -7,7 +7,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import slimeknights.tconstruct.library.modifiers.hook.interaction.GeneralInteractionModifierHook;
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
@@ -33,7 +33,7 @@ public class ModifiableItemClientExtension implements IClientItemExtensions {
     // to avoid redundant operations, we copied even methods that are unmodified, changes are noted below
     int sideOffset = arm == HumanoidArm.RIGHT ? 1 : -1;
     if (player.isUsingItem() && player.getUseItemRemainingTicks() > 0 && player.getUsedItemHand() == hand) {
-      UseAnim anim = stack.getUseAnimation();
+      ItemUseAnimation anim = stack.getUseAnimation();
       switch (anim) {
         // merged BLOCK and NONE - same code
         case NONE, BLOCK:
@@ -62,7 +62,7 @@ public class ModifiableItemClientExtension implements IClientItemExtensions {
         // crossbow is moved from the vanilla special case to a general animation
         case BOW:
         case CROSSBOW: {
-          boolean isBow = anim == UseAnim.BOW;
+          boolean isBow = anim == ItemUseAnimation.BOW;
           applyItemArmTransform(poseStack, equipProgress, sideOffset);
           // change: merged in crossbow
           if (isBow) {
