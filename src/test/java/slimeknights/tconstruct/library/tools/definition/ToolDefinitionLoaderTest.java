@@ -6,7 +6,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.ItemAbility;
-import net.neoforged.neoforge.common.ItemAbilities;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import slimeknights.mantle.util.JsonHelper;
@@ -114,7 +113,7 @@ class ToolDefinitionLoaderTest extends BaseMcTest {
     assertThat(actions).isInstanceOf(ToolActionsModule.class);
     assertThat(((ToolActionsModule) actions).actions()).hasSize(2);
     IToolStackView tool = mock(IToolStackView.class);
-    assertThat(data.getHook(ToolHooks.TOOL_ACTION).canPerformAction(tool, ItemAbilities.AXE_DIG)).isTrue();
+    assertThat(data.getHook(ToolHooks.TOOL_ACTION).canPerformAction(tool, ItemAbility.get("axe_dig"))).isTrue();
     assertThat(data.getHook(ToolHooks.TOOL_ACTION).canPerformAction(tool, ItemAbility.get("custom_action"))).isTrue();
     // harvest
     IsEffectiveToolHook harvestLogic = data.getHook(ToolHooks.IS_EFFECTIVE);

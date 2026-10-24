@@ -129,11 +129,11 @@ class ToolStackTest extends ToolItemTest {
 
     CompoundTag nbt = stack.getNbt();
     assertThat(nbt.contains(ToolStack.TAG_BROKEN)).isTrue();
-    assertThat(nbt.getTagType(ToolStack.TAG_BROKEN)).isEqualTo(Tag.TAG_BYTE);
-    assertThat(nbt.getBoolean(ToolStack.TAG_BROKEN)).isTrue();
+    assertThat(nbt.get(ToolStack.TAG_BROKEN).getId()).isEqualTo(Tag.TAG_BYTE);
+    assertThat(nbt.getBooleanOr(ToolStack.TAG_BROKEN, false)).isTrue();
     assertThat(nbt.contains(ToolStack.TAG_DAMAGE)).isTrue();
-    assertThat(nbt.getTagType(ToolStack.TAG_DAMAGE)).isEqualTo(Tag.TAG_INT);
-    assertThat(nbt.getInt(ToolStack.TAG_DAMAGE)).isEqualTo(1);
+    assertThat(nbt.get(ToolStack.TAG_DAMAGE).getId()).isEqualTo(Tag.TAG_INT);
+    assertThat(nbt.getIntOr(ToolStack.TAG_DAMAGE, 0)).isEqualTo(1);
   }
 
   @Test
@@ -378,7 +378,7 @@ class ToolStackTest extends ToolItemTest {
     modData.setSlots(SlotType.UPGRADE, 1);
 
     assertThat(toolStack.getNbt().contains(ToolStack.TAG_PERSISTENT_MOD_DATA)).isTrue();
-    assertThat(toolStack.getNbt().getCompound(ToolStack.TAG_PERSISTENT_MOD_DATA)).isEqualTo(modData.getData());
+    assertThat(toolStack.getNbt().getCompoundOrEmpty(ToolStack.TAG_PERSISTENT_MOD_DATA)).isEqualTo(modData.getData());
   }
 
   @Test
@@ -399,7 +399,7 @@ class ToolStackTest extends ToolItemTest {
     toolStack.setVolatileModData(modData);
 
     assertThat(toolStack.getNbt().contains(ToolStack.TAG_VOLATILE_MOD_DATA)).isTrue();
-    assertThat(toolStack.getNbt().getCompound(ToolStack.TAG_VOLATILE_MOD_DATA)).isEqualTo(modData.getData());
+    assertThat(toolStack.getNbt().getCompoundOrEmpty(ToolStack.TAG_VOLATILE_MOD_DATA)).isEqualTo(modData.getData());
   }
 
   @Test

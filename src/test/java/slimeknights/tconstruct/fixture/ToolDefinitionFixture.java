@@ -2,7 +2,7 @@ package slimeknights.tconstruct.fixture;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
 import slimeknights.mantle.data.predicate.block.BlockPredicate;
 import slimeknights.tconstruct.library.tools.definition.ToolDefinition;
 import slimeknights.tconstruct.library.tools.definition.ToolDefinitionDataBuilder;
@@ -22,7 +22,7 @@ public final class ToolDefinitionFixture {
                                                       .part(MaterialItemFixture.MATERIAL_ITEM_HEAD)
                                                       .part(MaterialItemFixture.MATERIAL_ITEM_HANDLE)
                                                       .part(MaterialItemFixture.MATERIAL_ITEM_EXTRA).build())
-                               .module(ToolActionsModule.of(ItemAbilities.PICKAXE_DIG))
+                               .module(ToolActionsModule.of(ItemAbility.get("pickaxe_dig")))
                                .module(new IsEffectiveModule(BlockPredicate.set(Blocks.STONE), true))
                                .smallToolStartingSlots()
                                .build());

@@ -89,11 +89,11 @@ class StatsNBTTest extends BaseMcTest {
       .build();
     CompoundTag nbt = testStatsNBT.serializeToNBT();
     
-    assertThat(nbt.getInt(ToolStats.DURABILITY.getName().toString())).isEqualTo(1);
-    assertThat(nbt.getString(ToolStats.HARVEST_TIER.getName().toString())).isEqualTo(Objects.requireNonNull(HarvestTiers.tierName(ToolMaterial.NETHERITE)).toString());
-    assertThat(nbt.getFloat(ToolStats.ATTACK_DAMAGE.getName().toString())).isEqualTo(3);
-    assertThat(nbt.getFloat(ToolStats.MINING_SPEED.getName().toString())).isEqualTo(4);
-    assertThat(nbt.getFloat(ToolStats.ATTACK_SPEED.getName().toString())).isEqualTo(5);
+    assertThat(nbt.getIntOr(ToolStats.DURABILITY.getName().toString(), 0)).isEqualTo(1);
+    assertThat(nbt.getStringOr(ToolStats.HARVEST_TIER.getName().toString(), "")).isEqualTo(Objects.requireNonNull(HarvestTiers.tierName(ToolMaterial.NETHERITE)).toString());
+    assertThat(nbt.getFloatOr(ToolStats.ATTACK_DAMAGE.getName().toString(), 0f)).isEqualTo(3);
+    assertThat(nbt.getFloatOr(ToolStats.MINING_SPEED.getName().toString(), 0f)).isEqualTo(4);
+    assertThat(nbt.getFloatOr(ToolStats.ATTACK_SPEED.getName().toString(), 0f)).isEqualTo(5);
   }
 
   @Test

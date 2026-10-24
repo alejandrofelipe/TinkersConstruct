@@ -73,13 +73,13 @@ class ModifierNBTest extends BaseMcTest {
 
     ListTag list = builder.build().serializeToNBT();
     assertThat(list.size()).isEqualTo(2);
-    CompoundTag tag = list.getCompound(0);
-    assertThat(tag.getString(ModifierEntry.TAG_MODIFIER)).isEqualTo(ModifierFixture.TEST_1.toString());
-    assertThat(tag.getInt(ModifierEntry.TAG_LEVEL)).isEqualTo(2);
+    CompoundTag tag = list.getCompoundOrEmpty(0);
+    assertThat(tag.getStringOr(ModifierEntry.TAG_MODIFIER, "")).isEqualTo(ModifierFixture.TEST_1.toString());
+    assertThat(tag.getIntOr(ModifierEntry.TAG_LEVEL, 0)).isEqualTo(2);
 
-    tag = list.getCompound(1);
-    assertThat(tag.getString(ModifierEntry.TAG_MODIFIER)).isEqualTo(ModifierFixture.TEST_2.toString());
-    assertThat(tag.getInt(ModifierEntry.TAG_LEVEL)).isEqualTo(3);
+    tag = list.getCompoundOrEmpty(1);
+    assertThat(tag.getStringOr(ModifierEntry.TAG_MODIFIER, "")).isEqualTo(ModifierFixture.TEST_2.toString());
+    assertThat(tag.getIntOr(ModifierEntry.TAG_LEVEL, 0)).isEqualTo(3);
   }
 
   @Test

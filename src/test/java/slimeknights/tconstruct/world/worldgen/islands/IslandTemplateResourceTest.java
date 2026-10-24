@@ -11,6 +11,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
+import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.test.JsonFileLoader;
 
 import java.io.InputStream;
@@ -67,9 +68,9 @@ class IslandTemplateResourceTest {
         // present -> also assert it actually carries blocks (a non-empty template)
         try (InputStream in = resource.openStream()) {
           CompoundTag nbt = NbtIo.readCompressed(in, NbtAccounter.unlimitedHeap());
-          ListTag size = nbt.getList("size", Tag.TAG_INT);
-          boolean hasVolume = size.size() == 3 && size.getInt(0) > 0 && size.getInt(1) > 0 && size.getInt(2) > 0;
-          boolean hasBlocks = !nbt.getList("blocks", Tag.TAG_COMPOUND).isEmpty();
+          ListTag size = TagUtil.getList(nbt, "size", Tag.TAG_INT);
+          boolean hasVolume = size.size() == 3 && size.getIntOr(0, 0) > 0 && size.getIntOr(1, 0) > 0 && size.getIntOr(2, 0) > 0;
+          boolean hasBlocks = !TagUtil.getList(nbt, "blocks", Tag.TAG_COMPOUND).isEmpty();
           if (!hasVolume || !hasBlocks) {
             empty.add(nbtPath);
           }

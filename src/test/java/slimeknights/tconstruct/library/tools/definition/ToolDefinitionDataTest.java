@@ -2,6 +2,7 @@ package slimeknights.tconstruct.library.tools.definition;
 
 import com.google.common.collect.ImmutableMap;
 import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.library.tools.SlotType;
 import slimeknights.tconstruct.library.tools.definition.module.ToolHooks;
@@ -152,9 +153,9 @@ class ToolDefinitionDataTest extends BaseMcTest {
   void actions_canPerform() {
     IToolStackView context = mock(IToolStackView.class);
     assertThat(ToolDefinitionData.EMPTY.getHook(ToolHooks.TOOL_ACTION).canPerformAction(context, ItemAbilities.SHOVEL_FLATTEN)).isFalse();
-    assertThat(ToolDefinitionData.EMPTY.getHook(ToolHooks.TOOL_ACTION).canPerformAction(context, ItemAbilities.SWORD_DIG)).isFalse();
+    assertThat(ToolDefinitionData.EMPTY.getHook(ToolHooks.TOOL_ACTION).canPerformAction(context, ItemAbility.get("sword_dig"))).isFalse();
     ToolDefinitionData newData = ToolDefinitionDataBuilder.builder().module(ToolActionsModule.of(ItemAbilities.SHOVEL_FLATTEN)).build();
     assertThat(newData.getHook(ToolHooks.TOOL_ACTION).canPerformAction(context, ItemAbilities.SHOVEL_FLATTEN)).isTrue();
-    assertThat(newData.getHook(ToolHooks.TOOL_ACTION).canPerformAction(context, ItemAbilities.SWORD_DIG)).isFalse();
+    assertThat(newData.getHook(ToolHooks.TOOL_ACTION).canPerformAction(context, ItemAbility.get("sword_dig"))).isFalse();
   }
 }

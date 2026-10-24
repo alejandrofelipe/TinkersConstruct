@@ -107,8 +107,8 @@ class StationSlotLayoutLoaderTest extends BaseMcTest {
     assertThat(stack.getItem()).isEqualTo(Items.IRON_INGOT);
     CompoundTag nbt = TestHelper.getTag(stack);
     assertThat(nbt).isNotNull();
-    assertThat(nbt.getAllKeys()).hasSize(1);
-    assertThat(nbt.getInt("test")).isEqualTo(1);
+    assertThat(nbt.keySet()).hasSize(1);
+    assertThat(nbt.getIntOr("test", 0)).isEqualTo(1);
     // sort key
     assertThat(layout.getSortIndex()).isEqualTo(55);
     assertThat(layout.isMain()).isFalse();
