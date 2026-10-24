@@ -85,11 +85,22 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
 - **Compat is optional per milestone** — core Tinkers green is the gate; a compat mod without a target
   build gets re-excluded (M6 decision pattern), re-added when a build appears.
 - **uitest flake:** the AMD `atio6axx.dll` GL-init crash will recur; retry, and if it stays env-blocked,
-  accept visual-neutral changes as in the 1.21.1 close.
+  accept visual-neutral changes as in the 1.21.1 close. (It never fired during M1 — every uitest run booted.)
+- **Lessons from M1 (apply to every milestone):**
+  - Pick the checkpoint by **compat availability** (JEI/IE skipped 1.21.2–1.21.3), not just NeoForge stability.
+  - Each gate hides the next bug class — "compiles + unit green" was ~5 layers from "playable": mod-load
+    (`setId`, eager tags) → datapack load (registry-aware ops) → **client join** (recipe-sync decode, which
+    server-only gametests can't see) → visual (uitest `"ok"` ≠ correct pixels: *view the screenshots*).
+    Run `runServer`/`runClientUiTest` early, not only at the end.
+  - Datagen needs `runData` **and** `runServerData`, which purge each other's outputs — regenerate one side,
+    restore the other from HEAD.
+  - Flow-gate (`-XDshould-stop.ifError=FLOW` via a scratchpad init script) makes `compileJava` report
+    method-body errors past the first attribution failure — essential for category-by-category porting.
+  - Sessions restarted mid-batch several times: have subagents commit **per green stage**.
 
 ## Progress
 
-- [ ] **M1** — 1.21.4 / NF 21.4.161 (1.21.2 + 1.21.3 + old M2 folded in) 🔴 — plan written 2026-10-21; Phase 0 done (branch + bump + deps green), execution in progress
+- [x] **M1** — 1.21.4 / NF 21.4.161 (1.21.2 + 1.21.3 + old M2 folded in) 🏁 2026-10-24 — Mantle `1.13` / Tinkers `3.12.0`, tags `v1.21.4-1.13` / `v1.21.4-3.12.0`; battery: build + 672 unit + 31 gametest + 14/14 uitest (visual verified). Gotchas: [`repo/docs/migration/1.21.1-to-1.21.4.md`](../../../../repo/docs/migration/1.21.1-to-1.21.4.md)
 - [x] ~~**M2**~~ — merged into M1
 - [ ] **M3** — 1.21.5 / NF 21.5 🔴
 - [ ] **M4** — 1.21.6 / NF 21.6 🔴
