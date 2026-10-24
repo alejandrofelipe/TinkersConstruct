@@ -14,7 +14,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.pathfinder.PathType;
-import slimeknights.mantle.util.BlockEntityHelper;
 import slimeknights.tconstruct.smeltery.block.entity.component.SmelteryComponentBlockEntity;
 
 import javax.annotation.Nullable;
@@ -44,20 +43,15 @@ public class SearedBlock extends Block implements EntityBlock {
     return null;
   }
 
+  // PORT 1.21.5: Block#onRemove was removed. When the block changes, the chunk removes the block entity itself after
+  // SmelteryComponentBlockEntity#preRemoveSideEffects tells the master. Leaving the structure keeps the block, so the
+  // optional block entity is removed here instead (onPlace runs on the server after every state change).
   @Override
-  @Deprecated
-  public void onRemove(BlockState oldState, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
-    if (requiredBlockEntity || oldState.getValue(IN_STRUCTURE)) {
-      // if the block is unchanged, remove the block entity if we no longer have one
-      if (newState.is(this)) {
-        if (!requiredBlockEntity && !newState.getValue(IN_STRUCTURE)) {
-          world.removeBlockEntity(pos);
-        }
-      } else {
-        // block changed, tell the master then ditch the block entity
-        BlockEntityHelper.get(SmelteryComponentBlockEntity.class, world, pos).ifPresent(te -> te.notifyMasterOfChange(pos, newState));
-        world.removeBlockEntity(pos);
-      }
+  protected void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    super.onPlace(state, world, pos, oldState, movedByPiston);
+    // if the block is unchanged, remove the block entity if we no longer have one
+    if (!requiredBlockEntity && oldState.is(this) && oldState.getValue(IN_STRUCTURE) && !state.getValue(IN_STRUCTURE)) {
+      world.removeBlockEntity(pos);
     }
   }
 

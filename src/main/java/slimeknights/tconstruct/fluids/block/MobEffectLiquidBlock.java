@@ -3,6 +3,7 @@ package slimeknights.tconstruct.fluids.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -23,7 +24,7 @@ public class MobEffectLiquidBlock extends LiquidBlock {
   }
 
   @Override
-  public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+  public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier) {
     if (entity.getFluidTypeHeight(this.fluid.getFluidType()) > 0 && entity instanceof LivingEntity living) {
       MobEffectInstance effect = this.effect.get();
       // PORT 1.21.4: the curative-items API (MobEffectInstance#getCures) was removed; effects can no longer be marked uncurable here

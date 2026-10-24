@@ -5,19 +5,38 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import slimeknights.tconstruct.common.TinkerTags;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public class SlimeLeavesBlock extends LeavesBlock {
+  /** 1.21.5: LeavesBlock#codec became abstract */
+  public static final MapCodec<SlimeLeavesBlock> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
+    propertiesCodec(),
+    StringRepresentable.fromEnum(FoliageType::values).fieldOf("foliage").forGetter(SlimeLeavesBlock::getFoliageType)
+  ).apply(inst, SlimeLeavesBlock::new));
+
   @Getter
   private final FoliageType foliageType;
   public SlimeLeavesBlock(Properties properties, FoliageType foliageType) {
-    super(properties);
+    // PORT 1.21.5: leaves gained falling leaf particles; slime leaves keep their pre-1.21.5 look with no particles
+    super(0, properties);
     this.foliageType = foliageType;
   }
+
+  @Override
+  public MapCodec<? extends SlimeLeavesBlock> codec() {
+    return CODEC;
+  }
+
+  @Override
+  protected void spawnFallingLeavesParticle(Level level, BlockPos pos, RandomSource random) {}
 
   @Override
   public BlockState updateShape(BlockState stateIn, net.minecraft.world.level.LevelReader worldIn, net.minecraft.world.level.ScheduledTickAccess scheduledTickAccess, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, net.minecraft.util.RandomSource random) {

@@ -23,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 import net.neoforged.neoforge.items.IItemHandler;
+import slimeknights.mantle.block.InventoryBlock;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.mantle.inventory.SingleItemHandler;
 import slimeknights.tconstruct.common.network.InventorySlotSyncPacket;
@@ -61,6 +62,15 @@ public class FluidCannonBlockEntity extends TankBlockEntity implements ITankInve
   protected FluidCannonBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, IFluidCannon block) {
     super(type, pos, state, block);
     this.block = block;
+  }
+
+  /** PORT 1.21.5: replaces the block's {@code onRemove} drops, the block entity is gone by {@code affectNeighborsAfterRemoval} */
+  @Override
+  public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+    if (level != null) {
+      InventoryBlock.dropInventoryItems(level, pos, itemHandler);
+    }
+    super.preRemoveSideEffects(pos, state);
   }
 
   /** Called when a player interacts with the fluid cannon */

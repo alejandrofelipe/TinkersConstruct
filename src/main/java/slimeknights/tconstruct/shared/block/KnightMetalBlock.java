@@ -3,6 +3,7 @@ package slimeknights.tconstruct.shared.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -72,7 +73,7 @@ public class KnightMetalBlock extends Block implements SimpleWaterloggedBlock {
   }
 
   @Override
-  public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+  public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier) {
     entity.hurtOrSimulate(CombatHelper.damageSource(level, TinkerDamageTypes.KNIGHTMETAL), BLOCK_DAMAGE);
   }
 }

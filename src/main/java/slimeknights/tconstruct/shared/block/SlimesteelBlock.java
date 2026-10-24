@@ -26,7 +26,7 @@ public class SlimesteelBlock extends Block {
   }
 
   @Override
-  public void fallOn(Level worldIn, BlockState state, BlockPos pos, Entity entityIn, float fallDistance) {
+  public void fallOn(Level worldIn, BlockState state, BlockPos pos, Entity entityIn, double fallDistance) {
     if (entityIn.isSuppressingBounce()) {
       super.fallOn(worldIn, state, pos, entityIn, fallDistance);
     } else {

@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import slimeknights.mantle.block.InventoryBlock;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.tconstruct.library.fluid.IFluidTankUpdater;
@@ -31,6 +32,15 @@ public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTan
 
   public ProxyTankBlockEntity(BlockPos pos, BlockState state) {
     this(TinkerSmeltery.proxyTank.get(), pos, state);
+  }
+
+  /** PORT 1.21.5: replaces the block's {@code onRemove} drops, the block entity is gone by {@code affectNeighborsAfterRemoval} */
+  @Override
+  public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+    if (level != null) {
+      InventoryBlock.dropInventoryItems(level, pos, itemTank);
+    }
+    super.preRemoveSideEffects(pos, state);
   }
 
 

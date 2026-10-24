@@ -29,6 +29,7 @@ import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import slimeknights.mantle.item.BlockTooltipItem;
+import slimeknights.mantle.item.RetexturedBlockItem;
 import slimeknights.mantle.item.TooltipItem;
 import slimeknights.mantle.registration.deferred.BlockEntityTypeDeferredRegister;
 import slimeknights.mantle.registration.deferred.EntityTypeDeferredRegister;
@@ -86,6 +87,8 @@ public abstract class TinkerModule {
   protected static final Function<Block,? extends BlockItem> BLOCK_ITEM = (b) -> new BlockItem(b, ITEM_PROPS.setId(blockItemKey(b)));
   protected static final Function<Block,? extends BlockItem> TOOLTIP_BLOCK_ITEM = (b) -> new BlockTooltipItem(b, ITEM_PROPS.setId(blockItemKey(b)));
   protected static final Function<Block,? extends BlockItem> UNSTACKABLE_BLOCK_ITEM = (b) -> new BlockTooltipItem(b, UNSTACKABLE_PROPS.setId(blockItemKey(b)));
+  /** 1.21.5: Block#appendHoverText was removed, so retextured blocks add their texture tooltip from the item */
+  protected static final Function<Block,? extends BlockItem> RETEXTURED_BLOCK_ITEM = (b) -> new RetexturedBlockItem(b, ITEM_PROPS.setId(blockItemKey(b)));
   /** Factory form so the id can be set by the register call; use via {@code ITEMS.register(name, TOOLTIP_ITEM, ITEM_PROPS)} */
   protected static final Function<Item.Properties,Item> TOOLTIP_ITEM = TooltipItem::new;
 

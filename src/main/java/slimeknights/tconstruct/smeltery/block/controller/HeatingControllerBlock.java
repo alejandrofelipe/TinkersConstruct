@@ -1,25 +1,20 @@
 package slimeknights.tconstruct.smeltery.block.controller;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import slimeknights.mantle.block.RetexturedBlock;
 import slimeknights.mantle.util.BlockEntityHelper;
-import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.multiblock.MultiblockResult;
 import slimeknights.tconstruct.smeltery.network.StructureErrorPositionPacket;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * Multiblock that displays the error from the tile entity on right click
@@ -58,10 +53,7 @@ public abstract class HeatingControllerBlock extends ControllerBlock {
     return true;
   }
 
-  @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag pFlag) {
-    RetexturedHelper.addTooltip(stack, tooltip, pFlag);
-  }
+  // PORT 1.21.5: Block#appendHoverText was removed, the texture tooltip comes from the RetexturedBlockItem registered for this block
 
   @Override
   public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {

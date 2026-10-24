@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType.BlockEntitySupplier;
@@ -21,7 +22,9 @@ public class TinkersChestBlock extends ChestBlock {
     ItemStack stack = new ItemStack(this);
     BlockEntityHelper.get(TinkersChestBlockEntity.class, world, pos).ifPresent(te -> {
       if (te.hasColor()) {
-        stack.set(DataComponents.DYED_COLOR, new DyedItemColor(te.getColor(), false));
+        stack.set(DataComponents.DYED_COLOR, new DyedItemColor(te.getColor()));
+        // 1.21.5: DyedItemColor lost its show in tooltip flag, hide it through the tooltip display instead
+        stack.set(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT.withHidden(DataComponents.DYED_COLOR, true));
       }
     });
     return stack;

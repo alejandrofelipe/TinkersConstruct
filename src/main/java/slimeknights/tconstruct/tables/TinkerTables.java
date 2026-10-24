@@ -95,9 +95,9 @@ public final class TinkerTables extends TinkerModule {
   public static final ItemObject<TableBlock> craftingStation, tinkerStation, partBuilder, tinkersChest, partChest;
   static {
     Block.Properties WOOD_TABLE = builder(MapColor.WOOD, SoundType.WOOD).instrument(NoteBlockInstrument.BASS).strength(1.0F, 5.0F).noOcclusion();
-    craftingStation = BLOCKS.register("crafting_station", CraftingStationBlock::new, WOOD_TABLE, BLOCK_ITEM);
-    tinkerStation = BLOCKS.register("tinker_station", p -> new TinkerStationBlock(p, 4), WOOD_TABLE, BLOCK_ITEM);
-    partBuilder = BLOCKS.register("part_builder", p -> new GenericTableBlock(p, PartBuilderBlockEntity::new), WOOD_TABLE, BLOCK_ITEM);
+    craftingStation = BLOCKS.register("crafting_station", CraftingStationBlock::new, WOOD_TABLE, RETEXTURED_BLOCK_ITEM);
+    tinkerStation = BLOCKS.register("tinker_station", p -> new TinkerStationBlock(p, 4), WOOD_TABLE, RETEXTURED_BLOCK_ITEM);
+    partBuilder = BLOCKS.register("part_builder", p -> new GenericTableBlock(p, PartBuilderBlockEntity::new), WOOD_TABLE, RETEXTURED_BLOCK_ITEM);
     tinkersChest = BLOCKS.register("tinkers_chest", p -> new TinkersChestBlock(p, TinkersChestBlockEntity::new, true), WOOD_TABLE, block -> new TinkersChestBlockItem(block, ITEM_PROPS.setId(blockItemKey(block))));
     partChest = BLOCKS.register("part_chest", p -> new ChestBlock(p, PartChestBlockEntity::new, true), WOOD_TABLE, BLOCK_ITEM);
   }
@@ -106,7 +106,7 @@ public final class TinkerTables extends TinkerModule {
   static {
     Block.Properties STONE_TABLE = builder(MapColor.COLOR_GRAY, SoundType.METAL).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(3.0F, 9.0F).noOcclusion();
     castChest = BLOCKS.register("cast_chest", p -> new ChestBlock(p, CastChestBlockEntity::new, false), STONE_TABLE, BLOCK_ITEM);
-    modifierWorktable = BLOCKS.register("modifier_worktable", p -> new GenericTableBlock(p, ModifierWorktableBlockEntity::new), STONE_TABLE, BLOCK_ITEM);
+    modifierWorktable = BLOCKS.register("modifier_worktable", p -> new GenericTableBlock(p, ModifierWorktableBlockEntity::new), STONE_TABLE, RETEXTURED_BLOCK_ITEM);
   }
 
   public static final ItemObject<TableBlock> tinkersAnvil, scorchedAnvil;

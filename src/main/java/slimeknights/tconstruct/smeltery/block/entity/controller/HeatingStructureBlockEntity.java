@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -420,6 +420,17 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
   /**
    * Called when the controller is broken to invalidate the master in all servants
    */
+  /**
+   * PORT 1.21.5: replaces the controller block's {@code onRemove}, which invalidated the structure when the block changed.
+   * The chunk removes the block entity before {@code affectNeighborsAfterRemoval} runs, so this has to happen here.
+   */
+  @Override
+  public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+    invalidateStructure();
+    // drops the inventory through the controller's InventoryBlock
+    super.preRemoveSideEffects(pos, state);
+  }
+
   public void invalidateStructure() {
     if (structure != null) {
       structure.clearMaster(this);

@@ -4,10 +4,12 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters;
 import net.minecraft.world.item.CreativeModeTab.Output;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Item.Properties;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.SoundType;
@@ -37,6 +39,7 @@ import slimeknights.tconstruct.gadgets.entity.shuriken.FlintShurikenEntity;
 import slimeknights.tconstruct.gadgets.entity.shuriken.QuartzShurikenEntity;
 import slimeknights.tconstruct.gadgets.item.EFLNItem;
 import slimeknights.tconstruct.gadgets.item.FancyItemFrameItem;
+import slimeknights.tconstruct.gadgets.item.FoodCakeBlockItem;
 import slimeknights.tconstruct.gadgets.item.GlowBallItem;
 import slimeknights.tconstruct.gadgets.item.PiggyBackPackItem;
 import slimeknights.tconstruct.gadgets.item.PiggyBackPackItem.CarryPotionEffect;
@@ -44,6 +47,7 @@ import slimeknights.tconstruct.gadgets.item.ShootProjectileDispenserBehavior;
 import slimeknights.tconstruct.gadgets.item.ShurikenItem;
 import slimeknights.tconstruct.shared.TinkerFood;
 import slimeknights.tconstruct.world.block.FoliageType;
+import java.util.function.Function;
 
 /**
  * Contains any special tools unrelated to the base tools.
@@ -85,13 +89,15 @@ public final class TinkerGadgets extends TinkerModule {
   public static final ItemObject<FoodCakeBlock> magmaCake;
   static {
     BlockBehaviour.Properties CAKE = builder(SoundType.WOOL).forceSolidOn().strength(0.5F).sound(SoundType.WOOL).pushReaction(PushReaction.DESTROY);
+    // 1.21.5: Block#appendHoverText was removed, the cake effect tooltip comes from the item
+    Function<Block,BlockItem> cakeItem = b -> new FoodCakeBlockItem(b, UNSTACKABLE_PROPS.setId(blockItemKey(b)));
     cake = BLOCKS.registerEnum(FoliageType.values(), "cake", (key, type) -> {
       if (type == FoliageType.ICHOR) {
         return new InvertedCakeBlock(CAKE.setId(key), TinkerFood.ICHOR_CAKE, EffectCombination.BLOCK);
       }
       return new FoodCakeBlock(CAKE.setId(key), TinkerFood.getCake(type), type == FoliageType.ENDER ? EffectCombination.ADD : EffectCombination.BLOCK);
-    }, UNSTACKABLE_BLOCK_ITEM);
-    magmaCake = BLOCKS.register("magma_cake", p -> new FoodCakeBlock(p, TinkerFood.MAGMA_CAKE, EffectCombination.BLOCK), CAKE, UNSTACKABLE_BLOCK_ITEM);
+    }, cakeItem);
+    magmaCake = BLOCKS.register("magma_cake", p -> new FoodCakeBlock(p, TinkerFood.MAGMA_CAKE, EffectCombination.BLOCK), CAKE, cakeItem);
   }
 
   // Shurikens

@@ -1,29 +1,21 @@
 package slimeknights.tconstruct.tables.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import slimeknights.mantle.block.RetexturedBlock;
-import slimeknights.mantle.util.RetexturedHelper;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public abstract class RetexturedTableBlock extends TabbedTableBlock {
   public RetexturedTableBlock(Properties builder) {
     super(builder);
   }
 
-  @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-    RetexturedHelper.addTooltip(stack, tooltip, flag);
-  }
+  // PORT 1.21.5: Block#appendHoverText was removed, the texture tooltip comes from the RetexturedBlockItem registered for this block
 
   @Override
   public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {

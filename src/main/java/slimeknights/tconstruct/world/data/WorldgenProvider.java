@@ -13,7 +13,8 @@ import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.random.WeightedRandomList;
+import net.minecraft.util.random.Weighted;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -353,9 +354,9 @@ public class WorldgenProvider {
     context.register(spawnIchorGeode, new AddFeaturesBiomeModifier(nether, direct(placed.getOrThrow(TinkerWorld.placedIchorGeode)), Decoration.LOCAL_MODIFICATIONS));
     context.register(spawnEnderGeode, new AddFeaturesBiomeModifier(and(end, not(direct(biomes.getOrThrow(Biomes.THE_END)))), direct(placed.getOrThrow(TinkerWorld.placedEnderGeode)), Decoration.LOCAL_MODIFICATIONS));
     // spawns
-    context.register(spawnOverworldSlime, new AddSpawnsBiomeModifier(overworld, List.of(new SpawnerData(TinkerWorld.skySlimeEntity.get(), 100, 2, 4))));
-    context.register(spawnTerracube,      new AddSpawnsBiomeModifier(and(overworld, not(biomes.getOrThrow(TinkerTags.Biomes.NO_DEFAULT_MONSTERS))), List.of(new SpawnerData(TinkerWorld.terracubeEntity.get(), 10, 2, 4))));
-    context.register(spawnEndSlime,       new AddSpawnsBiomeModifier(end,       List.of(new SpawnerData(TinkerWorld.enderSlimeEntity.get(), 10, 2, 4))));
+    context.register(spawnOverworldSlime, AddSpawnsBiomeModifier.singleSpawn(overworld, new Weighted<>(new SpawnerData(TinkerWorld.skySlimeEntity.get(), 2, 4), 100)));
+    context.register(spawnTerracube,      AddSpawnsBiomeModifier.singleSpawn(and(overworld, not(biomes.getOrThrow(TinkerTags.Biomes.NO_DEFAULT_MONSTERS))), new Weighted<>(new SpawnerData(TinkerWorld.terracubeEntity.get(), 2, 4), 10)));
+    context.register(spawnEndSlime,       AddSpawnsBiomeModifier.singleSpawn(end,       new Weighted<>(new SpawnerData(TinkerWorld.enderSlimeEntity.get(), 2, 4), 10)));
   }
 
 
@@ -453,6 +454,6 @@ public class WorldgenProvider {
 
   /** Creates a spawn override for a single mob */
   private static Map<MobCategory,StructureSpawnOverride> monsterOverride(EntityType<?> entity, int min, int max) {
-    return Map.of(MobCategory.MONSTER, new StructureSpawnOverride(BoundingBoxType.STRUCTURE, WeightedRandomList.create(new MobSpawnSettings.SpawnerData(entity, 1, min, max))));
+    return Map.of(MobCategory.MONSTER, new StructureSpawnOverride(BoundingBoxType.STRUCTURE, WeightedList.of(new Weighted<>(new MobSpawnSettings.SpawnerData(entity, min, max), 1))));
   }
 }

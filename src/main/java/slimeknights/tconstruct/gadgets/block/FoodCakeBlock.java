@@ -7,9 +7,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.minecraft.world.item.consume_effects.ConsumeEffect;
@@ -21,7 +18,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import slimeknights.tconstruct.fluids.item.ContainerFoodItem;
 import slimeknights.tconstruct.shared.TinkerFood;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Extension of cake that utilizes a food instance for properties
@@ -40,8 +37,8 @@ public class FoodCakeBlock extends CakeBlock {
     this.combination = combination;
   }
 
-  @Override
-  public void appendHoverText(ItemStack pStack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag pFlag) {
+  /** Adds the cake effects to the tooltip. 1.21.5: Block#appendHoverText was removed, called from {@link slimeknights.tconstruct.gadgets.item.FoodCakeBlockItem} */
+  public void appendHoverText(Consumer<Component> tooltip) {
     ContainerFoodItem.addEffectTooltip(consumable, tooltip);
   }
 

@@ -7,7 +7,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.level.Level;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.materials.RandomMaterial;

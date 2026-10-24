@@ -16,7 +16,7 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.event.EventHooks;
 import org.apache.commons.lang3.StringUtils;
 import slimeknights.mantle.util.RetexturedHelper;
@@ -216,7 +216,7 @@ public class TinkerStationBlockEntity extends RetexturedTableBlockEntity impleme
     }
 
     // fire crafting events
-    resultItem.onCraftedBy(this.level, player, amount);
+    resultItem.onCraftedBy(player, amount);
     EventHooks.firePlayerCraftingEvent(player, resultItem, this);
     this.playCraftSound(player);
 

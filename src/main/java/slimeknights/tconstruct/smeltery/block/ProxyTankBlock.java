@@ -18,7 +18,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import slimeknights.mantle.block.InventoryBlock;
 import slimeknights.tconstruct.smeltery.block.entity.ProxyTankBlockEntity;
 
 import javax.annotation.Nullable;
@@ -101,14 +100,7 @@ public class ProxyTankBlock extends Block implements EntityBlock {
     return InteractionResult.SUCCESS;
   }
 
-  @Deprecated
-  @Override
-  public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
-    if (state.getBlock() != newState.getBlock() && world.getBlockEntity(pos) instanceof ProxyTankBlockEntity tank) {
-      InventoryBlock.dropInventoryItems(world, pos, tank.getItemTank());
-    }
-    super.onRemove(state, world, pos, newState, isMoving);
-  }
+  // PORT 1.21.5: Block#onRemove was removed, items are dropped from ProxyTankBlockEntity#preRemoveSideEffects
 
 
   /* Tank */

@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -81,7 +81,8 @@ public abstract class SmelteryInputOutputBlockEntity<T> extends SmelteryComponen
     super.setMaster(master, block);
     // notify neighbors of the change (state change skips the notify flag)
     if (masterChanged) {
-      level.blockUpdated(worldPosition, getBlockState().getBlock());
+      // 1.21.5: Level#blockUpdated was removed, it updated neighbors without an orientation
+      level.updateNeighborsAt(worldPosition, getBlockState().getBlock(), null);
     }
   }
 

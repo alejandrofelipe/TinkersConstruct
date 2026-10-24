@@ -5,6 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -176,7 +177,7 @@ public class PunjiBlock extends Block {
   @SuppressWarnings("deprecation")
   @Override
   @Deprecated
-  public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn) {
+  public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn, InsideBlockEffectApplier effectApplier) {
     if (entityIn instanceof LivingEntity) {
       Direction side = state.getValue(FACING);
       Axis axis = side.getAxis();

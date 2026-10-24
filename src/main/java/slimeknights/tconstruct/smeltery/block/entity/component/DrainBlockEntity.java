@@ -6,7 +6,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.library.client.model.ModelProperties;

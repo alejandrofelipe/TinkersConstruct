@@ -15,7 +15,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.block.VegetationBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
@@ -100,11 +100,11 @@ public class IslandPiece extends TemplateStructurePiece {
       }
       case "tconstruct:slime_tall_grass" -> {
         if (rand.nextBoolean()) {
-          Optional<Block> plant = this.structure.getGrasses().getRandomValue(rand);
+          Optional<Block> plant = this.structure.getGrasses().getRandom(rand);
           if (plant.isPresent()) {
             Block block = plant.get();
             BlockState state = block.defaultBlockState();
-            if (block instanceof BushBlock && state.canSurvive(level, pos)) {
+            if (block instanceof VegetationBlock && state.canSurvive(level, pos)) {
               level.setBlock(pos, state, 2);
             }
           }

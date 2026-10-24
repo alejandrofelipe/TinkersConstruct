@@ -19,7 +19,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import slimeknights.mantle.block.InventoryBlock;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock;
 import slimeknights.tconstruct.smeltery.block.entity.FluidCannonBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.FluidCannonBlockEntity.IFluidCannon;
@@ -67,14 +66,7 @@ public class FluidCannonBlock extends SearedTankBlock implements IFluidCannon {
     return InteractionResult.SUCCESS;
   }
 
-  @Deprecated
-  @Override
-  public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
-    if (state.getBlock() != newState.getBlock() && world.getBlockEntity(pos) instanceof FluidCannonBlockEntity cannon) {
-      InventoryBlock.dropInventoryItems(world, pos, cannon.getItemHandler());
-    }
-    super.onRemove(state, world, pos, newState, isMoving);
-  }
+  // PORT 1.21.5: Block#onRemove was removed, items are dropped from FluidCannonBlockEntity#preRemoveSideEffects
 
 
   /* Facing */

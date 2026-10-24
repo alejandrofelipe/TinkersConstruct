@@ -25,12 +25,21 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 import static net.minecraft.world.level.block.MangrovePropaguleBlock.AGE;
-import static net.minecraft.world.level.block.MangrovePropaguleBlock.SHAPE_PER_AGE;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HANGING;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED;
 
 /** Recreation of {@link net.minecraft.world.level.block.MangrovePropaguleBlock} to swap out the tree grower. */
 public class SlimePropaguleBlock extends SlimeSaplingBlock {
+  /** 1.21.5: the vanilla sapling and propagule shapes became private, so they are copied here */
+  private static final VoxelShape SHAPE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 12.0D, 14.0D);
+  private static final VoxelShape[] SHAPE_PER_AGE = {
+    Block.box(7.0D, 13.0D, 7.0D, 9.0D, 16.0D, 9.0D),
+    Block.box(7.0D, 10.0D, 7.0D, 9.0D, 16.0D, 9.0D),
+    Block.box(7.0D, 7.0D, 7.0D, 9.0D, 16.0D, 9.0D),
+    Block.box(7.0D, 3.0D, 7.0D, 9.0D, 16.0D, 9.0D),
+    Block.box(7.0D, 0.0D, 7.0D, 9.0D, 16.0D, 9.0D)
+  };
+
   public SlimePropaguleBlock(TreeGrower treeIn, FoliageType foliageType, Properties properties) {
     super(treeIn, foliageType, properties);
     this.registerDefaultState(this.stateDefinition.any().setValue(STAGE, 0).setValue(AGE, 0).setValue(WATERLOGGED, false).setValue(HANGING, false));

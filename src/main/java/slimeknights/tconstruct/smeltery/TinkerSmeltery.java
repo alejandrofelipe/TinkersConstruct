@@ -5,7 +5,6 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.ArmorItem;
 import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
@@ -240,14 +239,14 @@ public final class TinkerSmeltery extends TinkerModule {
   public static final ItemObject<Block> scorchedDrain, scorchedDuct, scorchedChute;
   static {
     Properties seared = searedSolidProps(2);
-    searedDrain = BLOCKS.register("seared_drain", SearedDrainBlock::new, seared, TOOLTIP_BLOCK_ITEM);
-    searedDuct = BLOCKS.register("seared_duct", SearedDuctBlock::new, seared, TOOLTIP_BLOCK_ITEM);
-    searedChute = BLOCKS.register("seared_chute", p -> new RetexturedOrientableSmelteryBlock(p, ChuteBlockEntity::new), seared, TOOLTIP_BLOCK_ITEM);
+    searedDrain = BLOCKS.register("seared_drain", SearedDrainBlock::new, seared, RETEXTURED_BLOCK_ITEM);
+    searedDuct = BLOCKS.register("seared_duct", SearedDuctBlock::new, seared, RETEXTURED_BLOCK_ITEM);
+    searedChute = BLOCKS.register("seared_chute", p -> new RetexturedOrientableSmelteryBlock(p, ChuteBlockEntity::new), seared, RETEXTURED_BLOCK_ITEM);
 
     Properties scorched = scorchedSolidProps(3);
-    scorchedDrain = BLOCKS.register("scorched_drain", SearedDrainBlock::new, scorched, TOOLTIP_BLOCK_ITEM);
-    scorchedDuct = BLOCKS.register("scorched_duct", SearedDuctBlock::new, scorched, TOOLTIP_BLOCK_ITEM);
-    scorchedChute = BLOCKS.register("scorched_chute", p -> new RetexturedOrientableSmelteryBlock(p, ChuteBlockEntity::new), scorched, TOOLTIP_BLOCK_ITEM);
+    scorchedDrain = BLOCKS.register("scorched_drain", SearedDrainBlock::new, scorched, RETEXTURED_BLOCK_ITEM);
+    scorchedDuct = BLOCKS.register("scorched_duct", SearedDuctBlock::new, scorched, RETEXTURED_BLOCK_ITEM);
+    scorchedChute = BLOCKS.register("scorched_chute", p -> new RetexturedOrientableSmelteryBlock(p, ChuteBlockEntity::new), scorched, RETEXTURED_BLOCK_ITEM);
   }
 
   // non-solid blocks
@@ -315,8 +314,8 @@ public final class TinkerSmeltery extends TinkerModule {
   static {
     Supplier<Properties> seared = () -> builder(MapColor.COLOR_GRAY, SoundType.METAL).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(8.0F, 28F).lightLevel(s -> s.getValue(ControllerBlock.ACTIVE) ? 13 : 0);
     Supplier<Properties> scorched = () -> builder(MapColor.TERRACOTTA_BROWN, SoundType.BASALT).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(9.0F, 35f).lightLevel(s -> s.getValue(ControllerBlock.ACTIVE) ? 13 : 0);
-    smelteryController = BLOCKS.register("smeltery_controller", SmelteryControllerBlock::new, seared.get(),  TOOLTIP_BLOCK_ITEM);
-    foundryController = BLOCKS.register("foundry_controller", FoundryControllerBlock::new, scorched.get(),  TOOLTIP_BLOCK_ITEM);
+    smelteryController = BLOCKS.register("smeltery_controller", SmelteryControllerBlock::new, seared.get(),  RETEXTURED_BLOCK_ITEM);
+    foundryController = BLOCKS.register("foundry_controller", FoundryControllerBlock::new, scorched.get(),  RETEXTURED_BLOCK_ITEM);
     // tiny
     searedMelter = BLOCKS.register("seared_melter", MelterBlock::new, seared.get().noOcclusion(), TOOLTIP_BLOCK_ITEM);
     searedHeater = BLOCKS.register("seared_heater", HeaterBlock::new, seared.get(), TOOLTIP_BLOCK_ITEM);

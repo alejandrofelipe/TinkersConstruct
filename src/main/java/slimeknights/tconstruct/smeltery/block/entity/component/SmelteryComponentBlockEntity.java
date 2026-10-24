@@ -22,6 +22,19 @@ public class SmelteryComponentBlockEntity extends ServantTileEntity {
   }
 
   /**
+   * PORT 1.21.5: replaces the block's {@code onRemove}, which notified the master when the block changed. The chunk removes the
+   * block entity before {@code affectNeighborsAfterRemoval} runs, so this has to happen here. The level already holds the new state.
+   */
+  @Override
+  public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+    if (level != null) {
+      notifyMasterOfChange(pos, level.getBlockState(pos));
+    }
+    // drops the inventory for inventory blocks (ducts)
+    super.preRemoveSideEffects(pos, state);
+  }
+
+  /**
    * Block method to update neighbors of a smeltery component when a new one is placed
    * @param world  World instance
    * @param pos    Location of new smeltery component

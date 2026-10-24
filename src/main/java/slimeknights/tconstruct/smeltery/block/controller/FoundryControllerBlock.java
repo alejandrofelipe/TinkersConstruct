@@ -43,14 +43,7 @@ public class FoundryControllerBlock extends HeatingControllerBlock {
     BlockEntityHelper.get(FoundryBlockEntity.class, worldIn, pos).ifPresent(FoundryBlockEntity::updateStructure);
   }
 
-  @Override
-  @Deprecated
-  public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-    if (!newState.is(this)) {
-      BlockEntityHelper.get(FoundryBlockEntity.class, worldIn, pos).ifPresent(FoundryBlockEntity::invalidateStructure);
-    }
-    super.onRemove(state, worldIn, pos, newState, isMoving);
-  }
+  // PORT 1.21.5: Block#onRemove was removed, the structure is invalidated from HeatingStructureBlockEntity#preRemoveSideEffects
 
   @Override
   public void animateTick(BlockState state, Level world, BlockPos pos, RandomSource rand) {
