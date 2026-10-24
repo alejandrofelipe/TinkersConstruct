@@ -1,0 +1,76 @@
+{
+  "values": [
+    {
+      "id": "minecraft:bolt_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:coast_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:dune_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:eye_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:flow_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:host_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:raiser_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:rib_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:sentry_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:shaper_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:silence_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:snout_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:spire_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:tide_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:vex_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:ward_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:wayfinder_armor_trim_smithing_template",
+      "required": false
+    },
+    {
+      "id": "minecraft:wild_armor_trim_smithing_template",
+      "required": false
+    }
+  ]
+}

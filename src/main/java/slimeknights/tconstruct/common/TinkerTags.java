@@ -554,6 +554,8 @@ public class TinkerTags {
     public static final TagKey<Item> URANIUM_INGOTS = common("ingots/uranium");
     /** Tag of trophies from bosses, to grant an additional upgrade slot to tools. Meant for Twilight Forest boss trophies, but suppose you can add other bosses that are not easily farmed. */
     public static final TagKey<Item> BOSS_TROPHIES = local("boss_trophies");
+    /** Vanilla armor-trim smithing templates, melted down to diamond. Replaces the {@code minecraft:trim_templates} item tag, which was removed in 1.21.4 when the armor-trim system moved to {@code equipment.trim}. Populated in {@code ItemTagProvider}. */
+    public static final TagKey<Item> SMITHING_TEMPLATES = local("smithing_templates");
 
     /** Fluids in this tag won't show in JEI */
     public static final TagKey<Item> HIDDEN_IN_RECIPE_VIEWERS = hiddenFromRecipeViewers(Registries.ITEM);

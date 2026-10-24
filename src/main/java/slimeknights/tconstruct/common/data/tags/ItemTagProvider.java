@@ -4,6 +4,7 @@ import net.minecraft.world.item.equipment.ArmorType;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderLookup.Provider;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
@@ -44,6 +45,7 @@ import slimeknights.tconstruct.world.TinkerWorld;
 import slimeknights.tconstruct.world.block.DirtType;
 import slimeknights.tconstruct.world.block.FoliageType;
 
+import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -178,6 +180,14 @@ public class ItemTagProvider extends ItemTagsProvider {
     this.tag(TinkerTags.Items.STEEL_SHARD).add(TinkerWorld.steelShard.get());
     this.tag(TinkerTags.Items.COBALT_SHARD).add(TinkerWorld.cobaltShard.get());
     this.tag(TinkerTags.Items.KNIGHTMETAL_SHARD).add(TinkerWorld.knightmetalShard.get());
+
+    // Vanilla no longer groups armor-trim smithing templates under an item tag (minecraft:trim_templates was removed in
+    // 1.21.4 with the equipment.trim rework), so gather the templates by registry id for the diamond melting/casting recipes.
+    IntrinsicTagAppender<Item> smithingTemplates = this.tag(TinkerTags.Items.SMITHING_TEMPLATES);
+    BuiltInRegistries.ITEM.keySet().stream()
+                          .filter(id -> "minecraft".equals(id.getNamespace()) && id.getPath().endsWith("_armor_trim_smithing_template"))
+                          .sorted(Comparator.comparing(ResourceLocation::toString))
+                          .forEach(smithingTemplates::addOptional);
 
     // ores
     addMetalTags(TinkerMaterials.steel);
