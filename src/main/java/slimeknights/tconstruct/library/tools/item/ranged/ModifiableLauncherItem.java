@@ -147,6 +147,8 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
       CompoundTag nbt = data.copyTag();
       ToolStack.verifyTag(this, nbt, getToolDefinition());
       stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+      // 1.21.5: sync the components derived from the tool (shield blocking/disabling) for stacks saved before they existed
+      ToolStack.from(stack).updateComponents(stack);
     }
   }
 
