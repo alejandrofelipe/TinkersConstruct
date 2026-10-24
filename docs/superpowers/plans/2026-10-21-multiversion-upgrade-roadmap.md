@@ -23,6 +23,12 @@ releases piggyback onto the next checkpoint), gating each with the full test bat
   re-excluded (was already an accepted known-issue crash). Exact pins: MC `1.21.4`, NeoForge `21.4.161`,
   Parchment `1.21.4 / 2025.03.23`, JEI `20.0.0.4` (new major → plugin API port), Java 21 (unchanged).
   Detailed plan: [`2026-10-21-m1-1.21.4-port.md`](2026-10-21-m1-1.21.4-port.md).
+- **M3 starts 2026-10-24 on 1.21.5 / NF 21.5.101** — compat complete this time: JEI `21.4.0.27` (new major),
+  Crafting Tweaks `21.5.3` + Balm `21.5.26`, Parchment `2025.06.15`, NeoGradle 7.1.39 + Gradle 9.2.1 unchanged.
+  IE stays excluded (1.21.1 only); JSON Things has no 1.21.5 build (has 1.21.4/1.21.6 → re-add at M4). Mantle
+  baseline: 258 compile errors. The real wall is **models (`BakedModel` removed, dynamic models → block-state
+  level) + render pipeline (`RenderPipeline`) + NBT `Optional` getters + gametest framework rewrite**, more than
+  the tool data components. Branch `1.21.5` in both repos. Detailed plan: [`2026-10-24-m3-1.21.5-port.md`](2026-10-24-m3-1.21.5-port.md).
 
 ## Global constraints (apply to every milestone)
 
@@ -102,7 +108,8 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
 
 - [x] **M1** — 1.21.4 / NF 21.4.161 (1.21.2 + 1.21.3 + old M2 folded in) 🏁 2026-10-24 — Mantle `1.13` / Tinkers `3.12.0`, tags `v1.21.4-1.13` / `v1.21.4-3.12.0`; battery: build + 672 unit + 31 gametest + 14/14 uitest (visual verified). Gotchas: [`repo/docs/migration/1.21.1-to-1.21.4.md`](../../../../repo/docs/migration/1.21.1-to-1.21.4.md)
 - [x] ~~**M2**~~ — merged into M1
-- [ ] **M3** — 1.21.5 / NF 21.5 🔴
+- [x] **M1 patch** — Tinkers `3.12.1` (2026-10-24): first-boot staged-tags fix + worldgen gametests (38 gametest)
+- [ ] **M3** — 1.21.5 / NF 21.5.101 🔴 — **em andamento** (Fase 0 ✅ 2026-10-24; plano [`2026-10-24-m3-1.21.5-port.md`](2026-10-24-m3-1.21.5-port.md))
 - [ ] **M4** — 1.21.6 / NF 21.6 🔴
 - [ ] **M5** — 1.21.9 / NF 21.9
 - [ ] **M6** — 1.21.11 / NF 21.11
