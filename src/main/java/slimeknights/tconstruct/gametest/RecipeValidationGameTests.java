@@ -61,12 +61,6 @@ public class RecipeValidationGameTests {
     "tconstruct:smeltery/melting/water/snow_block",
     "tconstruct:smeltery/melting/water/snow_layer",
     "tconstruct:smeltery/entity_melting/heads/skeleton", // skulls -> milk, same 0-temperature formula outcome
-    // SmelteryRecipeBuilder#rawOre() unconditionally emits a "raw_materials/<metal>" + "storage_blocks/raw_<metal>"
-    // tag-based melting recipe for every metal (see SmelteryRecipeProvider line ~2251, .rawOre(Byproduct.IRON) on
-    // moltenSteel). Steel has no vanilla/Tinkers raw ore item, so both c: tags are legitimately empty here; this is
-    // the same forward-compat-with-other-mods placeholder pattern used for bronze/brass/electrum/pewter/etc.
-    "tconstruct:smeltery/melting/metal/steel/raw",
-    "tconstruct:smeltery/melting/metal/steel/raw_block",
     // TippingCastingRecipe/TipClearingCastingRecipe (tipped arrows/fishing rods) mutate the input tool's persistent
     // NBT in place via assemble(); their PotionCastingRecipe result field is Items.AIR by construction since
     // getResultItem() is not how they produce output - see TippingCastingRecipe/TipClearingCastingRecipe ctors.

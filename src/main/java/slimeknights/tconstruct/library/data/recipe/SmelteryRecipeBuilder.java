@@ -501,17 +501,33 @@ public class SmelteryRecipeBuilder {
    * Provided for non-standard ores (like gold).
    */
   public SmelteryRecipeBuilder rawOre() {
+    return rawOre(false);
+  }
+
+  /**
+   * Adds the raw ore and raw ore block metal melting recipes.
+   * @param forceOptional  If true, conditions both recipes on their raw-material tag being filled, so a metal with no
+   *                       raw ore in this pack (e.g. steel, which is only ever an alloy) stays inert instead of failing
+   *                       to load against a missing {@code c:raw_materials/<metal>} tag. Always-present raw ores (iron,
+   *                       gold, cobalt...) leave this false.
+   */
+  public SmelteryRecipeBuilder rawOre(boolean forceOptional) {
     assert oreRate != null;
     assert baseUnit != 0;
-    oreMelting(1, "raw_materials/",      null, 1.5f, "raw",       false);
-    oreMelting(9, "storage_blocks/raw_", null, 6.0f, "raw_block", false);
+    oreMelting(1, "raw_materials/",      null, 1.5f, "raw",       forceOptional);
+    oreMelting(9, "storage_blocks/raw_", null, 6.0f, "raw_block", forceOptional);
     return this;
   }
 
   /** Adds a raw ore recipe with the given byproducts */
   public SmelteryRecipeBuilder rawOre(IByproduct... byproducts) {
+    return rawOre(false, byproducts);
+  }
+
+  /** Adds a raw ore recipe with the given byproducts, optionally conditioned on the raw-material tag (see {@link #rawOre(boolean)}) */
+  public SmelteryRecipeBuilder rawOre(boolean forceOptional, IByproduct... byproducts) {
     this.oreByproducts = byproducts;
-    return rawOre();
+    return rawOre(forceOptional);
   }
 
   /** Adds the sparse ore recipe at the given scale. Automatcally called by {@link #metal()} and {@link #gem(int)}, so only needed if doing unusual things. */
