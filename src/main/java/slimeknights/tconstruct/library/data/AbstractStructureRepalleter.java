@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import slimeknights.mantle.data.GenericDataProvider;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 import java.io.IOException;
 import java.io.InputStream;

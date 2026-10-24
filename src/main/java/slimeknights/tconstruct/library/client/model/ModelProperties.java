@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.library.client.model;
 
-import net.neoforged.neoforge.model.data.ModelProperty;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.model.data.ModelProperty;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.tools.nbt.MaterialIdNBT;
 

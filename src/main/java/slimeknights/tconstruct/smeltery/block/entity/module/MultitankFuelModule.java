@@ -10,6 +10,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 import javax.annotation.Nonnull;
 import java.util.LinkedHashMap;

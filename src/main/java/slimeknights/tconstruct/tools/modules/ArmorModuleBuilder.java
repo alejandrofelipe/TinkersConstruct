@@ -2,7 +2,6 @@ package slimeknights.tconstruct.tools.modules;
 
 import net.minecraft.world.item.equipment.ArmorType;
 
-
 /**
  * Interface for armor module builders, which are builders designed to create slightly varied modules based on the armor slot
  */

@@ -66,11 +66,11 @@ import slimeknights.tconstruct.library.tools.layout.Patterns;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
-import slimeknights.tconstruct.library.utils.TagUtil;
 
 import static slimeknights.tconstruct.library.tools.capability.inventory.InventoryModule.TAG_SLOT;
 

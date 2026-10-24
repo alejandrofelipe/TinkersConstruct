@@ -454,6 +454,6 @@ public class WorldgenProvider {
 
   /** Creates a spawn override for a single mob */
   private static Map<MobCategory,StructureSpawnOverride> monsterOverride(EntityType<?> entity, int min, int max) {
-    return Map.of(MobCategory.MONSTER, new StructureSpawnOverride(BoundingBoxType.STRUCTURE, WeightedList.of(new Weighted<>(new MobSpawnSettings.SpawnerData(entity, min, max), 1))));
+    return Map.of(MobCategory.MONSTER, new StructureSpawnOverride(BoundingBoxType.STRUCTURE, WeightedList.<MobSpawnSettings.SpawnerData>builder().add(new MobSpawnSettings.SpawnerData(entity, min, max), 1).build()));
   }
 }

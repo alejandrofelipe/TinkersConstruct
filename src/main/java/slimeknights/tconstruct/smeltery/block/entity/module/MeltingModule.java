@@ -16,11 +16,11 @@ import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Predicate;
-import slimeknights.tconstruct.library.utils.TagUtil;
 
 /**
  * This class represents a single item slot that can melt into a liquid

@@ -38,6 +38,7 @@ import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.library.tools.nbt.ModifierNBT;
 import slimeknights.tconstruct.library.tools.stat.INumericToolStat;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -107,10 +108,10 @@ public record ConditionalPowerModule(IJsonPredicate<LivingEntity> target, IJsonP
       persistentData.putBoolean(key, true);
       if (TinkerPredicate.matches(this.target, target) && TinkerPredicate.matches(this.holder, attacker)) {
         float multiplier = 1;
-        if (TagUtil.contains(persistentData, AMMO_MULTIPLIER, TagUtil.TAG_ANY_NUMERIC)) {
+        if (persistentData.contains(AMMO_MULTIPLIER, TagUtil.TAG_ANY_NUMERIC)) {
           multiplier *= persistentData.getFloat(AMMO_MULTIPLIER);
         }
-        if (TagUtil.contains(persistentData, BOW_MULTIPLIER, TagUtil.TAG_ANY_NUMERIC)) {
+        if (persistentData.contains(BOW_MULTIPLIER, TagUtil.TAG_ANY_NUMERIC)) {
           multiplier *= persistentData.getFloat(BOW_MULTIPLIER);
         }
         if (projectile instanceof AbstractArrow arrow) {

@@ -47,13 +47,13 @@ import slimeknights.tconstruct.library.tools.nbt.IToolContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolDataNBT;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 import javax.annotation.Nullable;
 import java.util.BitSet;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
-import slimeknights.tconstruct.library.utils.TagUtil;
 
 @Getter
 @Accessors(fluent = true)
