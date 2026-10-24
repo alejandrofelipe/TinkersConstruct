@@ -12,10 +12,10 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import com.mojang.serialization.DynamicOps;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -29,6 +29,7 @@ import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.common.conditions.ICondition.IContext;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import slimeknights.mantle.data.loadable.RegistryJsonOps;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
@@ -92,6 +93,10 @@ public class StationSlotLayoutLoader extends SimpleJsonResourceReloadListener<Js
   @Override
   protected void apply(Map<ResourceLocation,JsonElement> splashList, ResourceManager resourceManager, ProfilerFiller profiler) {
     long time = System.nanoTime();
+    // decode tag ingredients against the reload's staged tags (NeoForge-injected lookup); BuiltInRegistries only gets
+    // its tags bound after the reload, so on the first boot every "#tag" ingredient would be a missing tag
+    HolderLookup.Provider lookup = getRegistryLookup();
+    DynamicOps<JsonElement> ops = lookup != RegistryAccess.EMPTY ? lookup.createSerializationContext(JsonOps.INSTANCE) : JsonOps.INSTANCE;
     ImmutableMap.Builder<ResourceLocation, StationSlotLayout> builder = ImmutableMap.builder();
     for (Entry<ResourceLocation,JsonElement> entry : splashList.entrySet()) {
       ResourceLocation key = entry.getKey();
@@ -101,7 +106,7 @@ public class StationSlotLayoutLoader extends SimpleJsonResourceReloadListener<Js
         JsonObject object = GsonHelper.convertToJsonObject(value, "station_layout");
         if (!object.entrySet().isEmpty() && conditionsMatch(object)) {
           // just need a valid slot information
-          StationSlotLayout layout = GSON.fromJson(object, StationSlotLayout.class);
+          StationSlotLayout layout = RegistryJsonOps.withThreadedOps(ops, () -> GSON.fromJson(object, StationSlotLayout.class));
           int size = layout.getInputSlots().size() + (layout.getToolSlot().isHidden() ? 0 : 1);
           if (size < 2) {
             throw new JsonParseException("Too few slots for layout " + key + ", must have at least 2");
@@ -181,28 +186,18 @@ public class StationSlotLayoutLoader extends SimpleJsonResourceReloadListener<Js
   /**
    * GSON serializer for ingredients.
    * 1.21.4: an {@link Ingredient} filter is a {@code HolderSet<Item>}, so {@link Ingredient#CODEC} must run on a
-   * registry-aware ops or it throws "Can't decode element without registry". Items live in the built-in registry
-   * (frozen before datapacks load, with tags bound), so a {@link RegistryOps} backed by {@link BuiltInRegistries}
-   * resolves both direct item entries and item tags, server-side and in tests alike.
+   * registry-aware ops or it throws "Can't decode element without registry". Decoding uses the ops threaded by
+   * {@link #apply} (the reload's staged tags), falling back to the {@code BuiltInRegistries} ops outside a reload.
    */
   private static class IngredientSerializer implements JsonSerializer<Ingredient>, JsonDeserializer<Ingredient> {
-    private static RegistryOps<JsonElement> registryOps;
-
-    private static RegistryOps<JsonElement> ops() {
-      if (registryOps == null) {
-        registryOps = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY).createSerializationContext(JsonOps.INSTANCE);
-      }
-      return registryOps;
-    }
-
     @Override
     public Ingredient deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-      return Ingredient.CODEC.parse(ops(), json).getOrThrow(JsonParseException::new);
+      return Ingredient.CODEC.parse(RegistryJsonOps.deserialize(), json).getOrThrow(JsonParseException::new);
     }
 
     @Override
     public JsonElement serialize(Ingredient ingredient, Type typeOfSrc, JsonSerializationContext context) {
-      return Ingredient.CODEC.encodeStart(ops(), ingredient).getOrThrow();
+      return Ingredient.CODEC.encodeStart(RegistryJsonOps.serialize(), ingredient).getOrThrow();
     }
   }
 }

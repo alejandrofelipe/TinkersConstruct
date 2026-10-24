@@ -12,6 +12,10 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
+import slimeknights.tconstruct.library.modifiers.ModifierId;
+import slimeknights.tconstruct.library.modifiers.ModifierManager;
+import slimeknights.tconstruct.library.tools.layout.StationSlotLayout;
+import slimeknights.tconstruct.library.tools.layout.StationSlotLayoutLoader;
 import slimeknights.tconstruct.tools.TinkerTools;
 
 import java.lang.reflect.Field;
@@ -101,6 +105,31 @@ public class DatapackTagGapGameTests {
       helper.succeed();
     } else {
       helper.fail("tag-backed loot modifiers failed to decode: " + missing);
+    }
+  }
+
+  /**
+   * Runtime JSON loaders must decode tag ingredients against the reload's staged tags: the built-in item registry only
+   * gets its tags bound after the reload finishes, so on the first boot (dedicated server, gametest server) a loader
+   * using {@code BuiltInRegistries} ops dropped every entry with a tag ingredient as "Missing tag".
+   */
+  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tag_ingredient_runtime_data_loads_on_first_boot(GameTestHelper helper) {
+    List<String> missing = new ArrayList<>();
+    for (String layout : List.of("tinker_station", "tinkers_anvil", "scorched_anvil")) {
+      if (StationSlotLayoutLoader.getInstance().get(TConstruct.getResource(layout)) == StationSlotLayout.EMPTY) {
+        missing.add("station layout " + layout);
+      }
+    }
+    for (String modifier : List.of("stoneshield", "slimeball")) {
+      if (!ModifierManager.INSTANCE.contains(new ModifierId(TConstruct.getResource(modifier)))) {
+        missing.add("modifier " + modifier);
+      }
+    }
+    if (missing.isEmpty()) {
+      helper.succeed();
+    } else {
+      helper.fail("tag-ingredient data failed to load: " + missing);
     }
   }
 

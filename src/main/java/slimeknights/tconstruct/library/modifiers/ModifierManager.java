@@ -11,7 +11,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.FileToIdConverter;
@@ -26,6 +28,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.enchantment.Enchantment;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.conditions.ICondition;
@@ -40,6 +43,7 @@ import net.neoforged.fml.event.IModBusEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 
 import net.neoforged.fml.loading.FMLLoader;
+import slimeknights.mantle.data.loadable.RegistryJsonOps;
 import slimeknights.mantle.data.loadable.field.ContextKey;
 import slimeknights.mantle.util.JsonHelper;
 import slimeknights.mantle.util.RegistryHelper;
@@ -152,10 +156,15 @@ public class ModifierManager extends SimpleJsonResourceReloadListener<JsonElemen
   protected void apply(Map<ResourceLocation,JsonElement> splashList, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
     long time = System.nanoTime();
 
+    // decode tag ingredients against the reload's staged tags (NeoForge-injected lookup); BuiltInRegistries only gets
+    // its tags bound after the reload, so on the first boot every "#tag" ingredient would be a missing tag
+    HolderLookup.Provider lookup = getRegistryLookup();
+    DynamicOps<JsonElement> ops = lookup != RegistryAccess.EMPTY ? lookup.createSerializationContext(JsonOps.INSTANCE) : RegistryJsonOps.serialize();
+
     // load modifiers from JSON
     Map<ModifierId,ModifierId> redirects = new HashMap<>();
     this.dynamicModifiers = splashList.entrySet().stream()
-                                      .map(entry -> loadModifier(entry.getKey(), entry.getValue().getAsJsonObject(), redirects))
+                                      .map(entry -> loadModifier(entry.getKey(), entry.getValue().getAsJsonObject(), redirects, ops))
                                       .filter(Objects::nonNull)
                                       .collect(Collectors.toMap(Modifier::getId, mod -> mod));
 
@@ -278,7 +287,7 @@ public class ModifierManager extends SimpleJsonResourceReloadListener<JsonElemen
 
   /** Loads a modifier from JSON */
   @Nullable
-  private Modifier loadModifier(ResourceLocation key, JsonElement element, Map<ModifierId, ModifierId> redirects) {
+  private Modifier loadModifier(ResourceLocation key, JsonElement element, Map<ModifierId, ModifierId> redirects, DynamicOps<JsonElement> ops) {
     try {
       JsonObject json = GsonHelper.convertToJsonObject(element, "modifier");
 
@@ -301,7 +310,7 @@ public class ModifierManager extends SimpleJsonResourceReloadListener<JsonElemen
       }
 
       // fallback to actual modifier
-      Modifier modifier = ComposableModifier.LOADER.deserialize(json, contextBuilder(key).put(ContextKey.CONDITION_CONTEXT, conditionContext).build());
+      Modifier modifier = ComposableModifier.LOADER.deserialize(json, contextBuilder(key).put(ContextKey.CONDITION_CONTEXT, conditionContext).put(ContextKey.OPS, ops).build());
       modifier.setId(new ModifierId(key));
       return modifier;
     } catch (JsonSyntaxException e) {
