@@ -76,9 +76,7 @@ runs {
         workingDirectory project.layout.projectDirectory.dir('run').dir(name)
         modSource project.sourceSets.main
     }
-    client {
-        systemProperty 'neoforge.enabledGameTestNamespaces', 'tconstruct'
-    }
+    client {}
     // long-lived client with live class reload: JBR 21 + HotswapAgent (external mode).
     // JVM is forced below via javaLauncher toolchain override — see the top-level tasks.matching
     // block after this runs{} block for why a raw `executable` override doesn't work here.
@@ -126,8 +124,12 @@ runs {
             '--output', file('src/generated/resources/').getAbsolutePath(),
             '--existing', file('src/main/resources/').getAbsolutePath()
     }
+    // 1.21.5: runs every registered test instance (NeoForge dropped the neoforge.enabledGameTestNamespaces filter).
+    // Focused run: gradlew runGameTestServer -PgametestOnly=tconstruct:smeltery_* (vanilla --tests selector, wildcards ok)
     gameTestServer {
-        systemProperty 'neoforge.enabledGameTestNamespaces', 'tconstruct'
+        if (project.hasProperty('gametestOnly')) {
+            arguments.addAll '--tests', project.property('gametestOnly').toString()
+        }
     }
 }
 
