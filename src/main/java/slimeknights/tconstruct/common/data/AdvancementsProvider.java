@@ -13,6 +13,7 @@ import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.DisplayInfo;
+import net.minecraft.advancements.critereon.DataComponentMatchers;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
@@ -21,9 +22,10 @@ import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.PlayerInteractTrigger;
 import net.minecraft.advancements.critereon.PlayerTrigger;
+import net.minecraft.core.ClientAsset;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponentPredicate;
+import net.minecraft.core.component.DataComponentExactPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
@@ -35,7 +37,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -104,7 +105,7 @@ import java.util.function.Consumer;
  * Generates Tinkers' advancements on the 1.21 vanilla API ({@link Advancement.Builder} + {@link Advancement#CODEC}),
  * emitting at the singular {@code data/tconstruct/advancement/} path (1.20.5/1.21 datapack dir rename).
  * <p>
- * Tool matching in advancements goes through the {@code tconstruct:tool} {@link net.minecraft.advancements.critereon.ItemSubPredicate}
+ * Tool matching in advancements goes through the {@code tconstruct:tool} {@link net.minecraft.core.component.predicates.DataComponentPredicate}
  * bridge ({@link TinkerItemPredicates#TOOL}); see {@link #toolCriterion}. Only the {@code tools/} tinkering path is
  * generated here — the other categories and config-gated advancements are a separate sub-project.
  */
@@ -131,7 +132,7 @@ public class AdvancementsProvider extends GenericDataProvider {
   /** Generates all advancements into {@link #advancements} */
   protected void generate() {
     // tinkering path
-    AdvancementHolder materialsAndYou = builder(TinkerCommons.materialsAndYou, resource("tools/materials_and_you"), resource("textures/gui/advancement_background.png"), AdvancementType.TASK, builder ->
+    AdvancementHolder materialsAndYou = builder(TinkerCommons.materialsAndYou, resource("tools/materials_and_you"), resource("gui/advancement_background"), AdvancementType.TASK, builder ->
       builder.addCriterion("crafted_book", hasItem(TinkerCommons.materialsAndYou)));
     AdvancementHolder partBuilder = builder(TinkerTables.partBuilder, resource("tools/part_builder"), materialsAndYou, AdvancementType.TASK, builder ->
       builder.addCriterion("crafted_block", hasItem(TinkerTables.partBuilder)));
@@ -380,7 +381,7 @@ public class AdvancementsProvider extends GenericDataProvider {
     AdvancementHolder foundry = builder(TinkerSmeltery.foundryController, resource("foundry/structure"), alloyer, AdvancementType.TASK, builder ->
       builder.addCriterion("open_foundry", containerCriterion(TinkerSmeltery.foundry.get())));
 
-    // foundry: blaze subtree (tank fluid content matching via DataComponentPredicate)
+    // foundry: blaze subtree (tank fluid content matching via DataComponentExactPredicate)
     AdvancementHolder blazingBlood = builder(TankItem.setTank(new ItemStack(TinkerSmeltery.scorchedTank.get(SearedTankBlock.TankType.FUEL_GAUGE)), new FluidStack(TinkerFluids.blazingBlood.get(), SearedTankBlock.TankType.FUEL_GAUGE.getCapacity())),
         resource("foundry/blaze"), foundry, AdvancementType.GOAL, builder -> {
       Consumer<SearedTankBlock> with = block ->
@@ -519,7 +520,8 @@ public class AdvancementsProvider extends GenericDataProvider {
     builder.display(new DisplayInfo(display,
       Component.translatable(makeTranslationKey(name) + ".title"),
       Component.translatable(makeTranslationKey(name) + ".description"),
-      Optional.ofNullable(background), frame, true, frame != AdvancementType.TASK, false));
+      // 1.21.5: backgrounds are client assets, the id is resolved under textures/
+      Optional.ofNullable(background).map(ClientAsset::new), frame, true, frame != AdvancementType.TASK, false));
     consumer.accept(builder);
     AdvancementHolder holder = builder.build(name);
     this.advancements.add(holder);
@@ -558,12 +560,12 @@ public class AdvancementsProvider extends GenericDataProvider {
 
   /** Criterion matching a Tinker tool against a tool-stack predicate (via the {@code tconstruct:tool} sub-predicate) */
   protected static Criterion<?> toolCriterion(IJsonPredicate<IToolStackView> predicate) {
-    return inventoryTrigger(ItemPredicate.Builder.item().withSubPredicate(TinkerItemPredicates.TOOL.get(), ToolItemSubPredicate.ofTool(predicate)));
+    return inventoryTrigger(ItemPredicate.Builder.item().withComponents(DataComponentMatchers.Builder.components().partial(TinkerItemPredicates.TOOL.get(), ToolItemSubPredicate.ofTool(predicate)).build()));
   }
 
   /** Criterion matching a Tinker tool against a tool-context predicate */
   protected static Criterion<?> toolContextCriterion(IJsonPredicate<IToolContext> predicate) {
-    return inventoryTrigger(ItemPredicate.Builder.item().withSubPredicate(TinkerItemPredicates.TOOL.get(), ToolItemSubPredicate.ofContext(predicate)));
+    return inventoryTrigger(ItemPredicate.Builder.item().withComponents(DataComponentMatchers.Builder.components().partial(TinkerItemPredicates.TOOL.get(), ToolItemSubPredicate.ofContext(predicate)).build()));
   }
 
   /** Criterion firing every player tick (hidden reward advancements). */
@@ -593,12 +595,12 @@ public class AdvancementsProvider extends GenericDataProvider {
       Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().of(BuiltInRegistries.ENTITY_TYPE, entity).build())));
   }
 
-  /** Criterion matching an item whose tank is filled to capacity with the given fluid (exact DataComponentPredicate). */
+  /** Criterion matching an item whose tank is filled to capacity with the given fluid (exact DataComponentExactPredicate). */
   protected static Criterion<?> tankFluidCriterion(ItemLike block, Fluid fluid, int capacity, MinMaxBounds.Ints count) {
-    return inventoryTrigger(ItemPredicate.Builder.item().of(BuiltInRegistries.ITEM, block).withCount(count).hasComponents(
-      DataComponentPredicate.builder()
+    return inventoryTrigger(ItemPredicate.Builder.item().of(BuiltInRegistries.ITEM, block).withCount(count).withComponents(
+      DataComponentMatchers.Builder.components().exact(DataComponentExactPredicate.builder()
         .expect(TinkerSmeltery.TANK_FLUID.get(), SimpleFluidContent.copyOf(new FluidStack(fluid, capacity)))
-        .build()));
+        .build()).build()));
   }
 
 

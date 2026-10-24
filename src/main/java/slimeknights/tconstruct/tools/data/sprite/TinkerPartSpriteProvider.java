@@ -2,7 +2,6 @@ package slimeknights.tconstruct.tools.data.sprite;
 
 import net.minecraft.world.item.equipment.ArmorType;
 
-import net.minecraft.world.item.ArmorItem;
 import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.data.material.AbstractPartSpriteProvider;
