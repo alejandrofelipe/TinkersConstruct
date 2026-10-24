@@ -83,6 +83,10 @@ public class ToolItemModelProvider extends AbstractToolItemModelProvider {
     tool(TinkerTools.battlesign, null, "head");
     pulling(TinkerTools.swasher, readJson(getResource("tool/swasher/blocking_display")), AmmoType.NONE, "blade", 2, "barrel");
     tool(TinkerTools.minotaurAxe, toolBlocking, "front");
+    // thrown weapons (no broken/charging states)
+    basicTool(TinkerTools.shuriken);
+    basicTool(TinkerTools.throwingAxe);
+    basicTool(TinkerTools.arrow);
   }
 
   @Override

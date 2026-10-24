@@ -1,0 +1,67 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:travelers/goggles"
+      ],
+      "parts": [
+        {
+          "name": "base"
+        },
+        {
+          "index": 1,
+          "name": "cuirass"
+        },
+        {
+          "index": 0,
+          "name": "metal"
+        }
+      ],
+      "textures": {
+        "base": "tconstruct:item/tool/armor/travelers/goggles/base",
+        "cuirass": "tconstruct:item/tool/armor/travelers/goggles/cuirass",
+        "metal": "tconstruct:item/tool/armor/travelers/goggles/metal"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:travelers/goggles_broken",
+        "tconstruct:travelers/goggles"
+      ],
+      "parts": [
+        {
+          "name": "base"
+        },
+        {
+          "index": 1,
+          "name": "cuirass"
+        },
+        {
+          "index": 0,
+          "name": "metal"
+        }
+      ],
+      "textures": {
+        "base": "tconstruct:item/tool/armor/travelers/goggles/base_broken",
+        "cuirass": "tconstruct:item/tool/armor/travelers/goggles/cuirass_broken",
+        "metal": "tconstruct:item/tool/armor/travelers/goggles/metal_broken"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "property": "tconstruct:broken"
+  }
+}

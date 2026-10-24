@@ -1,0 +1,67 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:swasher"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "blade"
+        },
+        {
+          "index": 2,
+          "name": "barrel"
+        },
+        {
+          "name": "tank"
+        }
+      ],
+      "textures": {
+        "barrel": "tconstruct:item/tool/swasher/barrel",
+        "blade": "tconstruct:item/tool/swasher/blade",
+        "handle": "tconstruct:item/tool/swasher/handle",
+        "tank": "tconstruct:item/tool/swasher/tank"
+      },
+      "transform_model": "tconstruct:item/tool/swasher/display"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:swasher/broken",
+        "tconstruct:swasher"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "blade"
+        },
+        {
+          "index": 2,
+          "name": "barrel"
+        },
+        {
+          "name": "tank"
+        }
+      ],
+      "textures": {
+        "barrel": "tconstruct:item/tool/swasher/barrel",
+        "blade": "tconstruct:item/tool/swasher/blade_broken",
+        "handle": "tconstruct:item/tool/swasher/handle",
+        "tank": "tconstruct:item/tool/swasher/tank"
+      },
+      "transform_model": "tconstruct:item/tool/swasher/display"
+    },
+    "property": "tconstruct:broken"
+  }
+}

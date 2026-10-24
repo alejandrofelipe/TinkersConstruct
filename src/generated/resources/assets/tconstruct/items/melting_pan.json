@@ -1,0 +1,49 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:melting_pan"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        }
+      ],
+      "textures": {
+        "handle": "tconstruct:item/tool/melting_pan/handle",
+        "head": "tconstruct:item/tool/melting_pan/head"
+      },
+      "transform_model": "neoforge:item/default-tool"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:melting_pan/broken",
+        "tconstruct:melting_pan"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "handle"
+        },
+        {
+          "index": 0,
+          "name": "head"
+        }
+      ],
+      "textures": {
+        "handle": "tconstruct:item/tool/melting_pan/handle",
+        "head": "tconstruct:item/tool/melting_pan/head_broken"
+      },
+      "transform_model": "neoforge:item/default-tool"
+    },
+    "property": "tconstruct:broken"
+  }
+}

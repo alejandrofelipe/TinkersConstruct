@@ -1,0 +1,65 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        },
+        {
+          "name": "tconstruct:trim"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:plate/boots"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "plating"
+        },
+        {
+          "index": 1,
+          "name": "maille"
+        }
+      ],
+      "textures": {
+        "maille": "tconstruct:item/tool/armor/plate/boots/maille",
+        "plating": "tconstruct:item/tool/armor/plate/boots/plating"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        },
+        {
+          "name": "tconstruct:trim"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:plate/boots_broken",
+        "tconstruct:plate/boots"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "plating"
+        },
+        {
+          "index": 1,
+          "name": "maille"
+        }
+      ],
+      "textures": {
+        "maille": "tconstruct:item/tool/armor/plate/boots/maille_broken",
+        "plating": "tconstruct:item/tool/armor/plate/boots/plating_broken"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "property": "tconstruct:broken"
+  }
+}

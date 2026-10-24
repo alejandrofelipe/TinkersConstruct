@@ -1,0 +1,59 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:travelers/shield"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "wood"
+        },
+        {
+          "index": 1,
+          "name": "cuirass"
+        }
+      ],
+      "textures": {
+        "cuirass": "tconstruct:item/tool/armor/travelers/shield/cuirass",
+        "wood": "tconstruct:item/tool/armor/travelers/shield/wood"
+      },
+      "transform_model": "tconstruct:item/base/shield"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:travelers/shield_broken",
+        "tconstruct:travelers/shield"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "wood"
+        },
+        {
+          "index": 1,
+          "name": "cuirass"
+        }
+      ],
+      "textures": {
+        "cuirass": "tconstruct:item/tool/armor/travelers/shield/cuirass_broken",
+        "wood": "tconstruct:item/tool/armor/travelers/shield/wood_broken"
+      },
+      "transform_model": "tconstruct:item/base/shield"
+    },
+    "property": "tconstruct:broken"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:trim"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:slime/chestplate"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "slime"
+        },
+        {
+          "index": 0,
+          "name": "ribcage"
+        }
+      ],
+      "textures": {
+        "ribcage": "tconstruct:item/tool/armor/slime/chestplate/ribcage",
+        "slime": "tconstruct:item/tool/armor/slime/chestplate/slime"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:trim"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:slime/chestplate_broken",
+        "tconstruct:slime/chestplate"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "slime"
+        },
+        {
+          "index": 0,
+          "name": "ribcage"
+        }
+      ],
+      "textures": {
+        "ribcage": "tconstruct:item/tool/armor/slime/chestplate/ribcage_broken",
+        "slime": "tconstruct:item/tool/armor/slime/chestplate/slime_broken"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "property": "tconstruct:broken"
+  }
+}

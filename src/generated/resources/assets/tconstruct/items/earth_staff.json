@@ -1,0 +1,50 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        },
+        {
+          "name": "tconstruct:embellishment"
+        }
+      ],
+      "large": true,
+      "modifier_maps": [
+        "tconstruct:staff/earth",
+        "tconstruct:staff"
+      ],
+      "textures": {
+        "large_tool": "tconstruct:item/tool/staff/earth_large",
+        "tool": "tconstruct:item/tool/staff/earth"
+      },
+      "transform_model": "tconstruct:item/base/staff"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        },
+        {
+          "name": "tconstruct:embellishment"
+        }
+      ],
+      "large": true,
+      "modifier_maps": [
+        "tconstruct:staff/earth/broken",
+        "tconstruct:staff/earth",
+        "tconstruct:staff/broken",
+        "tconstruct:staff"
+      ],
+      "textures": {
+        "large_tool": "tconstruct:item/tool/staff/earth_large_broken",
+        "tool": "tconstruct:item/tool/staff/earth_broken"
+      },
+      "transform_model": "tconstruct:item/base/staff"
+    },
+    "property": "tconstruct:broken"
+  }
+}

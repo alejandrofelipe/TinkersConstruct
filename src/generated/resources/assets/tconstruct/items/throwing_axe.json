@@ -1,0 +1,23 @@
+{
+  "model": {
+    "type": "tconstruct:tool",
+    "modifier_maps": [
+      "tconstruct:throwing_axe"
+    ],
+    "parts": [
+      {
+        "index": 1,
+        "name": "shaft"
+      },
+      {
+        "index": 0,
+        "name": "head"
+      }
+    ],
+    "textures": {
+      "head": "tconstruct:item/tool/ammo/axe_head",
+      "shaft": "tconstruct:item/tool/ammo/arrow_shaft"
+    },
+    "transform_model": "neoforge:item/default-tool"
+  }
+}

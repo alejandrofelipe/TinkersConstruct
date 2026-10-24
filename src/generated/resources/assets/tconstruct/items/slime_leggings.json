@@ -1,0 +1,59 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:trim"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:slime/leggings"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "slime"
+        },
+        {
+          "index": 0,
+          "name": "shell"
+        }
+      ],
+      "textures": {
+        "shell": "tconstruct:item/tool/armor/slime/leggings/shell",
+        "slime": "tconstruct:item/tool/armor/slime/leggings/slime"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:trim"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:slime/leggings_broken",
+        "tconstruct:slime/leggings"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "slime"
+        },
+        {
+          "index": 0,
+          "name": "shell"
+        }
+      ],
+      "textures": {
+        "shell": "tconstruct:item/tool/armor/slime/leggings/shell_broken",
+        "slime": "tconstruct:item/tool/armor/slime/leggings/slime_broken"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "property": "tconstruct:broken"
+  }
+}

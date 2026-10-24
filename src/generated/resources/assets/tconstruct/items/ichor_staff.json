@@ -1,0 +1,50 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        },
+        {
+          "name": "tconstruct:embellishment"
+        }
+      ],
+      "large": true,
+      "modifier_maps": [
+        "tconstruct:staff/ichor",
+        "tconstruct:staff"
+      ],
+      "textures": {
+        "large_tool": "tconstruct:item/tool/staff/ichor_large",
+        "tool": "tconstruct:item/tool/staff/ichor"
+      },
+      "transform_model": "tconstruct:item/base/staff"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        },
+        {
+          "name": "tconstruct:embellishment"
+        }
+      ],
+      "large": true,
+      "modifier_maps": [
+        "tconstruct:staff/ichor/broken",
+        "tconstruct:staff/ichor",
+        "tconstruct:staff/broken",
+        "tconstruct:staff"
+      ],
+      "textures": {
+        "large_tool": "tconstruct:item/tool/staff/ichor_large_broken",
+        "tool": "tconstruct:item/tool/staff/ichor_broken"
+      },
+      "transform_model": "tconstruct:item/base/staff"
+    },
+    "property": "tconstruct:broken"
+  }
+}

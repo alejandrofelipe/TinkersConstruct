@@ -1,0 +1,65 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        },
+        {
+          "name": "tconstruct:trim"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:travelers/pants"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "cuirass"
+        },
+        {
+          "index": 0,
+          "name": "metal"
+        }
+      ],
+      "textures": {
+        "cuirass": "tconstruct:item/tool/armor/travelers/pants/cuirass",
+        "metal": "tconstruct:item/tool/armor/travelers/pants/metal"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        },
+        {
+          "name": "tconstruct:trim"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:travelers/pants_broken",
+        "tconstruct:travelers/pants"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "cuirass"
+        },
+        {
+          "index": 0,
+          "name": "metal"
+        }
+      ],
+      "textures": {
+        "cuirass": "tconstruct:item/tool/armor/travelers/pants/cuirass_broken",
+        "metal": "tconstruct:item/tool/armor/travelers/pants/metal_broken"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "property": "tconstruct:broken"
+  }
+}

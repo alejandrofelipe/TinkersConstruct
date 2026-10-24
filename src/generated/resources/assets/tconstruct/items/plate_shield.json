@@ -1,0 +1,73 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:banner"
+        }
+      ],
+      "large": true,
+      "large_offset": [
+        -8,
+        0
+      ],
+      "modifier_maps": [
+        "tconstruct:plate/shield"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "core"
+        },
+        {
+          "index": 1,
+          "name": "plating"
+        }
+      ],
+      "textures": {
+        "core": "tconstruct:item/tool/armor/plate/shield/core",
+        "large_core": "tconstruct:item/tool/armor/plate/shield/core_large",
+        "large_plating": "tconstruct:item/tool/armor/plate/shield/plating_large",
+        "plating": "tconstruct:item/tool/armor/plate/shield/plating"
+      },
+      "transform_model": "tconstruct:item/base/shield_large"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:banner"
+        }
+      ],
+      "large": true,
+      "large_offset": [
+        -8,
+        0
+      ],
+      "modifier_maps": [
+        "tconstruct:plate/shield_broken",
+        "tconstruct:plate/shield"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "core"
+        },
+        {
+          "index": 1,
+          "name": "plating"
+        }
+      ],
+      "textures": {
+        "core": "tconstruct:item/tool/armor/plate/shield/core_broken",
+        "large_core": "tconstruct:item/tool/armor/plate/shield/core_large_broken",
+        "large_plating": "tconstruct:item/tool/armor/plate/shield/plating_large_broken",
+        "plating": "tconstruct:item/tool/armor/plate/shield/plating_broken"
+      },
+      "transform_model": "tconstruct:item/base/shield_large"
+    },
+    "property": "tconstruct:broken"
+  }
+}

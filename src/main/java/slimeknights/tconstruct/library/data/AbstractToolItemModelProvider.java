@@ -79,10 +79,26 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
     if (legacy.has("parent")) {
       def.addProperty("transform_model", GsonHelper.getAsString(legacy, "parent"));
     }
-    for (String key : new String[]{"textures", "parts", "modifier_maps", "large", "large_offset", "first_modifiers", "show_traits"}) {
+    for (String key : new String[]{"textures", "parts", "modifier_maps", "large", "large_offset", "show_traits"}) {
       if (legacy.has(key)) {
         def.add(key, legacy.get(key));
       }
+    }
+    // PORT 1.21.4: the legacy loader took first_modifiers as a plain string array, but ToolModel.Unbaked's
+    // FirstModifier.CODEC expects objects ({"name": <id>, "forced": <bool>}). Convert each bare string to that form;
+    // a string array left as-is fails to parse and the whole item model falls back to the missing (magenta) model.
+    if (legacy.has("first_modifiers")) {
+      JsonArray converted = new JsonArray();
+      for (JsonElement element : legacy.getAsJsonArray("first_modifiers")) {
+        if (element.isJsonPrimitive()) {
+          JsonObject modifier = new JsonObject();
+          modifier.addProperty("name", element.getAsString());
+          converted.add(modifier);
+        } else {
+          converted.add(element);
+        }
+      }
+      def.add("first_modifiers", converted);
     }
     return def;
   }
@@ -121,6 +137,15 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
     }
     JsonObject broken = transformTool("tool/" + name + "/broken", source, "", false, '_', "broken", brokenParts);
     toolItem(id, source, broken);
+  }
+
+  /**
+   * Emits the base {@code items/<id>.json} definition for a tool that has no broken/charging/ammo states (e.g. thrown
+   * weapons like shuriken, throwing axe, arrow). The legacy source model carries no {@code overrides}.
+   */
+  protected void basicTool(IdAwareObject<ResourceLocation> tool) throws IOException {
+    ResourceLocation id = tool.getId();
+    toolItem(id, readJson(id), null);
   }
 
   /** Logic for creating models for the given ammo type */
@@ -248,11 +273,13 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
     String name = id.getPath();
     JsonObject base = readJson(id);
     base.remove("overrides"); // don't need them anywhere, notably ditching for the sake of ammo models
-    transformTool("tool/" + name + "/broken", base, "", false, '/', "broken", brokenPart);
+    JsonObject broken = transformTool("tool/" + name + "/broken", base, "", false, '/', "broken", brokenPart);
     withDisplay("tool/" + name + "/blocking", id, blocking);
 
     // apply ammo specific code
     ammo.apply(this, name, base, blocking, pullingCount, pullingParts);
+    // PORT 1.21.4: emit the base + broken items/ definition so the resting (GUI) item renders
+    toolItem(id, base, broken);
   }
 
   /** Creates models for blocking, broken and fully charged for the given tool */
@@ -262,7 +289,9 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
     JsonObject base = readJson(id);
     base.remove("overrides");
     withDisplay("tool/" + name + "/blocking", id, properties);
-    transformTool("tool/" + name + "/broken", base, "", false, '/', "broken", brokenParts);
+    JsonObject broken = transformTool("tool/" + name + "/broken", base, "", false, '/', "broken", brokenParts);
+    // PORT 1.21.4: emit the base + broken items/ definition before addPart mutates base with the charged overlay
+    toolItem(id, base.deepCopy(), broken);
 
     addPart(base, "overlay", name, "overlay");
 
@@ -278,24 +307,32 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
     String name = path.substring(0, path.length() - "_staff".length());
     JsonObject base = readJson(id);
     withDisplay("tool/staff/" + name + "/blocking", id, properties);
-    transformTool("tool/staff/" + name + "/broken", base, "", true, '/', "broken", "tool");
+    JsonObject broken = transformTool("tool/staff/" + name + "/broken", base, "", true, '/', "broken", "tool");
     for (int i = 1; i <= 5; i++) {
       String charging = "tool/staff/" + name + "/charging_" + i;
       transformTool(charging, base, "tconstruct:item/base/staff_charging", false, '/', Integer.toString(i), "tool");
       withDisplay("tool/staff/" + name + "/blocking_" + i, resource(charging), properties);
     }
+    // PORT 1.21.4: emit the base + broken items/ definition so the resting (GUI) item renders
+    toolItem(id, base, broken);
   }
 
   /** Adds broken and blocking models for the shield */
   protected void shield(String setName, IdAwareObject<ResourceLocation> shield, JsonObject properties, String... parts) throws IOException {
     ResourceLocation id = shield.getId();
+    JsonObject base = readJson(id);
     withDisplay("armor/" + setName + "/shield_blocking", id, Objects.requireNonNull(properties));
-    transformTool("armor/" + setName + "/shield_broken", readJson(id), "", false, '_', "broken", parts);
+    JsonObject broken = transformTool("armor/" + setName + "/shield_broken", base, "", false, '_', "broken", parts);
+    // PORT 1.21.4: emit the base + broken items/ definition so the resting (GUI) item renders
+    toolItem(id, base, broken);
   }
 
   /** Adds broken and blocking models for the armor item */
   protected void armor(String overrideName, ResourceLocation itemId, String... textures) throws IOException {
-    transformTool("armor/" + overrideName + "_broken", readJson(itemId), "", false, '_', "broken", textures);
+    JsonObject base = readJson(itemId);
+    JsonObject broken = transformTool("armor/" + overrideName + "_broken", base, "", false, '_', "broken", textures);
+    // PORT 1.21.4: emit the base + broken items/ definition so the resting (GUI) item renders
+    toolItem(itemId, base, broken);
   }
 
   /** Adds broken and blocking models for the armor item */
@@ -328,11 +365,13 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
     JsonObject base = readJson(id);
     String cast = "tool/" + name + "/cast";
     transformTool(cast,   base, "", false, '/', "cast", castParts);
-    transformTool("tool/" + name + "/broken", base, "", false, '/', "broken", brokenParts);
+    JsonObject broken = transformTool("tool/" + name + "/broken", base, "", false, '/', "broken", brokenParts);
     if (blocking != null) {
       withDisplay("tool/" + name + "/blocking", id, blocking);
       withDisplay("tool/" + name + "/blocking_cast", resource(cast), blocking);
     }
+    // PORT 1.21.4: emit the base + broken items/ definition so the resting (GUI) item renders
+    toolItem(id, base, broken);
   }
 
   /* Helpers */

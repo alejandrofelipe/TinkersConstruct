@@ -1,0 +1,59 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:fishing_rod"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "rod"
+        },
+        {
+          "index": 1,
+          "name": "string"
+        },
+        {
+          "index": 2,
+          "name": "hook"
+        }
+      ],
+      "textures": {
+        "hook": "tconstruct:item/tool/fishing_rod/hook",
+        "rod": "tconstruct:item/tool/fishing_rod/rod",
+        "string": "tconstruct:item/tool/fishing_rod/string"
+      },
+      "transform_model": "tconstruct:item/base/rod"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:fishing_rod/broken",
+        "tconstruct:fishing_rod"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "rod"
+        },
+        {
+          "index": 1,
+          "name": "string"
+        },
+        {
+          "index": 2,
+          "name": "hook"
+        }
+      ],
+      "textures": {
+        "hook": "tconstruct:item/tool/fishing_rod/hook_broken",
+        "rod": "tconstruct:item/tool/fishing_rod/rod",
+        "string": "tconstruct:item/tool/fishing_rod/string_broken"
+      },
+      "transform_model": "tconstruct:item/base/rod"
+    },
+    "property": "tconstruct:broken"
+  }
+}

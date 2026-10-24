@@ -1,0 +1,49 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:trim"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:slime/wings"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "slime"
+        }
+      ],
+      "textures": {
+        "slime": "tconstruct:item/tool/armor/slime/wings/slime"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:trim"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:slime/wings_broken",
+        "tconstruct:slime/wings"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "slime"
+        }
+      ],
+      "textures": {
+        "slime": "tconstruct:item/tool/armor/slime/wings/slime_broken"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "property": "tconstruct:broken"
+  }
+}

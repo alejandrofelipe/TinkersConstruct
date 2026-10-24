@@ -1,0 +1,87 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "large": true,
+      "large_offset": [
+        -7,
+        9
+      ],
+      "modifier_maps": [
+        "tconstruct:longbow"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "limb_bottom"
+        },
+        {
+          "index": 1,
+          "name": "limb_top"
+        },
+        {
+          "index": 3,
+          "name": "bowstring"
+        },
+        {
+          "index": 2,
+          "name": "grip"
+        }
+      ],
+      "textures": {
+        "bowstring": "tconstruct:item/tool/longbow/bowstring",
+        "grip": "tconstruct:item/tool/longbow/grip",
+        "large_bowstring": "tconstruct:item/tool/longbow/large/bowstring",
+        "large_grip": "tconstruct:item/tool/longbow/large/grip",
+        "large_limb_bottom": "tconstruct:item/tool/longbow/large/limb_bottom",
+        "large_limb_top": "tconstruct:item/tool/longbow/large/limb_top",
+        "limb_bottom": "tconstruct:item/tool/longbow/limb_bottom",
+        "limb_top": "tconstruct:item/tool/longbow/limb_top"
+      },
+      "transform_model": "tconstruct:item/base/bow"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "large": true,
+      "large_offset": [
+        -7,
+        9
+      ],
+      "modifier_maps": [
+        "tconstruct:longbow/broken",
+        "tconstruct:longbow"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "limb_bottom"
+        },
+        {
+          "index": 1,
+          "name": "limb_top"
+        },
+        {
+          "index": 3,
+          "name": "bowstring"
+        },
+        {
+          "index": 2,
+          "name": "grip"
+        }
+      ],
+      "textures": {
+        "bowstring": "tconstruct:item/tool/longbow/bowstring_broken",
+        "grip": "tconstruct:item/tool/longbow/grip",
+        "large_bowstring": "tconstruct:item/tool/longbow/large/bowstring_broken",
+        "large_grip": "tconstruct:item/tool/longbow/large/grip",
+        "large_limb_bottom": "tconstruct:item/tool/longbow/large/limb_bottom",
+        "large_limb_top": "tconstruct:item/tool/longbow/large/limb_top",
+        "limb_bottom": "tconstruct:item/tool/longbow/limb_bottom",
+        "limb_top": "tconstruct:item/tool/longbow/limb_top"
+      },
+      "transform_model": "tconstruct:item/base/bow"
+    },
+    "property": "tconstruct:broken"
+  }
+}

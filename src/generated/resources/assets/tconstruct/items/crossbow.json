@@ -1,0 +1,59 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:crossbow"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "limb"
+        },
+        {
+          "index": 1,
+          "name": "body"
+        },
+        {
+          "index": 2,
+          "name": "bowstring"
+        }
+      ],
+      "textures": {
+        "body": "tconstruct:item/tool/crossbow/body",
+        "bowstring": "tconstruct:item/tool/crossbow/bowstring",
+        "limb": "tconstruct:item/tool/crossbow/limb"
+      },
+      "transform_model": "tconstruct:item/base/crossbow"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:crossbow/broken",
+        "tconstruct:crossbow"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "limb"
+        },
+        {
+          "index": 1,
+          "name": "body"
+        },
+        {
+          "index": 2,
+          "name": "bowstring"
+        }
+      ],
+      "textures": {
+        "body": "tconstruct:item/tool/crossbow/body",
+        "bowstring": "tconstruct:item/tool/crossbow/bowstring_broken",
+        "limb": "tconstruct:item/tool/crossbow/limb"
+      },
+      "transform_model": "tconstruct:item/base/crossbow"
+    },
+    "property": "tconstruct:broken"
+  }
+}

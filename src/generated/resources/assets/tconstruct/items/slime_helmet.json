@@ -1,0 +1,59 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:trim"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:slime/helmet"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "skull"
+        },
+        {
+          "index": 1,
+          "name": "slime"
+        }
+      ],
+      "textures": {
+        "skull": "tconstruct:item/tool/armor/slime/helmet/skull",
+        "slime": "tconstruct:item/tool/armor/slime/helmet/slime"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:trim"
+        }
+      ],
+      "modifier_maps": [
+        "tconstruct:slime/helmet_broken",
+        "tconstruct:slime/helmet"
+      ],
+      "parts": [
+        {
+          "index": 0,
+          "name": "skull"
+        },
+        {
+          "index": 1,
+          "name": "slime"
+        }
+      ],
+      "textures": {
+        "skull": "tconstruct:item/tool/armor/slime/helmet/skull",
+        "slime": "tconstruct:item/tool/armor/slime/helmet/slime_broken"
+      },
+      "transform_model": "neoforge:item/default"
+    },
+    "property": "tconstruct:broken"
+  }
+}

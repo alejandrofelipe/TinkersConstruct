@@ -1,0 +1,50 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        },
+        {
+          "name": "tconstruct:embellishment"
+        }
+      ],
+      "large": true,
+      "modifier_maps": [
+        "tconstruct:staff/sky",
+        "tconstruct:staff"
+      ],
+      "textures": {
+        "large_tool": "tconstruct:item/tool/staff/sky_large",
+        "tool": "tconstruct:item/tool/staff/sky"
+      },
+      "transform_model": "tconstruct:item/base/staff"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "first_modifiers": [
+        {
+          "name": "tconstruct:dyed"
+        },
+        {
+          "name": "tconstruct:embellishment"
+        }
+      ],
+      "large": true,
+      "modifier_maps": [
+        "tconstruct:staff/sky/broken",
+        "tconstruct:staff/sky",
+        "tconstruct:staff/broken",
+        "tconstruct:staff"
+      ],
+      "textures": {
+        "large_tool": "tconstruct:item/tool/staff/sky_large_broken",
+        "tool": "tconstruct:item/tool/staff/sky_broken"
+      },
+      "transform_model": "tconstruct:item/base/staff"
+    },
+    "property": "tconstruct:broken"
+  }
+}

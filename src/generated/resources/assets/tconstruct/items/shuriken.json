@@ -1,0 +1,23 @@
+{
+  "model": {
+    "type": "tconstruct:tool",
+    "modifier_maps": [
+      "tconstruct:shuriken"
+    ],
+    "parts": [
+      {
+        "index": 1,
+        "name": "bottom"
+      },
+      {
+        "index": 0,
+        "name": "top"
+      }
+    ],
+    "textures": {
+      "bottom": "tconstruct:item/tool/ammo/shuriken_bottom",
+      "top": "tconstruct:item/tool/ammo/shuriken_top"
+    },
+    "transform_model": "neoforge:item/default"
+  }
+}

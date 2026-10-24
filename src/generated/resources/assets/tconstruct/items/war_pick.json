@@ -1,0 +1,59 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:war_pick"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "body"
+        },
+        {
+          "index": 2,
+          "name": "bowstring"
+        },
+        {
+          "index": 0,
+          "name": "limb"
+        }
+      ],
+      "textures": {
+        "body": "tconstruct:item/tool/war_pick/body",
+        "bowstring": "tconstruct:item/tool/war_pick/bowstring",
+        "limb": "tconstruct:item/tool/war_pick/limb"
+      },
+      "transform_model": "tconstruct:item/tool/war_pick/display"
+    },
+    "on_true": {
+      "type": "tconstruct:tool",
+      "modifier_maps": [
+        "tconstruct:war_pick/broken",
+        "tconstruct:war_pick"
+      ],
+      "parts": [
+        {
+          "index": 1,
+          "name": "body"
+        },
+        {
+          "index": 2,
+          "name": "bowstring"
+        },
+        {
+          "index": 0,
+          "name": "limb"
+        }
+      ],
+      "textures": {
+        "body": "tconstruct:item/tool/war_pick/body",
+        "bowstring": "tconstruct:item/tool/war_pick/bowstring_broken",
+        "limb": "tconstruct:item/tool/war_pick/limb"
+      },
+      "transform_model": "tconstruct:item/tool/war_pick/display"
+    },
+    "property": "tconstruct:broken"
+  }
+}

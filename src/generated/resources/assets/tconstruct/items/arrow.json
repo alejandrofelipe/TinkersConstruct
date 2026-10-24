@@ -1,0 +1,33 @@
+{
+  "model": {
+    "type": "tconstruct:tool",
+    "first_modifiers": [
+      {
+        "name": "tconstruct:dyed"
+      }
+    ],
+    "modifier_maps": [
+      "tconstruct:arrow"
+    ],
+    "parts": [
+      {
+        "index": 1,
+        "name": "shaft"
+      },
+      {
+        "index": 0,
+        "name": "head"
+      },
+      {
+        "index": 2,
+        "name": "feather"
+      }
+    ],
+    "textures": {
+      "feather": "tconstruct:item/tool/ammo/arrow_feather",
+      "head": "tconstruct:item/tool/ammo/arrow_head",
+      "shaft": "tconstruct:item/tool/ammo/arrow_shaft"
+    },
+    "transform_model": "neoforge:item/default"
+  }
+}
