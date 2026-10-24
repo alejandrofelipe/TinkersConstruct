@@ -30,6 +30,7 @@ import slimeknights.tconstruct.library.utils.Schedule;
 import slimeknights.tconstruct.tools.TinkerTools;
 
 import javax.annotation.Nullable;
+import net.minecraft.nbt.Tag;
 
 /** Arrow with material variants */
 public class ModifiableArrow extends AbstractArrow implements ToolProjectile, ReusableProjectile {
@@ -242,13 +243,13 @@ public class ModifiableArrow extends AbstractArrow implements ToolProjectile, Re
   @Override
   public void readAdditionalSaveData(CompoundTag tag) {
     super.readAdditionalSaveData(tag);
-    if (tag.contains(KEY_STACK, CompoundTag.TAG_COMPOUND)) {
-      setStack(ItemStack.parse(this.registryAccess(), tag.getCompound(KEY_STACK)).orElse(ItemStack.EMPTY));
+    if (TagUtil.contains(tag, KEY_STACK, Tag.TAG_COMPOUND)) {
+      setStack(ItemStack.parse(this.registryAccess(), tag.getCompoundOrEmpty(KEY_STACK)).orElse(ItemStack.EMPTY));
     }
-    this.entityData.set(WATER_INERTIA, tag.getFloat(KEY_WATER_INERTIA));
-    this.dealtDamage = tag.getBoolean(KEY_DEALT_DAMAGE);
-    if (tag.contains(KEY_TASKS, CompoundTag.TAG_LIST)) {
-      this.tasks = Schedule.deserialize(tag.getList(KEY_TASKS, CompoundTag.TAG_COMPOUND));
+    this.entityData.set(WATER_INERTIA, tag.getFloatOr(KEY_WATER_INERTIA, 0f));
+    this.dealtDamage = tag.getBooleanOr(KEY_DEALT_DAMAGE, false);
+    if (TagUtil.contains(tag, KEY_TASKS, Tag.TAG_LIST)) {
+      this.tasks = Schedule.deserialize(TagUtil.getList(tag, KEY_TASKS, Tag.TAG_COMPOUND));
     }
   }
 }

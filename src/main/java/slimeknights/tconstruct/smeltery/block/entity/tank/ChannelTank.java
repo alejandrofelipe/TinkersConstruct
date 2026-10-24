@@ -70,7 +70,7 @@ public class ChannelTank extends FluidTank {
 
 	@Override
 	public FluidTank readFromNBT(HolderLookup.Provider lookupProvider, CompoundTag nbt) {
-		this.locked = nbt.getInt(TAG_LOCKED);
+		this.locked = nbt.getIntOr(TAG_LOCKED, 0);
 		super.readFromNBT(lookupProvider, nbt);
 		return this;
 	}

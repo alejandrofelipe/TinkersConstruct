@@ -72,7 +72,7 @@ public class StructureUpdater extends GenericNBTProvider {
 
   @SuppressWarnings("deprecation")  // I'd like to see Forge try this
   private static CompoundTag updateNBT(CompoundTag nbt) {
-    final CompoundTag updatedNBT = DataFixTypes.STRUCTURE.updateToCurrentVersion(DataFixers.getDataFixer(), nbt, nbt.getInt("DataVersion"));
+    final CompoundTag updatedNBT = DataFixTypes.STRUCTURE.updateToCurrentVersion(DataFixers.getDataFixer(), nbt, nbt.getIntOr("DataVersion", 0));
     StructureTemplate template = new StructureTemplate();
     template.load(BuiltInRegistries.BLOCK, updatedNBT);
     return template.save(new CompoundTag());

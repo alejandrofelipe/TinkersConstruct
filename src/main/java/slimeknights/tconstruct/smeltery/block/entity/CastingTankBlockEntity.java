@@ -284,8 +284,8 @@ public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlo
   @Override
   public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
     tank.setCapacity(getCapacity(getBlockState().getBlock()));
-    updateTank(tag.getCompound(NBTTags.TANK), registries);
-    lastRedstone = tag.getBoolean(TAG_REDSTONE);
+    updateTank(tag.getCompoundOrEmpty(NBTTags.TANK), registries);
+    lastRedstone = tag.getBooleanOr(TAG_REDSTONE, false);
     super.loadAdditional(tag, registries);
   }
 

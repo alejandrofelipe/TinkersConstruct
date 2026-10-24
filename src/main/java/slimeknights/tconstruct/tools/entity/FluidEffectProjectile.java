@@ -7,7 +7,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -341,7 +340,7 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
     nbt.putFloat(KEY_KNOCKBACK, knockback);
     nbt.putFloat(KEY_WATER_INERTIA, this.entityData.get(WATER_INERTIA));
     if (cannon != null) {
-      nbt.put(KEY_CANNON, NbtUtils.writeBlockPos(cannon));
+      nbt.put(KEY_CANNON, TagUtil.writePos(cannon));
     }
     FluidStack fluid = getFluid();
     if (!fluid.isEmpty()) {
@@ -352,14 +351,14 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
   @Override
   protected void readAdditionalSaveData(CompoundTag nbt) {
     super.readAdditionalSaveData(nbt);
-    this.power = nbt.getFloat(KEY_POWER);
-    this.knockback = nbt.getFloat(KEY_KNOCKBACK);
-    this.entityData.set(WATER_INERTIA, nbt.getFloat(KEY_WATER_INERTIA));
+    this.power = nbt.getFloatOr(KEY_POWER, 0f);
+    this.knockback = nbt.getFloatOr(KEY_KNOCKBACK, 0f);
+    this.entityData.set(WATER_INERTIA, nbt.getFloatOr(KEY_WATER_INERTIA, 0f));
     if (nbt.contains(KEY_CANNON)) {
-      this.cannon = NbtUtils.readBlockPos(nbt, KEY_CANNON).orElse(null);
+      this.cannon = TagUtil.readPos(nbt, KEY_CANNON).orElse(null);
     } else {
       this.cannon = null;
     }
-    setFluid(FluidStack.parseOptional(this.registryAccess(), nbt.getCompound(KEY_FLUID)));
+    setFluid(FluidStack.parseOptional(this.registryAccess(), nbt.getCompoundOrEmpty(KEY_FLUID)));
   }
 }

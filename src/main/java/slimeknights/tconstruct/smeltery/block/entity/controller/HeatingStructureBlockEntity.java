@@ -4,7 +4,6 @@ import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -608,28 +607,28 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
   @Override
   public void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
     super.loadAdditional(nbt, registries);
-    if (nbt.contains(TAG_TANK, Tag.TAG_COMPOUND)) {
-      tank.read(registries, nbt.getCompound(TAG_TANK));
+    if (TagUtil.contains(nbt, TAG_TANK, Tag.TAG_COMPOUND)) {
+      tank.read(registries, nbt.getCompoundOrEmpty(TAG_TANK));
       FluidStack first = tank.getFluidInTank(0);
       if (!first.isEmpty()) {
         updateDisplayFluid(first);
       }
     }
-    if (nbt.contains(TAG_INVENTORY, Tag.TAG_COMPOUND)) {
-      meltingInventory.readFromTag(registries, nbt.getCompound(TAG_INVENTORY));
+    if (TagUtil.contains(nbt, TAG_INVENTORY, Tag.TAG_COMPOUND)) {
+      meltingInventory.readFromTag(registries, nbt.getCompoundOrEmpty(TAG_INVENTORY));
     }
-    if (nbt.contains(TAG_STRUCTURE, Tag.TAG_COMPOUND)) {
-      setStructure(multiblock.readFromTag(nbt.getCompound(TAG_STRUCTURE), this.worldPosition));
+    if (TagUtil.contains(nbt, TAG_STRUCTURE, Tag.TAG_COMPOUND)) {
+      setStructure(multiblock.readFromTag(nbt.getCompoundOrEmpty(TAG_STRUCTURE), this.worldPosition));
       if (structure != null) {
         fluidCapability = tank;
       }
     }
     // only exists to be sent server to client in update packets
     // 1.21: writeBlockPos stores an INT_ARRAY, so no TAG_COMPOUND guard — readBlockPos's Optional handles missing keys
-    NbtUtils.readBlockPos(nbt, TAG_ERROR_POS).ifPresent(pos -> this.errorPos = pos.offset(this.worldPosition));
+    TagUtil.readPos(nbt, TAG_ERROR_POS).ifPresent(pos -> this.errorPos = pos.offset(this.worldPosition));
     fuelModule.readFromTag(nbt);
-    if (nbt.contains(TAG_TEXTURE, Tag.TAG_STRING)) {
-      texture = RetexturedHelper.getBlock(nbt.getString(TAG_TEXTURE));
+    if (TagUtil.contains(nbt, TAG_TEXTURE, Tag.TAG_STRING)) {
+      texture = RetexturedHelper.getBlock(nbt.getStringOr(TAG_TEXTURE, ""));
       RetexturedHelper.onTextureUpdated(this);
     }
   }
@@ -664,7 +663,7 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
     }
     // sync error position, not actually saved in Tag
     if (errorPos != null) {
-      nbt.put(TAG_ERROR_POS, NbtUtils.writeBlockPos(errorPos.subtract(this.worldPosition)));
+      nbt.put(TAG_ERROR_POS, TagUtil.writePos(errorPos.subtract(this.worldPosition)));
     }
     return nbt;
   }

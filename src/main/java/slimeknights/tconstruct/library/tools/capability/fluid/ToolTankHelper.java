@@ -35,7 +35,7 @@ public class ToolTankHelper {
 
   /** Helper function to parse a fluid from NBT */
   public static final BiFunction<CompoundTag, String, FluidStack> PARSE_FLUID = (nbt, key) ->
-    FLUID_CODEC.parse(NBT_OPS, nbt.getCompound(key)).result().orElse(FluidStack.EMPTY);
+    FLUID_CODEC.parse(NBT_OPS, nbt.getCompoundOrEmpty(key)).result().orElse(FluidStack.EMPTY);
 
   /** Format key for the stat */
   public static final String MB_FORMAT = Mantle.makeDescriptionId("gui", "fluid.millibucket");

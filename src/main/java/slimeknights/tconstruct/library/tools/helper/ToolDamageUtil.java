@@ -42,7 +42,7 @@ public class ToolDamageUtil {
    */
   public static boolean isBroken(ItemStack stack) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-    return data != null && data.getUnsafe().getBoolean(ToolStack.TAG_BROKEN);
+    return data != null && data.getUnsafe().getBooleanOr(ToolStack.TAG_BROKEN, false);
   }
 
   /**

@@ -318,7 +318,7 @@ public class ToolStack implements IToolStackView {
     // TODO: is there any reason we copy NBT here? might be worth never copying
     CompoundTag tag = copyNBT ? nbt.copy() : nbt;
     // ensure the damage value is set on the stack for the sake of stacking, since bypassing the vanilla setter skips that
-    if (!tag.contains(TAG_DAMAGE, Tag.TAG_ANY_NUMERIC) && stack.getItem().isDamageable(stack)) {
+    if (!TagUtil.contains(tag, TAG_DAMAGE, TagUtil.TAG_ANY_NUMERIC) && stack.getItem().isDamageable(stack)) {
       tag.putInt(TAG_DAMAGE, 0);
     }
     setStackTag(stack, tag);
@@ -364,14 +364,14 @@ public class ToolStack implements IToolStackView {
   @Override
   public boolean isBroken() {
     if (broken == null) {
-      broken = nbt.getBoolean(TAG_BROKEN);
+      broken = nbt.getBooleanOr(TAG_BROKEN, false);
     }
     return broken;
   }
 
   @Override
   public boolean isUnbreakable() {
-    return nbt.getBoolean(TAG_UNBREAKABLE);
+    return nbt.getBooleanOr(TAG_UNBREAKABLE, false);
   }
 
   /**
@@ -396,7 +396,7 @@ public class ToolStack implements IToolStackView {
    */
   protected int getDamageRaw() {
     if (damage == -1) {
-      damage = nbt.getInt(TAG_DAMAGE);
+      damage = nbt.getIntOr(TAG_DAMAGE, 0);
     }
     return damage;
   }
@@ -644,8 +644,8 @@ public class ToolStack implements IToolStackView {
   public ToolDataNBT getPersistentData() {
     if (persistentModData == null) {
       // parse if the tag already exists
-      if (nbt.contains(TAG_PERSISTENT_MOD_DATA, Tag.TAG_COMPOUND)) {
-        persistentModData = ToolDataNBT.readFromNBT(nbt.getCompound(TAG_PERSISTENT_MOD_DATA));
+      if (TagUtil.contains(nbt, TAG_PERSISTENT_MOD_DATA, Tag.TAG_COMPOUND)) {
+        persistentModData = ToolDataNBT.readFromNBT(nbt.getCompoundOrEmpty(TAG_PERSISTENT_MOD_DATA));
       } else {
         // if no tag exists, create it
         CompoundTag tag = new CompoundTag();
@@ -660,8 +660,8 @@ public class ToolStack implements IToolStackView {
   public IModDataView getVolatileData() {
     if (volatileModData == null) {
       // parse if the tag already exists
-      if (nbt.contains(TAG_VOLATILE_MOD_DATA, Tag.TAG_COMPOUND)) {
-        volatileModData = ToolDataNBT.readFromNBT(nbt.getCompound(TAG_VOLATILE_MOD_DATA));
+      if (TagUtil.contains(nbt, TAG_VOLATILE_MOD_DATA, Tag.TAG_COMPOUND)) {
+        volatileModData = ToolDataNBT.readFromNBT(nbt.getCompoundOrEmpty(TAG_VOLATILE_MOD_DATA));
       } else {
         // if no tag exists, return empty
         volatileModData = IModDataView.EMPTY;
@@ -720,7 +720,7 @@ public class ToolStack implements IToolStackView {
     if (definition.isDataLoaded()) {
       // check if missing materials; either means we have none or too few
       MissingMaterialsToolHook missingMaterials = definition.getHook(ToolHooks.MISSING_MATERIALS);
-      boolean needsMaterials = definition.hasMaterials() && (!nbt.contains(TAG_MATERIALS, Tag.TAG_LIST) || missingMaterials.needsMaterials(definition, nbt.getList(TAG_MATERIALS, Tag.TAG_STRING).size()));
+      boolean needsMaterials = definition.hasMaterials() && (!TagUtil.contains(nbt, TAG_MATERIALS, Tag.TAG_LIST) || missingMaterials.needsMaterials(definition, TagUtil.getList(nbt, TAG_MATERIALS, Tag.TAG_STRING).size()));
       // build data if we either lack data (signified by no stats) or we lack materials but expect them
       if (needsMaterials || !isInitialized(nbt)) {
         // randomize materials if missing
@@ -821,7 +821,7 @@ public class ToolStack implements IToolStackView {
    * @return  True if initialized
    */
   public static boolean isInitialized(CompoundTag tag) {
-    return tag.contains(TAG_STATS, Tag.TAG_COMPOUND);
+    return TagUtil.contains(tag, TAG_STATS, Tag.TAG_COMPOUND);
   }
 
   /**
@@ -862,14 +862,14 @@ public class ToolStack implements IToolStackView {
    */
   public static void verifyTag(Item item, CompoundTag tag, ToolDefinition definition) {
     // this function is sometimes called before datapack contents load, do nothing then
-    if (tag.getBoolean(TooltipUtil.KEY_DISPLAY)) {
+    if (tag.getBooleanOr(TooltipUtil.KEY_DISPLAY, false)) {
       return;
     }
 
     // resolve all material redirects
-    boolean hasMaterials = MaterialRegistry.isFullyLoaded() && tag.contains(ToolStack.TAG_MATERIALS, Tag.TAG_LIST);
+    boolean hasMaterials = MaterialRegistry.isFullyLoaded() && TagUtil.contains(tag, ToolStack.TAG_MATERIALS, Tag.TAG_LIST);
     if (hasMaterials) {
-      MaterialIdNBT stored = MaterialIdNBT.readFromNBT(tag.getList(ToolStack.TAG_MATERIALS, Tag.TAG_STRING));
+      MaterialIdNBT stored = MaterialIdNBT.readFromNBT(TagUtil.getList(tag, ToolStack.TAG_MATERIALS, Tag.TAG_STRING));
       MaterialIdNBT resolved = stored.resolveRedirects();
       if (resolved != stored) {
         resolved.updateNBT(tag);

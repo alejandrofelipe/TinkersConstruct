@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 /**
  * Similar to {@link slimeknights.tconstruct.library.tools.nbt.MaterialNBT}, but does not check materials against the registry.
@@ -83,12 +84,12 @@ public class MaterialIdNBT {
       return EMPTY;
     }
     ListTag listNBT = (ListTag) nbt;
-    if (listNBT.getElementType() != Tag.TAG_STRING) {
+    if (listNBT.isEmpty() || !TagUtil.isListOf(listNBT, Tag.TAG_STRING)) {
       return EMPTY;
     }
 
     List<MaterialVariantId> materials = listNBT.stream()
-      .map(Tag::getAsString)
+      .map(tag -> tag.asString().orElse(""))
       .map(MaterialVariantId::tryParse)
       .filter(Objects::nonNull)
       .collect(Collectors.toList());
@@ -114,7 +115,7 @@ public class MaterialIdNBT {
   public static MaterialIdNBT from(ItemStack stack) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
     if (data != null) {
-      return readFromNBT(data.getUnsafe().getList(ToolStack.TAG_MATERIALS, Tag.TAG_STRING));
+      return readFromNBT(TagUtil.getList(data.getUnsafe(), ToolStack.TAG_MATERIALS, Tag.TAG_STRING));
     }
     return EMPTY;
   }

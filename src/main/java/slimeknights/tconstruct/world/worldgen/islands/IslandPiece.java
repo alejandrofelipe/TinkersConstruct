@@ -48,15 +48,15 @@ public class IslandPiece extends TemplateStructurePiece {
   }
 
   public IslandPiece(StructurePieceSerializationContext context, CompoundTag nbt) {
-    super(TinkerStructures.islandPiece.get(), nbt, context.structureTemplateManager(), id -> makeSettings(Rotation.valueOf(nbt.getString("Rot")), Mirror.valueOf(nbt.getString("Mi"))));
+    super(TinkerStructures.islandPiece.get(), nbt, context.structureTemplateManager(), id -> makeSettings(Rotation.valueOf(nbt.getStringOr("Rot", "")), Mirror.valueOf(nbt.getStringOr("Mi", ""))));
     RegistryAccess access = context.registryAccess();
-    if (find(access.lookupOrThrow(Registries.STRUCTURE), nbt.getString("Structure")) instanceof IslandStructure island) {
+    if (find(access.lookupOrThrow(Registries.STRUCTURE), nbt.getStringOr("Structure", "")) instanceof IslandStructure island) {
       this.structure = island;
     } else  {
       this.structure = null;
     }
-    this.tree = find(access.lookupOrThrow(Registries.CONFIGURED_FEATURE), nbt.getString("Tree"));
-    this.numberOfTreesPlaced = nbt.getInt("NumberOfTreesPlaced");
+    this.tree = find(access.lookupOrThrow(Registries.CONFIGURED_FEATURE), nbt.getStringOr("Tree", ""));
+    this.numberOfTreesPlaced = nbt.getIntOr("NumberOfTreesPlaced", 0);
   }
 
   private static StructurePlaceSettings makeSettings(Rotation rotation, Mirror mirror) {

@@ -59,6 +59,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 import static slimeknights.tconstruct.library.modifiers.hook.interaction.GeneralInteractionModifierHook.KEY_DRAWTIME;
 
@@ -227,7 +228,7 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
 
       // the ammo has a stack size that may be greater than 1 (meaning multishot)
       // when creating the ammo stacks, we use split, so its getting smaller each time
-      ItemStack ammo = ItemStack.parseOptional(level.registryAccess(), heldAmmo);
+      ItemStack ammo = TagUtil.parseOptionalItem(level.registryAccess(), heldAmmo);
       float startAngle = getAngleStart(ammo.getCount());
       int primaryIndex = ammo.getCount() / 2;
       for (int arrowIndex = 0; arrowIndex < ammo.getCount(); arrowIndex++) {
@@ -342,7 +343,7 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
     CompoundTag heldAmmo = tool.getPersistentData().getCompound(KEY_CROSSBOW_AMMO);
     // 1.21: parsing a stack from NBT needs registry access; only available here via the (client) player
     if (!heldAmmo.isEmpty() && player != null) {
-      ItemStack heldStack = ItemStack.parseOptional(player.level().registryAccess(), heldAmmo);
+      ItemStack heldStack = TagUtil.parseOptionalItem(player.level().registryAccess(), heldAmmo);
       if (!heldStack.isEmpty()) {
         // basic info: item and count
         MutableComponent component = Component.translatable(PROJECTILE_KEY);

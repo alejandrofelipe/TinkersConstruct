@@ -188,7 +188,7 @@ public class ModifierCrystalItem extends Item {
   public static ModifierId getModifier(ItemStack stack) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
     if (data != null) {
-      return ModifierId.tryParse(data.getUnsafe().getString(TAG_MODIFIER));
+      return ModifierId.tryParse(data.getUnsafe().getStringOr(TAG_MODIFIER, ""));
     }
     return null;
   }

@@ -70,6 +70,7 @@ import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 import static slimeknights.tconstruct.library.tools.capability.inventory.InventoryModule.TAG_SLOT;
 
@@ -166,12 +167,12 @@ public record SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeT
         AbstractCookingRecipe recipe = null;
         ItemStack stack = null;
 
-        CompoundTag entry = list.getCompound(i);
-        int time = entry.getInt(TAG_TIME);
+        CompoundTag entry = list.getCompoundOrEmpty(i);
+        int time = entry.getIntOr(TAG_TIME, 0);
         // 0 means no recipe, time for a lookup
         if (time == 0) {
           time = NO_RECIPE;
-          stack = ItemStack.parseOptional(level.registryAccess(), entry);
+          stack = TagUtil.parseOptionalItem(level.registryAccess(), entry);
           recipe = findRecipe(recipeType, stack, level, modifier.getId());
           if (recipe != null) {
             time = recipe.cookingTime();
@@ -186,7 +187,7 @@ public record SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeT
             entry.putInt(TAG_TIME, time);
           } else {
             // locate the result and see if we might fit
-            int slot = entry.getInt(TAG_SLOT);
+            int slot = entry.getIntOr(TAG_SLOT, 0);
             ItemStack currentResult = output.getStack(tool, modifier, slot);
             int maxStackSize = 0;
             if (!currentResult.isEmpty()) {
@@ -200,7 +201,7 @@ public record SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeT
 
             // use the recipe we fetched earlier if present
             if (recipe == null) {
-              stack = ItemStack.parseOptional(level.registryAccess(), entry);
+              stack = TagUtil.parseOptionalItem(level.registryAccess(), entry);
               if (!stack.isEmpty()) {
                 recipe = findRecipe(recipeType, stack, level, modifier.getId());
               }

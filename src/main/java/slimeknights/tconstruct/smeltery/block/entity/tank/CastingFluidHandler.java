@@ -174,12 +174,12 @@ public class CastingFluidHandler implements IFluidHandler {
 
   /** Reads the tank from Tag */
   public void readFromTag(HolderLookup.Provider registries, CompoundTag nbt) {
-    capacity = nbt.getInt(TAG_CAPACITY);
-    if (nbt.contains(TAG_FLUID, Tag.TAG_COMPOUND)) {
-      setFluid(FluidStack.parseOptional(registries, nbt.getCompound(TAG_FLUID)));
+    capacity = nbt.getIntOr(TAG_CAPACITY, 0);
+    if (TagUtil.contains(nbt, TAG_FLUID, Tag.TAG_COMPOUND)) {
+      setFluid(FluidStack.parseOptional(registries, nbt.getCompoundOrEmpty(TAG_FLUID)));
     }
-    if (nbt.contains(TAG_FILTER, Tag.TAG_STRING)) {
-      Fluid fluid = BuiltInRegistries.FLUID.getValue(Objects.requireNonNull(ResourceLocation.tryParse(nbt.getString(TAG_FILTER))));
+    if (TagUtil.contains(nbt, TAG_FILTER, Tag.TAG_STRING)) {
+      Fluid fluid = BuiltInRegistries.FLUID.getValue(Objects.requireNonNull(ResourceLocation.tryParse(nbt.getStringOr(TAG_FILTER, ""))));
       if (fluid != null) {
         filter = fluid;
       }

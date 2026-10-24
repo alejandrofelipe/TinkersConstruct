@@ -97,8 +97,8 @@ public class DuctBlockEntity extends SmelteryFluidIO implements MenuProvider {
   @Override
   public void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
     super.loadAdditional(tags, registries);
-    if (tags.contains(TAG_ITEM, Tag.TAG_COMPOUND)) {
-      itemHandler.readFromNBT(registries, tags.getCompound(TAG_ITEM));
+    if (TagUtil.contains(tags, TAG_ITEM, Tag.TAG_COMPOUND)) {
+      itemHandler.readFromNBT(registries, tags.getCompoundOrEmpty(TAG_ITEM));
     }
   }
 

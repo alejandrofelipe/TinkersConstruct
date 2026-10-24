@@ -403,7 +403,7 @@ public class CombatFishingHook extends FishingHook implements ProjectileWithKnoc
   public void readAdditionalSaveData(CompoundTag tag) {
     super.readAdditionalSaveData(tag);
     if (tag.contains(TAG_MATERIAL)) {
-      setMaterial(Objects.requireNonNullElse(MaterialVariantId.tryParse(tag.getString(TAG_MATERIAL)), IMaterial.UNKNOWN_ID));
+      setMaterial(Objects.requireNonNullElse(MaterialVariantId.tryParse(tag.getStringOr(TAG_MATERIAL, "")), IMaterial.UNKNOWN_ID));
     }
   }
 }

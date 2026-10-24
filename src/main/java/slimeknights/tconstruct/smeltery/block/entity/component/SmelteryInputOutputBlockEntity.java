@@ -162,8 +162,8 @@ public abstract class SmelteryInputOutputBlockEntity<T> extends SmelteryComponen
   @Override
   public void loadAdditional(CompoundTag tags, net.minecraft.core.HolderLookup.Provider registries) {
     super.loadAdditional(tags, registries);
-    if (tags.contains(TAG_TEXTURE, Tag.TAG_STRING)) {
-      texture = RetexturedHelper.getBlock(tags.getString(TAG_TEXTURE));
+    if (TagUtil.contains(tags, TAG_TEXTURE, Tag.TAG_STRING)) {
+      texture = RetexturedHelper.getBlock(tags.getStringOr(TAG_TEXTURE, ""));
       RetexturedHelper.onTextureUpdated(this);
     }
   }

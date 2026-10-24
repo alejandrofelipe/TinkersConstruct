@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -115,8 +114,8 @@ public class ServantTileEntity extends MantleBlockEntity implements IServantLogi
     BlockPos masterPos = TagUtil.readOptionalPos(tags, TAG_MASTER_POS, this.worldPosition);
     Block masterBlock = null;
     // if the master position is valid, get the master block
-    if (masterPos != null && tags.contains(TAG_MASTER_BLOCK, Tag.TAG_STRING)) {
-      ResourceLocation masterBlockName = ResourceLocation.tryParse(tags.getString(TAG_MASTER_BLOCK));
+    if (masterPos != null && TagUtil.contains(tags, TAG_MASTER_BLOCK, Tag.TAG_STRING)) {
+      ResourceLocation masterBlockName = ResourceLocation.tryParse(tags.getStringOr(TAG_MASTER_BLOCK, ""));
       if (masterBlockName != null && BuiltInRegistries.BLOCK.containsKey(masterBlockName)) {
         masterBlock = BuiltInRegistries.BLOCK.getValue(masterBlockName);
       }
@@ -140,7 +139,7 @@ public class ServantTileEntity extends MantleBlockEntity implements IServantLogi
    */
   protected CompoundTag writeMaster(CompoundTag tags) {
     if (masterPos != null && masterBlock != null) {
-      tags.put(TAG_MASTER_POS, NbtUtils.writeBlockPos(masterPos.subtract(this.worldPosition)));
+      tags.put(TAG_MASTER_POS, TagUtil.writePos(masterPos.subtract(this.worldPosition)));
       tags.putString(TAG_MASTER_BLOCK, BuiltInRegistries.BLOCK.getKey(masterBlock).toString());
     }
     return tags;

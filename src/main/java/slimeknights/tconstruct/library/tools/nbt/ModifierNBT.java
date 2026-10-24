@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 /**
  * NBT object containing all current modifiers
@@ -229,13 +230,13 @@ public class ModifierNBT implements Iterable<ModifierEntry> {
     }
 
     ListTag listNBT = (ListTag)inbt;
-    if (listNBT.getElementType() != Tag.TAG_COMPOUND) {
+    if (listNBT.isEmpty() || !TagUtil.isListOf(listNBT, Tag.TAG_COMPOUND)) {
       return EMPTY;
     }
 
     ImmutableList.Builder<ModifierEntry> builder = ImmutableList.builder();
     for (int i = 0; i < listNBT.size(); i++) {
-      ModifierEntry entry = ModifierEntry.readFromNBT(listNBT.getCompound(i));
+      ModifierEntry entry = ModifierEntry.readFromNBT(listNBT.getCompoundOrEmpty(i));
       if (entry != ModifierEntry.EMPTY) {
         builder.add(entry);
       }

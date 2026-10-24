@@ -113,7 +113,7 @@ public class TooltipUtil {
    */
   public static boolean isDisplay(ItemStack stack) {
     CompoundTag nbt = getStackTag(stack);
-    return nbt != null && nbt.getBoolean(KEY_DISPLAY);
+    return nbt != null && nbt.getBooleanOr(KEY_DISPLAY, false);
   }
 
   /**
@@ -141,7 +141,7 @@ public class TooltipUtil {
   public static String getDisplayName(ItemStack tool) {
     CompoundTag tag = getStackTag(tool);
     if (tag != null) {
-      return tag.getString(KEY_NAME);
+      return tag.getStringOr(KEY_NAME, "");
     }
     return "";
   }
@@ -194,7 +194,7 @@ public class TooltipUtil {
       tooltip.add(UNINITIALIZED);
       if (definition.hasMaterials()) {
         CompoundTag nbt = getStackTag(stack);
-        if (nbt == null || !nbt.contains(ToolStack.TAG_MATERIALS, Tag.TAG_LIST)) {
+        if (nbt == null || !TagUtil.contains(nbt, ToolStack.TAG_MATERIALS, Tag.TAG_LIST)) {
           tooltip.add(RANDOM_MATERIALS);
         }
       }

@@ -337,17 +337,17 @@ public class FaucetBlockEntity extends MantleBlockEntity {
   public void loadAdditional(CompoundTag compound, HolderLookup.Provider registries) {
     super.loadAdditional(compound, registries);
 
-    faucetState = FaucetState.fromIndex(compound.getByte(TAG_STATE));
-    stopPouring = compound.getBoolean(TAG_STOP);
-    lastRedstoneState = compound.getBoolean(TAG_LAST_REDSTONE);
+    faucetState = FaucetState.fromIndex(compound.getByteOr(TAG_STATE, (byte) 0));
+    stopPouring = compound.getBooleanOr(TAG_STOP, false);
+    lastRedstoneState = compound.getBooleanOr(TAG_LAST_REDSTONE, false);
     // fluids
-    if (compound.contains(TAG_DRAINED, Tag.TAG_COMPOUND)) {
-      drained = FluidStack.parseOptional(registries, compound.getCompound(TAG_DRAINED));
+    if (TagUtil.contains(compound, TAG_DRAINED, Tag.TAG_COMPOUND)) {
+      drained = FluidStack.parseOptional(registries, compound.getCompoundOrEmpty(TAG_DRAINED));
     } else {
       drained = FluidStack.EMPTY;
     }
-    if (compound.contains(TAG_RENDER_FLUID, Tag.TAG_COMPOUND)) {
-      renderFluid = FluidStack.parseOptional(registries, compound.getCompound(TAG_RENDER_FLUID));
+    if (TagUtil.contains(compound, TAG_RENDER_FLUID, Tag.TAG_COMPOUND)) {
+      renderFluid = FluidStack.parseOptional(registries, compound.getCompoundOrEmpty(TAG_RENDER_FLUID));
     } else {
       renderFluid = FluidStack.EMPTY;
     }

@@ -5,6 +5,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import slimeknights.tconstruct.library.tools.SlotType;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 import java.util.function.BiFunction;
 
@@ -82,7 +83,8 @@ public interface IModDataView {
    * @return  Integer value
    */
   default int getInt(ResourceLocation name) {
-    return get(name, CompoundTag::getInt);
+    // 1.21.5: CompoundTag getters return Optional; keep the old default-valued API for modifiers
+    return get(name, (tag, key) -> tag.getIntOr(key, 0));
   }
 
   /**
@@ -91,7 +93,7 @@ public interface IModDataView {
    * @return  Boolean value
    */
   default boolean getBoolean(ResourceLocation name) {
-    return get(name, CompoundTag::getBoolean);
+    return get(name, (tag, key) -> tag.getBooleanOr(key, false));
   }
 
   /**
@@ -100,7 +102,7 @@ public interface IModDataView {
    * @return  Float value
    */
   default float getFloat(ResourceLocation name) {
-    return get(name, CompoundTag::getFloat);
+    return get(name, (tag, key) -> tag.getFloatOr(key, 0f));
   }
 
   /**
@@ -109,7 +111,7 @@ public interface IModDataView {
    * @return  String value
    */
   default String getString(ResourceLocation name) {
-    return get(name, CompoundTag::getString);
+    return get(name, (tag, key) -> tag.getStringOr(key, ""));
   }
 
   /**
@@ -118,7 +120,7 @@ public interface IModDataView {
    * @return  Compound value
    */
   default CompoundTag getCompound(ResourceLocation name) {
-    return get(name, CompoundTag::getCompound);
+    return get(name, CompoundTag::getCompoundOrEmpty);
   }
 
   /**
@@ -128,6 +130,6 @@ public interface IModDataView {
    * @return  List value
    */
   default ListTag getList(ResourceLocation name, int type) {
-    return get(name, (tag, key) -> tag.getList(key, type));
+    return get(name, (tag, key) -> TagUtil.getList(tag, key, type));
   }
 }

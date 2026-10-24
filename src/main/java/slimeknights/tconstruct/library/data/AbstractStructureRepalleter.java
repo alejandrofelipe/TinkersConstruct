@@ -52,7 +52,7 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
   private ListTag repaletteNBT(ListTag palette, Map<String,String> repalette) {
     // simply iterate the palette list and make adjustments
     for (int i = 0; i < palette.size(); i++) {
-      CompoundTag block = palette.getCompound(i);
+      CompoundTag block = palette.getCompoundOrEmpty(i);
       String newName = repalette.get(block.getString("Name"));
       if (newName != null) {
         block.putString("Name", newName);
@@ -74,7 +74,7 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
         for (RepaletteTask task : entry.getValue()) {
           // start by fetching the palette, we assume its not randomized
           CompoundTag newStructure = inputNBT.copy();
-          ListTag palette = newStructure.getList("palette", Tag.TAG_COMPOUND);
+          ListTag palette = TagUtil.getList(newStructure, "palette", Tag.TAG_COMPOUND);
 
           // if we have a single palette, modify directly
           if (task.replacements.length == 1) {

@@ -20,6 +20,7 @@ import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Predicate;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 /**
  * This class represents a single item slot that can melt into a liquid
@@ -229,11 +230,11 @@ public class MeltingModule implements IMeltingContainer, ContainerData {
    * @param nbt  NBT
    */
   public void readFromTag(HolderLookup.Provider registries, CompoundTag nbt) {
-    stack = ItemStack.parseOptional(registries, nbt);
+    stack = TagUtil.parseOptionalItem(registries, nbt);
     if (!stack.isEmpty()) {
-      currentTime = nbt.getInt(TAG_CURRENT_TIME);
-      requiredTime = nbt.getInt(TAG_REQUIRED_TIME);
-      requiredTemp = nbt.getInt(TAG_REQUIRED_TEMP);
+      currentTime = nbt.getIntOr(TAG_CURRENT_TIME, 0);
+      requiredTime = nbt.getIntOr(TAG_REQUIRED_TIME, 0);
+      requiredTemp = nbt.getIntOr(TAG_REQUIRED_TEMP, 0);
     }
   }
 

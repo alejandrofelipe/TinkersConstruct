@@ -62,8 +62,8 @@ public class TinkersChestBlockEntity extends AbstractChestBlockEntity {
   @Override
   public void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
     super.loadAdditional(tags, registries);
-    if (tags.contains(TAG_CHEST_COLOR, Tag.TAG_ANY_NUMERIC)) {
-      setColor(tags.getInt(TAG_CHEST_COLOR));
+    if (TagUtil.contains(tags, TAG_CHEST_COLOR, TagUtil.TAG_ANY_NUMERIC)) {
+      setColor(tags.getIntOr(TAG_CHEST_COLOR, 0));
     }
   }
 

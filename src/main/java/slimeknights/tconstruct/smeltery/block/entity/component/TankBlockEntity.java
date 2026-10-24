@@ -170,7 +170,7 @@ public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITa
   @Override
   public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
     tank.setCapacity(getCapacity(getBlockState().getBlock()));
-    updateTank(tag.getCompound(NBTTags.TANK), registries);
+    updateTank(tag.getCompoundOrEmpty(NBTTags.TANK), registries);
     super.loadAdditional(tag, registries);
   }
 

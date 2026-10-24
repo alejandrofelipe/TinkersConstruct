@@ -2,7 +2,6 @@ package slimeknights.tconstruct.shared.effect;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -31,7 +30,7 @@ public class ReturningEffect extends TinkerEffect {
     if (!entity.level().isClientSide() && event.getOldEffectInstance() == null && event.getEffectInstance().getEffect().value() == this) {
       ModDataNBT data = PersistentDataCapability.getOrWarn(entity);
       CompoundTag tag = new CompoundTag();
-      tag.put("pos", NbtUtils.writeBlockPos(entity.blockPosition()));
+      tag.put("pos", TagUtil.writePos(entity.blockPosition()));
       tag.putString("dimension", entity.level().dimension().location().toString());
       data.put(KEY, tag);
     }
@@ -47,11 +46,11 @@ public class ReturningEffect extends TinkerEffect {
     ModDataNBT data = PersistentDataCapability.getOrWarn(living);
     if (data.contains(KEY, Tag.TAG_COMPOUND)) {
       CompoundTag tag = data.getCompound(KEY);
-      ResourceLocation dimension = ResourceLocation.tryParse(tag.getString("dimension"));
+      ResourceLocation dimension = ResourceLocation.tryParse(tag.getStringOr("dimension", ""));
       // no teleporting if you switched dimensions
       // TODO: look into cross dimensional teleport, its doable with entity#teleportTo
       if (dimension != null && dimension.equals(living.level().dimension().location())) {
-        BlockPos pos = NbtUtils.readBlockPos(tag, "pos").orElseGet(living::blockPosition);
+        BlockPos pos = TagUtil.readPos(tag, "pos").orElseGet(living::blockPosition);
         TeleportHelper.tryTeleport(new ReturningTeleportEvent(living, pos.getX(), pos.getY(), pos.getZ()));
       }
     }

@@ -334,7 +334,7 @@ public class MeltingModuleInventory implements IItemHandlerModifiable {
    */
   public void readFromTag(HolderLookup.Provider registries, CompoundTag nbt) {
     if (!strictSize) {
-      int newSize = nbt.contains(TAG_SIZE, Tag.TAG_BYTE) ? nbt.getByte(TAG_SIZE) & 255 : nbt.getInt(TAG_SIZE);
+      int newSize = TagUtil.contains(nbt, TAG_SIZE, Tag.TAG_BYTE) ? nbt.getByteOr(TAG_SIZE, (byte) 0) & 255 : nbt.getIntOr(TAG_SIZE, 0);
       if (newSize != modules.length) {
         modules = Arrays.copyOf(modules, newSize);
       }
@@ -346,12 +346,12 @@ public class MeltingModuleInventory implements IItemHandlerModifiable {
       }
     }
 
-    ListTag list = nbt.getList(TAG_ITEMS, Tag.TAG_COMPOUND);
+    ListTag list = TagUtil.getList(nbt, TAG_ITEMS, Tag.TAG_COMPOUND);
     for (int i = 0; i < list.size(); i++) {
-      CompoundTag item = list.getCompound(i);
+      CompoundTag item = list.getCompoundOrEmpty(i);
       // ANY_NUMERIC: old saves wrote (unsigned) bytes - mask them; new saves write ints
-      if (item.contains(TAG_SLOT, Tag.TAG_ANY_NUMERIC)) {
-        int slot = item.contains(TAG_SLOT, Tag.TAG_BYTE) ? item.getByte(TAG_SLOT) & 255 : item.getInt(TAG_SLOT);
+      if (TagUtil.contains(item, TAG_SLOT, TagUtil.TAG_ANY_NUMERIC)) {
+        int slot = TagUtil.contains(item, TAG_SLOT, Tag.TAG_BYTE) ? item.getByteOr(TAG_SLOT, (byte) 0) & 255 : item.getIntOr(TAG_SLOT, 0);
         if (validSlot(slot)) {
           getModule(slot).readFromTag(registries, item);
         }

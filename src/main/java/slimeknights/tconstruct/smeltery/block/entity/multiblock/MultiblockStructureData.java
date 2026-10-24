@@ -4,7 +4,6 @@ import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -243,8 +242,8 @@ public class MultiblockStructureData {
    */
   public CompoundTag writeClientTag(BlockPos controllerPos) {
     CompoundTag nbt = new CompoundTag();
-    nbt.put(TAG_MIN, NbtUtils.writeBlockPos(minPos.subtract(controllerPos)));
-    nbt.put(TAG_MAX, NbtUtils.writeBlockPos(maxPos.subtract(controllerPos)));
+    nbt.put(TAG_MIN, TagUtil.writePos(minPos.subtract(controllerPos)));
+    nbt.put(TAG_MAX, TagUtil.writePos(maxPos.subtract(controllerPos)));
     return nbt;
   }
 
@@ -270,7 +269,7 @@ public class MultiblockStructureData {
   protected static ListTag writePosList(Collection<BlockPos> collection, BlockPos basePos) {
     ListTag list = new ListTag();
     for (BlockPos pos : collection) {
-      list.add(NbtUtils.writeBlockPos(pos.subtract(basePos)));
+      list.add(TagUtil.writePos(pos.subtract(basePos)));
     }
     return list;
   }

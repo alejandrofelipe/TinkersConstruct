@@ -38,7 +38,7 @@ public class MaterialItem extends Item implements IMaterialItem {
   /** Gets the material ID for the given NBT compound */
   public static MaterialVariantId getMaterialId(@Nullable CompoundTag nbt) {
     if (nbt != null) {
-      String str = nbt.getString(MATERIAL_TAG);
+      String str = nbt.getStringOr(MATERIAL_TAG, "");
       if (!str.isEmpty()) {
         MaterialVariantId id = MaterialVariantId.tryParse(str);
         if (id != null) {

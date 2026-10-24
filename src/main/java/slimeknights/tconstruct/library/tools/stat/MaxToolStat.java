@@ -75,7 +75,7 @@ public class MaxToolStat implements IToolStat<Integer> {
   @Override
   public Integer read(Tag tag) {
     if (TagUtil.isNumeric(tag)) {
-      return ((NumericTag)tag).getAsInt();
+      return ((NumericTag)tag).intValue();
     }
     return null;
   }

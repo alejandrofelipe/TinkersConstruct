@@ -220,10 +220,10 @@ public class FancyItemFrameEntity extends ItemFrame {
   @Override
   public void readAdditionalSaveData(CompoundTag compound) {
     super.readAdditionalSaveData(compound);
-    int frameId = compound.getInt(TAG_VARIANT);
+    int frameId = compound.getIntOr(TAG_VARIANT, 0);
     this.entityData.set(VARIANT, frameId);
     if (doesRotate(frameId)) {
-      rotationTimer = compound.getInt(TAG_ROTATION_TIMER);
+      rotationTimer = compound.getIntOr(TAG_ROTATION_TIMER, 0);
     }
   }
 

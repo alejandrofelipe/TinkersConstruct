@@ -43,10 +43,10 @@ public class CreativeSlotModifier extends NoLevelsModifier implements VolatileDa
     IModDataView persistentData = context.getPersistentData();
     if (persistentData.contains(KEY_SLOTS, Tag.TAG_COMPOUND)) {
       CompoundTag slots = persistentData.getCompound(KEY_SLOTS);
-      for (String key : slots.getAllKeys()) {
+      for (String key : slots.keySet()) {
         SlotType slotType = SlotType.getIfPresent(key);
         if (slotType != null) {
-          volatileData.addSlots(slotType, slots.getInt(key));
+          volatileData.addSlots(slotType, slots.getIntOr(key, 0));
         }
       }
     }
@@ -68,7 +68,7 @@ public class CreativeSlotModifier extends NoLevelsModifier implements VolatileDa
 
       // first one found has special behavior
       boolean first = true;
-      for (String key : slots.getAllKeys()) {
+      for (String key : slots.keySet()) {
         SlotType slotType = SlotType.getIfPresent(key);
         if (slotType != null) {
           if (first) {
@@ -76,7 +76,7 @@ public class CreativeSlotModifier extends NoLevelsModifier implements VolatileDa
             tooltip = new ArrayList<>(tooltip);
             first = false;
           }
-          tooltip.add(formatCount(slotType, slots.getInt(key)));
+          tooltip.add(formatCount(slotType, slots.getIntOr(key, 0)));
         }
       }
     }

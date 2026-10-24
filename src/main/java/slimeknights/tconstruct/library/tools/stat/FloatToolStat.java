@@ -115,7 +115,7 @@ public class FloatToolStat implements INumericToolStat<Float> {
   @Override
   public Float read(Tag tag) {
     if (TagUtil.isNumeric(tag)) {
-      return ((NumericTag) tag).getAsFloat();
+      return ((NumericTag) tag).floatValue();
     }
     return null;
   }

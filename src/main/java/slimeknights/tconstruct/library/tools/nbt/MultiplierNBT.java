@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import net.minecraft.nbt.NumericTag;
 
 /**
  * Generic container for tool stats, allows addons to select which stats they wish to use
@@ -75,9 +76,9 @@ public class MultiplierNBT {
     // simply try each key as a tool stat
     Builder builder = builder();
     CompoundTag nbt = (CompoundTag)inbt;
-    for (String key : nbt.getAllKeys()) {
-      if (nbt.contains(key, Tag.TAG_ANY_NUMERIC) && StatsNBT.readStatIdFromNBT(key) instanceof INumericToolStat<?> stat) {
-        builder.set(stat, nbt.getFloat(key));
+    for (String key : nbt.keySet()) {
+      if (nbt.get(key) instanceof NumericTag value && StatsNBT.readStatIdFromNBT(key) instanceof INumericToolStat<?> stat) {
+        builder.set(stat, value.floatValue());
       }
     }
     return builder.build();

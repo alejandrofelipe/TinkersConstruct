@@ -177,7 +177,7 @@ public class AlloyerBlockEntity extends NameableBlockEntity implements ITankBloc
   @Override
   public void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
     super.loadAdditional(nbt, registries);
-    tank.readFromNBT(registries, nbt.getCompound(NBTTags.TANK));
+    tank.readFromNBT(registries, nbt.getCompoundOrEmpty(NBTTags.TANK));
     fuelModule.readFromTag(nbt);
   }
 }

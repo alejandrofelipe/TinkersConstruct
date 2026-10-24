@@ -206,6 +206,6 @@ public abstract class ArmoredSlimeEntity extends Slime {
   @Override
   public void readAdditionalSaveData(CompoundTag tag) {
     super.readAdditionalSaveData(tag);
-    this.setMetal(tag.getBoolean(TAG_METAL));
+    this.setMetal(tag.getBooleanOr(TAG_METAL, false));
   }
 }

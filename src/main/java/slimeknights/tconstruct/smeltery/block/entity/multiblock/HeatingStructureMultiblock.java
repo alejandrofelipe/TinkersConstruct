@@ -5,7 +5,6 @@ import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -279,7 +278,7 @@ public abstract class HeatingStructureMultiblock<T extends MantleBlockEntity & I
       // world reload until the structure is re-scanned, leaving the smeltery with "no tank" fuel after a restart
       nbt.put(TAG_TANKS, writePosList(tanks, controllerPos));
       if (insideCheck != null) {
-        nbt.put(TAG_INSIDE_CHECK, NbtUtils.writeBlockPos(insideCheck.subtract(controllerPos)));
+        nbt.put(TAG_INSIDE_CHECK, TagUtil.writePos(insideCheck.subtract(controllerPos)));
       }
       return nbt;
     }

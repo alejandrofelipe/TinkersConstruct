@@ -45,7 +45,7 @@ public class ModifierSetWorktableRecipe extends AbstractWorktableRecipe {
   /** Message to display if there are no matching modifiers on the tool */
   public static final Component NO_MATCHES = TConstruct.makeTranslation("recipe", "modifier_set_worktable.empty");
   /** Logic to fetch a list of strings from the persistent data */
-  public static final BiFunction<CompoundTag, String, ListTag> LIST_GETTER = (tag, name) -> tag.getList(name, Tag.TAG_STRING);
+  public static final BiFunction<CompoundTag, String, ListTag> LIST_GETTER = (tag, name) -> TagUtil.getList(tag, name, Tag.TAG_STRING);
   /** Loader instance */
   public static final RecordLoadable<ModifierSetWorktableRecipe> LOADER = RecordLoadable.create(
     ContextKey.ID.nullableField(),
@@ -147,7 +147,7 @@ public class ModifierSetWorktableRecipe extends AbstractWorktableRecipe {
 
   /** Gets the set of modifiers in persistent data at the given key */
   public static Set<ModifierId> getModifierSet(IModDataView modData, ResourceLocation key) {
-    return modData.get(key, LIST_GETTER).stream().map(tag -> ModifierId.tryParse(tag.getAsString())).filter(Objects::nonNull).collect(Collectors.toSet());
+    return modData.get(key, LIST_GETTER).stream().map(tag -> ModifierId.tryParse(tag.asString().orElse(""))).filter(Objects::nonNull).collect(Collectors.toSet());
   }
 
   /** Checks if the given modifier is in the set. Faster to use {@link #getModifierSet(IModDataView, ResourceLocation)} for multiple consecutive queries */
@@ -163,7 +163,7 @@ public class ModifierSetWorktableRecipe extends AbstractWorktableRecipe {
     String modifierStr = modifier.toString();
     Iterator<Tag> iterator = list.iterator();
     while (iterator.hasNext()) {
-      if (modifierStr.equals(iterator.next().getAsString())) {
+      if (modifierStr.equals(iterator.next().asString().orElse(""))) {
         if (remove) {
           iterator.remove();
         }

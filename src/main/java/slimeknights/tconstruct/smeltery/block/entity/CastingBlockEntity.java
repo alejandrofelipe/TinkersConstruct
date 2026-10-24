@@ -53,6 +53,7 @@ import slimeknights.tconstruct.smeltery.network.FluidUpdatePacket;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
+import net.minecraft.nbt.Tag;
 
 public abstract class CastingBlockEntity extends TableBlockEntity implements WorldlyContainer, FluidUpdatePacket.IFluidPacketReceiver {
   // slots
@@ -603,10 +604,10 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
   @Override
   public void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
     super.loadAdditional(tags, registries);
-    tank.readFromTag(registries, tags.getCompound(TAG_TANK));
-    timer = tags.getInt(TAG_TIMER);
-    if (tags.contains(TAG_RECIPE, CompoundTag.TAG_STRING)) {
-      ResourceLocation name = ResourceLocation.parse(tags.getString(TAG_RECIPE));
+    tank.readFromTag(registries, tags.getCompoundOrEmpty(TAG_TANK));
+    timer = tags.getIntOr(TAG_TIMER, 0);
+    if (TagUtil.contains(tags, TAG_RECIPE, Tag.TAG_STRING)) {
+      ResourceLocation name = ResourceLocation.parse(tags.getStringOr(TAG_RECIPE, ""));
       // if we have a level, fetch the recipe
       if (level != null) {
         loadRecipe(level, name);
@@ -615,7 +616,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
         recipeName = name;
       }
     }
-    lastRedstone = tags.getBoolean(TAG_REDSTONE);
+    lastRedstone = tags.getBooleanOr(TAG_REDSTONE, false);
   }
 
   public static class Basin extends CastingBlockEntity {

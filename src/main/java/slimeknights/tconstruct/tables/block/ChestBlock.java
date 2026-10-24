@@ -61,8 +61,8 @@ public class ChestBlock extends TabbedTableBlock {
     CustomData blockEntityData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
     if (blockEntityData != null) {
       CompoundTag tag = blockEntityData.copyTag();
-      if (tag.contains("TinkerData", Tag.TAG_COMPOUND)) {
-        CompoundTag tinkerData = tag.getCompound("TinkerData");
+      if (TagUtil.contains(tag, "TinkerData", Tag.TAG_COMPOUND)) {
+        CompoundTag tinkerData = tag.getCompoundOrEmpty("TinkerData");
         BlockEntity te = worldIn.getBlockEntity(pos);
         if (te instanceof AbstractChestBlockEntity chest) {
           chest.readInventory(tinkerData, worldIn.registryAccess());

@@ -64,7 +64,7 @@ public class ToolTierStat implements IToolStat<ToolMaterial> {
   @Override
   public ToolMaterial read(Tag tag) {
     if (tag.getId() == Tag.TAG_STRING) {
-      ResourceLocation tierId = ResourceLocation.tryParse(tag.getAsString());
+      ResourceLocation tierId = ResourceLocation.tryParse(tag.asString().orElse(""));
       if (tierId != null) {
         // PORT M3: NeoForge 1.21 removed TierSortingRegistry; tier<->name lookup goes through tconstruct's HarvestTiers
         return HarvestTiers.byName(tierId);

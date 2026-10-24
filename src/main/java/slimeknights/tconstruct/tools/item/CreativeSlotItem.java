@@ -46,8 +46,8 @@ public class CreativeSlotItem extends Item {
   @Nullable
   public static SlotType getSlot(ItemStack stack) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-    if (data != null && data.getUnsafe().contains(NBT_KEY, Tag.TAG_STRING)) {
-      return SlotType.getIfPresent(data.getUnsafe().getString(NBT_KEY));
+    if (data != null && TagUtil.contains(data.getUnsafe(), NBT_KEY, Tag.TAG_STRING)) {
+      return SlotType.getIfPresent(data.getUnsafe().getStringOr(NBT_KEY, ""));
     }
     return null;
   }
@@ -124,7 +124,7 @@ public class CreativeSlotItem extends Item {
 
           // add the slot
           String name = slotType.getName();
-          int updated = slots.getInt(name) + amount;
+          int updated = slots.getIntOr(name, 0) + amount;
           if (updated == 0) {
             slots.remove(name);
           } else {

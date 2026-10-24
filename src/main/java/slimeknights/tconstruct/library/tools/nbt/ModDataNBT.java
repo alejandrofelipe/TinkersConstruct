@@ -8,6 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 import java.util.function.BiFunction;
 
@@ -38,7 +39,7 @@ public class ModDataNBT implements IModDataView {
   @Override
   public ListTag getList(ResourceLocation name, int type) {
     // save generation of the extra lambda object
-    return data.getList(name.toString(), type);
+    return TagUtil.getList(data, name.toString(), type);
   }
 
   @Override
@@ -48,7 +49,7 @@ public class ModDataNBT implements IModDataView {
 
   @Override
   public boolean contains(ResourceLocation name, int type) {
-    return data.contains(name.toString(), type);
+    return TagUtil.contains(data, name.toString(), type);
   }
 
   /**
@@ -117,7 +118,7 @@ public class ModDataNBT implements IModDataView {
    * @param data  data
    */
   public void copyFrom(CompoundTag data) {
-    this.data.getAllKeys().clear();
+    this.data.keySet().clear();
     this.data.merge(data);
   }
 

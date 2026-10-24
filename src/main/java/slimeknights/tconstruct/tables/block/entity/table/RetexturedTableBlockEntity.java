@@ -80,8 +80,8 @@ public abstract class RetexturedTableBlockEntity extends TableBlockEntity implem
   @Override
   public void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
     super.loadAdditional(tags, registries);
-    if (tags.contains(TAG_TEXTURE, Tag.TAG_STRING)) {
-      texture = RetexturedHelper.getBlock(tags.getString(TAG_TEXTURE));
+    if (TagUtil.contains(tags, TAG_TEXTURE, Tag.TAG_STRING)) {
+      texture = RetexturedHelper.getBlock(tags.getStringOr(TAG_TEXTURE, ""));
       textureUpdated();
     }
   }

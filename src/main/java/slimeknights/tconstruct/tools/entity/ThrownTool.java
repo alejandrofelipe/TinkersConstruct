@@ -431,20 +431,20 @@ public class ThrownTool extends ThrownTrident implements ToolProjectile {
   public void readAdditionalSaveData(CompoundTag tag) {
     super.readAdditionalSaveData(tag);
     // update the tool to sync to client, if its set
-    if (tag.contains("Trident", CompoundTag.TAG_COMPOUND)) {
+    if (TagUtil.contains(tag, "Trident", Tag.TAG_COMPOUND)) {
       updateFromStack();
     }
-    this.charge = tag.getFloat(KEY_CHARGE);
-    this.multiplier = tag.getFloat(KEY_MULTIPLIER);
-    this.entityData.set(WATER_INERTIA, tag.getFloat(KEY_WATER_INERTIA));
-    this.hitBlock = tag.getBoolean(KEY_HIT_BLOCK);
-    if (tag.contains(KEY_ORIGINAL_SLOT, Tag.TAG_ANY_NUMERIC)) {
-      this.originalSlot = tag.getInt(KEY_ORIGINAL_SLOT);
+    this.charge = tag.getFloatOr(KEY_CHARGE, 0f);
+    this.multiplier = tag.getFloatOr(KEY_MULTIPLIER, 0f);
+    this.entityData.set(WATER_INERTIA, tag.getFloatOr(KEY_WATER_INERTIA, 0f));
+    this.hitBlock = tag.getBooleanOr(KEY_HIT_BLOCK, false);
+    if (TagUtil.contains(tag, KEY_ORIGINAL_SLOT, TagUtil.TAG_ANY_NUMERIC)) {
+      this.originalSlot = tag.getIntOr(KEY_ORIGINAL_SLOT, 0);
     } else {
       this.originalSlot = -1;
     }
-    if (tag.contains(KEY_TASKS, CompoundTag.TAG_LIST)) {
-      this.tasks = Schedule.deserialize(tag.getList(KEY_TASKS, CompoundTag.TAG_COMPOUND));
+    if (TagUtil.contains(tag, KEY_TASKS, Tag.TAG_LIST)) {
+      this.tasks = Schedule.deserialize(TagUtil.getList(tag, KEY_TASKS, Tag.TAG_COMPOUND));
     }
   }
 }

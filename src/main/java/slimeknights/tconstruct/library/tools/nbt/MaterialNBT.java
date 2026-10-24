@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import slimeknights.tconstruct.library.utils.TagUtil;
 
 import static java.util.Objects.requireNonNullElse;
 
@@ -135,13 +136,13 @@ public class MaterialNBT implements Iterable<MaterialVariant> {
       return EMPTY;
     }
     ListTag listNBT = (ListTag) nbt;
-    if (listNBT.getElementType() != Tag.TAG_STRING || listNBT.isEmpty()) {
+    if (listNBT.isEmpty() || !TagUtil.isListOf(listNBT, Tag.TAG_STRING)) {
       return EMPTY;
     }
 
     List<MaterialVariant> materials = listNBT.stream()
       // if any material ID fails to parse (invalid string), replace with unknown
-      .map(tag -> requireNonNullElse(MaterialVariantId.tryParse(tag.getAsString()), IMaterial.UNKNOWN_ID))
+      .map(tag -> requireNonNullElse(MaterialVariantId.tryParse(tag.asString().orElse("")), IMaterial.UNKNOWN_ID))
       .map(MaterialVariant::of)
       .toList();
     return new MaterialNBT(materials);

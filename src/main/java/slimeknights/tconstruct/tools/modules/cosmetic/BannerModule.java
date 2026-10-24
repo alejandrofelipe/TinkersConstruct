@@ -62,7 +62,7 @@ public enum BannerModule implements ModifierModule, DisplayNameModifierHook, Too
     // color the tooltip the color of the first pattern
     ListTag patterns = tool.getPersistentData().getList(patternKey(entry.getId()), ListTag.TAG_COMPOUND);
     if (!patterns.isEmpty()) {
-      return name.copy().withStyle(name.getStyle().withColor(DyeColor.byId(patterns.getCompound(0).getInt(KEY_DYE)).getTextColor()));
+      return name.copy().withStyle(name.getStyle().withColor(DyeColor.byId(patterns.getCompoundOrEmpty(0).getIntOr(KEY_DYE, 0)).getTextColor()));
     }
     return name;
   }
@@ -74,8 +74,8 @@ public enum BannerModule implements ModifierModule, DisplayNameModifierHook, Too
       if (tooltipKey == TooltipKey.SHIFT) {
         ListTag patterns = tool.getPersistentData().getList(patternKey(modifier.getId()), ListTag.TAG_COMPOUND);
         for (int i = 0; i < patterns.size(); i++) {
-          CompoundTag tag = patterns.getCompound(i);
-          DyeColor dye = DyeColor.byId(tag.getInt(KEY_DYE));
+          CompoundTag tag = patterns.getCompoundOrEmpty(i);
+          DyeColor dye = DyeColor.byId(tag.getIntOr(KEY_DYE, 0));
           // PORT M3: BannerPattern.byHash was removed in 1.21; banner patterns are now a datapack registry resolved via RegistryAccess.
           // Tooltip rendering of stored patterns needs reworking against Registries.BANNER_PATTERN; skip for now.
           Holder<BannerPattern> holder = null;
@@ -124,13 +124,13 @@ public enum BannerModule implements ModifierModule, DisplayNameModifierHook, Too
 
     // add in all other patterns
     for (int i = 0; i < banner.size(); i++) {
-      CompoundTag original = banner.getCompound(i);
+      CompoundTag original = banner.getCompoundOrEmpty(i);
       CompoundTag copy = new CompoundTag();
       // copy the pattern as is
-      String pattern = original.getString("Pattern");
+      String pattern = original.getStringOr("Pattern", "");
       copy.putString(KEY_PATTERN, pattern);
       // convert the color from a dye color to an integer
-      dye = DyeColor.byId(original.getInt("Color"));
+      dye = DyeColor.byId(original.getIntOr("Color", 0));
       int color = Util.getColor(dye);
       copy.putInt(KEY_DYE, dye.getId()); // dye for the tooltip
       copy.putInt(KEY_COLOR, color); // color for the model
