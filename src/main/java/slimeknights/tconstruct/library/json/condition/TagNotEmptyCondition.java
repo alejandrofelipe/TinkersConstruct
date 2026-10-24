@@ -45,8 +45,11 @@ public class TagNotEmptyCondition<T> implements LootItemCondition, ICondition {
 
   @Override
   public boolean test(IContext context) {
-    // PORT 1.21.4: IContext#getTag was removed; resolve the tag through the registry access instead
-    return context.registryAccess().lookupOrThrow(tag.registry()).getOrThrow(tag).size() > 0;
+    // PORT 1.21.4: IContext#getTag was removed, and context.registryAccess() is empty in the book's
+    // DataLoadedConditionContext (-> "Missing registry: minecraft:item"). Use the context's own tag-awareness instead,
+    // matching the non-deprecated TagFilledCondition (DataLoadedConditionContext#isTagLoaded treats a tag with entries
+    // as loaded, which is exactly the "not empty" semantics here).
+    return context.isTagLoaded(tag);
   }
 
   @Override
