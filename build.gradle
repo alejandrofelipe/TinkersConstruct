@@ -161,6 +161,14 @@ tasks.register('prepareUiTestWorld', Copy) {
 }
 tasks.matching { it.name == 'runClientUiTest' }.configureEach { dependsOn 'prepareUiTestWorld' }
 
+// the gametest server reuses run/gameTestServer/world across runs (vanilla never deletes it), so leftovers
+// from a previous run (placed structures, datapack state, generated chunks) leak into the next one. Wipe it
+// so every run generates a fresh flat world.
+tasks.register('cleanGameTestWorld', Delete) {
+    delete file('run/gameTestServer/world')
+}
+tasks.matching { it.name == 'runGameTestServer' }.configureEach { dependsOn 'cleanGameTestWorld' }
+
 dependencies {
     implementation "net.neoforged:neoforge:${neoforge_version}"
     implementation "slimeknights.mantle:Mantle:${minecraft_version}-${mantle_version}"
