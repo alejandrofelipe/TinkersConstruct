@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.fluids.data;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
@@ -55,6 +56,26 @@ public class FluidBucketModelProvider extends GenericDataProvider {
     return itemDefinition(model);
   }
 
+  /**
+   * Makes the ClientItem JSON for the potion bucket. The potion bucket is a
+   * {@link slimeknights.tconstruct.fluids.item.PotionBucketItem} ({@code PotionItem}, not a {@link BucketItem}), so the
+   * bucket loop above skips it. Like the vanilla potion item it is a flat {@code minecraft:model} whose contents layer
+   * (layer0 of {@code models/item/potion_bucket.json}) is tinted by the stored potion colour via the vanilla
+   * {@code minecraft:potion} tint source; the default matches vanilla's water-potion colour.
+   */
+  private static JsonObject makePotionBucket() {
+    JsonObject model = new JsonObject();
+    model.addProperty("type", "minecraft:model");
+    model.addProperty("model", "tconstruct:item/potion_bucket");
+    JsonObject potion = new JsonObject();
+    potion.addProperty("type", "minecraft:potion");
+    potion.addProperty("default", -13083194);
+    JsonArray tints = new JsonArray();
+    tints.add(potion);
+    model.add("tints", tints);
+    return itemDefinition(model);
+  }
+
   /** Makes the ClientItem JSON for the copper can, resolving its fluid dynamically from the stack */
   private static JsonObject makeCopperCan() {
     JsonObject model = new JsonObject();
@@ -73,6 +94,7 @@ public class FluidBucketModelProvider extends GenericDataProvider {
       .map(entry -> saveJson(cache, entry.getKey().location(), makeBucket((BucketItem)entry.getValue())))
       .collect(Collectors.toCollection(ArrayList::new));
     tasks.add(saveJson(cache, ResourceLocation.fromNamespaceAndPath(modId, "copper_can"), makeCopperCan()));
+    tasks.add(saveJson(cache, ResourceLocation.fromNamespaceAndPath(modId, "potion_bucket"), makePotionBucket()));
     return allOf(tasks);
   }
 
