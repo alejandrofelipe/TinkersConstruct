@@ -2,8 +2,8 @@ package slimeknights.tconstruct.gametest;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -11,9 +11,6 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
@@ -26,12 +23,10 @@ import slimeknights.tconstruct.smeltery.block.entity.controller.AlloyerBlockEnti
 import slimeknights.tconstruct.smeltery.block.entity.controller.SmelteryBlockEntity;
 
 /** Gametests for the smeltery subsystem: melting, casting, and alloying logic. */
-@PrefixGameTestTemplate(false)
-@GameTestHolder(TConstruct.MOD_ID)
 public class SmelteryGameTests {
 
   /** Iron melts inside a formed, fueled smeltery. */
-  @GameTest(template = "gametest/empty_9x9x9", timeoutTicks = 1200)
+  @TinkerGameTest(template = "gametest/empty_9x9x9", timeoutTicks = 1200)
   public static void smeltery_melts(GameTestHelper helper) {
     BlockPos controller = SmelteryRigs.buildSmeltery(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)));
     // give the multiblock a few ticks to form, then feed it
@@ -39,30 +34,30 @@ public class SmelteryGameTests {
       SmelteryRigs.insertMeltable(helper.getLevel(), controller, new ItemStack(Items.IRON_INGOT)));
     helper.succeedWhen(() -> {
       if (!(helper.getLevel().getBlockEntity(controller) instanceof SmelteryBlockEntity smeltery)) {
-        helper.fail("no smeltery controller BE", helper.relativePos(controller));
+        helper.fail(Component.literal("no smeltery controller BE"), helper.relativePos(controller));
         return;
       }
       FluidStack contained = smeltery.getTank().getFluidInTank(0);
       helper.assertTrue(contained.getFluid() == TinkerFluids.moltenIron.get()
                         && contained.getAmount() >= FluidValues.INGOT,
-        "expected >= 1 ingot of molten iron, got " + contained.getAmount());
+        Component.literal("expected >= 1 ingot of molten iron, got " + contained.getAmount()));
     });
   }
 
   /** Amethyst blocks melt once c:storage_blocks/amethyst is defined (M6 Phase A). */
-  @GameTest(template = "gametest/empty_9x9x9", timeoutTicks = 1200)
+  @TinkerGameTest(template = "gametest/empty_9x9x9", timeoutTicks = 1200)
   public static void smeltery_melts_amethyst(GameTestHelper helper) {
     BlockPos controller = SmelteryRigs.buildSmeltery(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)));
     helper.runAfterDelay(60, () ->
       SmelteryRigs.insertMeltable(helper.getLevel(), controller, new ItemStack(Items.AMETHYST_BLOCK)));
     helper.succeedWhen(() -> {
       if (!(helper.getLevel().getBlockEntity(controller) instanceof SmelteryBlockEntity smeltery)) {
-        helper.fail("no smeltery controller BE", helper.relativePos(controller));
+        helper.fail(Component.literal("no smeltery controller BE"), helper.relativePos(controller));
         return;
       }
       FluidStack contained = smeltery.getTank().getFluidInTank(0);
       helper.assertTrue(contained.getFluid() == TinkerFluids.moltenAmethyst.get() && contained.getAmount() > 0,
-        "expected molten amethyst, got " + contained.getAmount());
+        Component.literal("expected molten amethyst, got " + contained.getAmount()));
     });
   }
 
@@ -70,43 +65,43 @@ public class SmelteryGameTests {
    * Raw copper ore-melts into molten copper, exercising the {@link slimeknights.tconstruct.library.recipe.melting.OreMeltingRecipe}
    * byproduct path (a bonus of molten gold also lands in the tank, per {@code melting/metal/copper/raw.json}).
    */
-  @GameTest(template = "gametest/empty_9x9x9", timeoutTicks = 1200)
+  @TinkerGameTest(template = "gametest/empty_9x9x9", timeoutTicks = 1200)
   public static void smeltery_melts_raw_copper(GameTestHelper helper) {
     BlockPos controller = SmelteryRigs.buildSmeltery(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)));
     helper.runAfterDelay(60, () ->
       SmelteryRigs.insertMeltable(helper.getLevel(), controller, new ItemStack(Items.RAW_COPPER)));
     helper.succeedWhen(() -> {
       if (!(helper.getLevel().getBlockEntity(controller) instanceof SmelteryBlockEntity smeltery)) {
-        helper.fail("no smeltery controller BE", helper.relativePos(controller));
+        helper.fail(Component.literal("no smeltery controller BE"), helper.relativePos(controller));
         return;
       }
       FluidStack contained = smeltery.getTank().getFluidInTank(0);
       helper.assertTrue(contained.getFluid() == TinkerFluids.moltenCopper.get()
                         && contained.getAmount() >= FluidValues.INGOT,
-        "expected >= 1 ingot of molten copper, got " + contained.getAmount());
+        Component.literal("expected >= 1 ingot of molten copper, got " + contained.getAmount()));
     });
   }
 
   /** Glass blocks melt into molten glass, exercising a non-metal melting recipe (c:glass_blocks, unconditioned). */
-  @GameTest(template = "gametest/empty_9x9x9", timeoutTicks = 1200)
+  @TinkerGameTest(template = "gametest/empty_9x9x9", timeoutTicks = 1200)
   public static void smeltery_melts_glass(GameTestHelper helper) {
     BlockPos controller = SmelteryRigs.buildSmeltery(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)));
     helper.runAfterDelay(60, () ->
       SmelteryRigs.insertMeltable(helper.getLevel(), controller, new ItemStack(Items.GLASS)));
     helper.succeedWhen(() -> {
       if (!(helper.getLevel().getBlockEntity(controller) instanceof SmelteryBlockEntity smeltery)) {
-        helper.fail("no smeltery controller BE", helper.relativePos(controller));
+        helper.fail(Component.literal("no smeltery controller BE"), helper.relativePos(controller));
         return;
       }
       FluidStack contained = smeltery.getTank().getFluidInTank(0);
       helper.assertTrue(contained.getFluid() == TinkerFluids.moltenGlass.get()
                         && contained.getAmount() >= FluidValues.GLASS_BLOCK,
-        "expected >= 1 block of molten glass, got " + contained.getAmount());
+        Component.literal("expected >= 1 block of molten glass, got " + contained.getAmount()));
     });
   }
 
   /** A faucet pours molten iron from a tank into a casting table holding an ingot cast. */
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 600)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 600)
   public static void smeltery_casts(GameTestHelper helper) {
     SmelteryRigs.CastingRig rig = SmelteryRigs.buildCastingRig(helper.getLevel(), helper.absolutePos(new BlockPos(1, 1, 2)));
     helper.runAfterDelay(10, () -> {
@@ -114,7 +109,7 @@ public class SmelteryGameTests {
       if (helper.getLevel().getBlockEntity(rig.table()) instanceof CastingBlockEntity table) {
         table.setItem(CastingBlockEntity.INPUT, new ItemStack(TinkerSmeltery.ingotCast.get()));
       } else {
-        helper.fail("no casting table BE", helper.relativePos(rig.table()));
+        helper.fail(Component.literal("no casting table BE"), helper.relativePos(rig.table()));
       }
       // helper.useBlock(faucet) did not result in pouring in this harness; the root cause is undiagnosed
       // (review verified FaucetBlock.useWithoutItem's override matches the 1.21.1 signature and that
@@ -126,16 +121,16 @@ public class SmelteryGameTests {
       if (helper.getLevel().getBlockEntity(rig.faucet()) instanceof FaucetBlockEntity faucet) {
         faucet.activate();
       } else {
-        helper.fail("no faucet BE", helper.relativePos(rig.faucet()));
+        helper.fail(Component.literal("no faucet BE"), helper.relativePos(rig.faucet()));
       }
     });
     helper.succeedWhen(() -> {
       if (!(helper.getLevel().getBlockEntity(rig.table()) instanceof CastingBlockEntity table)) {
-        helper.fail("no casting table BE", helper.relativePos(rig.table()));
+        helper.fail(Component.literal("no casting table BE"), helper.relativePos(rig.table()));
         return;
       }
       helper.assertTrue(table.getItem(CastingBlockEntity.OUTPUT).is(Items.IRON_INGOT),
-        "expected iron ingot in casting output");
+        Component.literal("expected iron ingot in casting output"));
     });
   }
 
@@ -148,7 +143,7 @@ public class SmelteryGameTests {
    * Recipe per {@code data/tconstruct/recipe/smeltery/casting/amethyst/gem_gold_cast.json} (unconditioned):
    * 100mb molten amethyst + gem cast -> {@code c:gems/amethyst} (amethyst shard).
    */
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 600)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 600)
   public static void smeltery_casts_gem(GameTestHelper helper) {
     SmelteryRigs.CastingRig rig = buildCastingRigWithFluid(helper.getLevel(), helper.absolutePos(new BlockPos(1, 1, 2)),
       new FluidStack(TinkerFluids.moltenAmethyst.get(), FluidValues.INGOT * 4));
@@ -156,21 +151,21 @@ public class SmelteryGameTests {
       if (helper.getLevel().getBlockEntity(rig.table()) instanceof CastingBlockEntity table) {
         table.setItem(CastingBlockEntity.INPUT, new ItemStack(TinkerSmeltery.gemCast.get()));
       } else {
-        helper.fail("no casting table BE", helper.relativePos(rig.table()));
+        helper.fail(Component.literal("no casting table BE"), helper.relativePos(rig.table()));
       }
       if (helper.getLevel().getBlockEntity(rig.faucet()) instanceof FaucetBlockEntity faucet) {
         faucet.activate();
       } else {
-        helper.fail("no faucet BE", helper.relativePos(rig.faucet()));
+        helper.fail(Component.literal("no faucet BE"), helper.relativePos(rig.faucet()));
       }
     });
     helper.succeedWhen(() -> {
       if (!(helper.getLevel().getBlockEntity(rig.table()) instanceof CastingBlockEntity table)) {
-        helper.fail("no casting table BE", helper.relativePos(rig.table()));
+        helper.fail(Component.literal("no casting table BE"), helper.relativePos(rig.table()));
         return;
       }
       helper.assertTrue(table.getItem(CastingBlockEntity.OUTPUT).is(Items.AMETHYST_SHARD),
-        "expected amethyst shard in casting output");
+        Component.literal("expected amethyst shard in casting output"));
     });
   }
 
@@ -180,7 +175,7 @@ public class SmelteryGameTests {
    * Recipe per {@code data/tconstruct/recipe/smeltery/casting/blaze/rod_gold_cast.json} (unconditioned):
    * 100mb blazing blood + rod cast -> {@code minecraft:blaze_rod}.
    */
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 600)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 600)
   public static void smeltery_casts_rod(GameTestHelper helper) {
     SmelteryRigs.CastingRig rig = buildCastingRigWithFluid(helper.getLevel(), helper.absolutePos(new BlockPos(1, 1, 2)),
       new FluidStack(TinkerFluids.blazingBlood.get(), FluidValues.INGOT * 4));
@@ -188,21 +183,21 @@ public class SmelteryGameTests {
       if (helper.getLevel().getBlockEntity(rig.table()) instanceof CastingBlockEntity table) {
         table.setItem(CastingBlockEntity.INPUT, new ItemStack(TinkerSmeltery.rodCast.get()));
       } else {
-        helper.fail("no casting table BE", helper.relativePos(rig.table()));
+        helper.fail(Component.literal("no casting table BE"), helper.relativePos(rig.table()));
       }
       if (helper.getLevel().getBlockEntity(rig.faucet()) instanceof FaucetBlockEntity faucet) {
         faucet.activate();
       } else {
-        helper.fail("no faucet BE", helper.relativePos(rig.faucet()));
+        helper.fail(Component.literal("no faucet BE"), helper.relativePos(rig.faucet()));
       }
     });
     helper.succeedWhen(() -> {
       if (!(helper.getLevel().getBlockEntity(rig.table()) instanceof CastingBlockEntity table)) {
-        helper.fail("no casting table BE", helper.relativePos(rig.table()));
+        helper.fail(Component.literal("no casting table BE"), helper.relativePos(rig.table()));
         return;
       }
       helper.assertTrue(table.getItem(CastingBlockEntity.OUTPUT).is(Items.BLAZE_ROD),
-        "expected blaze rod in casting output");
+        Component.literal("expected blaze rod in casting output"));
     });
   }
 
@@ -219,7 +214,7 @@ public class SmelteryGameTests {
    * Recipe ratio per {@code data/tconstruct/recipe/smeltery/alloys/molten_rose_gold.json}:
    * {@code FluidValues.INGOT} molten copper + {@code FluidValues.INGOT} molten gold -> 2x {@code FluidValues.INGOT} molten rose gold.
    */
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 1200)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 1200)
   public static void alloyer_alloys(GameTestHelper helper) {
     BlockPos base = helper.absolutePos(new BlockPos(2, 1, 2));
     // fuel tank below, alloyer on top
@@ -240,11 +235,11 @@ public class SmelteryGameTests {
     SmelteryRigs.fillTank(helper.getLevel(), goldTankPos, new FluidStack(TinkerFluids.moltenGold.get(), FluidValues.INGOT));
     helper.succeedWhen(() -> {
       if (!(helper.getLevel().getBlockEntity(alloyer) instanceof AlloyerBlockEntity alloyerBe)) {
-        helper.fail("no alloyer BE", helper.relativePos(alloyer));
+        helper.fail(Component.literal("no alloyer BE"), helper.relativePos(alloyer));
         return;
       }
       helper.assertTrue(contains(alloyerBe, TinkerFluids.moltenRoseGold.get()),
-        "expected molten rose gold in alloyer tank");
+        Component.literal("expected molten rose gold in alloyer tank"));
     });
   }
 
@@ -261,7 +256,7 @@ public class SmelteryGameTests {
    * has no mod contributing items to {@code c:ingots/tin} (confirmed: no generated {@code data/c/tags/item/**}
    * file defines it), so that recipe never registers - the alloyer would sit filled forever with no match.
    */
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 1200)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 1200)
   public static void alloyer_alloys_amethyst_bronze(GameTestHelper helper) {
     BlockPos base = helper.absolutePos(new BlockPos(2, 1, 2));
     // fuel tank below, alloyer on top
@@ -280,11 +275,11 @@ public class SmelteryGameTests {
     SmelteryRigs.fillTank(helper.getLevel(), amethystTankPos, new FluidStack(TinkerFluids.moltenAmethyst.get(), FluidValues.GEM));
     helper.succeedWhen(() -> {
       if (!(helper.getLevel().getBlockEntity(alloyer) instanceof AlloyerBlockEntity alloyerBe)) {
-        helper.fail("no alloyer BE", helper.relativePos(alloyer));
+        helper.fail(Component.literal("no alloyer BE"), helper.relativePos(alloyer));
         return;
       }
       helper.assertTrue(contains(alloyerBe, TinkerFluids.moltenAmethystBronze.get()),
-        "expected molten amethyst bronze in alloyer tank");
+        Component.literal("expected molten amethyst bronze in alloyer tank"));
     });
   }
 

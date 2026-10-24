@@ -2,13 +2,10 @@ package slimeknights.tconstruct.gametest;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
@@ -23,8 +20,6 @@ import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
 
 /** Gametests for the tool crafting subsystem: assembling parts into a working tool at a tinker station. */
-@PrefixGameTestTemplate(false)
-@GameTestHolder(TConstruct.MOD_ID)
 public class ToolGameTests {
 
   /**
@@ -35,12 +30,12 @@ public class ToolGameTests {
    * the built result (see {@code ToolBuildingRecipe.getValidatedResult}). Asserts the crafted stack is a
    * real pickaxe whose {@link ToolStack} has positive durability and the 3 expected part materials.
    */
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void tool_crafting(GameTestHelper helper) {
     BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
     helper.getLevel().setBlockAndUpdate(pos, TinkerTables.tinkerStation.get().defaultBlockState());
     if (!(helper.getLevel().getBlockEntity(pos) instanceof TinkerStationBlockEntity station)) {
-      helper.fail("no tinker station BE", helper.relativePos(pos));
+      helper.fail(Component.literal("no tinker station BE"), helper.relativePos(pos));
       return;
     }
 
@@ -62,15 +57,15 @@ public class ToolGameTests {
       throw new IllegalStateException("Tinker station found no recipe for parts [" + head + ", " + handle + ", " + binding
                                       + "]; station error=" + station.getCurrentError());
     }
-    helper.assertTrue(result.is(TinkerTools.pickaxe.get()), "expected a pickaxe, got " + result);
+    helper.assertTrue(result.is(TinkerTools.pickaxe.get()), Component.literal("expected a pickaxe, got " + result));
 
     ToolStack tool = ToolStack.from(result);
     int durability = tool.getStats().getInt(ToolStats.DURABILITY);
-    helper.assertTrue(durability > 0, "expected positive durability, got " + durability);
-    helper.assertTrue(tool.getMaterials().size() == 3, "expected 3 materials, got " + tool.getMaterials().size());
-    helper.assertTrue(tool.getMaterials().get(0).getVariant().equals(MaterialIds.rock), "expected rock head material, got " + tool.getMaterials().get(0).getVariant());
-    helper.assertTrue(tool.getMaterials().get(1).getVariant().equals(MaterialIds.wood), "expected wood handle material, got " + tool.getMaterials().get(1).getVariant());
-    helper.assertTrue(tool.getMaterials().get(2).getVariant().equals(MaterialIds.wood), "expected wood binding material, got " + tool.getMaterials().get(2).getVariant());
+    helper.assertTrue(durability > 0, Component.literal("expected positive durability, got " + durability));
+    helper.assertTrue(tool.getMaterials().size() == 3, Component.literal("expected 3 materials, got " + tool.getMaterials().size()));
+    helper.assertTrue(tool.getMaterials().get(0).getVariant().equals(MaterialIds.rock), Component.literal("expected rock head material, got " + tool.getMaterials().get(0).getVariant()));
+    helper.assertTrue(tool.getMaterials().get(1).getVariant().equals(MaterialIds.wood), Component.literal("expected wood handle material, got " + tool.getMaterials().get(1).getVariant()));
+    helper.assertTrue(tool.getMaterials().get(2).getVariant().equals(MaterialIds.wood), Component.literal("expected wood binding material, got " + tool.getMaterials().get(2).getVariant()));
 
     helper.succeed();
   }
@@ -82,12 +77,12 @@ public class ToolGameTests {
    * as the pickaxe, but a different tool/part family, and an iron (tier 2) head instead of rock to confirm a
    * higher-tier base material threads through as cleanly as tier 1.
    */
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void hand_axe_crafting(GameTestHelper helper) {
     BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
     helper.getLevel().setBlockAndUpdate(pos, TinkerTables.tinkerStation.get().defaultBlockState());
     if (!(helper.getLevel().getBlockEntity(pos) instanceof TinkerStationBlockEntity station)) {
-      helper.fail("no tinker station BE", helper.relativePos(pos));
+      helper.fail(Component.literal("no tinker station BE"), helper.relativePos(pos));
       return;
     }
 
@@ -104,15 +99,15 @@ public class ToolGameTests {
       throw new IllegalStateException("Tinker station found no recipe for parts [" + head + ", " + handle + ", " + binding
                                       + "]; station error=" + station.getCurrentError());
     }
-    helper.assertTrue(result.is(TinkerTools.handAxe.get()), "expected a hand axe, got " + result);
+    helper.assertTrue(result.is(TinkerTools.handAxe.get()), Component.literal("expected a hand axe, got " + result));
 
     ToolStack tool = ToolStack.from(result);
     int durability = tool.getStats().getInt(ToolStats.DURABILITY);
-    helper.assertTrue(durability > 0, "expected positive durability, got " + durability);
-    helper.assertTrue(tool.getMaterials().size() == 3, "expected 3 materials, got " + tool.getMaterials().size());
-    helper.assertTrue(tool.getMaterials().get(0).getVariant().equals(MaterialIds.iron), "expected iron head material, got " + tool.getMaterials().get(0).getVariant());
-    helper.assertTrue(tool.getMaterials().get(1).getVariant().equals(MaterialIds.wood), "expected wood handle material, got " + tool.getMaterials().get(1).getVariant());
-    helper.assertTrue(tool.getMaterials().get(2).getVariant().equals(MaterialIds.wood), "expected wood binding material, got " + tool.getMaterials().get(2).getVariant());
+    helper.assertTrue(durability > 0, Component.literal("expected positive durability, got " + durability));
+    helper.assertTrue(tool.getMaterials().size() == 3, Component.literal("expected 3 materials, got " + tool.getMaterials().size()));
+    helper.assertTrue(tool.getMaterials().get(0).getVariant().equals(MaterialIds.iron), Component.literal("expected iron head material, got " + tool.getMaterials().get(0).getVariant()));
+    helper.assertTrue(tool.getMaterials().get(1).getVariant().equals(MaterialIds.wood), Component.literal("expected wood handle material, got " + tool.getMaterials().get(1).getVariant()));
+    helper.assertTrue(tool.getMaterials().get(2).getVariant().equals(MaterialIds.wood), Component.literal("expected wood binding material, got " + tool.getMaterials().get(2).getVariant()));
 
     helper.succeed();
   }
@@ -124,12 +119,12 @@ public class ToolGameTests {
    * of wood) to confirm the tinker station keeps per-slot materials independent even when two slots hold the
    * same part item.
    */
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void sword_crafting(GameTestHelper helper) {
     BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
     helper.getLevel().setBlockAndUpdate(pos, TinkerTables.tinkerStation.get().defaultBlockState());
     if (!(helper.getLevel().getBlockEntity(pos) instanceof TinkerStationBlockEntity station)) {
-      helper.fail("no tinker station BE", helper.relativePos(pos));
+      helper.fail(Component.literal("no tinker station BE"), helper.relativePos(pos));
       return;
     }
 
@@ -146,15 +141,15 @@ public class ToolGameTests {
       throw new IllegalStateException("Tinker station found no recipe for parts [" + blade + ", " + handle1 + ", " + handle2
                                       + "]; station error=" + station.getCurrentError());
     }
-    helper.assertTrue(result.is(TinkerTools.sword.get()), "expected a sword, got " + result);
+    helper.assertTrue(result.is(TinkerTools.sword.get()), Component.literal("expected a sword, got " + result));
 
     ToolStack tool = ToolStack.from(result);
     int durability = tool.getStats().getInt(ToolStats.DURABILITY);
-    helper.assertTrue(durability > 0, "expected positive durability, got " + durability);
-    helper.assertTrue(tool.getMaterials().size() == 3, "expected 3 materials, got " + tool.getMaterials().size());
-    helper.assertTrue(tool.getMaterials().get(0).getVariant().equals(MaterialIds.rock), "expected rock blade material, got " + tool.getMaterials().get(0).getVariant());
-    helper.assertTrue(tool.getMaterials().get(1).getVariant().equals(MaterialIds.wood), "expected wood handle material, got " + tool.getMaterials().get(1).getVariant());
-    helper.assertTrue(tool.getMaterials().get(2).getVariant().equals(MaterialIds.iron), "expected iron handle material, got " + tool.getMaterials().get(2).getVariant());
+    helper.assertTrue(durability > 0, Component.literal("expected positive durability, got " + durability));
+    helper.assertTrue(tool.getMaterials().size() == 3, Component.literal("expected 3 materials, got " + tool.getMaterials().size()));
+    helper.assertTrue(tool.getMaterials().get(0).getVariant().equals(MaterialIds.rock), Component.literal("expected rock blade material, got " + tool.getMaterials().get(0).getVariant()));
+    helper.assertTrue(tool.getMaterials().get(1).getVariant().equals(MaterialIds.wood), Component.literal("expected wood handle material, got " + tool.getMaterials().get(1).getVariant()));
+    helper.assertTrue(tool.getMaterials().get(2).getVariant().equals(MaterialIds.iron), Component.literal("expected iron handle material, got " + tool.getMaterials().get(2).getVariant()));
 
     helper.succeed();
   }
@@ -167,12 +162,12 @@ public class ToolGameTests {
    * {@code ToolBuildingRecipe.requiresAnvil} returns true once a tool has 4 or more parts, so this test places
    * a {@link TinkerTables#tinkersAnvil} (6 slots) instead.
    */
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void sledge_hammer_crafting(GameTestHelper helper) {
     BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
     helper.getLevel().setBlockAndUpdate(pos, TinkerTables.tinkersAnvil.get().defaultBlockState());
     if (!(helper.getLevel().getBlockEntity(pos) instanceof TinkerStationBlockEntity station)) {
-      helper.fail("no tinker's anvil BE", helper.relativePos(pos));
+      helper.fail(Component.literal("no tinker's anvil BE"), helper.relativePos(pos));
       return;
     }
 
@@ -191,16 +186,16 @@ public class ToolGameTests {
       throw new IllegalStateException("Tinker's anvil found no recipe for parts [" + head + ", " + handle + ", " + plate1 + ", " + plate2
                                       + "]; station error=" + station.getCurrentError());
     }
-    helper.assertTrue(result.is(TinkerTools.sledgeHammer.get()), "expected a sledge hammer, got " + result);
+    helper.assertTrue(result.is(TinkerTools.sledgeHammer.get()), Component.literal("expected a sledge hammer, got " + result));
 
     ToolStack tool = ToolStack.from(result);
     int durability = tool.getStats().getInt(ToolStats.DURABILITY);
-    helper.assertTrue(durability > 0, "expected positive durability, got " + durability);
-    helper.assertTrue(tool.getMaterials().size() == 4, "expected 4 materials, got " + tool.getMaterials().size());
-    helper.assertTrue(tool.getMaterials().get(0).getVariant().equals(MaterialIds.rock), "expected rock head material, got " + tool.getMaterials().get(0).getVariant());
-    helper.assertTrue(tool.getMaterials().get(1).getVariant().equals(MaterialIds.wood), "expected wood handle material, got " + tool.getMaterials().get(1).getVariant());
-    helper.assertTrue(tool.getMaterials().get(2).getVariant().equals(MaterialIds.iron), "expected iron plate material, got " + tool.getMaterials().get(2).getVariant());
-    helper.assertTrue(tool.getMaterials().get(3).getVariant().equals(MaterialIds.iron), "expected iron plate material, got " + tool.getMaterials().get(3).getVariant());
+    helper.assertTrue(durability > 0, Component.literal("expected positive durability, got " + durability));
+    helper.assertTrue(tool.getMaterials().size() == 4, Component.literal("expected 4 materials, got " + tool.getMaterials().size()));
+    helper.assertTrue(tool.getMaterials().get(0).getVariant().equals(MaterialIds.rock), Component.literal("expected rock head material, got " + tool.getMaterials().get(0).getVariant()));
+    helper.assertTrue(tool.getMaterials().get(1).getVariant().equals(MaterialIds.wood), Component.literal("expected wood handle material, got " + tool.getMaterials().get(1).getVariant()));
+    helper.assertTrue(tool.getMaterials().get(2).getVariant().equals(MaterialIds.iron), Component.literal("expected iron plate material, got " + tool.getMaterials().get(2).getVariant()));
+    helper.assertTrue(tool.getMaterials().get(3).getVariant().equals(MaterialIds.iron), Component.literal("expected iron plate material, got " + tool.getMaterials().get(3).getVariant()));
 
     helper.succeed();
   }
@@ -216,12 +211,12 @@ public class ToolGameTests {
    * disambiguates which one actually gets crafted. No world ticking is needed, so the result is asserted
    * directly, same as {@link #tool_crafting}. Asserts the crafted stack is a tool handle whose material is wood.
    */
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void part_builder_crafting(GameTestHelper helper) {
     BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
     helper.getLevel().setBlockAndUpdate(pos, TinkerTables.partBuilder.get().defaultBlockState());
     if (!(helper.getLevel().getBlockEntity(pos) instanceof PartBuilderBlockEntity builder)) {
-      helper.fail("no part builder BE", helper.relativePos(pos));
+      helper.fail(Component.literal("no part builder BE"), helper.relativePos(pos));
       return;
     }
 
@@ -233,8 +228,8 @@ public class ToolGameTests {
     if (result.isEmpty()) {
       throw new IllegalStateException("Part builder found no tool_handle result for an oak plank + pattern");
     }
-    helper.assertTrue(result.is(TinkerToolParts.toolHandle.get()), "expected a tool handle, got " + result);
-    helper.assertTrue(MaterialIds.wood.equals(IMaterialItem.getMaterialFromStack(result)), "expected wood material, got " + IMaterialItem.getMaterialFromStack(result));
+    helper.assertTrue(result.is(TinkerToolParts.toolHandle.get()), Component.literal("expected a tool handle, got " + result));
+    helper.assertTrue(MaterialIds.wood.equals(IMaterialItem.getMaterialFromStack(result)), Component.literal("expected wood material, got " + IMaterialItem.getMaterialFromStack(result)));
 
     helper.succeed();
   }

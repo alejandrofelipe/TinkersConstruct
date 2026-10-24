@@ -2,12 +2,8 @@ package slimeknights.tconstruct.gametest;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.MinecraftServer;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-import slimeknights.tconstruct.TConstruct;
 
 /**
  * Gametests for Mantle's debug/admin commands. Mantle has no gametest infrastructure of its own, and its
@@ -28,8 +24,6 @@ import slimeknights.tconstruct.TConstruct;
  * gametest world) or are client-only ({@code BookCommand}) share the identical {@code .toString()} fix and are
  * verified by inspection.
  */
-@PrefixGameTestTemplate(false)
-@GameTestHolder(TConstruct.MOD_ID)
 public class MantleCommandGameTests {
 
   /** Executes a command as the server console (permission level 4), letting runtime exceptions propagate. */
@@ -48,7 +42,7 @@ public class MantleCommandGameTests {
    * {@code /mantle tags entries log <registry> <tag>} builds its success message from the registry id and tag
    * id ({@code DumpTagCommand}), both raw ResourceLocations.
    */
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void dump_tag_entries(GameTestHelper helper) {
     runCommand(helper, "mantle tags entries log minecraft:item minecraft:planks");
     helper.succeed();
@@ -58,7 +52,7 @@ public class MantleCommandGameTests {
    * {@code /mantle tags preference <registry> <tag>} builds its message from the registry id and tag id
    * ({@code TagPreferenceCommand}), both raw ResourceLocations.
    */
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void tag_preference(GameTestHelper helper) {
     runCommand(helper, "mantle tags preference minecraft:item minecraft:planks");
     helper.succeed();

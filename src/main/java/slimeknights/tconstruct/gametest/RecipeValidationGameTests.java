@@ -1,18 +1,15 @@
 package slimeknights.tconstruct.gametest;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import slimeknights.mantle.recipe.helper.ItemOutput;
-import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
@@ -45,8 +42,6 @@ import java.util.stream.Stream;
  * Data-driven: every melting/casting/alloy recipe registered with the recipe manager is well-formed.
  * Purely inspects recipe objects (ingredient/output/temperature/time getters) - no in-world ticking, no smeltery.
  */
-@PrefixGameTestTemplate(false)
-@GameTestHolder(TConstruct.MOD_ID)
 public class RecipeValidationGameTests {
 
   /** Recipe ids confirmed intentional-latent, each with a one-line justification comment. */
@@ -70,7 +65,7 @@ public class RecipeValidationGameTests {
     "tconstruct:tools/modifiers/slotless/fishing_rod_tip_clearing"
   );
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void all_melting_recipes_valid(GameTestHelper helper) {
     // MaterialMeltingRecipe ("melt any tool part of material X") has no item Ingredient of its own - getIngredients()
     // is empty - and its getOutput(container)/getTime(container) scale the declared output by
@@ -118,7 +113,7 @@ public class RecipeValidationGameTests {
     reportResult(helper, "melting", failures);
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void all_casting_recipes_valid(GameTestHelper helper) {
     HolderLookup.Provider registryAccess = helper.getLevel().registryAccess();
 
@@ -152,7 +147,7 @@ public class RecipeValidationGameTests {
     reportResult(helper, "casting", failures);
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void all_alloy_recipes_valid(GameTestHelper helper) {
     Map<String, String> failures = new LinkedHashMap<>();
     for (RecipeHolder<AlloyRecipe> holder : TinkerRecipeAccess.byType(TinkerRecipeTypes.ALLOYING.get(), helper.getLevel())) {
@@ -177,7 +172,7 @@ public class RecipeValidationGameTests {
     reportResult(helper, "alloy", failures);
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void all_material_fluid_recipes_valid(GameTestHelper helper) {
     // The material-casting family (MaterialCastingRecipe/ToolCastingRecipe/PartSwapCastingRecipe) has no per-recipe
     // fluid ingredient - its fluids come from the global MaterialRecipeCache (MaterialFluidRecipe, the data type),
@@ -199,22 +194,22 @@ public class RecipeValidationGameTests {
     reportResult(helper, "material fluid", failures);
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void melting_fuel_lookup_populated(GameTestHelper helper) {
     // MeltingFuelLookup must be populated by the reload populator (RecipeLookupPopulator), not constructor side-effects.
     // Lava is a registered fuel and there is a registered solid fuel; assert both are present after load.
     if (!MeltingFuelLookup.isFuel(Fluids.LAVA)) {
-      helper.fail("MeltingFuelLookup not populated: lava should be a registered fuel");
+      helper.fail(Component.literal("MeltingFuelLookup not populated: lava should be a registered fuel"));
     } else if (MeltingFuelLookup.findFuel(Fluids.LAVA) == null) {
-      helper.fail("findFuel(lava) returned null despite isFuel(lava)=true");
+      helper.fail(Component.literal("findFuel(lava) returned null despite isFuel(lava)=true"));
     } else if (MeltingFuelLookup.getSolid().getRate() <= 0) {
-      helper.fail("no solid fuel registered (getSolid() returned the EMPTY sentinel)");
+      helper.fail(Component.literal("no solid fuel registered (getSolid() returned the EMPTY sentinel)"));
     } else {
       helper.succeed();
     }
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void melting_recipe_lookup_populated(GameTestHelper helper) {
     // MeltingRecipeLookup must be populated by the reload populator (RecipeLookupPopulator), not constructor side-effects.
     // Data-driven so it can't go stale: pull a real static melting recipe (a MeltingRecipe with a concrete item
@@ -232,15 +227,15 @@ public class RecipeValidationGameTests {
       }
     }
     if (sample.isEmpty()) {
-      helper.fail("no static MeltingRecipe with a concrete item ingredient found; cannot verify MeltingRecipeLookup population");
+      helper.fail(Component.literal("no static MeltingRecipe with a concrete item ingredient found; cannot verify MeltingRecipeLookup population"));
     } else if (!MeltingRecipeLookup.canMelt(sample.getItem())) {
-      helper.fail("MeltingRecipeLookup not populated: " + sample.getItem() + " has a MeltingRecipe but the lookup does not resolve it");
+      helper.fail(Component.literal("MeltingRecipeLookup not populated: " + sample.getItem() + " has a MeltingRecipe but the lookup does not resolve it"));
     } else {
       helper.succeed();
     }
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void casting_recipe_lookup_populated(GameTestHelper helper) {
     // CastingRecipeLookup must be populated by the reload populator (RecipeLookupPopulator), not constructor side-effects.
     // Data-driven so it can't go stale: pull a real static casting recipe (an ItemCastingRecipe with a concrete result
@@ -264,15 +259,15 @@ public class RecipeValidationGameTests {
       }
     }
     if (sample.isEmpty()) {
-      helper.fail("no static ItemCastingRecipe with a concrete result output found; cannot verify CastingRecipeLookup population");
+      helper.fail(Component.literal("no static ItemCastingRecipe with a concrete result output found; cannot verify CastingRecipeLookup population"));
     } else if (!CastingRecipeLookup.isCastable(sample.getItem())) {
-      helper.fail("CastingRecipeLookup not populated: " + sample.getItem() + " has a casting recipe but the lookup does not mark it castable");
+      helper.fail(Component.literal("CastingRecipeLookup not populated: " + sample.getItem() + " has a casting recipe but the lookup does not mark it castable"));
     } else {
       helper.succeed();
     }
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void modifier_recipe_lookup_populated(GameTestHelper helper) {
     // ModifierRecipeLookup must be populated by the reload populator (RecipeLookupPopulator), not constructor side-effects.
     // Data-driven so it can't go stale: pull a real modifier-adding recipe (any IDisplayModifierRecipe under the
@@ -288,22 +283,22 @@ public class RecipeValidationGameTests {
       }
     }
     if (sample == null) {
-      helper.fail("no IDisplayModifierRecipe found under the tinker_station type; cannot verify ModifierRecipeLookup population");
+      helper.fail(Component.literal("no IDisplayModifierRecipe found under the tinker_station type; cannot verify ModifierRecipeLookup population"));
     } else if (!ModifierRecipeLookup.isRecipeModifier(sample)) {
-      helper.fail("ModifierRecipeLookup not populated: " + sample + " is added by a modifier recipe but the lookup does not resolve it");
+      helper.fail(Component.literal("ModifierRecipeLookup not populated: " + sample + " is added by a modifier recipe but the lookup does not resolve it"));
     } else {
       helper.succeed();
     }
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void material_casting_lookup_populated(GameTestHelper helper) {
     // MaterialRecipeCache must be populated by the reload populator, not constructor side-effects. Assert both write
     // paths ran: registerItemCost (getAllItemCosts non-empty) and registerFluid (a registered casting fluid exists).
     // registerFluid also drives the coupling into MaterialRecipeCache, so spot-check a real casting fluid: its output
     // variant must have been recorded as a known variant via registerFluid -> addKnownVariant.
     if (MaterialRecipeCache.getAllItemCosts().isEmpty()) {
-      helper.fail("MaterialRecipeCache item costs not populated by the reload populator");
+      helper.fail(Component.literal("MaterialRecipeCache item costs not populated by the reload populator"));
       return;
     }
     MaterialFluidRecipe sample = null;
@@ -314,18 +309,18 @@ public class RecipeValidationGameTests {
       }
     }
     if (sample == null) {
-      helper.fail("no casting fluids registered; MaterialRecipeCache.registerFluid path did not populate");
+      helper.fail(Component.literal("no casting fluids registered; MaterialRecipeCache.registerFluid path did not populate"));
     } else {
       MaterialVariantId variant = sample.getOutput().getVariant();
       if (!MaterialRecipeCache.getVariants(variant.getId()).contains(variant)) {
-        helper.fail("coupling broken: casting fluid output " + variant + " was not recorded as a known variant in MaterialRecipeCache");
+        helper.fail(Component.literal("coupling broken: casting fluid output " + variant + " was not recorded as a known variant in MaterialRecipeCache"));
       } else {
         helper.succeed();
       }
     }
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void material_recipe_cache_populated(GameTestHelper helper) {
     // MaterialRecipeCache must be populated by the reload populator, not constructor side-effects. Sample a real material
     // recipe (registerRecipe path, MATERIAL type) and assert its variant was recorded as a known variant (addKnownVariant
@@ -338,11 +333,11 @@ public class RecipeValidationGameTests {
       }
     }
     if (sample == null) {
-      helper.fail("MaterialRecipeCache has no known material recipes; the registerRecipe/MATERIAL populate path did not run");
+      helper.fail(Component.literal("MaterialRecipeCache has no known material recipes; the registerRecipe/MATERIAL populate path did not run"));
     } else {
       MaterialVariantId variant = sample.getMaterial().getVariant();
       if (!MaterialRecipeCache.getVariants(variant.getId()).contains(variant)) {
-        helper.fail("MaterialRecipeCache did not record variant " + variant + " from a loaded material recipe");
+        helper.fail(Component.literal("MaterialRecipeCache did not record variant " + variant + " from a loaded material recipe"));
       } else {
         helper.succeed();
       }
@@ -355,7 +350,7 @@ public class RecipeValidationGameTests {
     bad.removeAll(KNOWN_INTENTIONAL);
     if (!bad.isEmpty()) {
       List<String> details = bad.stream().map(id -> id + " (" + failures.get(id) + ")").toList();
-      helper.fail(bad.size() + " malformed " + kind + " recipe(s): " + details);
+      helper.fail(Component.literal(bad.size() + " malformed " + kind + " recipe(s): " + details));
     } else {
       helper.succeed();
     }

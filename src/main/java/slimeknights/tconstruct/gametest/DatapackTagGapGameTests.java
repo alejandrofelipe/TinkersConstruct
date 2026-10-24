@@ -1,14 +1,12 @@
 package slimeknights.tconstruct.gametest;
 
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.neoforged.neoforge.common.loot.LootModifierManager;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
@@ -30,14 +28,12 @@ import java.util.Map;
  * tag-backed ore loot modifiers (lustrous cobalt, chrysophilite) whose {@code mantle:contains_item} condition is
  * decoded through Mantle's GSON codec.
  */
-@PrefixGameTestTemplate(false)
-@GameTestHolder(TConstruct.MOD_ID)
 public class DatapackTagGapGameTests {
   /** Slime embellishment recipes, all gated on {@code #tconstruct:modifiable/embellishment/slime} */
   private static final List<String> SLIME_EMBELLISHMENTS = List.of(
     "earth", "sky", "ichor", "ender", "greenheart", "skyroot", "bloodshroom", "enderbark", "clay", "magma", "honey");
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void previously_skipped_recipes_load(GameTestHelper helper) {
     List<String> missing = new ArrayList<>();
     for (String slime : SLIME_EMBELLISHMENTS) {
@@ -54,13 +50,13 @@ public class DatapackTagGapGameTests {
       }
     }
     if (!missing.isEmpty() || !unexpected.isEmpty()) {
-      helper.fail("missing recipes " + missing + "; raw steel recipes loaded without c:raw_materials/steel " + unexpected);
+      helper.fail(Component.literal("missing recipes " + missing + "; raw steel recipes loaded without c:raw_materials/steel " + unexpected));
     } else {
       helper.succeed();
     }
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void port_tags_populated(GameTestHelper helper) {
     List<String> failures = new ArrayList<>();
     if (!new ItemStack(TinkerTools.slimesuit.get(ArmorType.HELMET)).is(TinkerTags.Items.EMBELLISHMENT_SLIME)) {
@@ -75,11 +71,11 @@ public class DatapackTagGapGameTests {
     if (failures.isEmpty()) {
       helper.succeed();
     } else {
-      helper.fail(String.join("; ", failures));
+      helper.fail(Component.literal(String.join("; ", failures)));
     }
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void ore_loot_modifiers_load(GameTestHelper helper) {
     // NeoForge exposes no public accessor for the loaded modifiers by id, so read them reflectively
     Map<ResourceLocation, ?> loaded;
@@ -92,7 +88,7 @@ public class DatapackTagGapGameTests {
       Map<ResourceLocation, ?> map = (Map<ResourceLocation, ?>) mods.get(getter.invoke(null));
       loaded = map;
     } catch (ReflectiveOperationException | RuntimeException e) {
-      helper.fail("could not read NeoForge's loaded loot modifiers: " + e);
+      helper.fail(Component.literal("could not read NeoForge's loaded loot modifiers: " + e));
       return;
     }
     List<String> missing = new ArrayList<>();
@@ -104,7 +100,7 @@ public class DatapackTagGapGameTests {
     if (missing.isEmpty()) {
       helper.succeed();
     } else {
-      helper.fail("tag-backed loot modifiers failed to decode: " + missing);
+      helper.fail(Component.literal("tag-backed loot modifiers failed to decode: " + missing));
     }
   }
 
@@ -113,7 +109,7 @@ public class DatapackTagGapGameTests {
    * gets its tags bound after the reload finishes, so on the first boot (dedicated server, gametest server) a loader
    * using {@code BuiltInRegistries} ops dropped every entry with a tag ingredient as "Missing tag".
    */
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void tag_ingredient_runtime_data_loads_on_first_boot(GameTestHelper helper) {
     List<String> missing = new ArrayList<>();
     for (String layout : List.of("tinker_station", "tinkers_anvil", "scorched_anvil")) {
@@ -129,7 +125,7 @@ public class DatapackTagGapGameTests {
     if (missing.isEmpty()) {
       helper.succeed();
     } else {
-      helper.fail("tag-ingredient data failed to load: " + missing);
+      helper.fail(Component.literal("tag-ingredient data failed to load: " + missing));
     }
   }
 

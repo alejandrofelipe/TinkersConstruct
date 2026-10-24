@@ -6,8 +6,8 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -27,8 +27,6 @@ import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -53,8 +51,6 @@ import java.util.Set;
  * Placements happen far from the gametest grid; the gametest world is wiped before every run ({@code cleanGameTestWorld}),
  * so nothing leaks between runs. Feature placement uses fixed seeds so the results are deterministic.
  */
-@PrefixGameTestTemplate(false)
-@GameTestHolder(TConstruct.MOD_ID)
 public class WorldgenGameTests {
   private static final String[] TEMPLATE_SIZES = {"0x1x0", "2x2x4", "4x1x6", "8x1x11", "11x1x11"};
   /** Blocks that mean an island template was not repaletted */
@@ -108,7 +104,7 @@ public class WorldgenGameTests {
 
   /* Data validation */
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void worldgen_registries_resolve(GameTestHelper helper) {
     ServerLevel level = helper.getLevel();
     List<String> failures = new ArrayList<>();
@@ -171,7 +167,7 @@ public class WorldgenGameTests {
     finish(helper, failures);
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void island_templates_load(GameTestHelper helper) {
     ServerLevel level = helper.getLevel();
     List<String> failures = new ArrayList<>();
@@ -207,7 +203,7 @@ public class WorldgenGameTests {
 
   /* Forced placement */
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 200)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 200)
   public static void islands_place(GameTestHelper helper) {
     ServerLevel level = helper.getLevel();
     Registry<Structure> structures = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
@@ -260,7 +256,7 @@ public class WorldgenGameTests {
     finish(helper, failures);
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 200)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 200)
   public static void geodes_place(GameTestHelper helper) {
     ServerLevel level = helper.getLevel();
     Registry<ConfiguredFeature<?,?>> configured = level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE);
@@ -283,7 +279,7 @@ public class WorldgenGameTests {
     finish(helper, failures);
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 200)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 200)
   public static void cobalt_ore_places(GameTestHelper helper) {
     ServerLevel level = helper.getLevel();
     Registry<ConfiguredFeature<?,?>> configured = level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE);
@@ -303,7 +299,7 @@ public class WorldgenGameTests {
     finish(helper, failures);
   }
 
-  @GameTest(template = "gametest/empty_5x5x5", timeoutTicks = 200)
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 200)
   public static void slime_trees_place(GameTestHelper helper) {
     ServerLevel level = helper.getLevel();
     Registry<ConfiguredFeature<?,?>> configured = level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE);
@@ -361,7 +357,7 @@ public class WorldgenGameTests {
     if (failures.isEmpty()) {
       helper.succeed();
     } else {
-      helper.fail(String.join("; ", failures));
+      helper.fail(Component.literal(String.join("; ", failures)));
     }
   }
 }

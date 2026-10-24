@@ -45,6 +45,7 @@ import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.gadgets.TinkerGadgets;
 import slimeknights.tconstruct.gadgets.capability.PiggybackCapability;
+import slimeknights.tconstruct.gametest.TinkerGameTestRegistration;
 import slimeknights.tconstruct.library.json.predicate.tool.TinkerItemPredicates;
 import slimeknights.tconstruct.library.TinkerItemDisplays;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
@@ -163,6 +164,8 @@ public class TConstruct {
     // init deferred registers
     TinkerModule.initRegisters();
     PiggybackCapability.init(bus);
+    // PORT 1.21.5: gametests are registry entries now (no @GameTestHolder scan)
+    TinkerGameTestRegistration.init(bus);
     TinkerNetwork.setup();
     // wire payload registration onto the mod bus (RegisterPayloadHandlersEvent); without this no Tinkers packet is
     // registered and any send throws "Payload ... may not be sent to the client"
