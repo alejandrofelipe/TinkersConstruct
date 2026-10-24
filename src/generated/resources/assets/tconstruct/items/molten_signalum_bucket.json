@@ -1,0 +1,13 @@
+{
+  "model": {
+    "type": "tconstruct:fluid_container",
+    "base": "minecraft:item/bucket",
+    "contained_fluid": {
+      "amount": 1000,
+      "id": "tconstruct:molten_signalum"
+    },
+    "flip_gas": false,
+    "fluid": "neoforge:item/mask/bucket_fluid_drip",
+    "transform_model": "neoforge:item/bucket_drip"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "model": {
+    "type": "tconstruct:fluid_container",
+    "base": "tconstruct:item/copper_can",
+    "fluid": "tconstruct:item/copper_can_fluid",
+    "transform_model": "neoforge:item/default"
+  }
+}
