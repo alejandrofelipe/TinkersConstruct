@@ -7,6 +7,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -36,16 +37,16 @@ public class CopperCanItem extends Item {
   // can no longer returns itself as a crafting remainder. Re-wire via the crafting-remainder data component in Phase 4.
 
   @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
     FluidStack contained = getFluidStack(stack);
     if (!contained.isEmpty()) {
       MutableComponent text = contained.getHoverName().plainCopy();
-      tooltip.add(Component.translatable(this.getDescriptionId() + ".contents", text).withStyle(ChatFormatting.GRAY));
+      tooltip.accept(Component.translatable(this.getDescriptionId() + ".contents", text).withStyle(ChatFormatting.GRAY));
       if (flag.isAdvanced()) {
-        tooltip.add(Component.translatable(TankItem.FLUID_ID, Loadables.FLUID.getKey(contained.getFluid()).toString()).withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.accept(Component.translatable(TankItem.FLUID_ID, Loadables.FLUID.getKey(contained.getFluid()).toString()).withStyle(ChatFormatting.DARK_GRAY));
       }
     } else {
-      tooltip.add(Component.translatable(this.getDescriptionId() + ".tooltip").withStyle(ChatFormatting.GRAY));
+      tooltip.accept(Component.translatable(this.getDescriptionId() + ".tooltip").withStyle(ChatFormatting.GRAY));
     }
   }
 

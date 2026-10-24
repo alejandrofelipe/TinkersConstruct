@@ -8,6 +8,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import slimeknights.mantle.util.TranslationHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.Sounds;
@@ -27,6 +28,7 @@ import slimeknights.tconstruct.library.tools.part.MaterialItem;
 import slimeknights.tconstruct.tools.stats.StatlessMaterialStats;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class RepairKitItem extends MaterialItem implements IRepairKitItem {
   private static final String TOOLTIP_KEY = TConstruct.makeTranslationKey("item", "repair_kit.tooltip");
@@ -50,11 +52,11 @@ public class RepairKitItem extends MaterialItem implements IRepairKitItem {
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-    super.appendHoverText(stack, context, tooltip, flag);
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+    super.appendHoverText(stack, context, display, tooltip, flag);
     // tooltip is about inventory repair
     if (canRepairInCraftingTable()) {
-      tooltip.add(Component.translatable(TOOLTIP_KEY, TranslationHelper.COMMA_FORMAT.format(getRepairAmount())).withStyle(ChatFormatting.GRAY));
+      tooltip.accept(Component.translatable(TOOLTIP_KEY, TranslationHelper.COMMA_FORMAT.format(getRepairAmount())).withStyle(ChatFormatting.GRAY));
     }
   }
 

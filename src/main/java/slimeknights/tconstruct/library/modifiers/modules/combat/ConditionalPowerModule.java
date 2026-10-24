@@ -114,7 +114,7 @@ public record ConditionalPowerModule(IJsonPredicate<LivingEntity> target, IJsonP
           multiplier *= persistentData.getFloat(BOW_MULTIPLIER);
         }
         if (projectile instanceof AbstractArrow arrow) {
-          arrow.setBaseDamage(formula.apply(modifiers, persistentData, modifier, projectile, hit, attacker, target, arrow.getBaseDamage(), multiplier));
+          arrow.setBaseDamage(formula.apply(modifiers, persistentData, modifier, projectile, hit, attacker, target, arrow.baseDamage, multiplier));
         } else if (projectile instanceof ProjectileWithPower withPower) {
           withPower.setPower(formula.apply(modifiers, persistentData, modifier, projectile, hit, attacker, target, withPower.getPower(), multiplier));
         }

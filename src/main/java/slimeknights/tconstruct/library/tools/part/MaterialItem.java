@@ -11,6 +11,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TooltipDisplay;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.materials.MaterialTooltipCache;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
@@ -22,7 +23,9 @@ import slimeknights.tconstruct.library.utils.DomainDisplayName;
 import slimeknights.tconstruct.library.utils.Util;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Represents an item that has a Material associated with it. The NBT of the itemstack identifies which material the
@@ -110,6 +113,13 @@ public class MaterialItem extends Item implements IMaterialItem {
     return getName(this, stack);
   }
 
+  /** 1.21.5: tooltip consumer variant of {@link #appendHoverText(IMaterialItem, ItemStack, List, TooltipFlag)} */
+  public static void appendHoverText(IMaterialItem self, ItemStack stack, Consumer<Component> tooltip, TooltipFlag flag) {
+    List<Component> tooltips = new ArrayList<>();
+    appendHoverText(self, stack, tooltips, flag);
+    tooltips.forEach(tooltip);
+  }
+
   public static void appendHoverText(IMaterialItem self, ItemStack stack, List<Component> tooltip, TooltipFlag flag) {
     if (flag.isAdvanced() && !TooltipUtil.isDisplay(stack)) {
       MaterialVariantId materialVariant = self.getMaterial(stack);
@@ -120,7 +130,7 @@ public class MaterialItem extends Item implements IMaterialItem {
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
     appendHoverText(this, stack, tooltip, flag);
   }
 

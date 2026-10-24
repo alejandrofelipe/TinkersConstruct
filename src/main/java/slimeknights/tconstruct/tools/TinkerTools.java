@@ -3,6 +3,7 @@ package slimeknights.tconstruct.tools;
 import net.minecraft.world.item.equipment.ArmorType;
 
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
@@ -12,7 +13,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters;
@@ -21,12 +21,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.item.component.BlocksAttacks;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import slimeknights.mantle.registration.object.EnumObject;
@@ -141,6 +144,7 @@ import slimeknights.tconstruct.tools.data.material.MaterialRecipeProvider;
 import slimeknights.tconstruct.tools.data.material.MaterialRenderInfoProvider;
 import slimeknights.tconstruct.tools.data.material.MaterialStatsDataProvider;
 import slimeknights.tconstruct.tools.data.material.MaterialTraitsDataProvider;
+import slimeknights.tconstruct.tools.data.material.TrimMaterialProvider;
 import slimeknights.tconstruct.tools.data.sprite.TinkerMaterialSpriteProvider;
 import slimeknights.tconstruct.tools.data.sprite.TinkerPartSpriteProvider;
 import slimeknights.tconstruct.tools.data.sprite.TinkerTrimMaterialPaletteGenerator;
@@ -304,13 +308,24 @@ public final class TinkerTools extends TinkerModule {
       DispenserBlock.registerBehavior(TinkerTools.shuriken.get(), ModifiableShurikenDispenserBehavior.INSTANCE);
       DispenserBlock.registerBehavior(TinkerTools.throwingAxe.get(), ModifiableShurikenDispenserBehavior.INSTANCE);
       ModifierUtil.registerShieldDisabler(entity -> {
-        if (entity instanceof Player player && player.isBlocking()) {
-          player.disableShield(player.getUseItem());
+        // 1.21.5: Player#disableShield was removed, shields are disabled through their blocking component
+        if (entity instanceof Player player && player.isBlocking() && player.level() instanceof ServerLevel serverLevel) {
+          ItemStack shield = player.getUseItem();
+          BlocksAttacks blocksAttacks = shield.get(DataComponents.BLOCKS_ATTACKS);
+          if (blocksAttacks != null) {
+            blocksAttacks.disable(serverLevel, player, ModifierUtil.SHIELD_DISABLE_SECONDS, shield);
+          }
         }
       }, EntityType.PLAYER);
     });
     ModifierHooks.init();
     ToolHooks.init();
+  }
+
+  /** 1.21.5: trim material ingredients provide their material through a component */
+  @SubscribeEvent
+  void modifyDefaultComponents(ModifyDefaultComponentsEvent event) {
+    TrimMaterialProvider.addIngredientComponents(event);
   }
 
   @SubscribeEvent

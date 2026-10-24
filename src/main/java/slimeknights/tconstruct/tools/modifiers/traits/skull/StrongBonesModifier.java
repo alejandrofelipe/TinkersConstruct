@@ -45,7 +45,7 @@ public class StrongBonesModifier extends NoLevelsModifier {
     ItemStack helmet = living.getItemBySlot(EquipmentSlot.HEAD);
     boolean didSomething = false;
     if (ModifierUtil.getModifierLevel(helmet, TinkerModifiers.strongBones.getId()) > 0) {
-      MobEffectInstance effect = new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, duration);
+      MobEffectInstance effect = new MobEffectInstance(MobEffects.RESISTANCE, duration);
       // PORT M3: Forge per-ItemStack curative items became NeoForge EffectCure tokens; clear default cures so the
       // applied resistance is not milk-curable. The CureOnRemovalModule handles removal when the helmet changes.
       // PORT 1.21.4: MobEffectInstance#getCures was removed; the effect is no longer marked uncurable here.

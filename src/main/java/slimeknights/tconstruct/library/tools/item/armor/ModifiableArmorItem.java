@@ -3,9 +3,11 @@ package slimeknights.tconstruct.library.tools.item.armor;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -19,13 +21,13 @@ import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.equipment.ArmorMaterials;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.ItemAbility;
@@ -36,6 +38,7 @@ import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
 import slimeknights.tconstruct.library.modifiers.hook.behavior.EnchantmentModifierHook;
 import slimeknights.tconstruct.library.modifiers.hook.display.DurabilityDisplayModifierHook;
+import slimeknights.tconstruct.library.modifiers.hook.interaction.InventoryTickModifierHook;
 import slimeknights.tconstruct.library.modifiers.hook.interaction.SlotStackModifierHook;
 import slimeknights.tconstruct.library.modifiers.modules.build.RarityModule;
 import slimeknights.tconstruct.library.tools.IndestructibleItemEntity;
@@ -62,7 +65,7 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay {
+public class ModifiableArmorItem extends Item implements IModifiableDisplay {
   /** Volatile modifier tag to make piglins neutal when worn */
   public static final ResourceLocation PIGLIN_NEUTRAL = TConstruct.getResource("piglin_neutral");
   /** Volatile modifier tag to make this item an elytra */
@@ -74,7 +77,7 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
 
   @Getter
   private final ToolDefinition toolDefinition;
-  /** Armor slot this item occupies. PORT 1.21.4: vanilla ArmorItem no longer exposes a {@code type} field, so we store it. */
+  /** Armor slot this item occupies. PORT 1.21.4: vanilla ArmorItem no longer exposes a {@code type} field, so we store it. 1.21.5: ArmorItem was removed entirely. */
   protected final ArmorType type;
   /** Cache of the tool built for rendering */
   private ItemStack toolForRendering = null;
@@ -84,7 +87,8 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
   // construction compiles, while Tinkers drives armor stats through ToolStats/attributes instead.
   // PORT 1.21.4: ArmorType became net.minecraft.world.item.equipment.ArmorType.
   public ModifiableArmorItem(DummyArmorMaterial materialIn, ArmorType type, Properties builderIn, ToolDefinition toolDefinition) {
-    super(ArmorMaterials.IRON, type, builderIn);
+    // 1.21.5: ArmorItem was removed; humanoidArmor applies the same components the old ArmorItem constructor did (still with the placeholder material)
+    super(builderIn.humanoidArmor(ArmorMaterials.IRON, type));
     this.type = type;
     this.toolDefinition = toolDefinition;
   }
@@ -144,8 +148,9 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
     return false;
   }
 
+  /** 1.21.5: replaces {@code isBookEnchantable}, NeoForge now routes enchanted books on the anvil through this method */
   @Override
-  public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
+  public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
     return false;
   }
 
@@ -167,7 +172,7 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
   }
 
   @Override
-  public void onCraftedBy(ItemStack stack, Level levelIn, Player playerIn) {
+  public void onCraftedBy(ItemStack stack, Player playerIn) {
     ToolStack.ensureInitialized(stack, getToolDefinition());
   }
 
@@ -364,16 +369,18 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
   /* Ticking */
 
   @Override
-  public void inventoryTick(ItemStack stack, Level levelIn, Entity entityIn, int itemSlot, boolean isSelected) {
+  public void inventoryTick(ItemStack stack, ServerLevel levelIn, Entity entityIn, @Nullable EquipmentSlot slot) {
     // don't care about non-living, they skip most tool context
     if (entityIn instanceof LivingEntity living) {
       ToolStack tool = ToolStack.from(stack);
-      if (!levelIn.isClientSide) {
-        tool.ensureHasData();
-      }
+      // 1.21.5: inventory ticks are server only now
+      tool.ensureHasData();
       List<ModifierEntry> modifiers = tool.getModifierList();
       if (!modifiers.isEmpty()) {
         boolean isCorrectSlot = living.getItemBySlot(getEquipmentSlot()) == stack;
+        // 1.21.5: slot index and selected flag are derived from the equipment slot
+        int itemSlot = InventoryTickModifierHook.getItemSlot(living, stack, slot);
+        boolean isSelected = slot == EquipmentSlot.MAINHAND;
         // we pass in the stack for most custom context, but for the sake of armor its easier to tell them that this is the correct slot for effects
         for (ModifierEntry entry : modifiers) {
           entry.getHook(ModifierHooks.INVENTORY_TICK).onInventoryTick(tool, entry, levelIn, living, itemSlot, isSelected, isCorrectSlot, stack);
@@ -401,7 +408,7 @@ public class ModifiableArmorItem extends ArmorItem implements IModifiableDisplay
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
     TooltipUtil.addInformation(this, stack, context.level(), tooltip, SafeClientAccess.getTooltipKey(), flag);
   }
 

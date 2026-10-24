@@ -430,13 +430,13 @@ public class ModifierEvents {
                 if (target.getType() == EntityType.PLAYER) {
                   TinkerNetwork.getInstance().sendVanillaPacket(new ClientboundSetEntityMotionPacket(projectile), target);
                 }
-                level.playSound(null, target.blockPosition(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1.0F, 1.5F + level.random.nextFloat() * 0.4F);
+                level.playSound(null, target.blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.PLAYERS, 1.0F, 1.5F + level.random.nextFloat() * 0.4F);
                 // 1.21: ProjectileImpactEvent.ImpactResult was removed; cancelling skips the hit so the projectile passes through
                 event.setCanceled(true);
                 // damage the shield, and stop using it if needed
                 if (ToolDamageUtil.damageAnimated(tool, 3, target, target.getUsedItemHand())) {
                   target.stopUsingItem();
-                  entity.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + entity.level().random.nextFloat() * 0.4F);
+                  entity.playSound(SoundEvents.SHIELD_BREAK.value(), 0.8F, 0.8F + entity.level().random.nextFloat() * 0.4F);
                 }
               }
             }
@@ -467,7 +467,7 @@ public class ModifierEvents {
         }
 
         // calculate damage, bonus on crit
-        int damage = Mth.ceil(Mth.clamp(arrow.getDeltaMovement().length() * arrow.getBaseDamage(), 0.0D, Integer.MAX_VALUE));
+        int damage = Mth.ceil(Mth.clamp(arrow.getDeltaMovement().length() * arrow.baseDamage, 0.0D, Integer.MAX_VALUE));
         if (arrow.isCritArrow()) {
           damage = (int) Math.min(target.getRandom().nextInt(damage / 2 + 2) + (long) damage, Integer.MAX_VALUE);
         }

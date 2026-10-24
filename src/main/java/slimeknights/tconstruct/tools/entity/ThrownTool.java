@@ -274,7 +274,7 @@ public class ThrownTool extends ThrownTrident implements ToolProjectile {
       if (!level().isClientSide) {
         // play sound
         if (tool.getModifiers().getLevel(ModifierIds.channeling) == 0) {
-          this.playSound(tool.isBroken() ? SoundEvents.ITEM_BREAK : SoundEvents.TRIDENT_HIT, 1.0f, 1.0f);
+          this.playSound(tool.isBroken() ? SoundEvents.ITEM_BREAK.value() : SoundEvents.TRIDENT_HIT, 1.0f, 1.0f);
         }
         // update the stack so visual changes to the tool render (e.g. broken or fluid)
         // need to force since its the same instance, just NBT changes

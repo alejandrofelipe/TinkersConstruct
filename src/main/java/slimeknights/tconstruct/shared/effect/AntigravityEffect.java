@@ -75,7 +75,7 @@ public class AntigravityEffect extends TinkerEffect {
           living.setDeltaMovement(velocity.x, lastVelocity.twoTicks, velocity.z);
           BlockPos above = BlockPos.containing(living.getX(), living.getBoundingBox().maxY + 0.1, living.getZ());
           BlockState hit = level.getBlockState(above);
-          float height = (float)(lastVelocity.twoTicks * 10 - 3 - living.getAttributeValue(TinkerAttributes.SAFE_FALL_DISTANCE) - TinkerEffect.getLevel(living, MobEffects.JUMP.value()));
+          float height = (float)(lastVelocity.twoTicks * 10 - 3 - living.getAttributeValue(TinkerAttributes.SAFE_FALL_DISTANCE) - TinkerEffect.getLevel(living, MobEffects.JUMP_BOOST.value()));
           if (height > 0.0F) {
             hit.getBlock().fallOn(level, hit, above, living, height);
           }
@@ -128,7 +128,7 @@ public class AntigravityEffect extends TinkerEffect {
   public boolean antigravityJump(Player player) {
     // must be on the ground, not swimming, not on a ladder, and have antigravity to jump
     // jump reversal is handled in ModifierEvents to ensure ordering between that and the attribute boost
-    if (player.verticalCollision && !player.verticalCollisionBelow && !player.isInWaterOrBubble()
+    if (player.verticalCollision && !player.verticalCollisionBelow && !player.isInWater()
       && player.hasEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(this)) && player.getAttributeValue(Attributes.GRAVITY) < 0 && !player.onClimbable()) {
       player.jumpFromGround();
       return true;

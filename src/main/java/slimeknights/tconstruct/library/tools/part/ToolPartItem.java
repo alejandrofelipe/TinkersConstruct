@@ -5,6 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import slimeknights.mantle.client.SafeClientAccess;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.TConstruct;
@@ -17,7 +18,9 @@ import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.tools.helper.TooltipUtil;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Extension of {@link MaterialItem} which adds stats to the tooltip and has a set stat type
@@ -39,6 +42,13 @@ public class ToolPartItem extends MaterialItem implements IToolPart {
   @Override
   public MaterialStatsId getStatType() {
     return this.materialStatId;
+  }
+
+  /** Helper to append the tooltip for this part. 1.21.5: tooltip consumer variant */
+  public static void appendHoverText(IToolPart self, ItemStack stack, Consumer<Component> tooltip, TooltipFlag flag) {
+    List<Component> tooltips = new ArrayList<>();
+    appendHoverText(self, stack, tooltips, flag);
+    tooltips.forEach(tooltip);
   }
 
   /** Helper to append the tooltip for this part. */
@@ -105,7 +115,7 @@ public class ToolPartItem extends MaterialItem implements IToolPart {
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
     appendHoverText(this, stack, tooltip, flag);
   }
 

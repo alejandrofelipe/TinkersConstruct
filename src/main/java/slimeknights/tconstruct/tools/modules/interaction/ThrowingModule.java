@@ -96,7 +96,7 @@ public enum ThrowingModule implements ModifierModule, GeneralInteractionModifier
         if (player.getUsedItemHand() == InteractionHand.OFF_HAND) {
           thrown.setOriginalSlot(Inventory.SLOT_OFFHAND);
         } else {
-          thrown.setOriginalSlot(player.getInventory().selected);
+          thrown.setOriginalSlot(player.getInventory().getSelectedSlot());
         }
         thrown.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, charge * velocity * 2, ModifierUtil.getInaccuracy(tool, entity));
         if (player.getAbilities().instabuild) {

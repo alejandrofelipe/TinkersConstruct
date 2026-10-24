@@ -3,6 +3,7 @@ package slimeknights.tconstruct.library.tools.nbt;
 import com.google.common.collect.ImmutableSet;
 import lombok.AccessLevel;
 import lombok.Getter;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -31,11 +32,13 @@ import slimeknights.tconstruct.library.tools.definition.ToolDefinition;
 import slimeknights.tconstruct.library.tools.definition.ToolDefinitionData;
 import slimeknights.tconstruct.library.tools.definition.module.ToolHooks;
 import slimeknights.tconstruct.library.tools.definition.module.material.MissingMaterialsToolHook;
+import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
 import slimeknights.tconstruct.library.tools.helper.TooltipUtil;
 import slimeknights.tconstruct.library.tools.item.IModifiable;
 import slimeknights.tconstruct.library.tools.stat.ModifierStatsBuilder;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import slimeknights.tconstruct.library.utils.RestrictedCompoundTag;
+import slimeknights.tconstruct.tools.TinkerToolActions;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -122,6 +125,13 @@ public class ToolStack implements IToolStackView {
   private IModDataView volatileModData;
 
   /* Creating */
+  /**
+   * Stack whose live tag this tool reads, if created from a stack without copying. Used to sync item components derived from the tool state.
+   * 1.21.5: shield blocking and disabling moved to item components, see {@link #updateComponents(ItemStack)}.
+   */
+  @Nullable
+  private ItemStack boundStack;
+
   private ToolStack(Item item, ToolDefinition definition, CompoundTag nbt) {
     this.item = item;
     this.definition = definition;
@@ -191,7 +201,11 @@ public class ToolStack implements IToolStackView {
     } else if (copyNbt) {
       nbt = nbt.copy();
     }
-    return from(item, definition, nbt);
+    ToolStack tool = from(item, definition, nbt);
+    if (!copyNbt) {
+      tool.boundStack = stack;
+    }
+    return tool;
   }
 
   /**
@@ -287,6 +301,7 @@ public class ToolStack implements IToolStackView {
       stack.set(DataComponents.MAX_DAMAGE, -1);
       stack.set(DataComponents.DAMAGE, 0);
     }
+    updateComponents(stack);
     return stack;
   }
 
@@ -322,7 +337,35 @@ public class ToolStack implements IToolStackView {
       tag.putInt(TAG_DAMAGE, 0);
     }
     setStackTag(stack, tag);
+    updateComponents(stack);
     return stack;
+  }
+
+  /**
+   * Syncs the vanilla item components derived from this tool's state onto the given stack.
+   * 1.21.5: vanilla reads shield disabling from the attacker's {@link DataComponents#WEAPON} and blocking from {@link DataComponents#BLOCKS_ATTACKS},
+   * replacing the removed {@code IItemExtension#canDisableShield} and {@code ItemAbilities.SHIELD_BLOCK}. Called when stats rebuild on a stack bound tool
+   * and when a stack is created or updated from this tool.
+   * @param stack  Stack to update
+   */
+  public void updateComponents(ItemStack stack) {
+    // without data we cannot tell the tool's abilities, so keep whatever the stack has
+    if (!definition.isDataLoaded()) {
+      return;
+    }
+    setComponent(stack, DataComponents.WEAPON, ModifierUtil.canPerformAction(this, TinkerToolActions.SHIELD_DISABLE) ? ModifierUtil.SHIELD_DISABLING_WEAPON : null);
+    setComponent(stack, DataComponents.BLOCKS_ATTACKS, ModifierUtil.canPerformAction(this, TinkerToolActions.SHIELD_BLOCK) ? ModifierUtil.TOOL_BLOCKS_ATTACKS : null);
+  }
+
+  /** Sets or removes a component on the stack, skipping the update if unchanged */
+  private static <T> void setComponent(ItemStack stack, DataComponentType<T> type, @Nullable T value) {
+    if (value != null) {
+      if (!value.equals(stack.get(type))) {
+        stack.set(type, value);
+      }
+    } else if (stack.has(type)) {
+      stack.remove(type);
+    }
   }
 
   /** Creates a stack a copy of the given stack */
@@ -799,6 +842,11 @@ public class ToolStack implements IToolStackView {
     // finally, update raw data, called last to make the parameters more convenient mostly, plus no other hooks should be responding to this data
     for (ModifierEntry entry : modifierList) {
       entry.getHook(ModifierHooks.RAW_DATA).addRawData(this, entry, getRestrictedNBT());
+    }
+
+    // 1.21.5: sync item components derived from the tool, such as shield blocking and disabling
+    if (boundStack != null) {
+      updateComponents(boundStack);
     }
   }
 

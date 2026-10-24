@@ -3,7 +3,6 @@ package slimeknights.tconstruct.tools;
 import net.minecraft.world.item.equipment.ArmorType;
 
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.ArmorItem;
 import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters;

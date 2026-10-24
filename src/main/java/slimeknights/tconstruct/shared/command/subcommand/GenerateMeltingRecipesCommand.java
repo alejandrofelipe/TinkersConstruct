@@ -375,7 +375,7 @@ public class GenerateMeltingRecipesCommand {
         return first.tag.equals(second.tag);
       }
       // if either lack a tag, do exact fluid
-      return first.fluid.isFluidEqual(second.fluid);
+      return FluidStack.isSameFluidSameComponents(first.fluid, second.fluid);
     }
 
     /** Combines two results into a larger result. Precondition is {@link #matches(MeltingResult, MeltingResult)} is true. */

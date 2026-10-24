@@ -9,6 +9,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.Block;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
@@ -16,6 +17,7 @@ import slimeknights.tconstruct.library.tools.part.MaterialItem;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 
 /** Implementation of {@link MaterialItem} on a {@link BlockItem}. */
 public class MaterialBlockItem extends BlockItem implements IMaterialItem {
@@ -34,9 +36,9 @@ public class MaterialBlockItem extends BlockItem implements IMaterialItem {
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
     MaterialItem.appendHoverText(this, stack, tooltip, flag);
-    super.appendHoverText(stack, context, tooltip, flag);
+    super.appendHoverText(stack, context, display, tooltip, flag);
   }
 
   @Nullable

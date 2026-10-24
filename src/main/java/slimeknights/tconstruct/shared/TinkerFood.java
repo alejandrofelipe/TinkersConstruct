@@ -48,8 +48,8 @@ public final class TinkerFood {
   public static final Meal JEWELED_APPLE = new Meal(
     new FoodProperties.Builder().nutrition(4).saturationModifier(1.2F).alwaysEdible().build(),
     effectConsumable(ItemUseAnimation.EAT,
-      new MobEffectInstance(MobEffects.DIG_SPEED, 1200, 0),
-      new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 2400, 0)));
+      new MobEffectInstance(MobEffects.HASTE, 1200, 0),
+      new MobEffectInstance(MobEffects.RESISTANCE, 2400, 0)));
 
   /* Cake block is set up to take food as a parameter */
   public static final Meal EARTH_CAKE = new Meal(new FoodProperties.Builder().nutrition(1).saturationModifier(0.3f).alwaysEdible().build(), effectConsumable(ItemUseAnimation.EAT, new MobEffectInstance(TinkerEffects.bouncy,      30 * 20, 0)));
@@ -60,12 +60,12 @@ public final class TinkerFood {
   // regen is 50 ticks per half heart, so this heals 3 per slice
   public static final Meal BLOOD_CAKE = new Meal(new FoodProperties.Builder().nutrition(2).saturationModifier(0.2f).alwaysEdible().build(), effectConsumable(ItemUseAnimation.EAT, new MobEffectInstance(MobEffects.REGENERATION, 3 * 50, 0)));
 
-  public static final Meal EARTH_BOTTLE = new Meal(new FoodProperties.Builder().alwaysEdible().build(), effectConsumable(ItemUseAnimation.DRINK, new MobEffectInstance(TinkerEffects.experienced,  120 * 20), new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 120 * 20, 1)));
-  public static final Meal SKY_BOTTLE   = new Meal(new FoodProperties.Builder().alwaysEdible().build(), effectConsumable(ItemUseAnimation.DRINK, new MobEffectInstance(TinkerEffects.ricochet,     120 * 20), new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 120 * 20, 1)));
-  public static final Meal ICHOR_BOTTLE = new Meal(new FoodProperties.Builder().alwaysEdible().build(), effectConsumable(ItemUseAnimation.DRINK, new MobEffectInstance(MobEffects.LEVITATION,             10 * 20), new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,  10 * 20, 1)));
-  public static final Meal ENDER_BOTTLE = new Meal(new FoodProperties.Builder().alwaysEdible().build(), effectConsumable(ItemUseAnimation.DRINK, new MobEffectInstance(TinkerEffects.enderference,  60 * 20), new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,  60 * 20, 1)));
+  public static final Meal EARTH_BOTTLE = new Meal(new FoodProperties.Builder().alwaysEdible().build(), effectConsumable(ItemUseAnimation.DRINK, new MobEffectInstance(TinkerEffects.experienced,  120 * 20), new MobEffectInstance(MobEffects.SLOWNESS, 120 * 20, 1)));
+  public static final Meal SKY_BOTTLE   = new Meal(new FoodProperties.Builder().alwaysEdible().build(), effectConsumable(ItemUseAnimation.DRINK, new MobEffectInstance(TinkerEffects.ricochet,     120 * 20), new MobEffectInstance(MobEffects.SLOWNESS, 120 * 20, 1)));
+  public static final Meal ICHOR_BOTTLE = new Meal(new FoodProperties.Builder().alwaysEdible().build(), effectConsumable(ItemUseAnimation.DRINK, new MobEffectInstance(MobEffects.LEVITATION,             10 * 20), new MobEffectInstance(MobEffects.SLOWNESS,  10 * 20, 1)));
+  public static final Meal ENDER_BOTTLE = new Meal(new FoodProperties.Builder().alwaysEdible().build(), effectConsumable(ItemUseAnimation.DRINK, new MobEffectInstance(TinkerEffects.enderference,  60 * 20), new MobEffectInstance(MobEffects.SLOWNESS,  60 * 20, 1)));
   // 250 is 10 poison damage
-  public static final Meal VENOM_BOTTLE = new Meal(new FoodProperties.Builder().alwaysEdible().build(), effectConsumable(ItemUseAnimation.DRINK, new MobEffectInstance(MobEffects.DAMAGE_BOOST, 30 * 20), new MobEffectInstance(MobEffects.POISON, 250)));
+  public static final Meal VENOM_BOTTLE = new Meal(new FoodProperties.Builder().alwaysEdible().build(), effectConsumable(ItemUseAnimation.DRINK, new MobEffectInstance(MobEffects.STRENGTH, 30 * 20), new MobEffectInstance(MobEffects.POISON, 250)));
   /** @deprecated no longer used */
   @Deprecated(forRemoval = true)
   public static final FoodProperties MAGMA_BOTTLE = new FoodProperties.Builder().alwaysEdible().build();

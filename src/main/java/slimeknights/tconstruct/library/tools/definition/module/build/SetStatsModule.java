@@ -2,7 +2,6 @@ package slimeknights.tconstruct.library.tools.definition.module.build;
 
 import net.minecraft.world.item.equipment.ArmorType;
 
-import net.minecraft.world.item.ArmorItem;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.tconstruct.library.module.HookProvider;
 import slimeknights.tconstruct.library.module.ModuleHook;

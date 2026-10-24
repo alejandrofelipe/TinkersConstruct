@@ -19,7 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.util.TriState;
+import net.minecraft.util.TriState;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
@@ -506,12 +506,13 @@ public class InteractionHandler {
             if (ToolDamageUtil.damageAnimated(tool, 1 + Mth.floor(damage), entity, usingHand)) {
               EventHooks.onPlayerDestroyItem(player, activeStack, usingHand);
               entity.stopUsingItem();
-              entity.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + entity.level().random.nextFloat() * 0.4F);
+              entity.playSound(SoundEvents.SHIELD_BREAK.value(), 0.8F, 0.8F + entity.level().random.nextFloat() * 0.4F);
             }
           }
         }
       } else {
-        event.setCanceled(true);
+        // 1.21.5: the shield block event is no longer cancellable, mark it not blocked instead
+        event.setBlocked(false);
       }
     }
   }

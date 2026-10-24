@@ -28,7 +28,7 @@ public interface ProjectileWithPower {
       return withPower.getDamage();
     }
     if (projectile instanceof AbstractArrow arrow) {
-      return velocityScale(projectile, arrow.getBaseDamage());
+      return velocityScale(projectile, arrow.baseDamage);
     }
     return 0;
   }

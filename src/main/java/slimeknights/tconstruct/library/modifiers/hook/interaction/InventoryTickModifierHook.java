@@ -1,7 +1,9 @@
 package slimeknights.tconstruct.library.modifiers.hook.interaction;
 
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -9,6 +11,7 @@ import slimeknights.tconstruct.library.modifiers.ModifierHooks;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 
@@ -26,6 +29,49 @@ public interface InventoryTickModifierHook {
    * @param stack          Item stack instance to check other slots for the tool. Do not modify
    */
   void onInventoryTick(IToolStackView tool, ModifierEntry modifier, Level world, LivingEntity holder, int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack);
+
+  /**
+   * Derives the legacy {@code itemSlot} from the 1.21.5 inventory tick arguments.
+   * 1.21.5: {@code Item#inventoryTick} receives an {@link EquipmentSlot} instead of the slot index and selected flag.
+   * For players, main inventory items use their index in {@link net.minecraft.world.entity.player.Inventory#getNonEquipmentItems()} (the selected slot for the main hand),
+   * armor uses its armor index and the offhand uses 0, matching the old per-compartment indices.
+   * @param entity  Entity holding the stack
+   * @param stack   Stack being ticked
+   * @param slot    Equipment slot from the tick, null for the main inventory
+   * @return  Slot index, or -1 if not found
+   */
+  static int getItemSlot(Entity entity, ItemStack stack, @Nullable EquipmentSlot slot) {
+    if (entity instanceof Player player) {
+      if (slot == null) {
+        List<ItemStack> items = player.getInventory().getNonEquipmentItems();
+        for (int i = 0; i < items.size(); i++) {
+          if (items.get(i) == stack) {
+            return i;
+          }
+        }
+        return -1;
+      }
+      if (slot == EquipmentSlot.MAINHAND) {
+        return player.getInventory().getSelectedSlot();
+      }
+      if (slot == EquipmentSlot.OFFHAND) {
+        return 0;
+      }
+    }
+    return slot == null ? -1 : slot.getIndex();
+  }
+
+  /**
+   * Handles ticking a modifiable item that works when held, from the 1.21.5 {@code Item#inventoryTick} arguments. Armor uses different logic.
+   * Like the vanilla call, this only runs on the server.
+   * @param stack     Modifiable stack
+   * @param worldIn   World instance
+   * @param entityIn  Entity holding the tool
+   * @param slot      Equipment slot from the tick, null for the main inventory. {@link EquipmentSlot#MAINHAND} means the tool is selected
+   */
+  static void heldInventoryTick(ItemStack stack, Level worldIn, Entity entityIn, @Nullable EquipmentSlot slot) {
+    heldInventoryTick(stack, worldIn, entityIn, getItemSlot(entityIn, stack, slot), slot == EquipmentSlot.MAINHAND);
+  }
 
   /**
    * Handles ticking a modifiable item that works when held. Armor uses different logic

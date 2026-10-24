@@ -38,7 +38,7 @@ public enum CureOnRemovalModule implements HookProvider, EquipmentChangeModifier
         // PORT M3: Forge's curePotionEffects(ItemStack) (matched our per-helmet curative marker) was removed in 1.21,
         // and NeoForge replaced per-ItemStack curatives with EffectCure tokens. The only consumer of this module is
         // StrongBonesModifier, which applies milk-immune DAMAGE_RESISTANCE; remove that effect directly on unequip.
-        context.getEntity().removeEffect(MobEffects.DAMAGE_RESISTANCE);
+        context.getEntity().removeEffect(MobEffects.RESISTANCE);
       }
     }
   }

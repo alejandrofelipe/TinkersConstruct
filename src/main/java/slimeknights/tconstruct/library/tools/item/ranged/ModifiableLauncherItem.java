@@ -4,11 +4,13 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -30,6 +32,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.common.ItemAbility;
 import slimeknights.mantle.client.SafeClientAccess;
@@ -113,8 +116,9 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
     return false;
   }
 
+  /** 1.21.5: replaces {@code isBookEnchantable}, NeoForge now routes enchanted books on the anvil through this method */
   @Override
-  public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
+  public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
     return false;
   }
 
@@ -147,7 +151,7 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
   }
 
   @Override
-  public void onCraftedBy(ItemStack stack, Level worldIn, Player playerIn) {
+  public void onCraftedBy(ItemStack stack, Player playerIn) {
     ToolStack.ensureInitialized(stack, getToolDefinition());
   }
 
@@ -242,8 +246,8 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
   /* Modifier interactions */
 
   @Override
-  public void inventoryTick(ItemStack stack, Level worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
-    InventoryTickModifierHook.heldInventoryTick(stack, worldIn, entityIn, itemSlot, isSelected);
+  public void inventoryTick(ItemStack stack, ServerLevel worldIn, Entity entityIn, @Nullable EquipmentSlot slot) {
+    InventoryTickModifierHook.heldInventoryTick(stack, worldIn, entityIn, slot);
   }
 
   @Override
@@ -283,10 +287,8 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
     return getAttributeModifiers(ToolStack.from(stack), slot);
   }
 
-  @Override
-  public boolean canDisableShield(ItemStack stack, ItemStack shield, LivingEntity entity, LivingEntity attacker) {
-    return canPerformAction(stack, TinkerToolActions.SHIELD_DISABLE);
-  }
+  // 1.21.5: IItemExtension#canDisableShield was removed; vanilla reads the WEAPON component, which ToolStack#updateComponents
+  // sets from the tinkers:shield_disable ability
 
 
   /* Arrow logic */
@@ -346,7 +348,7 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
     TooltipUtil.addInformation(this, stack, context.level(), tooltip, SafeClientAccess.getTooltipKey(), flag);
   }
 

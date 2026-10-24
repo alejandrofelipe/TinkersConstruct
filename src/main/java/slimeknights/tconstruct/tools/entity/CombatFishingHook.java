@@ -81,7 +81,7 @@ public class CombatFishingHook extends FishingHook implements ProjectileWithKnoc
     float dz = Mth.cos(yAngle);
     float dx = Mth.sin(yAngle);
     // position
-    this.moveTo(
+    this.snapTo(
       player.getX() - dx * 0.3,
       player.getEyeY(),
       player.getZ() - dz * 0.3,

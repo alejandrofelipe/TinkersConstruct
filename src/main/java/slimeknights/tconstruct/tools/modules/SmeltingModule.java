@@ -297,7 +297,7 @@ public record SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeT
     // arrow launch cook by arrow power
     float amount;
     if (arrow != null) {
-      amount = (float) arrow.getBaseDamage();
+      amount = (float) arrow.baseDamage;
     } else if (projectile instanceof ProjectileWithPower withPower) {
       amount = withPower.getPower();
     } else {

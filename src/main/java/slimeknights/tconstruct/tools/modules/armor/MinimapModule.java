@@ -8,7 +8,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MapItem;
@@ -105,7 +104,7 @@ public enum MinimapModule implements ModifierModule, EquipmentChangeModifierHook
           // hack: map logic requires the map to be in the selected slot to tick properly, so put it in the invnetory temporarily
           ItemStack held = holder.getOffhandItem();
           holder.setItemInHand(InteractionHand.OFF_HAND, map);
-          map.inventoryTick(world, holder, Inventory.SLOT_OFFHAND, true);
+          map.inventoryTick(world, holder, EquipmentSlot.OFFHAND);
           holder.setItemInHand(InteractionHand.OFF_HAND, held);
           if (holder instanceof ServerPlayer player) {
             MapItemSavedData mapData = MapItem.getSavedData(map, world);

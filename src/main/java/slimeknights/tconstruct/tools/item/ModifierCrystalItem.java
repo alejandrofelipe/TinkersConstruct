@@ -13,6 +13,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import slimeknights.mantle.command.MantleCommand;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.tconstruct.TConstruct;
@@ -57,18 +58,18 @@ public class ModifierCrystalItem extends Item {
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag advanced) {
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag advanced) {
     ModifierId id = getModifier(stack);
     if (id != null) {
       if (ModifierManager.INSTANCE.contains(id)) {
-        tooltip.addAll(ModifierManager.INSTANCE.get(id).getDescriptionList());
+        ModifierManager.INSTANCE.get(id).getDescriptionList().forEach(tooltip);
       }
-      tooltip.add(TOOLTIP_APPLY);
+      tooltip.accept(TOOLTIP_APPLY);
       if (advanced.isAdvanced()) {
-        tooltip.add((Component.translatable(MODIFIER_KEY, id.toString())).withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.accept((Component.translatable(MODIFIER_KEY, id.toString())).withStyle(ChatFormatting.DARK_GRAY));
       }
     } else {
-      tooltip.add(TOOLTIP_MISSING);
+      tooltip.accept(TOOLTIP_MISSING);
     }
   }
 

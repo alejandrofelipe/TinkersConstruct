@@ -5,6 +5,7 @@ import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -45,6 +46,7 @@ import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import slimeknights.mantle.fluid.InvertedFluid;
 import slimeknights.mantle.fluid.UnplaceableFluid;
@@ -124,7 +126,7 @@ public final class TinkerFluids extends TinkerModule {
   public static final ItemObject<Item> magmaBottle = ITEMS.register("magma_bottle", p -> new MagmaBottleItem(p, 15), new Item.Properties().stacksTo(16).craftRemainder(Items.GLASS_BOTTLE));
 
   // foods
-  public static FlowingFluidObject<BaseFlowingFluid> honey        = FLUIDS.registerSlime("honey").type(slime("honey").temperature(301)).bucket().block(createEffect(MapColor.COLOR_ORANGE, 0, () -> new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 5*20))).commonTag().flowing();
+  public static FlowingFluidObject<BaseFlowingFluid> honey        = FLUIDS.registerSlime("honey").type(slime("honey").temperature(301)).bucket().block(createEffect(MapColor.COLOR_ORANGE, 0, () -> new MobEffectInstance(MobEffects.SLOWNESS, 5*20))).commonTag().flowing();
   public static FlowingFluidObject<BaseFlowingFluid> beetrootSoup = FLUIDS.register("beetroot_soup").type(cool("beetroot_soup").temperature(400)).bucket().block(MapColor.COLOR_RED, 0).commonTag().flowing();
   public static FlowingFluidObject<BaseFlowingFluid> mushroomStew = FLUIDS.register("mushroom_stew").type(cool("mushroom_stew").temperature(400)).bucket().block(MapColor.DIRT, 0).commonTag().flowing();
   public static FlowingFluidObject<BaseFlowingFluid> rabbitStew   = FLUIDS.register("rabbit_stew").type(cool("rabbit_stew").temperature(400)).bucket().block(MapColor.PODZOL, 0).commonTag().flowing();
@@ -277,6 +279,12 @@ public final class TinkerFluids extends TinkerModule {
    * Registers the fluid-container item capabilities (magma/venom/slime bottles and the potion bucket). Ported from 1.20
    * but never wired onto {@link RegisterCapabilitiesEvent}, so these items exposed no fluid handler at runtime.
    */
+  /** 1.21.5: potion buckets show 2.5x effect durations through the vanilla potion duration scale component */
+  @SubscribeEvent
+  void modifyDefaultComponents(ModifyDefaultComponentsEvent event) {
+    event.modify(potion.getBucket(), builder -> builder.set(DataComponents.POTION_DURATION_SCALE, 2.5f));
+  }
+
   @SubscribeEvent
   void registerCapabilities(RegisterCapabilitiesEvent event) {
     event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((MagmaBottleItem) stack.getItem()).getFluidHandler(stack), magmaBottle.get());

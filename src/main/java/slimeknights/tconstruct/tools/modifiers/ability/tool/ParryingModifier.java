@@ -18,6 +18,7 @@ import slimeknights.tconstruct.library.modifiers.hook.interaction.InteractionSou
 import slimeknights.tconstruct.library.module.ModuleHookMap.Builder;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
+import slimeknights.tconstruct.tools.TinkerToolActions;
 
 public class ParryingModifier extends OffhandAttackModifier implements ToolActionModifierHook {
   @Override
@@ -75,6 +76,6 @@ public class ParryingModifier extends OffhandAttackModifier implements ToolActio
 
   @Override
   public boolean canPerformAction(IToolStackView tool, ModifierEntry modifier, ItemAbility itemAbility) {
-    return itemAbility == ItemAbilities.SHIELD_BLOCK;
+    return itemAbility == TinkerToolActions.SHIELD_BLOCK;
   }
 }

@@ -7,6 +7,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -18,8 +20,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.Weapon;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
@@ -34,11 +38,14 @@ import slimeknights.tconstruct.library.tools.item.ranged.ModifiableLauncherItem;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
+import slimeknights.tconstruct.tools.TinkerToolActions;
 import slimeknights.tconstruct.tools.TinkerTools;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /** Generic modifier hooks that don't quite fit elsewhere */
@@ -210,7 +217,7 @@ public final class ModifierUtil {
    * Allows your tool to block while charging up.
    */
   public static ItemUseAnimation blockWhileCharging(IToolStackView tool, ItemUseAnimation fallback) {
-    return canPerformAction(tool, ItemAbilities.SHIELD_BLOCK) ? ItemUseAnimation.BLOCK : fallback;
+    return canPerformAction(tool, TinkerToolActions.SHIELD_BLOCK) ? ItemUseAnimation.BLOCK : fallback;
   }
 
   /** Calculates inaccuracy from the conditional tool stat. */
@@ -289,6 +296,22 @@ public final class ModifierUtil {
   }
 
   /* Shield disabling */
+  /** Seconds a shield is disabled for by a shield disabling tool, matches the pre-1.21.5 100 tick shield cooldown */
+  public static final float SHIELD_DISABLE_SECONDS = 5;
+  /**
+   * Weapon component set on tools that can disable shields. 1.21.5: vanilla reads the attacker's {@link DataComponents#WEAPON} instead of {@code IItemExtension#canDisableShield}.
+   * Item damage is 0 as tools handle their own durability on attack.
+   */
+  public static final Weapon SHIELD_DISABLING_WEAPON = new Weapon(0, SHIELD_DISABLE_SECONDS);
+  /**
+   * Blocking component set on tools that can block. 1.21.5: blocking requires {@link DataComponents#BLOCKS_ATTACKS}, values match the vanilla shield
+   * (and the pre-1.21.5 blocking behavior: 0.25 second delay, full damage blocked in front, shield damage starting at 3 damage).
+   */
+  public static final BlocksAttacks TOOL_BLOCKS_ATTACKS = new BlocksAttacks(
+    0.25f, 1.0f, List.of(new BlocksAttacks.DamageReduction(90.0f, Optional.empty(), 0.0f, 1.0f)),
+    new BlocksAttacks.ItemDamageFunction(3.0f, 1.0f, 1.0f), Optional.of(DamageTypeTags.BYPASSES_SHIELD),
+    Optional.of(SoundEvents.SHIELD_BLOCK), Optional.of(SoundEvents.SHIELD_BREAK));
+
   /** Map of how to disable shields for different targets */
   private static final Map<EntityType<?>, Consumer<Entity>> SHIELD_DISABLER = new HashMap<>();
 

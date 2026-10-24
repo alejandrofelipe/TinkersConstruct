@@ -13,6 +13,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
@@ -35,6 +36,7 @@ import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
 import slimeknights.tconstruct.smeltery.block.entity.component.TankBlockEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -67,20 +69,22 @@ public class TankItem extends BlockTooltipItem {
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
     if (isFilled(stack)) {
       FluidTank tank = getTank(stack, 1);
       if (tank.getFluidAmount() > 0) {
         FluidStack fluid = tank.getFluid();
-        tooltip.add(fluid.getHoverName().plainCopy().withStyle(ChatFormatting.GRAY));
+        tooltip.accept(fluid.getHoverName().plainCopy().withStyle(ChatFormatting.GRAY));
         if (flag.isAdvanced()) {
-          tooltip.add(Component.translatable(FLUID_ID, Loadables.FLUID.getKey(fluid.getFluid()).toString()).withStyle(ChatFormatting.DARK_GRAY));
+          tooltip.accept(Component.translatable(FLUID_ID, Loadables.FLUID.getKey(fluid.getFluid()).toString()).withStyle(ChatFormatting.DARK_GRAY));
         }
-        FluidTooltipHandler.appendMaterial(fluid, tooltip);
+        List<Component> materialTooltip = new ArrayList<>();
+        FluidTooltipHandler.appendMaterial(fluid, materialTooltip);
+        materialTooltip.forEach(tooltip);
       }
     }
     else {
-      super.appendHoverText(stack, context, tooltip, flag);
+      super.appendHoverText(stack, context, display, tooltip, flag);
     }
   }
 

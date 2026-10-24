@@ -4,7 +4,6 @@ import net.minecraft.world.item.equipment.ArmorType;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.world.item.ArmorItem;
 import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
 import slimeknights.mantle.data.loadable.primitive.IntLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;

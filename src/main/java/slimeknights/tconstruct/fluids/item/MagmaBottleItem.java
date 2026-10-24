@@ -11,6 +11,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -20,6 +21,7 @@ import slimeknights.tconstruct.fluids.util.ConstantFluidContainerWrapper;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /** Magma bottle instance, which lights the drinker on fire */
 public class MagmaBottleItem extends Item {
@@ -30,9 +32,9 @@ public class MagmaBottleItem extends Item {
   }
 
   @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flagIn) {
-    super.appendHoverText(stack, context, tooltip, flagIn);
-    tooltip.add(Component.translatable(
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flagIn) {
+    super.appendHoverText(stack, context, display, tooltip, flagIn);
+    tooltip.accept(Component.translatable(
       "potion.withDuration",
       Blocks.FIRE.getName(),
       StringUtil.formatTickDuration(fireTime * 20, 20f)

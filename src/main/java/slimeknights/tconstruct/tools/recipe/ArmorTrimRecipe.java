@@ -2,19 +2,22 @@ package slimeknights.tconstruct.tools.recipe;
 
 import lombok.Getter;
 import net.minecraft.core.Holder.Reference;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SmithingTemplateItem;
+import net.minecraft.world.item.component.ProvidesTrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimMaterials;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
-import net.minecraft.world.item.equipment.trim.TrimPatterns;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -40,6 +43,7 @@ import slimeknights.tconstruct.tools.modules.cosmetic.TrimModule;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisplayModifierRecipe>, ILookupRegistrar {
@@ -56,6 +60,23 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
   @Override
   public void registerLookups() {
     ModifierRecipeLookup.addRecipeModifier(null, TinkerModifiers.trim);
+  }
+
+  /** Suffix vanilla uses for armor trim template items */
+  private static final String TEMPLATE_SUFFIX = "_armor_trim_smithing_template";
+
+  /**
+   * Finds the trim pattern for the given template.
+   * PORT 1.21.5: templates no longer know their pattern (the smithing trim recipes do, but those are not available on the client),
+   * so this matches the vanilla template naming convention {@code <pattern>_armor_trim_smithing_template}.
+   */
+  private static Optional<Reference<TrimPattern>> getPattern(HolderLookup.Provider access, ItemStack template) {
+    ResourceLocation id = BuiltInRegistries.ITEM.getKey(template.getItem());
+    String path = id.getPath();
+    if (path.endsWith(TEMPLATE_SUFFIX)) {
+      return access.lookupOrThrow(Registries.TRIM_PATTERN).get(ResourceKey.create(Registries.TRIM_PATTERN, id.withPath(path.substring(0, path.length() - TEMPLATE_SUFFIX.length()))));
+    }
+    return Optional.empty();
   }
 
   /** Match for the trim item finding method */
@@ -110,14 +131,15 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
       return RecipeResult.pass();
     }
     // validate the material nad pattern items
-    Reference<TrimMaterial> material = TrimMaterials.getFromIngredient(access, trimItems.material).orElse(null);
+    // 1.21.5: the material comes from the ingredient's provides trim material component, and may be a direct holder
+    ResourceKey<TrimMaterial> material = TrimMaterials.getFromIngredient(access, trimItems.material).flatMap(Holder::unwrapKey).orElse(null);
     if (material == null) {
       return RecipeResult.failure(KEY_INVALID_MATERIAL, trimItems.material.getDisplayName());
     }
     ToolStack original = inv.getTinkerable();
     Reference<TrimPattern> pattern = null;
     if (!original.hasTag(TinkerTags.Items.TRIM_NO_PATTERN)) {
-      pattern = TrimPatterns.getFromTemplate(access, trimItems.template).orElse(null);
+      pattern = getPattern(access, trimItems.template).orElse(null);
       if (pattern == null) {
         return RecipeResult.failure(KEY_INVALID_PATTERN, trimItems.template.getDisplayName());
       }
@@ -127,7 +149,7 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
     ToolStack tool = inv.getTinkerable().copy();
     ModDataNBT persistentData = tool.getPersistentData();
     ModifierId modifier = TinkerModifiers.trim.getId();
-    persistentData.putString(TrimModule.materialKey(modifier), material.key().location().toString());
+    persistentData.putString(TrimModule.materialKey(modifier), material.location().toString());
     if (pattern != null) {
       persistentData.putString(TrimModule.patternKey(modifier), pattern.key().location().toString());
     }
@@ -153,14 +175,16 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
   @Override
   public List<IDisplayModifierRecipe> getRecipes(RegistryAccess access) {
     if (displayRecipes == null) {
+      // 1.21.5: patterns no longer know their template item, see getPattern
       List<ItemStack> trims = access.lookupOrThrow(Registries.TRIM_PATTERN).listElements()
-                                            .map(pattern -> new ItemStack(pattern.value().templateItem())).toList();
+                                            .flatMap(pattern -> BuiltInRegistries.ITEM.getOptional(pattern.key().location().withSuffix(TEMPLATE_SUFFIX)).stream())
+                                            .map(ItemStack::new).toList();
       List<ItemStack> toolInputs = RegistryHelper.getTagValueStream(BuiltInRegistries.ITEM, TinkerTags.Items.TRIM)
                                                  .map(IModifiableDisplay::getDisplayStack).toList();
       if (!trims.isEmpty() && !toolInputs.isEmpty()) {
         ResourceLocation id = getId();
         displayRecipes = access.lookupOrThrow(Registries.TRIM_MATERIAL).listElements()
-          .map(material -> new DisplayRecipe(id, toolInputs, trims, material))
+          .map(material -> new DisplayRecipe(id, toolInputs, trims, material, access))
           .collect(Collectors.toList());
       } else {
         displayRecipes = List.of();
@@ -184,12 +208,17 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
     @Getter
     private final Component variant;
 
-    public DisplayRecipe(ResourceLocation id, List<ItemStack> tools, List<ItemStack> trim, Reference<TrimMaterial> holder) {
+    public DisplayRecipe(ResourceLocation id, List<ItemStack> tools, List<ItemStack> trim, Reference<TrimMaterial> holder, HolderLookup.Provider access) {
       this.recipeId = id;
       TrimMaterial material = holder.value();
       toolWithoutModifier = tools;
       this.trim = trim;
-      this.material = List.of(new ItemStack(material.ingredient().value()));
+      // 1.21.5: trim materials no longer store their ingredient, find the items providing this material
+      ResourceKey<TrimMaterial> materialKey = holder.key();
+      this.material = BuiltInRegistries.ITEM.stream().filter(item -> {
+        ProvidesTrimMaterial provides = item.components().get(DataComponents.PROVIDES_TRIM_MATERIAL);
+        return provides != null && provides.unwrap(access).flatMap(Holder::unwrapKey).filter(materialKey::equals).isPresent();
+      }).map(ItemStack::new).toList();
       this.variant = material.description().plainCopy();
 
       String materialName = holder.key().location().toString();

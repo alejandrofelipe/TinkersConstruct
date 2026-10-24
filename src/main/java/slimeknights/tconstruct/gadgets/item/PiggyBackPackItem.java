@@ -33,6 +33,7 @@ import slimeknights.tconstruct.gadgets.capability.PiggybackCapability;
 import slimeknights.tconstruct.gadgets.capability.PiggybackHandler;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public class PiggyBackPackItem extends TooltipItem {
@@ -148,7 +149,7 @@ public class PiggyBackPackItem extends TooltipItem {
   }
 
   @Override
-  public void inventoryTick(ItemStack stack, Level worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+  public void inventoryTick(ItemStack stack, ServerLevel worldIn, Entity entityIn, @Nullable EquipmentSlot slot) {
     if (entityIn instanceof LivingEntity livingEntity && livingEntity.getItemBySlot(EquipmentSlot.CHEST) == stack && entityIn.isVehicle()) {
       int amplifier = this.getEntitiesCarriedCount(livingEntity) - 1;
       livingEntity.addEffect(new MobEffectInstance(TinkerGadgets.carryEffect, 2, amplifier, true, false, true));

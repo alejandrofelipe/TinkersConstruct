@@ -20,6 +20,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.common.conditions.ICondition.IContext;
 import slimeknights.mantle.data.gson.ConditionSerializer;
+import slimeknights.mantle.data.gson.ResourceLocationSerializer;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.exception.TinkerJSONException;
 import slimeknights.tconstruct.library.json.JsonRedirect;
@@ -62,7 +63,7 @@ public class MaterialManager extends SimpleJsonResourceReloadListener<JsonElemen
 
   /** GSON for loading materials */
   public static final Gson GSON = (new GsonBuilder())
-    .registerTypeAdapter(ResourceLocation.class, new ResourceLocation.Serializer())
+    .registerTypeAdapter(ResourceLocation.class, ResourceLocationSerializer.resourceLocation("minecraft"))
     .registerTypeHierarchyAdapter(ICondition.class, ConditionSerializer.INSTANCE)
     .setPrettyPrinting()
     .disableHtmlEscaping()

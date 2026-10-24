@@ -77,7 +77,7 @@ public class PotionBucketItem extends PotionItem {
           MobEffectInstance newEffect = new MobEffectInstance(effect.getEffect(), effect.getDuration() * 5 / 2, effect.getAmplifier(), effect.isAmbient(), effect.isVisible(), effect.showIcon());
           living.addEffect(newEffect);
         }
-      });
+      }, 1.0f);
     }
 
     if (player != null) {
@@ -99,10 +99,8 @@ public class PotionBucketItem extends PotionItem {
     return stack;
   }
 
-  @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-    getContents(stack).addPotionTooltip(tooltip::add, 2.5f, context.tickRate());
-  }
+  // 1.21.5: the potion tooltip is added by vanilla from the POTION_CONTENTS component, the 2.5x duration display comes
+  // from the POTION_DURATION_SCALE default component set in TinkerFluids#modifyDefaultComponents
 
   @Override
   public int getUseDuration(ItemStack pStack, LivingEntity entity) {

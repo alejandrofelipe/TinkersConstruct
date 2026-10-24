@@ -7,7 +7,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.minecraft.world.item.ArmorItem;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.registration.object.EnumObject;
 import slimeknights.tconstruct.library.json.TinkerLoadables;

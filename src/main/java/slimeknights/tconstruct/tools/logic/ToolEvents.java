@@ -18,10 +18,10 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Block;
@@ -388,7 +388,8 @@ public class ToolEvents {
             } else {
               // if not our armor, damage using vanilla like logic
               ItemStack armorStack = entity.getItemBySlot(slotType);
-              if (!armorStack.isEmpty() && (!source.is(DamageTypeTags.IS_FIRE) || !armorStack.has(DataComponents.DAMAGE_RESISTANT)) && armorStack.getItem() instanceof ArmorItem) {
+              if (!armorStack.isEmpty() && (!source.is(DamageTypeTags.IS_FIRE) || !armorStack.has(DataComponents.DAMAGE_RESISTANT)) && armorStack.get(DataComponents.EQUIPPABLE) instanceof Equippable equippable && equippable.damageOnHurt()) {
+                // 1.21.5: ArmorItem was removed, match vanilla's equippable damageOnHurt check instead
                 armorStack.hurtAndBreak(damageMissed, entity, slotType);
               }
             }

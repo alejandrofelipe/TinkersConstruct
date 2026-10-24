@@ -22,7 +22,6 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import net.minecraft.core.component.DataComponents;
-import net.neoforged.neoforge.common.ItemAbilities;
 import slimeknights.mantle.client.SafeClientAccess;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.TConstruct;
@@ -49,12 +48,15 @@ import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.tools.part.IToolPart;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import slimeknights.tconstruct.library.utils.Util;
+import slimeknights.tconstruct.tools.TinkerToolActions;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 
 /** Helper functions for adding tooltips to tools */
 public class TooltipUtil {
@@ -168,6 +170,13 @@ public class TooltipUtil {
   @Deprecated(forRemoval = true)
   public static Component getDisplayName(ItemStack stack, @Nullable IToolStackView tool, ToolDefinition toolDefinition) {
     return ToolNameHook.getName(toolDefinition, stack, tool);
+  }
+
+  /** Replaces the world argument with the local player. 1.21.5: tooltip consumer variant for {@code Item#appendHoverText} */
+  public static void addInformation(IModifiableDisplay item, ItemStack stack, @Nullable Level world, Consumer<Component> tooltip, TooltipKey tooltipKey, TooltipFlag tooltipFlag) {
+    List<Component> tooltips = new ArrayList<>();
+    addInformation(item, stack, world, tooltips, tooltipKey, tooltipFlag);
+    tooltips.forEach(tooltip);
   }
 
   /** Replaces the world argument with the local player */
@@ -308,7 +317,7 @@ public class TooltipUtil {
       builder.addOptional(ToolStats.ARMOR_TOUGHNESS);
       builder.addOptional(ToolStats.KNOCKBACK_RESISTANCE, 10f);
     }
-    if (ModifierUtil.canPerformAction(tool, ItemAbilities.SHIELD_BLOCK)) {
+    if (ModifierUtil.canPerformAction(tool, TinkerToolActions.SHIELD_BLOCK)) {
       builder.add(ToolStats.BLOCK_AMOUNT);
       builder.add(ToolStats.BLOCK_ANGLE);
     }

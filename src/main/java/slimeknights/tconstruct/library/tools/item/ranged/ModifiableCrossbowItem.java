@@ -3,6 +3,7 @@ package slimeknights.tconstruct.library.tools.item.ranged;
 import lombok.Getter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -27,10 +28,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-import net.neoforged.neoforge.common.ItemAbilities;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import slimeknights.mantle.client.TooltipKey;
@@ -60,6 +61,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import slimeknights.tconstruct.library.utils.TagUtil;
+import slimeknights.tconstruct.tools.TinkerToolActions;
 
 import static slimeknights.tconstruct.library.modifiers.hook.interaction.GeneralInteractionModifierHook.KEY_DRAWTIME;
 
@@ -185,7 +187,7 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
         return InteractionResult.PASS;
       }
       // can block while filled with ammo
-      if (ModifierUtil.canPerformAction(tool, ItemAbilities.SHIELD_BLOCK)) {
+      if (ModifierUtil.canPerformAction(tool, TinkerToolActions.SHIELD_BLOCK)) {
         player.startUsingItem(hand);
         return InteractionResult.CONSUME;
       }
@@ -254,7 +256,7 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
           damage += 1;
 
           // vanilla arrows have a base damage of 2, cancel that out then add in our base damage to account for custom arrows with higher base damage
-          float baseArrowDamage = (float)(arrow.getBaseDamage() - 2 + tool.getStats().get(ToolStats.PROJECTILE_DAMAGE));
+          float baseArrowDamage = (float)(arrow.baseDamage - 2 + tool.getStats().get(ToolStats.PROJECTILE_DAMAGE));
           arrow.setBaseDamage(ConditionalStatModifierHook.getModifiedStat(tool, living, ToolStats.PROJECTILE_DAMAGE, baseArrowDamage));
 
           // fortunately, don't need to deal with vanilla infinity here, our infinity was dealt with during loading
@@ -358,7 +360,7 @@ public class ModifiableCrossbowItem extends ModifiableLauncherItem {
         // copy the stack's tooltip if advanced
         if (tooltipFlag.isAdvanced() && player != null) {
           List<Component> nestedTooltip = new ArrayList<>();
-          heldStack.getItem().appendHoverText(heldStack, Item.TooltipContext.of(player.level()), nestedTooltip, tooltipFlag);
+          heldStack.getItem().appendHoverText(heldStack, Item.TooltipContext.of(player.level()), heldStack.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT), nestedTooltip::add, tooltipFlag);
           for (Component nested : nestedTooltip) {
             tooltips.add(Component.literal("  ").append(nested).withStyle(ChatFormatting.GRAY));
           }
