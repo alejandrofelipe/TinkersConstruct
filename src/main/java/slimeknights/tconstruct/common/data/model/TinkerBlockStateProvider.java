@@ -1,12 +1,14 @@
 package slimeknights.tconstruct.common.data.model;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
-import net.minecraft.client.data.models.blockstates.BlockStateGenerator;
+import net.minecraft.client.data.models.MultiVariant;
+import net.minecraft.client.data.models.blockstates.BlockModelDefinitionGenerator;
+import net.minecraft.client.data.models.blockstates.MultiPartGenerator;
+import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -16,6 +18,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.PipeBlock;
+import slimeknights.mantle.client.model.builder.VariantBlockStateModelBuilder;
 import slimeknights.mantle.registration.object.BuildingBlockObject;
 import slimeknights.mantle.registration.object.FenceBuildingBlockObject;
 import slimeknights.mantle.registration.object.WoodBlockObject;
@@ -31,6 +34,7 @@ import slimeknights.tconstruct.world.TinkerWorld;
 import javax.annotation.Nullable;
 import java.util.function.Function;
 
+import static net.minecraft.client.data.models.BlockModelGenerators.plainVariant;
 import static slimeknights.tconstruct.TConstruct.getResource;
 
 /**
@@ -190,18 +194,38 @@ public class TinkerBlockStateProvider extends ModelProvider {
   /* Block + item registration */
 
   /** Registers a blockstate generator */
-  private void blockState(BlockStateGenerator generator) {
+  private void blockState(BlockModelDefinitionGenerator generator) {
     blocks.blockStateOutput.accept(generator);
+  }
+
+  /**
+   * Creates a multi variant for the given model. Connected models need the {@code mantle:connected} block state model
+   * type in 1.21.5, as model JSON loaders can only produce static geometry.
+   * @param model      Model location
+   * @param connected  If true, the model uses the {@code mantle:connected} loader
+   */
+  private static MultiVariant variant(ResourceLocation model, boolean connected) {
+    return connected ? VariantBlockStateModelBuilder.connected(model).multiVariant() : BlockModelGenerators.plainVariant(model);
   }
 
   /** Simple single-model blockstate */
   private void simpleBlock(Block block, ResourceLocation model) {
-    blockState(BlockModelGenerators.createSimpleBlock(block, model));
+    simpleBlock(block, model, false);
+  }
+
+  /** Simple single-model blockstate, optionally connected */
+  private void simpleBlock(Block block, ResourceLocation model, boolean connected) {
+    blockState(BlockModelGenerators.createSimpleBlock(block, variant(model, connected)));
   }
 
   /** Simple blockstate + block-model item */
   public ResourceLocation basicBlock(Block block, ResourceLocation model) {
-    simpleBlock(block, model);
+    return basicBlock(block, model, false);
+  }
+
+  /** Simple blockstate + block-model item, optionally connected */
+  public ResourceLocation basicBlock(Block block, ResourceLocation model, boolean connected) {
+    simpleBlock(block, model, connected);
     blocks.registerSimpleItemModel(block, model);
     return model;
   }
@@ -309,7 +333,7 @@ public class TinkerBlockStateProvider extends ModelProvider {
     JsonObject top = texture("top", texture);
     ResourceLocation slab = withParent(location, "minecraft:block/slab", null, side, bottom, top);
     ResourceLocation slabTop = withParent(location + "_top", "minecraft:block/slab_top", null, side, bottom, top);
-    blockState(BlockModelGenerators.createSlab(block, slab, slabTop, doubleModel));
+    blockState(BlockModelGenerators.createSlab(block, plainVariant(slab), plainVariant(slabTop), plainVariant(doubleModel)));
     blocks.registerSimpleItemModel(block, slab);
   }
 
@@ -320,7 +344,7 @@ public class TinkerBlockStateProvider extends ModelProvider {
     ResourceLocation stairs = withParent(location, "minecraft:block/stairs", null, side, bottom, top);
     ResourceLocation inner = withParent(location + "_inner", "minecraft:block/inner_stairs", null, side, bottom, top);
     ResourceLocation outer = withParent(location + "_outer", "minecraft:block/outer_stairs", null, side, bottom, top);
-    blockState(BlockModelGenerators.createStairs(block, inner, stairs, outer));
+    blockState(BlockModelGenerators.createStairs(block, plainVariant(inner), plainVariant(stairs), plainVariant(outer)));
     blocks.registerSimpleItemModel(block, stairs);
   }
 
@@ -329,9 +353,9 @@ public class TinkerBlockStateProvider extends ModelProvider {
     ResourceLocation model = cubeColumnModel(location, texture, endTexture);
     if (horizontal) {
       ResourceLocation horizontalModel = withParent(location + "_horizontal", "minecraft:block/cube_column_horizontal", null, texture("side", texture), texture("end", endTexture));
-      blockState(BlockModelGenerators.createRotatedPillarWithHorizontalVariant(block, model, horizontalModel));
+      blockState(BlockModelGenerators.createRotatedPillarWithHorizontalVariant(block, plainVariant(model), plainVariant(horizontalModel)));
     } else {
-      blockState(BlockModelGenerators.createAxisAlignedPillarBlock(block, model));
+      blockState(BlockModelGenerators.createAxisAlignedPillarBlock(block, plainVariant(model)));
     }
     blocks.registerSimpleItemModel(block, model);
   }
@@ -339,7 +363,7 @@ public class TinkerBlockStateProvider extends ModelProvider {
   public void fence(Block block, String prefix, ResourceLocation texture) {
     ResourceLocation post = withParent(prefix + "post", "minecraft:block/fence_post", null, texture("texture", texture));
     ResourceLocation side = withParent(prefix + "side", "minecraft:block/fence_side", null, texture("texture", texture));
-    blockState(BlockModelGenerators.createFence(block, post, side));
+    blockState(BlockModelGenerators.createFence(block, plainVariant(post), plainVariant(side)));
     // inventory item
     ResourceLocation inventory = withParent("item/" + itemName(block), "minecraft:block/fence_inventory", null, texture("texture", texture));
     blocks.registerSimpleItemModel(block.asItem(), inventory);
@@ -351,7 +375,7 @@ public class TinkerBlockStateProvider extends ModelProvider {
     ResourceLocation open = withParent(baseName + "_open", "minecraft:block/template_fence_gate_open", null, tex);
     ResourceLocation wall = withParent(baseName + "_wall", "minecraft:block/template_fence_gate_wall", null, tex);
     ResourceLocation wallOpen = withParent(baseName + "_wall_open", "minecraft:block/template_fence_gate_wall_open", null, tex);
-    blockState(BlockModelGenerators.createFenceGate(block, open, closed, wallOpen, wall, true));
+    blockState(BlockModelGenerators.createFenceGate(block, plainVariant(open), plainVariant(closed), plainVariant(wallOpen), plainVariant(wall), true));
     blocks.registerSimpleItemModel(block, closed);
   }
 
@@ -367,7 +391,8 @@ public class TinkerBlockStateProvider extends ModelProvider {
     ResourceLocation topLeftOpen = withParent(prefix + "door/top_left_open", "minecraft:block/door_top_left_open", renderType, tex);
     ResourceLocation topRight = withParent(prefix + "door/top_right", "minecraft:block/door_top_right", renderType, tex);
     ResourceLocation topRightOpen = withParent(prefix + "door/top_right_open", "minecraft:block/door_top_right_open", renderType, tex);
-    blockState(BlockModelGenerators.createDoor(block, bottomLeft, bottomLeftOpen, bottomRight, bottomRightOpen, topLeft, topLeftOpen, topRight, topRightOpen));
+    blockState(BlockModelGenerators.createDoor(block, plainVariant(bottomLeft), plainVariant(bottomLeftOpen), plainVariant(bottomRight), plainVariant(bottomRightOpen),
+                                               plainVariant(topLeft), plainVariant(topLeftOpen), plainVariant(topRight), plainVariant(topRightOpen)));
   }
 
   public void trapdoor(Block block, String prefix, ResourceLocation texture, boolean orientable) {
@@ -376,7 +401,8 @@ public class TinkerBlockStateProvider extends ModelProvider {
     ResourceLocation bottom = withParent(prefix + "bottom", base + "bottom", "minecraft:cutout", tex);
     ResourceLocation top = withParent(prefix + "top", base + "top", "minecraft:cutout", tex);
     ResourceLocation open = withParent(prefix + "open", base + "open", "minecraft:cutout", tex);
-    blockState(orientable ? BlockModelGenerators.createOrientableTrapdoor(block, top, bottom, open) : BlockModelGenerators.createTrapdoor(block, top, bottom, open));
+    blockState(orientable ? BlockModelGenerators.createOrientableTrapdoor(block, plainVariant(top), plainVariant(bottom), plainVariant(open))
+                          : BlockModelGenerators.createTrapdoor(block, plainVariant(top), plainVariant(bottom), plainVariant(open)));
     blocks.registerSimpleItemModel(block, bottom);
   }
 
@@ -384,7 +410,7 @@ public class TinkerBlockStateProvider extends ModelProvider {
     JsonObject tex = texture("texture", texture);
     ResourceLocation up = withParent(location, "minecraft:block/pressure_plate_up", null, tex);
     ResourceLocation down = withParent(location + "_down", "minecraft:block/pressure_plate_down", null, tex);
-    blockState(BlockModelGenerators.createPressurePlate(block, up, down));
+    blockState(BlockModelGenerators.createPressurePlate(block, plainVariant(up), plainVariant(down)));
     blocks.registerSimpleItemModel(block, up);
   }
 
@@ -392,7 +418,7 @@ public class TinkerBlockStateProvider extends ModelProvider {
     JsonObject tex = texture("texture", texture);
     ResourceLocation button = withParent(location, "minecraft:block/button", null, tex);
     ResourceLocation pressed = withParent(location + "_pressed", "minecraft:block/button_pressed", null, tex);
-    blockState(BlockModelGenerators.createButton(block, button, pressed));
+    blockState(BlockModelGenerators.createButton(block, plainVariant(button), plainVariant(pressed)));
     ResourceLocation inventory = withParent("item/" + itemName(block), "minecraft:block/button_inventory", null, tex);
     blocks.registerSimpleItemModel(block.asItem(), inventory);
   }
@@ -402,39 +428,9 @@ public class TinkerBlockStateProvider extends ModelProvider {
 
   public void bud(Block block, String location, ResourceLocation texture) {
     ResourceLocation cross = withParent(location, "minecraft:block/cross", "minecraft:cutout", texture("cross", texture));
-    JsonObject variants = new JsonObject();
-    variants.add("facing=up", variant(cross, 0, 0));
-    variants.add("facing=down", variant(cross, 180, 0));
-    variants.add("facing=north", variant(cross, 90, 0));
-    variants.add("facing=east", variant(cross, 90, 90));
-    variants.add("facing=south", variant(cross, 90, 180));
-    variants.add("facing=west", variant(cross, 90, 270));
-    JsonObject blockstate = new JsonObject();
-    blockstate.add("variants", variants);
-    blockState(rawBlockState(block, blockstate));
-  }
-
-  /** Builds a blockstate variant object with optional x/y rotation */
-  private static JsonObject variant(ResourceLocation model, int x, int y) {
-    JsonObject json = new JsonObject();
-    json.addProperty("model", model.toString());
-    if (x != 0) json.addProperty("x", x);
-    if (y != 0) json.addProperty("y", y);
-    return json;
-  }
-
-  /** Wraps a raw blockstate JSON object in a {@link BlockStateGenerator} */
-  private static BlockStateGenerator rawBlockState(Block block, JsonObject json) {
-    return new BlockStateGenerator() {
-      @Override
-      public Block getBlock() {
-        return block;
-      }
-      @Override
-      public JsonElement get() {
-        return json;
-      }
-    };
+    // 1.21.5: raw blockstate JSON generators are gone (BlockStateGenerator -> BlockModelDefinitionGenerator); vanilla's
+    // column-with-facing rotations match the old hand-built variants (up 0, down x180, north x90, east x90 y90, ...)
+    blockState(MultiVariantGenerator.dispatch(block, plainVariant(cross)).with(BlockModelGenerators.ROTATIONS_COLUMN_WITH_FACING));
   }
 
   public void geode(GeodeItemObject geode, String type) {
@@ -517,46 +513,31 @@ public class TinkerBlockStateProvider extends ModelProvider {
     ResourceLocation sideAlt   = paneModel(baseName, "side_alt",   pane, edge, renderType, connected, tint);
     ResourceLocation noSide    = paneModel(baseName, "noside",     pane, null, renderType, connected, tint);
     ResourceLocation noSideAlt = paneModel(baseName, "noside_alt", pane, null, renderType, connected, tint);
-    JsonArray parts = new JsonArray();
-    parts.add(multipartPart(null, post, 0, false));
+    // 1.21.5: built through the vanilla multipart generator, as raw blockstate JSON generators are gone.
+    // Connected panes need the mantle:connected block state model type on every part.
+    MultiPartGenerator generator = MultiPartGenerator.multiPart(block).with(variant(post, connected));
     // PipeBlock properties map directions to the connection booleans
     PipeBlock.PROPERTY_BY_DIRECTION.forEach((dir, value) -> {
       if (dir.getAxis().isHorizontal()) {
         boolean alt = dir == Direction.SOUTH;
-        int sideRot = dir.getAxis() == Axis.X ? 90 : 0;
-        parts.add(multipartWhen(value.getName(), "true", (alt || dir == Direction.WEST) ? sideAlt : side, sideRot));
-        int noSideRot = dir == Direction.WEST ? 270 : dir == Direction.SOUTH ? 90 : 0;
-        parts.add(multipartWhen(value.getName(), "false", (alt || dir == Direction.EAST) ? noSideAlt : noSide, noSideRot));
+        MultiVariant sideVariant = variant((alt || dir == Direction.WEST) ? sideAlt : side, connected);
+        if (dir.getAxis() == Axis.X) {
+          sideVariant = sideVariant.with(BlockModelGenerators.Y_ROT_90);
+        }
+        generator.with(BlockModelGenerators.condition().term(value, true), sideVariant);
+        MultiVariant noSideVariant = variant((alt || dir == Direction.EAST) ? noSideAlt : noSide, connected);
+        if (dir == Direction.WEST) {
+          noSideVariant = noSideVariant.with(BlockModelGenerators.Y_ROT_270);
+        } else if (dir == Direction.SOUTH) {
+          noSideVariant = noSideVariant.with(BlockModelGenerators.Y_ROT_90);
+        }
+        generator.with(BlockModelGenerators.condition().term(value, false), noSideVariant);
       }
     });
-    JsonObject blockstate = new JsonObject();
-    blockstate.add("multipart", parts);
-    blockState(rawBlockState(block, blockstate));
+    blockState(generator);
     // item: plain flat (tint handled by the ItemTintSource batch)
     ResourceLocation item = generatedItem(itemKey(block), pane);
     blocks.registerSimpleItemModel(block.asItem(), item);
-  }
-
-  /** A multipart entry with an optional {@code when} condition on a single property */
-  private static JsonObject multipartWhen(String property, String value, ResourceLocation model, int yRot) {
-    JsonObject part = multipartPart(null, model, yRot, false);
-    JsonObject when = new JsonObject();
-    when.addProperty(property, value);
-    part.add("when", when);
-    return part;
-  }
-
-  private static JsonObject multipartPart(@Nullable JsonObject when, ResourceLocation model, int yRot, boolean uvlock) {
-    JsonObject part = new JsonObject();
-    if (when != null) {
-      part.add("when", when);
-    }
-    JsonObject apply = variant(model, 0, yRot);
-    if (uvlock) {
-      apply.addProperty("uvlock", true);
-    }
-    part.add("apply", apply);
-    return part;
   }
 
   /** Adds models for a glass block with a glass pane */
@@ -573,7 +554,7 @@ public class TinkerBlockStateProvider extends ModelProvider {
     json.addProperty("render_type", renderType != null ? renderType : "minecraft:cutout");
     applyGlassLoader(json, "all", tint, true, null);
     blocks.modelOutput.accept(id, () -> json);
-    basicBlock(glass, id);
+    basicBlock(glass, id, true);
     // pane models
     paneBlock(pane, baseName + "pane_", front, edge, true, tint, solidEdge, renderType);
   }

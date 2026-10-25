@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "tconstruct:block/storage/fake"
+      "type": "tconstruct:material_block", "model": "tconstruct:block/storage/fake"
     }
   }
 }
