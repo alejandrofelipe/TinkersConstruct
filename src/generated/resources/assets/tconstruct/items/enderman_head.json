@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "tconstruct:block/enderman_head"
+    "model": "tconstruct:item/enderman_head"
   }
 }

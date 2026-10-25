@@ -184,8 +184,8 @@ public abstract class TinkerModule {
 
   /** Accepts the given item if the passed tag has items */
   protected static boolean acceptIfTag(CreativeModeTab.Output output, ItemLike item, TabVisibility visibility, TagKey<Item> tagCondition) {
-    Named<Item> tag = BuiltInRegistries.ITEM.getOrThrow(tagCondition);
-    if (tag.size() > 0) {
+    // 1.21.5 getOrThrow throws for a tag no datapack defines (e.g. a compat tag like c:plates), so treat it as empty
+    if (BuiltInRegistries.ITEM.get(tagCondition).map(Named::size).orElse(0) > 0) {
       output.accept(item, visibility);
       return true;
     }

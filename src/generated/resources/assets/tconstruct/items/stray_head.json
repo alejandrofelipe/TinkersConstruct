@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "tconstruct:block/stray_head"
+    "model": "tconstruct:item/stray_head"
   }
 }

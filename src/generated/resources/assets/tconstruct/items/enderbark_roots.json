@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "tconstruct:block/enderbark_roots"
+    "model": "tconstruct:block/wood/enderbark/roots/empty"
   }
 }

@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "tconstruct:block/drowned_head"
+    "model": "tconstruct:item/drowned_head"
   }
 }

@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "tconstruct:block/husk_head"
+    "model": "tconstruct:item/husk_head"
   }
 }

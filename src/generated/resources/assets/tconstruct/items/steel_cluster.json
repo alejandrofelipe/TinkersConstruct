@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "tconstruct:block/steel_cluster"
+    "model": "tconstruct:item/steel_cluster"
   }
 }

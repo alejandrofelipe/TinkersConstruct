@@ -84,8 +84,15 @@ public class TinkerBlockStateProvider extends ModelProvider {
   @Override
   protected java.util.stream.Stream<? extends net.minecraft.core.Holder<net.minecraft.world.item.Item>> getKnownItems() {
     java.util.Set<Block> known = getKnownBlocks().map(net.minecraft.core.Holder::value).collect(java.util.stream.Collectors.toSet());
+    // clusters and heads get their item definitions from TinkerItemModelProvider; leaving them here makes vanilla write a
+    // default block/<id> definition to the same items/<id>.json, pointing at a model that does not exist
+    java.util.Set<net.minecraft.world.item.Item> external = new java.util.HashSet<>(TinkerWorld.headItems.values());
+    external.add(TinkerWorld.steelCluster.asItem());
+    external.add(TinkerWorld.cobaltCluster.asItem());
+    external.add(TinkerWorld.knightmetalCluster.asItem());
     return BuiltInRegistries.ITEM.listElements()
-      .filter(holder -> holder.value() instanceof net.minecraft.world.item.BlockItem blockItem && known.contains(blockItem.getBlock()));
+      .filter(holder -> holder.value() instanceof net.minecraft.world.item.BlockItem blockItem && known.contains(blockItem.getBlock()))
+      .filter(holder -> !external.contains(holder.value()));
   }
 
   @Override
@@ -101,6 +108,8 @@ public class TinkerBlockStateProvider extends ModelProvider {
     // enderbark roots
     simpleBlock(TinkerWorld.enderbarkRoots.get(), withParent("block/wood/enderbark/roots/empty", "minecraft:block/mangrove_roots", "minecraft:cutout",
       texture("side", blockTexture("wood/enderbark/roots")), texture("top", blockTexture("wood/enderbark/roots_top"))));
+    // the default item definition would point at block/enderbark_roots, which does not exist
+    blocks.itemModelOutput.accept(TinkerWorld.enderbarkRoots.asItem(), net.minecraft.client.data.models.model.ItemModelUtils.plainModel(getResource("block/wood/enderbark/roots/empty")));
     TinkerWorld.slimyEnderbarkRoots.forEach((type, block) -> {
       String name = type.getSerializedName();
       cubeColumn(block, "block/wood/enderbark/roots/" + name, blockTexture("wood/enderbark/roots/" + name), blockTexture("wood/enderbark/roots/" + name + "_top"));

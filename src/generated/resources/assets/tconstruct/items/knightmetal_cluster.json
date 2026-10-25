@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "tconstruct:block/knightmetal_cluster"
+    "model": "tconstruct:item/knightmetal_cluster"
   }
 }

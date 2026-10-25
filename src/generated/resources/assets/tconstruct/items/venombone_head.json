@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "tconstruct:block/venombone_head"
+    "model": "tconstruct:item/venombone_head"
   }
 }
