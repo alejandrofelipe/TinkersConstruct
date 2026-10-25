@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.client.renderer.CoreShaders;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
@@ -21,10 +21,11 @@ public final class RenderUtils {
   /**
    * Binds a texture for rendering
    * @param texture  Texture
+   * @deprecated 1.21.5: shaders are part of render pipelines now, so this only sets the shader texture. Draw through a {@link net.minecraft.client.renderer.RenderType} using the texture instead.
    */
+  @Deprecated
   public static void bindTexture(ResourceLocation texture) {
-    RenderSystem.setShader(CoreShaders.POSITION_TEX);
-    RenderSystem.setShaderTexture(0, texture);
+    RenderSystem.setShaderTexture(0, Minecraft.getInstance().getTextureManager().getTexture(texture).getTexture());
   }
 
   /**

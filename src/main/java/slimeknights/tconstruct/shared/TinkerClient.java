@@ -1,16 +1,13 @@
 package slimeknights.tconstruct.shared;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -129,36 +126,30 @@ public class TinkerClient {
       if (Shapes.joinIsNotEmpty(state.getShape(minecraft.level, pos).move(pos.getX(), pos.getY(), pos.getZ()), Shapes.create(AABB.ofSize(minecraft.player.getEyePosition(), width, 1.0E-6D, width)), BooleanOp.AND)) {
         // this is for the most part a clone of the vanilla logic from ScreenEffectRenderer with some changes mentioned below
 
-        TextureAtlasSprite texture = minecraft.getBlockRenderer().getBlockModelShaper().getTexture(state, minecraft.level, pos);
-        RenderSystem.setShaderTexture(0, texture.atlasLocation());
-        // changed: shader using pos tex
-        // PORT 1.21.4: GameRenderer.getPositionTexShader() removed; shaders moved to CoreShaders ShaderProgram handles
-        RenderSystem.setShader(CoreShaders.POSITION_TEX);
-        Tesselator tesselator = Tesselator.getInstance();
+        TextureAtlasSprite texture = minecraft.getBlockRenderer().getBlockModelShaper().getParticleIcon(state, minecraft.level, pos);
 
-        // change: handle brightness based on renderWater, and enable blend
+        // change: handle brightness based on renderWater
         Player player = minecraft.player;
         BlockPos blockpos = BlockPos.containing(player.getX(), player.getEyeY(), player.getZ());
         float brightness = LightTexture.getBrightness(player.level().dimensionType(), player.level().getMaxLocalRawBrightness(blockpos));
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(brightness, brightness, brightness, 1.0f);
+        int color = ARGB.colorFromFloat(1.0f, brightness, brightness, brightness);
 
         // draw the quad
+        // 1.21.5: BufferUploader is gone; draw through the main buffer source like vanilla ScreenEffectRenderer, which is
+        // flushed right after the screen effects. The block screen effect pipeline is blended (translucent).
+        // PORT 1.21.5: verify the transparent overlay (clear glass etc.) in the uitest phase
         float u0 = texture.getU0();
         float u1 = texture.getU1();
         float v0 = texture.getV0();
         float v1 = texture.getV1();
         Matrix4f matrix4f = event.getPoseStack().last().pose();
-        BufferBuilder bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        // change: dropped color, see above
-        bufferbuilder.addVertex(matrix4f, -1, -1, -0.5f).setUv(u1, v1);
-        bufferbuilder.addVertex(matrix4f, 1, -1, -0.5f).setUv(u0, v1);
-        bufferbuilder.addVertex(matrix4f, 1, 1, -0.5f).setUv(u0, v0);
-        bufferbuilder.addVertex(matrix4f, -1, 1, -0.5f).setUv(u1, v0);
-        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
-        // changed: disable blend
-        RenderSystem.disableBlend();
+        MultiBufferSource.BufferSource bufferSource = minecraft.renderBuffers().bufferSource();
+        VertexConsumer builder = bufferSource.getBuffer(RenderType.blockScreenEffect(texture.atlasLocation()));
+        builder.addVertex(matrix4f, -1, -1, -0.5f).setUv(u1, v1).setColor(color);
+        builder.addVertex(matrix4f, 1, -1, -0.5f).setUv(u0, v1).setColor(color);
+        builder.addVertex(matrix4f, 1, 1, -0.5f).setUv(u0, v0).setColor(color);
+        builder.addVertex(matrix4f, -1, 1, -0.5f).setUv(u1, v0).setColor(color);
+        bufferSource.endBatch(RenderType.blockScreenEffect(texture.atlasLocation()));
       }
       event.setCanceled(true);
     }

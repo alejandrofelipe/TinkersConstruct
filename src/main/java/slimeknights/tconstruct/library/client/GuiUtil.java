@@ -1,18 +1,14 @@
 package slimeknights.tconstruct.library.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat.Mode;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -120,9 +116,8 @@ public final class GuiUtil {
     if (!stack.isEmpty()) {
       IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(stack.getFluid());
       TextureAtlasSprite fluidSprite = screen.getMinecraft().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(clientFluid.getStillTexture(stack));
-      RenderUtils.setColorRGBA(clientFluid.getTintColor(stack));
-      renderTiledTextureAtlas(matrices, screen, fluidSprite, x, y, width, height, depth, stack.getFluid().getFluidType().isLighterThanAir());
-      RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+      // 1.21.5: tint is passed as vertex color instead of the shader color
+      renderTiledTextureAtlas(matrices, screen, fluidSprite, x, y, width, height, depth, stack.getFluid().getFluidType().isLighterThanAir(), clientFluid.getTintColor(stack));
     }
   }
 
@@ -139,9 +134,28 @@ public final class GuiUtil {
    * @param upsideDown  If true, flips the sprite
    */
   public static void renderTiledTextureAtlas(PoseStack matrices, AbstractContainerScreen<?> screen, TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown) {
+    renderTiledTextureAtlas(matrices, screen, sprite, x, y, width, height, depth, upsideDown, -1);
+  }
+
+  /**
+   * Renders a texture atlas sprite tiled over the given area
+   * @param matrices    Matrix instance
+   * @param screen      Parent screen
+   * @param sprite      Sprite to render
+   * @param x           X position to render
+   * @param y           Y position to render
+   * @param width       Render width
+   * @param height      Render height
+   * @param depth       Render depth
+   * @param upsideDown  If true, flips the sprite
+   * @param color       ARGB tint color
+   */
+  public static void renderTiledTextureAtlas(PoseStack matrices, AbstractContainerScreen<?> screen, TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown, int color) {
     // start drawing sprites
-    RenderUtils.bindTexture(sprite.atlasLocation());
-    BufferBuilder builder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+    // 1.21.5: BufferUploader is gone, draw through the GUI buffer source (shared with GuiGraphics) and flush right away
+    MultiBufferSource.BufferSource bufferSource = screen.getMinecraft().renderBuffers().bufferSource();
+    RenderType renderType = RenderType.guiTextured(sprite.atlasLocation());
+    VertexConsumer builder = bufferSource.getBuffer(renderType);
 
     // tile vertically
     float u1 = sprite.getU0();
@@ -168,9 +182,9 @@ public final class GuiUtil {
         float u2 = sprite.getU((float) renderWidth / spriteWidth);
         if(upsideDown) {
           // FIXME: I think this causes tiling errors, look into it
-          buildSquare(matrix, builder, x2, x2 + renderWidth, startY, startY + renderHeight, depth, u1, u2, v2, v1);
+          buildSquare(matrix, builder, x2, x2 + renderWidth, startY, startY + renderHeight, depth, u1, u2, v2, v1, color);
         } else {
-          buildSquare(matrix, builder, x2, x2 + renderWidth, startY, startY + renderHeight, depth, u1, u2, v1, v2);
+          buildSquare(matrix, builder, x2, x2 + renderWidth, startY, startY + renderHeight, depth, u1, u2, v1, v2, color);
         }
         x2 += renderWidth;
       } while(widthLeft > 0);
@@ -179,12 +193,7 @@ public final class GuiUtil {
     } while(height > 0);
 
     // finish drawing sprites
-    MeshData meshData = builder.build();
-    if (meshData != null) {
-      BufferUploader.drawWithShader(meshData);
-    }
-    // RenderSystem.enableAlphaTest();
-    RenderSystem.enableDepthTest();
+    bufferSource.endBatch(renderType);
   }
 
   /**
@@ -199,12 +208,13 @@ public final class GuiUtil {
    * @param u2       Texture U end
    * @param v1       Texture V start
    * @param v2       Texture V end
+   * @param color    ARGB color
    */
-  private static void buildSquare(Matrix4f matrix, BufferBuilder builder, int x1, int x2, int y1, int y2, int z, float u1, float u2, float v1, float v2) {
-    builder.addVertex(matrix, x1, y2, z).setUv(u1, v2);
-    builder.addVertex(matrix, x2, y2, z).setUv(u2, v2);
-    builder.addVertex(matrix, x2, y1, z).setUv(u2, v1);
-    builder.addVertex(matrix, x1, y1, z).setUv(u1, v1);
+  private static void buildSquare(Matrix4f matrix, VertexConsumer builder, int x1, int x2, int y1, int y2, int z, float u1, float u2, float v1, float v2, int color) {
+    builder.addVertex(matrix, x1, y2, z).setUv(u1, v2).setColor(color);
+    builder.addVertex(matrix, x2, y2, z).setUv(u2, v2).setColor(color);
+    builder.addVertex(matrix, x2, y1, z).setUv(u2, v1).setColor(color);
+    builder.addVertex(matrix, x1, y1, z).setUv(u1, v1).setColor(color);
   }
 
   /**
@@ -238,11 +248,18 @@ public final class GuiUtil {
    * @param height    Element height
    */
   public static void renderHighlight(GuiGraphics graphics, int x, int y, int width, int height) {
-      RenderSystem.disableDepthTest();
-      RenderSystem.colorMask(true, true, true, false);
-      graphics.fill(x, y, x + width, y + height, 100, 0x80FFFFFF);
-      RenderSystem.colorMask(true, true, true, true);
-      RenderSystem.enableDepthTest();
+      // 1.21.5: depth test and color mask moved into the render type's pipeline
+      graphics.fill(TinkerRenderTypes.GUI_HIGHLIGHT, x, y, x + width, y + height, 100, 0x80FFFFFF);
+  }
+
+  /**
+   * Flushes pending GUI draws and clears the depth buffer, so everything drawn afterwards paints over what was drawn
+   * before regardless of its depth. Replaces the old {@code RenderSystem.disableDepthTest()} idiom for overlays, which
+   * no longer exists in 1.21.5 (depth testing is part of the render pipeline); same approach as vanilla {@code PopupScreen}.
+   */
+  public static void clearDepth(GuiGraphics graphics) {
+    graphics.flush();
+    RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(Minecraft.getInstance().getMainRenderTarget().getDepthTexture(), 1.0);
   }
 
   /** Renders a pattern at the given location */
