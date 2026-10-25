@@ -3,11 +3,14 @@ package slimeknights.tconstruct.client.uitest;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.api.distmarker.Dist;
@@ -18,11 +21,13 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.fluids.FluidStack;
+import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
 import slimeknights.mantle.client.screen.book.BookScreen;
 import slimeknights.mantle.client.uitest.UiTestContext;
 import slimeknights.mantle.client.uitest.UiTestScenario;
 import slimeknights.mantle.client.uitest.UiTestScenarios;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.gametest.SmelteryRigs;
 import slimeknights.tconstruct.plugin.jei.JEIPlugin;
 import slimeknights.tconstruct.plugin.jei.TConstructJEIConstants;
@@ -68,6 +73,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new StationCollapsedScenario());
     UiTestScenarios.register(new StationCollapsedOverlayScenario());
     UiTestScenarios.register(new ExtraHeartsScenario());
+    UiTestScenarios.register(new DynamicBlockModelsScenario());
   }
 
   /** Places a single block and opens its GUI. */
@@ -502,6 +508,65 @@ public class TinkerUiTestScenarios {
       ctx.mc().setScreen(null);
       ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
     }
+  }
+
+  /**
+   * No menu: captures the 1.21.5 block-state-level dynamic models in the world - a 3x3 clear glass wall
+   * ({@code mantle:connected}: no inner borders when the neighbors connect), a crafting station retextured to dark oak
+   * ({@code mantle:retextured}, data from the block entity's model data) and a seared fuel tank filled with lava
+   * ({@code tconstruct:tank}).
+   */
+  private static class DynamicBlockModelsScenario implements UiTestScenario {
+    private final BlockPos origin = SITE.offset(90, 0, 0);
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("dynamic_block_models");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      ctx.sendCommand("tp @s " + (origin.getX() - 5) + " " + origin.getY() + " " + origin.getZ());
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        // glass wall to the left of the view
+        for (int z = -3; z <= -1; z++) {
+          for (int y = 0; y < 3; y++) {
+            level.setBlockAndUpdate(origin.offset(0, y, z), TinkerCommons.clearGlass.get().defaultBlockState());
+          }
+        }
+        // retextured table in the middle
+        BlockPos table = origin.offset(0, 0, 1);
+        level.setBlockAndUpdate(table, TinkerTables.craftingStation.get().defaultBlockState());
+        if (level.getBlockEntity(table) instanceof IRetexturedBlockEntity retextured) {
+          retextured.updateTexture(BuiltInRegistries.BLOCK.getKey(Blocks.DARK_OAK_PLANKS).toString());
+        } else {
+          throw new IllegalStateException("Expected a retextured block entity at " + table + ", found " + level.getBlockEntity(table));
+        }
+        // tank with fluid to the right
+        BlockPos tank = origin.offset(0, 0, 3);
+        level.setBlockAndUpdate(tank, TinkerSmeltery.searedTank.get(TankType.FUEL_TANK).defaultBlockState());
+        SmelteryRigs.fillTank(level, tank, new FluidStack(Fluids.LAVA, 2000));
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 30; // block entity data sync + chunk remesh
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.lookAt(origin.offset(0, 1, 0));
+    }
+
+    @Override
+    public int settleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void close(UiTestContext ctx) { /* nothing open */ }
   }
 
   /** No menu: boosts the player past 20 HP and captures the in-world HUD to verify Mantle's custom extra-heart renderer. */
