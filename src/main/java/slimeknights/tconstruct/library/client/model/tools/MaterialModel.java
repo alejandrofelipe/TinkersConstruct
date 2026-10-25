@@ -10,27 +10,30 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.item.ModelRenderProperties;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
-import net.neoforged.neoforge.client.RenderTypeGroup;
-import net.neoforged.neoforge.client.model.UnbakedCompositeModel;
-import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Vector3f;
+import slimeknights.mantle.client.model.util.ElementModelData;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
 import slimeknights.tconstruct.library.client.materials.MaterialRenderInfo;
 import slimeknights.tconstruct.library.client.materials.MaterialRenderInfo.TintedSprite;
 import slimeknights.tconstruct.library.client.materials.MaterialRenderInfoLoader;
 import slimeknights.tconstruct.library.client.model.ItemModelUtil;
+import slimeknights.tconstruct.library.client.model.ItemModelUtil.BakedItem;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
@@ -144,25 +147,31 @@ public class MaterialModel {
 
     @Override
     public void resolveDependencies(net.minecraft.client.resources.model.ResolvableModel.Resolver resolver) {
-      resolver.resolve(model);
+      resolver.markDependency(model);
     }
 
     @Override
     public ItemModel bake(ItemModel.BakingContext context) {
-      return new Baked(context.bake(model), index, material.orElse(null), offsetTransform(offset));
+      // 1.21.5: bake the base model like vanilla BlockModelWrapper, BakedModel is gone
+      ModelBaker baker = context.blockModelBaker();
+      ResolvedModel resolved = baker.getModel(model);
+      TextureSlots slots = resolved.getTopTextureSlots();
+      List<BakedQuad> quads = resolved.bakeTopGeometry(slots, baker, BlockModelRotation.X0_Y0).getAll();
+      BakedItem base = new BakedItem(quads, ModelRenderProperties.fromResolvedModel(baker, resolved, slots), ElementModelData.itemRenderType(resolved));
+      return new Baked(base, index, material.orElse(null), offsetTransform(offset));
     }
   }
 
   /** Baked item model, composites the per-material sprite at render time */
   public static class Baked implements ItemModel {
-    private final BakedModel base;
+    private final BakedItem base;
     private final int index;
     @Nullable
     private final MaterialVariantId material;
     private final Transformation transform;
-    private final Map<MaterialVariantId, BakedModel> cache = new ConcurrentHashMap<>();
+    private final Map<MaterialVariantId, BakedItem> cache = new ConcurrentHashMap<>();
 
-    public Baked(BakedModel base, int index, @Nullable MaterialVariantId material, Transformation transform) {
+    public Baked(BakedItem base, int index, @Nullable MaterialVariantId material, Transformation transform) {
       this.base = base;
       this.index = index;
       this.material = material;
@@ -170,21 +179,19 @@ public class MaterialModel {
     }
 
     /** Rebakes the item-layer quads for the given material */
-    private BakedModel bakeDynamic(MaterialVariantId material) {
+    private BakedItem bakeDynamic(MaterialVariantId material) {
       // the base model's particle is the greyscale layer texture we recolor per material
-      TextureAtlasSprite baseSprite = base.getParticleIcon(ModelData.EMPTY);
+      TextureAtlasSprite baseSprite = base.particle();
       Material texture = new Material(baseSprite.atlasLocation(), baseSprite.contents().name());
       TintedSprite sprite = getMaterialSprite(Material::sprite, texture, material);
       // PORT 1.21.4: tint index -1 - material color is baked into the quads rather than resolved via ItemColors
       List<BakedQuad> quads = MantleItemLayerModel.getQuadsForSprite(sprite.color(), -1, sprite.sprite(), transform, sprite.emissivity());
-      RenderTypeGroup renderType = MantleItemLayerModel.getDefaultRenderType(RenderTypeGroup.EMPTY);
-      return UnbakedCompositeModel.Baked.builder(true, false, false, sprite.sprite(), base.getTransforms())
-                                        .addQuads(renderType, quads)
-                                        .build();
+      // 1.21.4 built a composite model without block light, keep that
+      return new BakedItem(quads, ItemModelUtil.properties(false, sprite.sprite(), base.properties().transforms()), ItemModelUtil.defaultRenderType());
     }
 
     /** Gets the cached baked model for the given material */
-    private BakedModel getCachedModel(MaterialVariantId material) {
+    private BakedItem getCachedModel(MaterialVariantId material) {
       if (IMaterial.UNKNOWN_ID.equals(material)) {
         return base;
       }
@@ -194,7 +201,7 @@ public class MaterialModel {
     @Override
     public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
       MaterialVariantId variant = material != null ? material : IMaterialItem.getMaterialFromStack(stack);
-      ItemModelUtil.renderModel(renderState, stack, getCachedModel(variant));
+      ItemModelUtil.renderModel(renderState, stack, displayContext, getCachedModel(variant));
     }
   }
 }

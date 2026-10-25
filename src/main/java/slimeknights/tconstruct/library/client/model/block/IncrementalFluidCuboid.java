@@ -1,10 +1,10 @@
 package slimeknights.tconstruct.library.client.model.block;
 
 import com.google.gson.JsonObject;
+import com.mojang.math.Quadrant;
 import lombok.Getter;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
-import net.minecraft.client.renderer.block.model.BlockFaceUV;
 import net.minecraft.core.Direction;
 import net.minecraft.util.GsonHelper;
 import org.joml.Vector3f;
@@ -56,7 +56,7 @@ public class IncrementalFluidCuboid extends FluidCuboid {
       boolean isFlowing = face.isFlowing();
       faces.put(dir, new BlockElementFace(
         null, 0, isFlowing ? "flowing_fluid" : "fluid",
-        getFaceUvs(from ,to, dir, face.rotation(), isFlowing ? 0.5f : 1f)));
+        getFaceUvs(from ,to, dir, face.rotation(), isFlowing ? 0.5f : 1f), Quadrant.parseJson(face.rotation())));
     }
 
     // create the part with the fluid
@@ -71,9 +71,9 @@ public class IncrementalFluidCuboid extends FluidCuboid {
    * @param side      Block side
    * @param rotation  Side rotation
    * @param scale     UV scale, set to 0.5 for flowing fluids
-   * @return  BlockFaceUV instance
+   * @return  Face UVs, the rotation is applied separately as a {@link Quadrant}
    */
-  private static BlockFaceUV getFaceUvs(Vector3f from, Vector3f to, Direction side, int rotation, float scale) {
+  private static BlockElementFace.UVs getFaceUvs(Vector3f from, Vector3f to, Direction side, int rotation, float scale) {
     // first, translate from and to into texture coords
     float u1, u2, v1, v2;
     switch (side) {
@@ -108,7 +108,6 @@ public class IncrementalFluidCuboid extends FluidCuboid {
     // 180: u2, v2, u1, v1
     // 270: v2, u1, v1, u2
     // swapping 1 and 2 requies 16-x for swap
-    float[] uv;
     if (rotation >= 180) {
       float temp = v1;
       v1 = 16f - v2;
@@ -122,11 +121,10 @@ public class IncrementalFluidCuboid extends FluidCuboid {
     }
     // rotations need swapped UV
     if ((rotation % 180) == 90) {
-      uv = new float[] {v1 * scale, u1 * scale, v2 * scale, u2 * scale};
+      return new BlockElementFace.UVs(v1 * scale, u1 * scale, v2 * scale, u2 * scale);
     } else {
-      uv = new float[] {u1 * scale, v1 * scale, u2 * scale, v2 * scale};
+      return new BlockElementFace.UVs(u1 * scale, v1 * scale, u2 * scale, v2 * scale);
     }
-    return new BlockFaceUV(uv, rotation);
   }
 
   /**

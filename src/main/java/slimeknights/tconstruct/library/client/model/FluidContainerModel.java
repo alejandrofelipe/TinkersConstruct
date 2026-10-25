@@ -13,23 +13,23 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.RenderTypeGroup;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.client.model.UnbakedCompositeModel;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
+import slimeknights.tconstruct.library.client.model.ItemModelUtil.BakedItem;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -74,14 +74,15 @@ public final class FluidContainerModel {
 
     @Override
     public void resolveDependencies(net.minecraft.client.resources.model.ResolvableModel.Resolver resolver) {
-      resolver.resolve(transformModel);
+      resolver.markDependency(transformModel);
     }
 
     @Override
     public ItemModel bake(ItemModel.BakingContext context) {
-      BakedModel transforms = context.bake(transformModel);
+      // 1.21.5: display transforms are read from the resolved transform model
+      ResolvedModel transforms = context.blockModelBaker().getModel(transformModel);
       return new Baked(
-        transforms.getTransforms(),
+        transforms.getTopTransforms(),
         base.map(FluidContainerModel::material).orElse(null),
         fluidMask.map(FluidContainerModel::material).orElse(null),
         particle.map(FluidContainerModel::material).orElse(null),
@@ -97,7 +98,7 @@ public final class FluidContainerModel {
     @Nullable private final Material particle;
     private final FluidStack staticFluid;
     private final boolean flipGas;
-    private final Map<FluidStack, BakedModel> cache = new ConcurrentHashMap<>();
+    private final Map<FluidStack, BakedItem> cache = new ConcurrentHashMap<>();
 
     Baked(ItemTransforms itemTransforms, @Nullable Material base, @Nullable Material fluidMask, @Nullable Material particle, FluidStack staticFluid, boolean flipGas) {
       this.itemTransforms = itemTransforms;
@@ -109,7 +110,7 @@ public final class FluidContainerModel {
     }
 
     /** Builds the composite model for the given fluid */
-    private BakedModel bakeWith(FluidStack fluid) {
+    private BakedItem bakeWith(FluidStack fluid) {
       TextureAtlasSprite baseSprite = base != null ? base.sprite() : null;
       TextureAtlasSprite maskSprite = fluidMask != null ? fluidMask.sprite() : null;
       IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(fluid.getFluid());
@@ -121,13 +122,12 @@ public final class FluidContainerModel {
       if (particleSprite == null) particleSprite = baseSprite;
       if (particleSprite == null) particleSprite = material(MissingTextureAtlasSprite.getLocation()).sprite();
 
-      RenderTypeGroup renderType = MantleItemLayerModel.getDefaultRenderType(RenderTypeGroup.EMPTY);
-      // container is rendered flat: gui3d false, block light false
-      UnbakedCompositeModel.Baked.Builder builder = UnbakedCompositeModel.Baked.builder(true, false, false, particleSprite, itemTransforms);
+      // container is rendered flat: block light false
+      List<BakedQuad> builder = new ArrayList<>();
 
       // base layer
       if (baseSprite != null) {
-        builder.addQuads(renderType, MantleItemLayerModel.getQuadsForSprite(-1, -1, baseSprite, Transformation.identity(), 0));
+        builder.addAll(MantleItemLayerModel.getQuadsForSprite(-1, -1, baseSprite, Transformation.identity(), 0));
       }
 
       // fluid layer, clipped to the mask
@@ -140,13 +140,13 @@ public final class FluidContainerModel {
         int light = fluid.getFluid().getFluidType().getLightLevel(fluid);
         int color = clientFluid.getTintColor(fluid);
         List<BakedQuad> quads = MantleItemLayerModel.getMaskedQuadsForSprite(color, -1, maskSprite, fluidSprite, fluidTransform, light, null);
-        builder.addQuads(renderType, quads);
+        builder.addAll(quads);
       }
-      return builder.build();
+      return new BakedItem(List.copyOf(builder), ItemModelUtil.properties(false, particleSprite, itemTransforms), ItemModelUtil.defaultRenderType());
     }
 
     /** Gets the cached model for the given fluid */
-    private BakedModel getCachedModel(FluidStack fluid) {
+    private BakedItem getCachedModel(FluidStack fluid) {
       // normalize amount so the cache key is consistent
       FluidStack key = fluid.copy();
       key.setAmount(FluidType.BUCKET_VOLUME);
@@ -159,7 +159,7 @@ public final class FluidContainerModel {
       if (fluid.isEmpty()) {
         fluid = FluidUtil.getFluidContained(stack).orElse(FluidStack.EMPTY);
       }
-      ItemModelUtil.renderModel(renderState, stack, getCachedModel(fluid));
+      ItemModelUtil.renderModel(renderState, stack, displayContext, getCachedModel(fluid));
     }
   }
 }

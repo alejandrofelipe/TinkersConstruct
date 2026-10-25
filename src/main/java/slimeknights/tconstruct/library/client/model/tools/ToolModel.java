@@ -8,23 +8,23 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.item.ModelRenderProperties;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.RenderTypeGroup;
-import net.neoforged.neoforge.client.model.UnbakedCompositeModel;
 import org.joml.Vector3f;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
 import slimeknights.mantle.util.ItemLayerPixels;
@@ -33,6 +33,7 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.client.materials.MaterialRenderInfo.TintedSprite;
 import slimeknights.tconstruct.library.client.model.ItemModelUtil;
+import slimeknights.tconstruct.library.client.model.ItemModelUtil.BakedItem;
 import slimeknights.tconstruct.library.client.modifiers.IBakedModifierModel;
 import slimeknights.tconstruct.library.client.modifiers.ModifierModelMap;
 import slimeknights.tconstruct.library.client.modifiers.ModifierModelMapManager;
@@ -157,9 +158,9 @@ public class ToolModel {
   private static BakedToolModel bakeInternal(Function<String,Material> materialGetter, @Nullable Transformation largeTransforms,
                                              List<ToolPart> parts, ModifierModelMap modifierModels, List<FirstModifier> firstModifiers, boolean showTraits,
                                              List<MaterialVariantId> materials, @Nullable IToolStackView tool,
-                                             boolean useAmbientOcclusion, boolean useBlockLight, net.minecraft.client.renderer.block.model.ItemTransforms itemTransforms) {
+                                             boolean useBlockLight, net.minecraft.client.renderer.block.model.ItemTransforms itemTransforms) {
     Function<Material,TextureAtlasSprite> spriteGetter = Material::sprite;
-    RenderTypeGroup renderType = MantleItemLayerModel.getDefaultRenderType(RenderTypeGroup.EMPTY);
+    RenderType renderType = ItemModelUtil.defaultRenderType();
     Transformation smallTransforms = Transformation.identity();
 
     ReversedListBuilder<Collection<BakedQuad>> smallQuads = new ReversedListBuilder<>();
@@ -204,23 +205,25 @@ public class ToolModel {
     // PORT 1.21.4: ammo overlay quads are not added here. The old path pulled quads from the ammo item's BakedModel via
     // ItemRenderer.getModel, which is gone; a Phase-4 ItemStackRenderState-based extraction can reintroduce them.
 
-    // collect quads then build each variant via the composite baked builder
+    // collect quads then build each variant
+    // 1.21.5: BakedModel is gone, each variant is a quad list with item render properties
+    ModelRenderProperties properties = ItemModelUtil.properties(useBlockLight, particle, itemTransforms);
     List<BakedQuad> smallAll = new ArrayList<>();
     smallQuads.build(coll -> smallAll.addAll(coll));
     List<BakedQuad> guiAll = new ArrayList<>();
     for (BakedQuad quad : smallAll) {
-      if (quad.getDirection() == Direction.SOUTH) {
+      if (quad.direction() == Direction.SOUTH) {
         guiAll.add(quad);
       }
     }
-    BakedModel small = UnbakedCompositeModel.Baked.builder(useAmbientOcclusion, false, useBlockLight, particle, itemTransforms).addQuads(renderType, smallAll).build();
-    BakedModel gui = UnbakedCompositeModel.Baked.builder(useAmbientOcclusion, false, useBlockLight, particle, itemTransforms).addQuads(renderType, guiAll).build();
+    BakedItem small = new BakedItem(List.copyOf(smallAll), properties, renderType);
+    BakedItem gui = new BakedItem(List.copyOf(guiAll), properties, renderType);
 
-    BakedModel right;
+    BakedItem right;
     if (largeTransforms != null) {
       List<BakedQuad> largeAll = new ArrayList<>();
       largeQuads.build(coll -> largeAll.addAll(coll));
-      right = UnbakedCompositeModel.Baked.builder(useAmbientOcclusion, false, useBlockLight, particle, itemTransforms).addQuads(renderType, largeAll).build();
+      right = new BakedItem(List.copyOf(largeAll), properties, renderType);
     } else {
       right = small;
     }
@@ -230,12 +233,12 @@ public class ToolModel {
 
   /** Holds the four display variants; the item model selects between them by display context */
   public static final class BakedToolModel {
-    private final BakedModel right;
-    private final BakedModel left;
-    private final BakedModel small;
-    private final BakedModel gui;
+    private final BakedItem right;
+    private final BakedItem left;
+    private final BakedItem small;
+    private final BakedItem gui;
 
-    public BakedToolModel(BakedModel right, BakedModel left, BakedModel small, BakedModel gui) {
+    public BakedToolModel(BakedItem right, BakedItem left, BakedItem small, BakedItem gui) {
       this.right = right;
       this.left = left;
       this.small = small;
@@ -243,7 +246,7 @@ public class ToolModel {
     }
 
     /** Selects the variant for the given display context */
-    public BakedModel forContext(ItemDisplayContext type) {
+    public BakedItem forContext(ItemDisplayContext type) {
       if (type == ItemDisplayContext.GUI) {
         return gui;
       }
@@ -299,21 +302,22 @@ public class ToolModel {
 
     @Override
     public void resolveDependencies(net.minecraft.client.resources.model.ResolvableModel.Resolver resolver) {
-      resolver.resolve(transformModel);
+      resolver.markDependency(transformModel);
     }
 
     @Override
     public ItemModel bake(ItemModel.BakingContext context) {
       ModelBaker baker = context.blockModelBaker();
-      BakedModel transforms = context.bake(transformModel);
+      // 1.21.5: display transforms and gui light are read from the resolved transform model
+      ResolvedModel transforms = baker.getModel(transformModel);
       // load modifier models using the bake-time sprite getter
-      ModifierModelMap modifierMap = ModifierModelMapManager.INSTANCE.getModelsForTool(baker.sprites()::get, modifierModels, List.of(), List.of(), BAKE_LOCATION);
+      ModifierModelMap modifierMap = ModifierModelMapManager.INSTANCE.getModelsForTool(material -> baker.sprites().get(material, transforms), modifierModels, List.of(), List.of(), BAKE_LOCATION);
       // large tools are stretched in X and Y by 200%, with a special offset
       Transformation largeTransforms = large ? new Transformation(new Vector3f((offset.x - 8) / 32, (-offset.y - 8) / 32, 0), null, new Vector3f(2, 2, 1), null) : null;
       List<ToolPart> toolParts = parts.isEmpty() ? ToolPart.DEFAULT_PARTS : parts;
       Function<String,Material> materialGetter = name -> material(textures.getOrDefault(name, MissingTextureAtlasSprite.getLocation()));
       return new Baked(materialGetter, toolParts, largeTransforms, modifierMap, firstModifiers, showTraits,
-                       transforms.useAmbientOcclusion(), transforms.usesBlockLight(), transforms.getTransforms());
+                       transforms.getTopGuiLight().lightLikeBlock(), transforms.getTopTransforms());
     }
   }
 
@@ -329,7 +333,6 @@ public class ToolModel {
     private final ModifierModelMap modifierModels;
     private final List<FirstModifier> firstModifiers;
     private final boolean showTraits;
-    private final boolean useAmbientOcclusion;
     private final boolean useBlockLight;
     private final net.minecraft.client.renderer.block.model.ItemTransforms itemTransforms;
     /**
@@ -346,7 +349,7 @@ public class ToolModel {
       .build();
 
     Baked(Function<String,Material> materialGetter, List<ToolPart> toolParts, @Nullable Transformation largeTransforms, ModifierModelMap modifierModels,
-          List<FirstModifier> firstModifiers, boolean showTraits, boolean useAmbientOcclusion, boolean useBlockLight,
+          List<FirstModifier> firstModifiers, boolean showTraits, boolean useBlockLight,
           net.minecraft.client.renderer.block.model.ItemTransforms itemTransforms) {
       this.materialGetter = materialGetter;
       this.toolParts = toolParts;
@@ -354,7 +357,6 @@ public class ToolModel {
       this.modifierModels = modifierModels;
       this.firstModifiers = firstModifiers;
       this.showTraits = showTraits;
-      this.useAmbientOcclusion = useAmbientOcclusion;
       this.useBlockLight = useBlockLight;
       this.itemTransforms = itemTransforms;
     }
@@ -375,7 +377,7 @@ public class ToolModel {
     }
 
     private BakedToolModel bake(List<MaterialVariantId> materials, @Nullable IToolStackView tool) {
-      return bakeInternal(materialGetter, largeTransforms, toolParts, modifierModels, firstModifiers, showTraits, materials, tool, useAmbientOcclusion, useBlockLight, itemTransforms);
+      return bakeInternal(materialGetter, largeTransforms, toolParts, modifierModels, firstModifiers, showTraits, materials, tool, useBlockLight, itemTransforms);
     }
 
     /** Resolves the composited variants for the given stack, using the cache */
@@ -443,7 +445,7 @@ public class ToolModel {
     @Override
     public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
       BakedToolModel model = resolve(stack);
-      ItemModelUtil.renderModel(renderState, stack, model.forContext(displayContext));
+      ItemModelUtil.renderModel(renderState, stack, displayContext, model.forContext(displayContext));
     }
   }
 

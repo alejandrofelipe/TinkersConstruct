@@ -5,6 +5,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterBlockStateModels;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -78,5 +79,12 @@ public class SmelteryClientEvents extends ClientEventBase {
   static void registerBlockModelLoaders(ModelEvent.RegisterLoaders event) {
     event.register(TConstruct.getResource("tank"), TankModel.LOADER);
     event.register(TConstruct.getResource("fluid_texture"), FluidTextureModel.LOADER);
+  }
+
+  // 1.21.5: the dynamic parts (fluid level, fluid textures) moved to block state model types, referenced from the blockstate JSON
+  @SubscribeEvent
+  static void registerBlockStateModels(RegisterBlockStateModels event) {
+    event.registerModel(TConstruct.getResource("tank"), TankModel.Unbaked.MAP_CODEC);
+    event.registerModel(TConstruct.getResource("fluid_texture"), FluidTextureModel.Unbaked.MAP_CODEC);
   }
 }
