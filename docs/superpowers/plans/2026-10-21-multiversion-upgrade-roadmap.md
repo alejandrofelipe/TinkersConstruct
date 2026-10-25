@@ -29,6 +29,13 @@ releases piggyback onto the next checkpoint), gating each with the full test bat
   baseline: 258 compile errors. The real wall is **models (`BakedModel` removed, dynamic models → block-state
   level) + render pipeline (`RenderPipeline`) + NBT `Optional` getters + gametest framework rewrite**, more than
   the tool data components. Branch `1.21.5` in both repos. Detailed plan: [`2026-10-24-m3-1.21.5-port.md`](2026-10-24-m3-1.21.5-port.md).
+- **M4 lands on 1.21.8 / NF 21.8.57 (user decision, 2026-10-24) — folds 1.21.6 + 1.21.7.** NeoForge 21.6 and 21.7
+  never left beta and JEI skipped 1.21.6 (JEI 1.21.8 = `24.2.0.6`, new major). Parchment `2025.09.14`, Crafting
+  Tweaks `21.8.2` + Balm `21.8.9`; IE and JSON Things excluded (JSON Things has 1.21.6/1.21.10+ only). Toolchain
+  unchanged. Mantle baseline: 102 compile errors. Walls: **deferred GUI render state** (`Matrix3x2fStack`,
+  `RenderPipeline` blits, PiP for 3D in GUIs, silent text-alpha/depth traps), **`ValueInput`/`ValueOutput`** for
+  BEs/entities (tool NBT itself unaffected), **UBO shaders + fog rewrite**, **tag datagen appenders**. **M5 keeps
+  only 1.21.9.** Branch `1.21.8`. Detailed plan: [`2026-10-24-m4-1.21.8-port.md`](2026-10-24-m4-1.21.8-port.md).
 
 ## Global constraints (apply to every milestone)
 
@@ -122,7 +129,8 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
 - [x] ~~**M2**~~ — merged into M1
 - [x] **M1 patch** — Tinkers `3.12.1` (2026-10-24): first-boot staged-tags fix + worldgen gametests (38 gametest)
 - [x] **M3** — 1.21.5 / NF 21.5.101 🏁 2026-10-24 — Mantle `1.14` / Tinkers `3.13.0`, tags `v1.21.5-1.14` / `v1.21.5-3.13.0`; battery: build + 673 unit + 40 gametest (39 + vanilla `always_pass`) + 15/15 uitest (visual verified). Plan [`2026-10-24-m3-1.21.5-port.md`](2026-10-24-m3-1.21.5-port.md); gotchas [`repo/docs/migration/1.21.4-to-1.21.5.md`](../../../../repo/docs/migration/1.21.4-to-1.21.5.md)
-- [ ] **M4** — 1.21.6 / NF 21.6 🔴
-- [ ] **M5** — 1.21.9 / NF 21.9
+- [x] **M3 patch** — Tinkers `3.13.1` (2026-10-24): mob head item rendering + legacy tool model cleanup (16 uitest)
+- [ ] **M4** — **1.21.8** / NF 21.8.57 (1.21.6 + 1.21.7 folded in) 🔴 — **em andamento** (Fase 0 ✅ 2026-10-24; plano [`2026-10-24-m4-1.21.8-port.md`](2026-10-24-m4-1.21.8-port.md))
+- [ ] **M5** — 1.21.9 / NF 21.9 (1.21.7/1.21.8 moved into M4)
 - [ ] **M6** — 1.21.11 / NF 21.11
 - [ ] **M7** — 26.1 → 26.2 / NF 26.2 (Java 25) 🏁 target
