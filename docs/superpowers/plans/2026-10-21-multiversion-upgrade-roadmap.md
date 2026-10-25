@@ -103,13 +103,25 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
   - Flow-gate (`-XDshould-stop.ifError=FLOW` via a scratchpad init script) makes `compileJava` report
     method-body errors past the first attribution failure — essential for category-by-category porting.
   - Sessions restarted mid-batch several times: have subagents commit **per green stage**.
+- **Lessons from M3 (1.21.5):**
+  - The roadmap's predicted wall (tool data components) was the small part; the real walls were **models**
+    (`BakedModel` removed → block-state-level dynamic models), the **render pipeline** (`RenderPipeline`), **NBT
+    `Optional` getters** and the **gametest framework** rewrite. Read the primer before trusting the roadmap row.
+  - Pre-reading the new API in the decompiled tree and handing subagents a **verified design** (Phase 1c, 2B) worked
+    better than letting them improvise; sequential subagents per package group (shared Gradle build dir).
+  - **API changes that turn a return type into `Optional` compile wherever an `Object` is accepted** — 4 silent bugs
+    (one disabled a whole family of modifier reads). The worldgen gametests caught the first; a regex sweep found the
+    rest. Add this sweep to every milestone where getters change shape.
+  - Review every uitest PNG *and* the client log: three bugs (creative tabs, empty book recipes, magenta items) passed a
+    14/14 `"ok"`; two had been there since 1.21.4. Add a scenario for whatever a rewrite touches (here:
+    `dynamic_block_models`).
 
 ## Progress
 
 - [x] **M1** — 1.21.4 / NF 21.4.161 (1.21.2 + 1.21.3 + old M2 folded in) 🏁 2026-10-24 — Mantle `1.13` / Tinkers `3.12.0`, tags `v1.21.4-1.13` / `v1.21.4-3.12.0`; battery: build + 672 unit + 31 gametest + 14/14 uitest (visual verified). Gotchas: [`repo/docs/migration/1.21.1-to-1.21.4.md`](../../../../repo/docs/migration/1.21.1-to-1.21.4.md)
 - [x] ~~**M2**~~ — merged into M1
 - [x] **M1 patch** — Tinkers `3.12.1` (2026-10-24): first-boot staged-tags fix + worldgen gametests (38 gametest)
-- [ ] **M3** — 1.21.5 / NF 21.5.101 🔴 — **em andamento** (Fase 0 ✅ 2026-10-24; plano [`2026-10-24-m3-1.21.5-port.md`](2026-10-24-m3-1.21.5-port.md))
+- [x] **M3** — 1.21.5 / NF 21.5.101 🏁 2026-10-24 — Mantle `1.14` / Tinkers `3.13.0`, tags `v1.21.5-1.14` / `v1.21.5-3.13.0`; battery: build + 673 unit + 40 gametest (39 + vanilla `always_pass`) + 15/15 uitest (visual verified). Plan [`2026-10-24-m3-1.21.5-port.md`](2026-10-24-m3-1.21.5-port.md); gotchas [`repo/docs/migration/1.21.4-to-1.21.5.md`](../../../../repo/docs/migration/1.21.4-to-1.21.5.md)
 - [ ] **M4** — 1.21.6 / NF 21.6 🔴
 - [ ] **M5** — 1.21.9 / NF 21.9
 - [ ] **M6** — 1.21.11 / NF 21.11
