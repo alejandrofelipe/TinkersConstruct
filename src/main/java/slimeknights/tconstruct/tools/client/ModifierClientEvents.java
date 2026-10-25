@@ -1,6 +1,5 @@
 package slimeknights.tconstruct.tools.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.DeltaTracker;
@@ -256,9 +255,7 @@ public class ModifierClientEvents {
     }
     MultiPlayerGameMode playerController = mc.gameMode;
     if (playerController != null && playerController.getPlayerMode() != GameType.SPECTATOR) {
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-
+      // 1.21.5: GUI blits always blend, the blend state moved into the render pipeline
       int scaledWidth = mc.getWindow().getGuiScaledWidth();
       int scaledHeight = mc.getWindow().getGuiScaledHeight();
       GuiGraphics graphics = event.getGuiGraphics();

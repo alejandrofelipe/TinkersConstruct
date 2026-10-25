@@ -282,7 +282,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     super.render(graphics, mouseX, mouseY, partialTicks); // base render + the info-overlay pass
     // COLLAPSED tier: the centered selector overlay draws above the slots (its docked draw in renderBg is gated off)
     if (this.overlayOpen == OverlayPanel.SELECTOR) {
-      InfoPanelScreen.beginOpaqueOverlayBlit(); // shared opaque-blit setup, see InfoPanelScreen.drawOverlay
+      InfoPanelScreen.beginOpaqueOverlayBlit(graphics); // shared opaque-blit setup, see InfoPanelScreen.drawOverlay
       this.buttonsScreen.render(graphics, mouseX, mouseY, partialTicks);
     }
   }
@@ -433,11 +433,11 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     renderPose.popPose();
 
     // rebind gui texture since itemstack drawing sets it to something else
+    // 1.21.5: GUI blits always blend; clearing the depth buffer replaces disabling the depth test so the cover paints over the icon
+    GuiUtil.clearDepth(graphics);
     RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 0.82f);
-    RenderSystem.enableBlend();
     //RenderSystem.enableAlphaTest();
     //RenderHelper.turnOff();
-    RenderSystem.disableDepthTest();
     ITEM_COVER.draw(graphics, this.cornerX + 7, this.cornerY + 18);
     }
 
@@ -510,8 +510,6 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
         }
       }
     }
-
-    RenderSystem.enableDepthTest();
 
     super.renderBg(graphics, partialTicks, mouseX, mouseY);
 

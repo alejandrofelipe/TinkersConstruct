@@ -12,7 +12,6 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -84,7 +83,7 @@ public interface TrimModifierModel extends ModifierModel {
               // base location is based on the armor type
               ResourceLocation root = getRoot(isLarge);
               // specific location based on the material
-              ResourceLocation path = root.withSuffix("_" + material.assetName());
+              ResourceLocation path = root.withSuffix("_" + material.assets().base().suffix());
 
               // ensure the material sprite exists, if not we will tint the base sprite
               TextureAtlasSprite sprite = spriteGetter.apply(ModifierModel.blockAtlas(path));

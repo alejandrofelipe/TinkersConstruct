@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.client.render.FluidCuboid;
 import slimeknights.mantle.client.render.FluidRenderer;
@@ -22,7 +23,7 @@ public class CastingBlockEntityRenderer implements BlockEntityRenderer<CastingBl
   public CastingBlockEntityRenderer(Context context) {}
 
   @Override
-  public void render(CastingBlockEntity casting, float partialTicks, PoseStack matrices, MultiBufferSource buffer, int light, int combinedOverlayIn) {
+  public void render(CastingBlockEntity casting, float partialTicks, PoseStack matrices, MultiBufferSource buffer, int light, int combinedOverlayIn, Vec3 cameraPos) {
     BlockState state = casting.getBlockState();
     List<FluidCuboid> fluids = FluidCuboid.REGISTRY.get(state, List.of());
     List<RenderItem> renderItems = RenderItem.STATE_REGISTRY.get(state, List.of());

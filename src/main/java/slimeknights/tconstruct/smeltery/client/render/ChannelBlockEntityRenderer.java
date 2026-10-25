@@ -11,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Plane;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.client.render.ChannelFluids;
@@ -26,7 +27,7 @@ public class ChannelBlockEntityRenderer implements BlockEntityRenderer<ChannelBl
   public ChannelBlockEntityRenderer(Context context) {}
 
 	@Override
-	public void render(ChannelBlockEntity te, float partialTicks, PoseStack matrices, MultiBufferSource buffer, int light, int combinedOverlayIn)  {
+	public void render(ChannelBlockEntity te, float partialTicks, PoseStack matrices, MultiBufferSource buffer, int light, int combinedOverlayIn, Vec3 cameraPos)  {
 		FluidStack fluid = te.getFluid();
 		if (fluid.isEmpty()) {
 			return;

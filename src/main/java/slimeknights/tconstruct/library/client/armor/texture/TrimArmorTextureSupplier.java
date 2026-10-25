@@ -103,7 +103,7 @@ public record TrimArmorTextureSupplier(ModifierId modifier, ResourceLocation pat
     /** Creates the trim texture for the given root texture and material */
     private static ArmorTexture create(ResourceLocation root, TrimMaterial material) {
       // start by trying and finding the material specific sprite
-      ResourceLocation withMaterial = root.withSuffix('_' + material.assetName());
+      ResourceLocation withMaterial = root.withSuffix('_' + material.assets().base().suffix());
       TextureAtlasSprite sprite = getTrimAtlas().getSprite(withMaterial);
       if (!MissingTextureAtlasSprite.getLocation().equals(sprite.contents().name())) {
         return new TrimArmorTexture(sprite);

@@ -10,8 +10,6 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
-import net.minecraft.client.renderer.texture.atlas.SpriteSourceType;
-import net.minecraft.client.renderer.texture.atlas.SpriteSources;
 import net.minecraft.client.renderer.texture.atlas.sources.LazyLoadedImage;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.client.resources.model.Material;
@@ -20,6 +18,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.ExtraCodecs;
+import net.neoforged.neoforge.client.event.RegisterSpriteSourcesEvent;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.materials.MaterialRenderInfo;
@@ -50,19 +49,12 @@ public record ShieldBannerModifierSpriteSource(int cropX, int cropY, int cropWid
     }
     return DataResult.success(source);
   });
-  /** Registered type set on init */
-  private static SpriteSourceType TYPE = null;
-
   /** Registers this sprite source */
   @Internal
-  public static SpriteSourceType register() {
-    if (TYPE == null) {
-      // 1.21: SpriteSources.register applies ResourceLocation.withDefaultNamespace to the name, so it must be a bare
-      // path (no namespace). The type id therefore lives under the minecraft namespace, matching the other sprite
-      // source types in our generated atlas JSON (minecraft:directory, minecraft:paletted_permutations, ...).
-      TYPE = SpriteSources.register("shield_banner_to_modifier", CODEC);
-    }
-    return TYPE;
+  public static void register(RegisterSpriteSourcesEvent event) {
+    // 1.21.5: SpriteSourceType is gone, sources register their codec through the NeoForge event. The id stays under the
+    // minecraft namespace (as registered by SpriteSources.register in 1.21-1.21.4) so the generated atlas JSON is unchanged.
+    event.register(ResourceLocation.withDefaultNamespace("shield_banner_to_modifier"), CODEC);
   }
 
   @Override
@@ -82,8 +74,8 @@ public record ShieldBannerModifierSpriteSource(int cropX, int cropY, int cropWid
   }
 
   @Override
-  public SpriteSourceType type() {
-    return register();
+  public MapCodec<ShieldBannerModifierSpriteSource> codec() {
+    return CODEC;
   }
 
   /** Generates a cropped sprite lazily */

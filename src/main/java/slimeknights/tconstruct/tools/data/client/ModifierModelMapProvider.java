@@ -3,7 +3,6 @@ package slimeknights.tconstruct.tools.data.client;
 import net.minecraft.world.item.equipment.ArmorType;
 
 import net.minecraft.data.PackOutput;
-import net.minecraft.world.item.ArmorItem;
 import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.modifiers.DyedModifierModel;

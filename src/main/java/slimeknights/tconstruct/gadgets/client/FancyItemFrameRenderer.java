@@ -2,18 +2,21 @@ package slimeknights.tconstruct.gadgets.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemFrameRenderer;
 import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.client.event.RenderItemInFrameEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
+import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.neoforged.neoforge.common.NeoForge;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.gadgets.client.FancyItemFrameRenderer.FancyItemFrameRenderState;
@@ -24,13 +27,14 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends ItemFrameRenderer<T> {
-  public static final Map<FrameType, ModelResourceLocation> LOCATIONS_MODEL = new EnumMap<>(FrameType.class);
-  public static final Map<FrameType, ModelResourceLocation> LOCATIONS_MODEL_MAP = new EnumMap<>(FrameType.class);
+  // 1.21.5: ModelResourceLocation and ModelManager#getModel are gone; standalone models use typed keys
+  public static final Map<FrameType, StandaloneModelKey<BlockStateModel>> LOCATIONS_MODEL = new EnumMap<>(FrameType.class);
+  public static final Map<FrameType, StandaloneModelKey<BlockStateModel>> LOCATIONS_MODEL_MAP = new EnumMap<>(FrameType.class);
   static {
     for (FrameType type : FrameType.values()) {
       String name = type == FrameType.REVERSED_GOLD ? FrameType.GOLD.getSerializedName() : type.getSerializedName();
-      LOCATIONS_MODEL.put(type, new ModelResourceLocation(TConstruct.getResource("block/frame/" + name), "standalone"));
-      LOCATIONS_MODEL_MAP.put(type, new ModelResourceLocation(TConstruct.getResource("block/frame/" + name + "_map"), "standalone"));
+      LOCATIONS_MODEL.put(type, new StandaloneModelKey<>(TConstruct.getResource("block/frame/" + name)));
+      LOCATIONS_MODEL_MAP.put(type, new StandaloneModelKey<>(TConstruct.getResource("block/frame/" + name + "_map")));
     }
   }
 
@@ -94,10 +98,10 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
     if (frameVisible) {
       matrices.pushPose();
       matrices.translate(-0.5D, -0.5D, -0.5D);
-      this.blockRenderer.getModelRenderer().renderModel(
-        matrices.last(), bufferIn.getBuffer(Sheets.cutoutBlockSheet()), null,
-        this.blockRenderer.getBlockModelShaper().getModelManager().getModel(isMap ? LOCATIONS_MODEL_MAP.get(frameType) : LOCATIONS_MODEL.get(frameType)),
-        1.0F, 1.0F, 1.0F, packedLight, OverlayTexture.NO_OVERLAY);
+      BlockStateModel model = Minecraft.getInstance().getModelManager().getStandaloneModel(isMap ? LOCATIONS_MODEL_MAP.get(frameType) : LOCATIONS_MODEL.get(frameType));
+      if (model != null) {
+        ModelBlockRenderer.renderModel(matrices.last(), bufferIn.getBuffer(Sheets.cutoutBlockSheet()), model, 1.0F, 1.0F, 1.0F, packedLight, OverlayTexture.NO_OVERLAY);
+      }
       matrices.popPose();
     }
 

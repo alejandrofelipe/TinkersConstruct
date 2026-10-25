@@ -20,9 +20,11 @@ import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
+import net.neoforged.neoforge.client.event.RegisterBlockStateModels;
 import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.client.event.RegisterSpriteSourcesEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -116,7 +118,11 @@ public class ToolClientEvents extends ClientEventBase {
     manager.addListener(getResource("harvest_tiers"), HarvestTiers.RELOAD_LISTENER);
     ArmorModelManager.init(manager);
     manager.addListener(getResource("trim_armor_texture"), TrimArmorTextureSupplier.CACHE_INVALIDATOR);
-    ShieldBannerModifierSpriteSource.register();
+  }
+
+  @SubscribeEvent
+  static void registerSpriteSources(RegisterSpriteSourcesEvent event) {
+    ShieldBannerModifierSpriteSource.register(event);
   }
 
   // PORT 1.21.4: block models register on ModelEvent.RegisterLoaders (UnbakedModelLoader), item models on
@@ -124,6 +130,12 @@ public class ToolClientEvents extends ClientEventBase {
   @SubscribeEvent
   static void registerBlockModelLoaders(ModelEvent.RegisterLoaders event) {
     event.register(getResource("material_block"), MaterialBlockModel.LOADER);
+  }
+
+  // 1.21.5: the block side of material_block (material from the block entity) is a block state model type
+  @SubscribeEvent
+  static void registerBlockStateModels(RegisterBlockStateModels event) {
+    event.registerModel(getResource("material_block"), MaterialBlockModel.Unbaked.MAP_CODEC);
   }
 
   @SubscribeEvent
@@ -330,8 +342,8 @@ public class ToolClientEvents extends ClientEventBase {
       // PORT 1.21.4: net.minecraft.client.player.Input was split; MovementInputUpdateEvent#getInput now returns ClientInput
       ClientInput input = event.getInput();
       // multiply by 5 to cancel out the vanilla 20%
-      input.leftImpulse *= (float) (speed * 5);
-      input.forwardImpulse *= (float) (speed * 5);
+      // 1.21.5: the impulses became a single move vector (protected, made public by our access transformer)
+      input.moveVector = input.moveVector.scale((float) (speed * 5));
     }
   }
 }

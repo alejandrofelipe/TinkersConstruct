@@ -1,6 +1,5 @@
 package slimeknights.tconstruct.tables.client.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
@@ -13,7 +12,6 @@ import slimeknights.mantle.client.screen.ElementScreen;
 import slimeknights.mantle.client.screen.MultiModuleScreen;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.GuiUtil;
-import slimeknights.tconstruct.library.client.Icons;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
 import slimeknights.tconstruct.tables.client.inventory.module.SideInventoryScreen;
 import slimeknights.tconstruct.tables.client.inventory.widget.TinkerTabsWidget;
@@ -53,7 +51,6 @@ public class BaseTabbedScreen<TILE extends BlockEntity, CONTAINER extends Tabbed
   }
 
   protected void drawIcon(GuiGraphics graphics, Slot slot, ElementScreen element) {
-    RenderSystem.setShaderTexture(0, Icons.ICONS);
     element.draw(graphics, slot.x + this.cornerX - 1, slot.y + this.cornerY - 1);
   }
 

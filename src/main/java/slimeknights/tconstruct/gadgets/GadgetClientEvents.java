@@ -5,7 +5,8 @@ import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.ModelEvent.RegisterAdditional;
+import net.neoforged.neoforge.client.event.ModelEvent.RegisterStandalone;
+import net.neoforged.neoforge.client.model.standalone.StandaloneModelBaker;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.EventBusSubscriber.Bus;
@@ -19,9 +20,10 @@ import slimeknights.tconstruct.tools.client.material.ThrownShurikenRenderer;
 @EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT, bus=Bus.MOD)
 public class GadgetClientEvents extends ClientEventBase {
   @SubscribeEvent
-  static void registerModels(RegisterAdditional event) {
-    FancyItemFrameRenderer.LOCATIONS_MODEL.values().forEach(mrl -> event.register(mrl.id()));
-    FancyItemFrameRenderer.LOCATIONS_MODEL_MAP.values().forEach(mrl -> event.register(mrl.id()));
+  static void registerModels(RegisterStandalone event) {
+    // 1.21.5: RegisterAdditional -> RegisterStandalone with typed keys; frames are block models rendered as a block state model
+    FancyItemFrameRenderer.LOCATIONS_MODEL.values().forEach(key -> event.register(key, StandaloneModelBaker.blockStateModel()));
+    FancyItemFrameRenderer.LOCATIONS_MODEL_MAP.values().forEach(key -> event.register(key, StandaloneModelBaker.blockStateModel()));
   }
 
   @SubscribeEvent

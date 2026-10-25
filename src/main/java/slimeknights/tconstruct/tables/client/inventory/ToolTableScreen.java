@@ -12,10 +12,10 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag.Default;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -257,9 +257,10 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
 
       if (!stack.isEmpty()) {
         ItemStack copy = stack.copy();
-        Item item = stack.getItem();
-        if (item instanceof ArmorItem armor) {
-          this.armorStandPreview.setItemSlot(armor.getEquipmentSlot(copy), copy);
+        // 1.21.5: ArmorItem is gone, armor is identified by its equipment slot (equippable component or item extension)
+        EquipmentSlot slot = this.armorStandPreview.getEquipmentSlotForItem(copy);
+        if (slot.isArmor()) {
+          this.armorStandPreview.setItemSlot(slot, copy);
         } else {
           this.armorStandPreview.setItemSlot(EquipmentSlot.OFFHAND, copy);
         }
@@ -279,7 +280,7 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
       ItemStack result = lazyToolStack.getStack();
       tinkerInfo.setCaption(result.getHoverName());
       List<Component> list = new ArrayList<>();
-      result.getItem().appendHoverText(result, Item.TooltipContext.of(Minecraft.getInstance().level), list, Default.NORMAL);
+      result.getItem().appendHoverText(result, Item.TooltipContext.of(Minecraft.getInstance().level), TooltipDisplay.DEFAULT, list::add, Default.NORMAL);
       tinkerInfo.setText(list);
     }
   }

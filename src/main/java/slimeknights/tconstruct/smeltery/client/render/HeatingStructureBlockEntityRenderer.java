@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.client.TinkerRenderTypes;
@@ -35,7 +36,7 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
   public HeatingStructureBlockEntityRenderer(Context context) {}
 
   @Override
-  public void render(HeatingStructureBlockEntity smeltery, float partialTicks, PoseStack matrices, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
+  public void render(HeatingStructureBlockEntity smeltery, float partialTicks, PoseStack matrices, MultiBufferSource buffer, int combinedLight, int combinedOverlay, Vec3 cameraPos) {
     Level world = smeltery.getLevel();
     if (world == null) return;
     BlockState state = smeltery.getBlockState();
@@ -108,7 +109,7 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
           matrices.mulPose(itemRotation);
           matrices.scale(ITEM_SCALE, ITEM_SCALE, ITEM_SCALE);
           // updateForTopItem clears the state first, so the single instance is safe to reuse across the loop
-          itemModelResolver.updateForTopItem(itemRenderState, stack, TinkerItemDisplays.MELTER, false, world, null, 0);
+          itemModelResolver.updateForTopItem(itemRenderState, stack, TinkerItemDisplays.MELTER, world, null, 0);
           itemRenderState.render(matrices, buffer, LevelRenderer.getLightColor(world, itemPos), OverlayTexture.NO_OVERLAY);
           matrices.popPose();
 

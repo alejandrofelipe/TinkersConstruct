@@ -19,6 +19,7 @@ import slimeknights.mantle.client.screen.MultiModuleScreen;
 import slimeknights.mantle.client.screen.ScalableElementScreen;
 import slimeknights.mantle.client.screen.SliderWidget;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.library.client.GuiUtil;
 import slimeknights.tconstruct.tables.client.inventory.ResponsiveLayout;
 import slimeknights.tconstruct.tables.client.inventory.widget.BorderWidget;
 
@@ -145,7 +146,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
   /** Draws the panel unconditionally at its current position; the collapsed-tier overlay pass calls this above the slots (the normal module pass is gated off by {@link #hidden}/{@link #overlayMode}). */
   public void drawOverlay(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
-    beginOpaqueOverlayBlit();
+    beginOpaqueOverlayBlit(graphics);
     this.renderBg(graphics, partialTicks, mouseX, mouseY);
   }
 
@@ -155,11 +156,11 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
    * rendered at the high item z, so leaving depth test on culls the overlay there and the icon bleeds through; disable
    * it (the idiom TinkerStationScreen.renderBg uses for ITEM_COVER) and reset color/blend so it paints opaque.
    */
-  public static void beginOpaqueOverlayBlit() {
-    RenderSystem.enableBlend();
-    RenderSystem.defaultBlendFunc();
+  public static void beginOpaqueOverlayBlit(GuiGraphics graphics) {
+    // 1.21.5: blend and depth test are part of the render pipelines; GUI blits always blend, and clearing the depth
+    // buffer replaces disabling the depth test (same idiom as vanilla PopupScreen)
     RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-    RenderSystem.disableDepthTest();
+    GuiUtil.clearDepth(graphics);
   }
 
   /** Draws the panel's hover tooltips (help "?" and per-line entries) unconditionally; the overlay pass calls this after {@link #drawOverlay} so they sit above the panel, since the normal tooltip pass is gated off by {@link #overlayMode}. */

@@ -1,6 +1,5 @@
 package slimeknights.tconstruct.tables.client.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
@@ -9,7 +8,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.world.inventory.Slot;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -123,7 +121,6 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
     // draw slot icons
     List<Slot> slots = this.getMenu().getInputSlots();
     int max = Math.min(slots.size(), INPUT_PATTERNS.length);
-    RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
     for (int i = 0; i < max; i++) {
       this.drawIconEmpty(graphics, slots.get(i), INPUT_PATTERNS[i]);
     }
@@ -201,7 +198,6 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
     // use block texture list
     if (tile != null) {
       assert this.minecraft != null;
-      RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
       // iterate all recipes
       List<ModifierEntry> list = this.tile.getCurrentButtons();
       int max = Math.min(this.modifierIndexOffset + MAX_MODIFIER, this.getModifierCount());

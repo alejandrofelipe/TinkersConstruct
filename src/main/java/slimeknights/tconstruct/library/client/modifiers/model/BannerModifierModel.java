@@ -70,14 +70,14 @@ public record BannerModifierModel(@Nullable ResourceLocation smallPrefix, @Nulla
         for (int i = 0; i < list.size(); i++) {
           // patterns are stored as short strings for some reason, for consistency we also store as hashes
           // map that back to the pattern
-          CompoundTag tag = list.getCompound(i);
+          CompoundTag tag = list.getCompoundOrEmpty(i);
           // PORT M3: BannerPattern.byHash was removed in 1.21 (BannerPattern is now a record without hashname);
           // patterns are now referenced by ResourceLocation/Holder. Blocked on the BannerModule data-format port in the tools bucket.
-          ResourceLocation patternId = ResourceLocation.tryParse(tag.getString(BannerModule.KEY_PATTERN));
+          ResourceLocation patternId = ResourceLocation.tryParse(tag.getStringOr(BannerModule.KEY_PATTERN, ""));
           // PORT M3: BannerPattern moved to the datapack registry Registries.BANNER_PATTERN in 1.21; resolving a Holder
           // needs a RegistryAccess that isn't available here. Blocked on the BannerModule data-format port in the tools bucket.
           Holder<BannerPattern> pattern = null;
-          int color = tag.getInt(BannerModule.KEY_COLOR);
+          int color = tag.getIntOr(BannerModule.KEY_COLOR, 0);
           if (pattern != null) {
             // why must holders be such a pain?
             // TODO 1.21: will need to switch from using the ID to using the asset root for the texture
