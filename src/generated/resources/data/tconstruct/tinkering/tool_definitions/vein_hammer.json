@@ -69,12 +69,6 @@
       ]
     },
     {
-      "type": "tconstruct:tool_actions",
-      "tool_actions": [
-        "pickaxe_dig"
-      ]
-    },
-    {
       "type": "tconstruct:is_effective",
       "predicate_type": "mantle:tag",
       "tag": "minecraft:mineable/pickaxe"

@@ -73,12 +73,6 @@
       ]
     },
     {
-      "type": "tconstruct:tool_actions",
-      "tool_actions": [
-        "shovel_dig"
-      ]
-    },
-    {
       "type": "tconstruct:is_effective",
       "predicate_type": "mantle:tag",
       "tag": "minecraft:mineable/shovel"
