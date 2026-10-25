@@ -105,8 +105,8 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
     renderPose.popPose();
 
     // next, overlay the item with transparent grey, makes it appear transparent
-    RenderSystem.enableBlend();
-    RenderSystem.disableDepthTest();
+    // 1.21.5: GUI blits always blend; clearing the depth buffer replaces disabling the depth test so the cover paints over the item
+    GuiUtil.clearDepth(graphics);
     RenderSystem.setShaderColor(1, 1, 1, 0.82f);
     itemCover.draw(graphics, 5, 6);
 
@@ -122,8 +122,6 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
       // need to offset by 1 because the inventory slot icons are 18x18
       this.slotBorder.draw(graphics, layoutSlot.getX() + X_OFFSET - 1, layoutSlot.getY() + Y_OFFSET - 1);
     }
-    RenderSystem.disableBlend();
-    RenderSystem.enableDepthTest();
 
     // draw anvil icon if anvil is required
     if (recipe.requiresAnvil()) {

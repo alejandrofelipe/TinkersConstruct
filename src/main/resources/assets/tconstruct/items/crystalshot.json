@@ -1,6 +1,6 @@
 {
   "model": {
-    "type": "minecraft:model",
+    "type": "mantle:nbt_key",
     "model": "tconstruct:item/crystalshot"
   }
 }
