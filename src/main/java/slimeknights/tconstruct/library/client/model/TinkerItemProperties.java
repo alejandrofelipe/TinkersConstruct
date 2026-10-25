@@ -132,7 +132,7 @@ public class TinkerItemProperties {
       if (!stack.isComponentsPatchEmpty()) {
         CompoundTag ammo = ToolStack.from(stack).getPersistentData().getCompound(ModifiableCrossbowItem.KEY_CROSSBOW_AMMO);
         if (!ammo.isEmpty()) {
-          return ammo.getString("id").equals(BuiltInRegistries.ITEM.getKey(Items.FIREWORK_ROCKET).toString()) ? 2 : 1;
+          return ammo.getStringOr("id", "").equals(BuiltInRegistries.ITEM.getKey(Items.FIREWORK_ROCKET).toString()) ? 2 : 1;
         }
       }
       return 0;

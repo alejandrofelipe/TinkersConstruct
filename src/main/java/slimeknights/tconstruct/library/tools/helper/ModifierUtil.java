@@ -119,7 +119,7 @@ public final class ModifierUtil {
           String key = modifier.toString();
           for (int i = 0; i < size; i++) {
             CompoundTag entry = list.getCompoundOrEmpty(i);
-            if (key.equals(entry.getString(ModifierEntry.TAG_MODIFIER))) {
+            if (key.equals(entry.getStringOr(ModifierEntry.TAG_MODIFIER, ""))) {
               return entry.getIntOr(ModifierEntry.TAG_LEVEL, 0);
             }
           }

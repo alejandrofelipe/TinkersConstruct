@@ -54,7 +54,7 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
     // simply iterate the palette list and make adjustments
     for (int i = 0; i < palette.size(); i++) {
       CompoundTag block = palette.getCompoundOrEmpty(i);
-      String newName = repalette.get(block.getString("Name"));
+      String newName = repalette.get(block.getStringOr("Name", ""));
       if (newName != null) {
         block.putString("Name", newName);
       }

@@ -125,7 +125,7 @@ public class StatOverrideModifier extends NoLevelsModifier implements ToolStatsM
             }
             // add stat
             if (stat instanceof INumericToolStat<?>) {
-              consumer.accept(Component.literal("* ").append(stat.getPrefix()).append(format.format(stats.getFloat(key))));
+              consumer.accept(Component.literal("* ").append(stat.getPrefix()).append(format.format(stats.getFloatOr(key, 0))));
             } else {
               Component formatted = format(stat, Objects.requireNonNull(stats.get(key)));
               if (formatted != null) {

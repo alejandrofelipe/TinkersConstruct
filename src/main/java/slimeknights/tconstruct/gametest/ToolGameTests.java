@@ -7,7 +7,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
+import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 import slimeknights.tconstruct.library.tools.part.IToolPart;
@@ -67,6 +70,36 @@ public class ToolGameTests {
     helper.assertTrue(tool.getMaterials().get(1).getVariant().equals(MaterialIds.wood), Component.literal("expected wood handle material, got " + tool.getMaterials().get(1).getVariant()));
     helper.assertTrue(tool.getMaterials().get(2).getVariant().equals(MaterialIds.wood), Component.literal("expected wood binding material, got " + tool.getMaterials().get(2).getVariant()));
 
+    helper.succeed();
+  }
+
+  /**
+   * {@link ModifierUtil#getModifierLevel(ItemStack, ModifierId)} reads the level straight from the stack NBT (used by
+   * skull traits, loot conditions and armor textures). 1.21.5 made {@code CompoundTag#getString} return an
+   * {@code Optional}, and comparing it with {@code String#equals} still compiles but never matches, so the level
+   * silently read as 0. Asserts it agrees with the {@link ToolStack} for every modifier of a crafted pickaxe.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void modifier_level_from_stack(GameTestHelper helper) {
+    BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
+    helper.getLevel().setBlockAndUpdate(pos, TinkerTables.tinkerStation.get().defaultBlockState());
+    if (!(helper.getLevel().getBlockEntity(pos) instanceof TinkerStationBlockEntity station)) {
+      helper.fail(Component.literal("no tinker station BE"), helper.relativePos(pos));
+      return;
+    }
+    station.setItem(TinkerStationBlockEntity.INPUT_SLOT, partStack(TinkerToolParts.pickHead.get(), MaterialIds.rock));
+    station.setItem(TinkerStationBlockEntity.INPUT_SLOT + 1, partStack(TinkerToolParts.toolHandle.get(), MaterialIds.wood));
+    station.setItem(TinkerStationBlockEntity.INPUT_SLOT + 2, partStack(TinkerToolParts.toolBinding.get(), MaterialIds.wood));
+    ItemStack result = station.calcResult(null);
+    helper.assertFalse(result.isEmpty(), Component.literal("tinker station built nothing; error=" + station.getCurrentError()));
+
+    ToolStack tool = ToolStack.from(result);
+    helper.assertFalse(tool.getModifierList().isEmpty(), Component.literal("crafted pickaxe has no modifiers to check"));
+    for (ModifierEntry entry : tool.getModifierList()) {
+      int expected = tool.getModifierLevel(entry.getId());
+      int actual = ModifierUtil.getModifierLevel(result, entry.getId());
+      helper.assertTrue(actual == expected, Component.literal("modifier " + entry.getId() + ": stack read " + actual + ", tool has " + expected));
+    }
     helper.succeed();
   }
 
