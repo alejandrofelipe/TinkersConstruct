@@ -2,6 +2,8 @@ package slimeknights.tconstruct.client.uitest;
 
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -38,8 +40,11 @@ import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.client.inventory.TinkerStationScreen;
 import slimeknights.tconstruct.tables.client.inventory.ToolTableScreen;
 import slimeknights.tconstruct.tools.TinkerModifiers;
+import slimeknights.tconstruct.world.TinkerHeadType;
+import slimeknights.tconstruct.world.TinkerWorld;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -74,6 +79,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new StationCollapsedOverlayScenario());
     UiTestScenarios.register(new ExtraHeartsScenario());
     UiTestScenarios.register(new DynamicBlockModelsScenario());
+    UiTestScenarios.register(new HeadItemsScenario());
   }
 
   /** Places a single block and opens its GUI. */
@@ -567,6 +573,49 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) { /* nothing open */ }
+  }
+
+  /**
+   * Opens the player inventory with every Tinkers head item in the hotbar/inventory, one held (rendered by the player
+   * preview) and one worn, to verify the {@code tconstruct:head} special item model draws the heads instead of nothing.
+   */
+  private static class HeadItemsScenario implements UiTestScenario {
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("head_items");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      // survival: in creative the inventory screen is replaced by the creative tabs, without main inventory or player preview
+      ctx.sendCommand("gamemode survival");
+      ctx.sendCommand("clear @s");
+      TinkerHeadType[] types = TinkerHeadType.values();
+      for (int i = 0; i < types.length; i++) {
+        String slot = i < 9 ? "hotbar." + i : "inventory." + (i - 9);
+        ctx.sendCommand("item replace entity @s " + slot + " with " + BuiltInRegistries.ITEM.getKey(TinkerWorld.headItems.get(types[i])));
+      }
+      ctx.sendCommand("item replace entity @s armor.head with " + BuiltInRegistries.ITEM.getKey(TinkerWorld.headItems.get(TinkerHeadType.PIGLIN_BRUTE)));
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      LocalPlayer player = Objects.requireNonNull(ctx.mc().player);
+      player.getInventory().setSelectedSlot(0); // hotbar.0 -> the blaze head is held
+      ctx.mc().setScreen(new InventoryScreen(player));
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      ctx.mc().setScreen(null);
+      ctx.sendCommand("clear @s");
+      ctx.sendCommand("gamemode creative");
+    }
   }
 
   /** No menu: boosts the player past 20 HP and captures the in-world HUD to verify Mantle's custom extra-heart renderer. */

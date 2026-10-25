@@ -18,6 +18,7 @@ import slimeknights.tconstruct.common.registration.CastItemObject;
 import slimeknights.tconstruct.library.tools.part.MaterialItem;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.tools.TinkerToolParts;
+import slimeknights.tconstruct.world.TinkerHeadType;
 import slimeknights.tconstruct.world.TinkerWorld;
 
 import java.util.LinkedHashMap;
@@ -155,7 +156,7 @@ public class TinkerItemModelProvider implements DataProvider {
     generated(TinkerWorld.cobaltCluster, "block/geode/cobalt_cluster");
     generated(TinkerWorld.knightmetalCluster, "block/geode/knightmetal_cluster");
     // heads
-    TinkerWorld.headItems.forEach(head -> parented(id(head), "minecraft:item/template_skull"));
+    TinkerWorld.headItems.forEach((type, head) -> head(id(head), type));
   }
 
   @Override
@@ -258,15 +259,18 @@ public class TinkerItemModelProvider implements DataProvider {
     basicItem(id(item), texture);
   }
 
-  /** Item whose backing model has the given parent (e.g. template_skull), referenced by a minecraft:model definition */
-  private void parented(ResourceLocation item, String parent) {
-    ResourceLocation model = modelId(item);
-    JsonObject json = new JsonObject();
-    json.addProperty("parent", parent);
-    models.put(model, json);
+  /**
+   * Head item rendered by the {@code tconstruct:head} special model, mirroring vanilla's head items. A plain
+   * {@code template_skull} model has no geometry, so the item was invisible.
+   */
+  private void head(ResourceLocation item, TinkerHeadType type) {
+    JsonObject special = new JsonObject();
+    special.addProperty("type", TConstruct.resourceString("head"));
+    special.addProperty("kind", type.getSerializedName());
     JsonObject def = new JsonObject();
-    def.addProperty("type", "minecraft:model");
-    def.addProperty("model", model.toString());
+    def.addProperty("type", "minecraft:special");
+    def.addProperty("base", "minecraft:item/template_skull");
+    def.add("model", special);
     itemDefinition(item, def);
   }
 

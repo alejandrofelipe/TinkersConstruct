@@ -14,6 +14,7 @@ import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
 import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -31,6 +32,7 @@ import slimeknights.tconstruct.world.client.DragonSkullModel;
 import slimeknights.tconstruct.world.client.SkullModelHelper;
 import slimeknights.tconstruct.world.client.SlimeColorReloadListener;
 import slimeknights.tconstruct.world.client.SlimeColorizer;
+import slimeknights.tconstruct.world.client.TinkerHeadSpecialModel;
 import slimeknights.tconstruct.world.client.TerracubeRenderer;
 import slimeknights.tconstruct.world.client.TinkerSlimeRenderer;
 
@@ -97,6 +99,11 @@ public class WorldClientEvents extends ClientEventBase {
         event.registerSkullModel(type, layer, SkullModel::new);
       }
     });
+  }
+
+  @SubscribeEvent
+  static void registerSpecialModels(RegisterSpecialModelRendererEvent event) {
+    event.register(TConstruct.getResource("head"), TinkerHeadSpecialModel.MAP_CODEC);
   }
 
   @SubscribeEvent

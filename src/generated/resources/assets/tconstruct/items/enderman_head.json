@@ -1,6 +1,10 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "tconstruct:item/enderman_head"
+    "type": "minecraft:special",
+    "base": "minecraft:item/template_skull",
+    "model": {
+      "type": "tconstruct:head",
+      "kind": "enderman"
+    }
   }
 }
