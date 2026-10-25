@@ -35,8 +35,15 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-/** Helper for generating tool item models */
+/**
+ * Helper for generating tool item models.
+ * PORT 1.21.4: the {@code tconstruct:tool} block-model loader no longer exists, tools render through the inline
+ * {@code tconstruct:tool} item model in {@code items/<id>.json}. The legacy source models are read from
+ * {@code tool_models/<id>.json} (see {@link #readToolJson}) so the model manager does not try to load them, and the
+ * derived legacy models (broken, pulling, charging, blocking...) are only kept in {@link #models} instead of being written.
+ */
 public abstract class AbstractToolItemModelProvider extends GenericDataProvider {
+  /** Derived legacy models by path, not written; feeds the broken variant of the item definitions */
   protected final Map<String,JsonObject> models = new HashMap<>();
   /** PORT 1.21.4: item-model definitions (assets/<ns>/items/<id>.json), keyed by item id */
   protected final Map<ResourceLocation,JsonObject> itemModels = new HashMap<>();
@@ -60,10 +67,7 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
     } catch (IOException e) {
       return CompletableFuture.failedFuture(e);
     }
-    // no key comparator - I want them sorted in the same order as the input models for easier readability
-    return allOf(Stream.concat(
-      models.entrySet().stream().map((entry) -> saveJson(cache, resource(entry.getKey()), entry.getValue(), null)),
-      itemModels.entrySet().stream().map((entry) -> DataProvider.saveStable(cache, entry.getValue(), itemPath.json(entry.getKey())))));
+    return allOf(itemModels.entrySet().stream().map((entry) -> DataProvider.saveStable(cache, entry.getValue(), itemPath.json(entry.getKey()))));
   }
 
   /**
@@ -130,7 +134,7 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
   protected void tool(IdAwareObject<ResourceLocation> tool, @Nullable JsonObject blocking, String... brokenParts) throws IOException {
     ResourceLocation id = tool.getId();
     String name = id.getPath();
-    JsonObject source = readJson(id);
+    JsonObject source = readToolJson(id);
     if (blocking != null) {
       withDisplay("tool/" + name + "/blocking", id, blocking);
     }
@@ -144,7 +148,7 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
    */
   protected void basicTool(IdAwareObject<ResourceLocation> tool) throws IOException {
     ResourceLocation id = tool.getId();
-    toolItem(id, readJson(id), null);
+    toolItem(id, readToolJson(id), null);
   }
 
   /** Logic for creating models for the given ammo type */
@@ -270,7 +274,7 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
   protected void pulling(IdAwareObject<ResourceLocation> bow, JsonObject blocking, AmmoHandler ammo, String brokenPart, int pullingCount, String... pullingParts) throws IOException {
     ResourceLocation id = bow.getId();
     String name = id.getPath();
-    JsonObject base = readJson(id);
+    JsonObject base = readToolJson(id);
     base.remove("overrides"); // don't need them anywhere, notably ditching for the sake of ammo models
     JsonObject broken = transformTool("tool/" + name + "/broken", base, "", false, '/', "broken", brokenPart);
     withDisplay("tool/" + name + "/blocking", id, blocking);
@@ -285,7 +289,7 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
   protected void charged(IdAwareObject<ResourceLocation> bow, JsonObject properties, String... brokenParts) throws IOException {
     ResourceLocation id = bow.getId();
     String name = id.getPath();
-    JsonObject base = readJson(id);
+    JsonObject base = readToolJson(id);
     base.remove("overrides");
     withDisplay("tool/" + name + "/blocking", id, properties);
     JsonObject broken = transformTool("tool/" + name + "/broken", base, "", false, '/', "broken", brokenParts);
@@ -304,7 +308,7 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
     ResourceLocation id = staff.getId();
     String path = id.getPath();
     String name = path.substring(0, path.length() - "_staff".length());
-    JsonObject base = readJson(id);
+    JsonObject base = readToolJson(id);
     withDisplay("tool/staff/" + name + "/blocking", id, properties);
     JsonObject broken = transformTool("tool/staff/" + name + "/broken", base, "", true, '/', "broken", "tool");
     for (int i = 1; i <= 5; i++) {
@@ -319,7 +323,7 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
   /** Adds broken and blocking models for the shield */
   protected void shield(String setName, IdAwareObject<ResourceLocation> shield, JsonObject properties, String... parts) throws IOException {
     ResourceLocation id = shield.getId();
-    JsonObject base = readJson(id);
+    JsonObject base = readToolJson(id);
     withDisplay("armor/" + setName + "/shield_blocking", id, Objects.requireNonNull(properties));
     JsonObject broken = transformTool("armor/" + setName + "/shield_broken", base, "", false, '_', "broken", parts);
     // PORT 1.21.4: emit the base + broken items/ definition so the resting (GUI) item renders
@@ -328,7 +332,7 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
 
   /** Adds broken and blocking models for the armor item */
   protected void armor(String overrideName, ResourceLocation itemId, String... textures) throws IOException {
-    JsonObject base = readJson(itemId);
+    JsonObject base = readToolJson(itemId);
     JsonObject broken = transformTool("armor/" + overrideName + "_broken", base, "", false, '_', "broken", textures);
     // PORT 1.21.4: emit the base + broken items/ definition so the resting (GUI) item renders
     toolItem(itemId, base, broken);
@@ -361,7 +365,7 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
   protected void fishingRod(IdAwareObject<ResourceLocation> tool, @Nullable JsonObject blocking, String[] castParts, String[] brokenParts) throws IOException {
     ResourceLocation id = tool.getId();
     String name = id.getPath();
-    JsonObject base = readJson(id);
+    JsonObject base = readToolJson(id);
     String cast = "tool/" + name + "/cast";
     transformTool(cast,   base, "", false, '/', "cast", castParts);
     JsonObject broken = transformTool("tool/" + name + "/broken", base, "", false, '/', "broken", brokenParts);
@@ -377,7 +381,16 @@ public abstract class AbstractToolItemModelProvider extends GenericDataProvider 
 
   /** Reads a JSON file */
   protected JsonObject readJson(ResourceLocation path) throws IOException {
-    ResourceLocation fullPath = ResourceLocation.fromNamespaceAndPath(path.getNamespace(), "models/item/" + path.getPath() + ".json");
+    return readResource(ResourceLocation.fromNamespaceAndPath(path.getNamespace(), "models/item/" + path.getPath() + ".json"));
+  }
+
+  /** Reads the legacy {@code tconstruct:tool} source model for a tool, kept outside {@code models/} as nothing can load it at runtime */
+  protected JsonObject readToolJson(ResourceLocation tool) throws IOException {
+    return readResource(ResourceLocation.fromNamespaceAndPath(tool.getNamespace(), "tool_models/" + tool.getPath() + ".json"));
+  }
+
+  /** Reads a JSON file at the given full resource path */
+  private JsonObject readResource(ResourceLocation fullPath) throws IOException {
     try (BufferedReader reader = resourceManager.getResource(fullPath).orElseThrow(() -> new IOException("Missing model " + fullPath)).openAsReader()) {
       return GsonHelper.parse(reader);
     }
