@@ -5,7 +5,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -107,7 +107,7 @@ public enum SlotIngredientRenderer implements IIngredientRenderer<SlotCount> {
       graphics.drawString(fontRenderer, text, 9 - fontRenderer.width(text), 5, Color.GRAY.getRGB(), false);
     }
     // PORT 1.21.4: GuiGraphics.blit(x,y,z,w,h,sprite) was removed; sprites now render through blitSprite(renderType, sprite, ...)
-    graphics.blitSprite(RenderType::guiTextured, SLOT_SPRITES.computeIfAbsent(SlotCount.type(slots), SLOT_LOOKUP), this == INGREDIENT ? 0 : 8, 0, 16, 16);
+    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITES.computeIfAbsent(SlotCount.type(slots), SLOT_LOOKUP), this == INGREDIENT ? 0 : 8, 0, 16, 16);
   }
 
   /** Appends the ID in advanced tooltip */

@@ -1,7 +1,5 @@
 package slimeknights.tconstruct.plugin.jei;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.Getter;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
@@ -13,9 +11,12 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix3x2fStack;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.GuiUtil;
 import slimeknights.tconstruct.library.recipe.tinkerstation.building.ToolBuildingRecipe;
@@ -45,8 +46,7 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
     return background;
   }
 
-  private final IDrawable anvil, slotBg, slotBorder;
-  private final IDrawable itemCover;
+  private final IDrawable anvil, slotBorder;
   private static final int WIDTH = 134;
   private static final int HEIGHT = 66;
   private static final int ITEM_SIZE = 16;
@@ -54,10 +54,8 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
   public ToolBuildingCategory(IGuiHelper guiHelper) {
     this.icon = guiHelper.createDrawableItemStack(TinkerTools.pickaxe.get().getRenderTool());
     this.background = guiHelper.createDrawable(BACKGROUND_LOC, 122, 77, WIDTH, HEIGHT);
-    this.slotBg = guiHelper.createDrawable(BACKGROUND_LOC, 144, 59, SLOT_SIZE, SLOT_SIZE);
     this.slotBorder = guiHelper.createDrawable(BACKGROUND_LOC, 162, 59, SLOT_SIZE, SLOT_SIZE);
     this.anvil = guiHelper.createDrawable(BACKGROUND_LOC, 128, 61, ITEM_SIZE, ITEM_SIZE);
-    this.itemCover = guiHelper.createDrawable(BACKGROUND_LOC, 122, 77, 70, 60);
   }
 
   @Override
@@ -97,27 +95,25 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
   public void draw(ToolBuildingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics graphics, double mouseX, double mouseY) {
     // first, draw the item background
     ItemStack outputStack = recipe.getOutput() instanceof IModifiableDisplay modifiable ? modifiable.getRenderTool() : recipe.getOutput().asItem().getDefaultInstance();
-    PoseStack renderPose = graphics.pose();
-    renderPose.pushPose();
-    renderPose.translate(5, 6.5, 0);
-    renderPose.scale(3.7f, 3.7f, 1.0f);
+    Matrix3x2fStack renderPose = graphics.pose();
+    renderPose.pushMatrix();
+    renderPose.translate(5, 6.5f);
+    renderPose.scale(3.7f, 3.7f);
     graphics.renderItem(outputStack, 0, 0);
-    renderPose.popPose();
+    renderPose.popMatrix();
 
     // next, overlay the item with transparent grey, makes it appear transparent
-    // 1.21.5: GUI blits always blend; clearing the depth buffer replaces disabling the depth test so the cover paints over the item
-    GuiUtil.clearDepth(graphics);
-    RenderSystem.setShaderColor(1, 1, 1, 0.82f);
-    itemCover.draw(graphics, 5, 6);
+    // 1.21.8: GUI draws are layered by submission order, so the cover paints over the item without depth tricks. IDrawable.draw
+    // takes no color and the shader color is gone, so the translucent parts are blitted directly with an alpha color
+    graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND_LOC, 5, 6, 122, 77, 70, 60, 256, 256, ARGB.white(0.82f));
 
     // next, draw slot backgrounds very transparent
-    RenderSystem.setShaderColor(1, 1, 1, 0.28f);
+    int slotBgColor = ARGB.white(0.28f);
     for (LayoutSlot layoutSlot : recipe.getLayoutSlots()) {
       // need to offset by 1 because the inventory slot icons are 18x18
-      this.slotBg.draw(graphics, layoutSlot.getX() + X_OFFSET - 1, layoutSlot.getY() + Y_OFFSET - 1);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND_LOC, layoutSlot.getX() + X_OFFSET - 1, layoutSlot.getY() + Y_OFFSET - 1, 144, 59, SLOT_SIZE, SLOT_SIZE, 256, 256, slotBgColor);
     }
     // finally, draw slot borders opaque
-    RenderSystem.setShaderColor(1, 1, 1, 1);
     for (LayoutSlot layoutSlot : recipe.getLayoutSlots()) {
       // need to offset by 1 because the inventory slot icons are 18x18
       this.slotBorder.draw(graphics, layoutSlot.getX() + X_OFFSET - 1, layoutSlot.getY() + Y_OFFSET - 1);

@@ -1,6 +1,5 @@
 package slimeknights.tconstruct.plugin.jei.modifiers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.Getter;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -20,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.ApiStatus.Internal;
+import org.joml.Matrix3x2fStack;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.client.GuiUtil;
@@ -148,11 +148,11 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
     // draw slotless icon if needed. Slots are handled by ingredient renderer.
     SlotCount slots = recipe.getSlots();
     if (slots == null) {
-      PoseStack pose = graphics.pose();
-      pose.pushPose();
-      pose.translate(102, 58, 0);
+      Matrix3x2fStack pose = graphics.pose();
+      pose.pushMatrix();
+      pose.translate(102, 58);
       SlotIngredientRenderer.INPUT.render(graphics, null);
-      pose.popPose();
+      pose.popMatrix();
     }
   }
 
