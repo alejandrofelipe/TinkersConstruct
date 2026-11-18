@@ -131,8 +131,13 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
     matrices.popPose();
   }
 
+  /**
+   * 1.21.8: shouldRenderOffScreen lost its block entity parameter, so the old per-tile condition
+   * (IN_STRUCTURE && structure != null) can no longer be checked here. The fluid is drawn across the whole multiblock,
+   * far beyond the controller's chunk section, so always register as globally rendered (still frustum-culled by vanilla).
+   */
   @Override
-  public boolean shouldRenderOffScreen(HeatingStructureBlockEntity tile) {
-    return tile.getBlockState().getValue(ControllerBlock.IN_STRUCTURE) && tile.getStructure() != null;
+  public boolean shouldRenderOffScreen() {
+    return true;
   }
 }

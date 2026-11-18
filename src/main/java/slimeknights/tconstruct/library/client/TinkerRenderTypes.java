@@ -43,16 +43,12 @@ public class TinkerRenderTypes {
                   .setTextureState(RenderStateShard.BLOCK_SHEET_MIPPED)
                   .createCompositeState(false));
 
-  /** Render type for highlighting GUI areas such as tanks, see {@link GuiUtil#renderHighlight} */
-  public static final RenderType GUI_HIGHLIGHT = RenderType.create(
-    TConstruct.resourceString("gui_highlight"), 1536, Pipelines.GUI_HIGHLIGHT, RenderType.CompositeState.builder().createCompositeState(false));
-
 
   /**
    * Render pipelines for the above render types. Separate class so pipelines can be registered without loading the
    * render types, which read the config.
    */
-  @EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+  @EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT)
   public static class Pipelines {
     private Pipelines() {}
 
@@ -71,18 +67,10 @@ public class TinkerRenderTypes {
       .withLocation(TConstruct.getResource("pipeline/smeltery_fluid_no_fog"))
       .withCull(false)
       .build();
-    /** Pipeline for GUI highlights: like vanilla GUI overlays (no depth test or write), but does not write alpha, matching the old {@code colorMask(true, true, true, false)} */
-    public static final RenderPipeline GUI_HIGHLIGHT = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
-      .withLocation(TConstruct.getResource("pipeline/gui_highlight"))
-      .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-      .withDepthWrite(false)
-      .withColorWrite(true, false)
-      .build();
 
     @SubscribeEvent
     static void registerPipelines(RegisterRenderPipelinesEvent event) {
       event.registerPipeline(ERROR_BLOCK);
-      event.registerPipeline(GUI_HIGHLIGHT);
       // register both fluid variants, the config is read when the render type is created
       event.registerPipeline(SMELTERY_FLUID);
       event.registerPipeline(SMELTERY_FLUID_NO_FOG);

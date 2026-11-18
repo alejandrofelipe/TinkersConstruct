@@ -30,10 +30,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.tools.definition.module.ToolHooks;
@@ -45,7 +43,7 @@ import slimeknights.tconstruct.library.utils.BlockSideHitListener;
 
 import java.util.Iterator;
 
-@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT)
 public class ToolRenderEvents {
   /** Maximum number of blocks from the iterator to render */
   private static final int MAX_BLOCKS = 60;
@@ -122,11 +120,8 @@ public class ToolRenderEvents {
 
   /** Renders the block damage process on the extra blocks */
   @SubscribeEvent
-  static void renderBlockDamageProgress(RenderLevelStageEvent event) {
+  static void renderBlockDamageProgress(RenderLevelStageEvent.AfterTripwireBlocks event) {
     // TODO: validate this is the right stage for block breaking particles, maybe I want a bit earlier
-    if (event.getStage() != Stage.AFTER_TRIPWIRE_BLOCKS) {
-      return;
-    }
 
     // validate required variables are set
     MultiPlayerGameMode controller = Minecraft.getInstance().gameMode;

@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.event.RenderItemInFrameEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
@@ -28,14 +29,24 @@ import java.util.Map;
 
 public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends ItemFrameRenderer<T> {
   // 1.21.5: ModelResourceLocation and ModelManager#getModel are gone; standalone models use typed keys
+  // 1.21.8: keys take a ModelDebugName (not a location); the model id is registered separately via SimpleUnbakedStandaloneModel
   public static final Map<FrameType, StandaloneModelKey<BlockStateModel>> LOCATIONS_MODEL = new EnumMap<>(FrameType.class);
   public static final Map<FrameType, StandaloneModelKey<BlockStateModel>> LOCATIONS_MODEL_MAP = new EnumMap<>(FrameType.class);
   static {
     for (FrameType type : FrameType.values()) {
-      String name = type == FrameType.REVERSED_GOLD ? FrameType.GOLD.getSerializedName() : type.getSerializedName();
-      LOCATIONS_MODEL.put(type, new StandaloneModelKey<>(TConstruct.getResource("block/frame/" + name)));
-      LOCATIONS_MODEL_MAP.put(type, new StandaloneModelKey<>(TConstruct.getResource("block/frame/" + name + "_map")));
+      LOCATIONS_MODEL.put(type, key(modelId(type, false)));
+      LOCATIONS_MODEL_MAP.put(type, key(modelId(type, true)));
     }
+  }
+
+  /** Gets the block model location for the given frame type */
+  public static ResourceLocation modelId(FrameType type, boolean map) {
+    String name = type == FrameType.REVERSED_GOLD ? FrameType.GOLD.getSerializedName() : type.getSerializedName();
+    return TConstruct.getResource("block/frame/" + name + (map ? "_map" : ""));
+  }
+
+  private static StandaloneModelKey<BlockStateModel> key(ResourceLocation id) {
+    return new StandaloneModelKey<>(id::toString);
   }
 
   private final MapRenderer mapRenderer;

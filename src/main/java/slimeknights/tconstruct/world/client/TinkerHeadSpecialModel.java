@@ -34,6 +34,7 @@ public record TinkerHeadSpecialModel(TinkerHeadType kind) implements SpecialMode
   @Override
   public SpecialModelRenderer<?> bake(EntityModelSet modelSet) {
     SkullModelBase model = SkullBlockRenderer.createModel(modelSet, kind);
-    return model != null ? new SkullSpecialRenderer(kind, model, null, 0) : null;
+    // 1.21.8: SkullSpecialRenderer takes the render type directly; the texture comes from SKIN_BY_TYPE like the placed head
+    return model != null ? new SkullSpecialRenderer(model, 0, SkullBlockRenderer.getSkullRenderType(kind, null)) : null;
   }
 }
