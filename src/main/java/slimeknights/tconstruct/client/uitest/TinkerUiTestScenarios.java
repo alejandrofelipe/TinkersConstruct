@@ -7,6 +7,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -36,6 +37,7 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.tools.nbt.MaterialIdNBT;
+import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.gametest.SmelteryRigs;
 import slimeknights.tconstruct.plugin.jei.JEIPlugin;
@@ -50,6 +52,7 @@ import slimeknights.tconstruct.tables.client.inventory.ToolTableScreen;
 import slimeknights.tconstruct.tools.TinkerModifiers;
 import slimeknights.tconstruct.tools.TinkerToolParts;
 import slimeknights.tconstruct.tools.TinkerTools;
+import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
 import slimeknights.tconstruct.world.TinkerHeadType;
 import slimeknights.tconstruct.world.TinkerWorld;
@@ -633,7 +636,8 @@ public class TinkerUiTestScenarios {
    * material parts, fluid containers, material blocks, NBT key) to guard the 1.21.6+ GUI item atlas: it caches one icon
    * per model identity, so a custom model that appends no identity shares a slot with every other one (station tabs
    * showed an arrow instead of the table). Asserts each stack has a non-empty identity that is stable across resolves
-   * and distinct from the others, then captures the inventory for a visual check.
+   * and distinct from the others (including a foil-only and a modifier-only variant), that foil and animated textures
+   * mark the slot animated, then captures the inventory for a visual check.
    */
   private static class DynamicItemIconsScenario implements UiTestScenario {
     @Override
@@ -643,15 +647,24 @@ public class TinkerUiTestScenarios {
 
     /** Built fresh per call: once on the server thread for the inventory, once on the client thread for the assert */
     private static List<ItemStack> stacks() {
+      ItemStack cobaltPickaxe = new MaterialIdNBT(List.of(MaterialIds.cobalt, MaterialIds.wood, MaterialIds.iron)).updateStack(new ItemStack(TinkerTools.pickaxe));
+      // same materials plus a modifier with its own overlay, so only the modifier part of the tool cache key differs
+      ToolStack netheritePickaxe = ToolStack.from(cobaltPickaxe.copy());
+      netheritePickaxe.addModifier(ModifierIds.netherite, 1);
+      // same model variant as the plain iron head, only the foil differs
+      ItemStack foilPickHead = TinkerToolParts.pickHead.get().withMaterial(MaterialIds.iron);
+      foilPickHead.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
       return List.of(
         new ItemStack(TinkerTables.craftingStation),
         RetexturedHelper.setTexture(new ItemStack(TinkerTables.craftingStation), Blocks.DARK_OAK_PLANKS),
         RetexturedHelper.setTexture(new ItemStack(TinkerTables.tinkerStation), Blocks.BIRCH_PLANKS),
         RetexturedHelper.setTexture(new ItemStack(TinkerTables.partBuilder), Blocks.CRIMSON_PLANKS),
-        new MaterialIdNBT(List.of(MaterialIds.cobalt, MaterialIds.wood, MaterialIds.iron)).updateStack(new ItemStack(TinkerTools.pickaxe)),
+        cobaltPickaxe,
+        netheritePickaxe.createStack(),
         TinkerTools.pickaxe.get().getRenderTool(),
         TinkerTools.arrow.get().getRenderTool(),
         TinkerToolParts.pickHead.get().withMaterial(MaterialIds.iron),
+        foilPickHead,
         TinkerToolParts.pickHead.get().withMaterial(MaterialIds.cobalt),
         new ItemStack(TinkerFluids.moltenIron.getBucket()),
         CopperCanItem.setFluid(new ItemStack(TinkerSmeltery.copperCan), new FluidStack(Fluids.WATER, FluidValues.BOTTLE)),
@@ -697,6 +710,10 @@ public class TinkerUiTestScenarios {
         }
         if (!identity.equals(second.getModelIdentity())) {
           throw new IllegalStateException("dynamic_item_icons: " + stack + " GUI model identity is not stable across resolves");
+        }
+        // glint and the animated molten iron texture must re-render their atlas slot every frame
+        if ((stack.hasFoil() || stack.is(TinkerFluids.moltenIron.getBucket())) && !first.isAnimated()) {
+          throw new IllegalStateException("dynamic_item_icons: " + stack + " should be animated in the GUI atlas");
         }
         for (int i = 0; i < identities.size(); i++) {
           if (identities.get(i).equals(identity)) {
