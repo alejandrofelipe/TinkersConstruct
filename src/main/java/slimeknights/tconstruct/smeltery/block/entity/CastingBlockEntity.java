@@ -348,7 +348,10 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
     if (this.lastCastingRecipe != null && this.lastCastingRecipe.matches(castingInventory, level)) {
       return new RecipeHolder<>(this.lastCastingRecipeName, this.lastCastingRecipe);
     }
-    RecipeHolder<ICastingRecipe> castingRecipe = level.getRecipeManager().getRecipeFor(this.castingType, castingInventory, level).orElse(null);
+    // not RecipeManager#getRecipeFor: it returns nothing when RecipeInput#isEmpty(), i.e. when every item slot is empty, but
+    // castless casting recipes (an empty basin or table, where the fluid is the input) have an empty item input
+    RecipeHolder<ICastingRecipe> castingRecipe = level.getRecipeManager().getAllRecipesFor(this.castingType).stream()
+      .filter(holder -> holder.value().matches(castingInventory, level)).findFirst().orElse(null);
     if (castingRecipe != null) {
       this.lastCastingRecipe = castingRecipe.value();
       this.lastCastingRecipeName = castingRecipe.id();
