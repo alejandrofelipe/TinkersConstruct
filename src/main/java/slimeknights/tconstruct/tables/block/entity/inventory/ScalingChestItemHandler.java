@@ -3,6 +3,7 @@ package slimeknights.tconstruct.tables.block.entity.inventory;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 
@@ -30,6 +31,13 @@ public abstract class ScalingChestItemHandler extends ItemStackHandler implement
 
   @Override
   public abstract boolean isItemValid(int slot, ItemStack stack);
+
+  @Override
+  public void deserialize(ValueInput input) {
+    super.deserialize(input);
+    // 1.21.8: ItemStackHandler#deserialize no longer calls onLoad (the old deserializeNBT did), so call it here to restore the visual size
+    onLoad();
+  }
 
   @Override
   protected void onLoad() {
