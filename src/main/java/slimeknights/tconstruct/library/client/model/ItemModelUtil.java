@@ -57,10 +57,11 @@ public class ItemModelUtil {
    * @param properties  Item render properties (gui light, particle, transforms)
    * @param renderType  Render type, null to use the stack's default
    * @param extents     Model extents, memoized
+   * @param animated    Whether any quad uses an animated sprite, computed once at bake time
    */
-  public record BakedItem(List<BakedQuad> quads, ModelRenderProperties properties, @Nullable RenderType renderType, Supplier<Vector3f[]> extents) {
+  public record BakedItem(List<BakedQuad> quads, ModelRenderProperties properties, @Nullable RenderType renderType, Supplier<Vector3f[]> extents, boolean animated) {
     public BakedItem(List<BakedQuad> quads, ModelRenderProperties properties, @Nullable RenderType renderType) {
-      this(quads, properties, renderType, Suppliers.memoize(() -> BlockModelWrapper.computeExtents(quads)));
+      this(quads, properties, renderType, Suppliers.memoize(() -> BlockModelWrapper.computeExtents(quads)), ModelHelper.hasAnimatedSprite(quads));
     }
 
     /** Gets the particle sprite of this model */
@@ -77,6 +78,6 @@ public class ItemModelUtil {
    * @param model           Resolved baked model (already selected/rebaked for this stack)
    */
   public static void renderModel(ItemStackRenderState renderState, ItemStack stack, ItemDisplayContext displayContext, BakedItem model) {
-    ModelHelper.addItemLayer(renderState, stack, displayContext, model.quads, model.properties, model.renderType, model.extents);
+    ModelHelper.addItemLayer(renderState, stack, displayContext, model.quads, model.properties, model.renderType, model.extents, model.animated);
   }
 }
