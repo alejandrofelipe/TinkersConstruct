@@ -1,7 +1,16 @@
 package slimeknights.tconstruct.library.client.book;
 
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
 import slimeknights.mantle.client.book.BookLoader;
 import slimeknights.mantle.client.book.data.BookData;
@@ -34,6 +43,7 @@ import slimeknights.tconstruct.tools.stats.LimbMaterialStats;
 import slimeknights.tconstruct.tools.stats.SkullStats;
 import slimeknights.tconstruct.tools.stats.StatlessMaterialStats;
 
+import java.lang.reflect.Type;
 import java.util.Comparator;
 
 import static slimeknights.tconstruct.TConstruct.getResource;
@@ -65,7 +75,8 @@ public class TinkerBook extends BookData {
   public static void initBook() {
     // 1.21: Component (de)serialization needs a HolderLookup.Provider; book JSON never carries
     // registry-backed hover/click data (just text/translations), so the empty access is sufficient.
-    BookLoader.registerGsonTypeAdapter(Component.class, new Component.SerializerAdapter(RegistryAccess.EMPTY));
+    // 1.21.6: Component.SerializerAdapter is gone, adapt the component codec to Gson instead
+    BookLoader.registerGsonTypeAdapter(Component.class, new ComponentAdapter(RegistryAccess.EMPTY.createSerializationContext(JsonOps.INSTANCE)));
 
     // register page types
     BookLoader.registerPageType(MeleeHarvestMaterialContent.ID, MeleeHarvestMaterialContent.class);
@@ -197,5 +208,18 @@ public class TinkerBook extends BookData {
       case FANTASTIC_FOUNDRY -> FANTASTIC_FOUNDRY;
       case ENCYCLOPEDIA      -> ENCYCLOPEDIA;
     };
+  }
+
+  /** Gson adapter for components through {@link ComponentSerialization#CODEC}, replacing the removed {@code Component.SerializerAdapter} */
+  private record ComponentAdapter(DynamicOps<JsonElement> ops) implements JsonDeserializer<Component>, JsonSerializer<Component> {
+    @Override
+    public Component deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
+      return ComponentSerialization.CODEC.parse(ops, json).getOrThrow(JsonParseException::new);
+    }
+
+    @Override
+    public JsonElement serialize(Component component, Type type, JsonSerializationContext context) {
+      return ComponentSerialization.CODEC.encodeStart(ops, component).getOrThrow(JsonParseException::new);
+    }
   }
 }
