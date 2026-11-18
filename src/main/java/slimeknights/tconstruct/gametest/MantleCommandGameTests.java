@@ -41,8 +41,9 @@ public class MantleCommandGameTests {
     try {
       server.getCommands().getDispatcher().execute(command, source);
     } catch (CommandSyntaxException e) {
-      // a syntax/parse failure means the test setup is wrong (bad ids), not the bug under test - surface it clearly
-      throw new AssertionError("command syntax error running '" + command + "': " + e.getMessage(), e);
+      // a syntax failure (bad ids, or a command's own "not found" error) fails the test through the helper; an
+      // AssertionError is an Error, which the gametest runner does not catch, so it crashed the whole test server
+      helper.fail(Component.literal("command syntax error running '" + command + "': " + e.getMessage()));
     }
   }
 
@@ -94,6 +95,16 @@ public class MantleCommandGameTests {
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void sources_loot_table(GameTestHelper helper) {
     runCommand(helper, "mantle sources data loot_table minecraft:chests/simple_dungeon");
+    helper.succeed();
+  }
+
+  /**
+   * {@code /mantle sources data recipes <id>} finds the vanilla recipe file. 1.21 renamed the datapack folder from
+   * {@code recipes} to {@code recipe}, so the subcommand (still literally {@code recipes}) must look in {@code recipe/}.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void sources_recipe(GameTestHelper helper) {
+    runCommand(helper, "mantle sources data recipes minecraft:oak_planks");
     helper.succeed();
   }
 
