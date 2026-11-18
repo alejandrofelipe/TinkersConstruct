@@ -8,6 +8,7 @@ import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.tconstruct.library.recipe.fuel.MeltingFuel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,8 +30,9 @@ public class MeltingFuelHandler {
    * Updates the melting cache, called on JEI load
    * @param fuels  List of fuel recipes
    */
-  public static void setMeltngFuels(List<MeltingFuel> fuels) {
-    // sort the fuels highest first
+  public static void setMeltngFuels(List<MeltingFuel> recipes) {
+    // sort the fuels highest first; sort a copy, as callers pass immutable lists (Stream#toList)
+    List<MeltingFuel> fuels = new ArrayList<>(recipes);
     fuels.sort(Comparator.comparingInt(MeltingFuel::getTemperature));
     // get a list of temperature to fuel
     fuelLookup = fuels.stream()
