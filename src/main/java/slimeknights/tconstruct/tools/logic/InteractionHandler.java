@@ -30,7 +30,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickB
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -60,7 +59,7 @@ import java.util.function.Function;
 /**
  * This class handles interaction based event hooks
  */
-@EventBusSubscriber(modid = TConstruct.MOD_ID, bus = Bus.GAME)
+@EventBusSubscriber(modid = TConstruct.MOD_ID)
 public class InteractionHandler {
   public static final EquipmentSlot[] HAND_SLOTS = {EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND};
 

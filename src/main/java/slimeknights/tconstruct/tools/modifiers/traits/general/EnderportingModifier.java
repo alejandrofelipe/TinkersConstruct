@@ -58,7 +58,7 @@ public class EnderportingModifier extends NoLevelsModifier implements PlantHarve
 
   /** Attempts to teleport to the given location */
   private static boolean tryTeleport(ModifierEntry modifier, LivingEntity living, double x, double y, double z) {
-    Level world = living.getCommandSenderWorld();
+    Level world = living.level();
     // should never happen with the hooks, but just in case
     if (world.isClientSide) {
       return false;

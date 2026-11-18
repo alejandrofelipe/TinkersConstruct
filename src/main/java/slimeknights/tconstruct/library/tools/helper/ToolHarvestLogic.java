@@ -256,7 +256,7 @@ public class ToolHarvestLogic {
     // if broken, clear the item stack temporarily then break
     ToolStack tool = ToolStack.from(stack);
     Direction sideHit = BlockSideHitListener.getSideHit(player);
-    ServerLevel world = serverPlayer.serverLevel();
+    ServerLevel world = serverPlayer.level();
     BlockState state = world.getBlockState(pos);
     if (tool.isBroken()) {
       // no harvest context
@@ -283,7 +283,7 @@ public class ToolHarvestLogic {
    */
   public static int runBlockBreak(ItemStack stack, IToolStackView tool, BlockState state, BlockPos pos, Direction sideHit, ServerPlayer player, @Nullable Projectile projectile) {
     // create contexts
-    ServerLevel world = player.serverLevel();
+    ServerLevel world = player.level();
 
     // add in harvest info
     // must not be broken, and the tool definition must be effective

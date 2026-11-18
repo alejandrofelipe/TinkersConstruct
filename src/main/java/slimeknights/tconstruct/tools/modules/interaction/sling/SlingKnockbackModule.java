@@ -123,7 +123,7 @@ public record SlingKnockbackModule(LevelingValue forceMultiplier, float drawtime
         Vec3 direction = start.add(look.x * RANGE, look.y * RANGE, look.z * RANGE);
         AABB bb = player.getBoundingBox().expandTowards(look.x * RANGE, look.y * RANGE, look.z * RANGE).expandTowards(1, 1, 1);
 
-        EntityHitResult hit = ProjectileUtil.getEntityHitResult(level, player, start, direction, bb, e -> e instanceof LivingEntity);
+        EntityHitResult hit = ProjectileUtil.getEntityHitResult(level, player, start, direction, bb, e -> e instanceof LivingEntity, 0.3F); // 1.21.8: margin now explicit, 0.3 matches the old overload
         if (hit != null) {
           LivingEntity target = (LivingEntity)hit.getEntity();
           if (this.target.matches(target)) {
