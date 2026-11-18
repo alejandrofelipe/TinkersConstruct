@@ -3,7 +3,6 @@ package slimeknights.tconstruct.tools.entity;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -25,6 +24,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -394,16 +395,14 @@ public class CombatFishingHook extends FishingHook implements ProjectileWithKnoc
   private static final String TAG_MATERIAL = "material";
 
   @Override
-  public void addAdditionalSaveData(CompoundTag tag) {
+  public void addAdditionalSaveData(ValueOutput tag) {
     super.addAdditionalSaveData(tag);
     tag.putString(TAG_MATERIAL, getMaterial().toString());
   }
 
   @Override
-  public void readAdditionalSaveData(CompoundTag tag) {
+  public void readAdditionalSaveData(ValueInput tag) {
     super.readAdditionalSaveData(tag);
-    if (tag.contains(TAG_MATERIAL)) {
-      setMaterial(Objects.requireNonNullElse(MaterialVariantId.tryParse(tag.getStringOr(TAG_MATERIAL, "")), IMaterial.UNKNOWN_ID));
-    }
+    tag.getString(TAG_MATERIAL).ifPresent(material -> setMaterial(Objects.requireNonNullElse(MaterialVariantId.tryParse(material), IMaterial.UNKNOWN_ID)));
   }
 }

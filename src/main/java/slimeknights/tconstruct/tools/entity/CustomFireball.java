@@ -3,7 +3,6 @@ package slimeknights.tconstruct.tools.entity;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -17,6 +16,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Fireball;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -144,7 +145,7 @@ public class CustomFireball extends Fireball implements ProjectileWithPower {
   private static final String TAG_ENDERFERENCE_TYPE = "enderference_type";
 
   @Override
-  public void addAdditionalSaveData(CompoundTag tag) {
+  public void addAdditionalSaveData(ValueOutput tag) {
     super.addAdditionalSaveData(tag);
     tag.putFloat(TAG_POWER, power);
     tag.putFloat(TAG_MULTIPLIER, damageMultiplier);
@@ -164,7 +165,7 @@ public class CustomFireball extends Fireball implements ProjectileWithPower {
   }
 
   @Override
-  public void readAdditionalSaveData(CompoundTag tag) {
+  public void readAdditionalSaveData(ValueInput tag) {
     super.readAdditionalSaveData(tag);
     power = tag.getFloatOr(TAG_POWER, 0f);
     damageMultiplier = tag.getFloatOr(TAG_MULTIPLIER, 0f);

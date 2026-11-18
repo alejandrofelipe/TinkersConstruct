@@ -3,8 +3,6 @@ package slimeknights.tconstruct.tools.entity;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -21,6 +19,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -44,7 +44,6 @@ import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import slimeknights.tconstruct.library.utils.Schedule;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.shared.TinkerEffects;
 import slimeknights.tconstruct.tools.TinkerToolActions;
 import slimeknights.tconstruct.tools.TinkerTools;
@@ -306,26 +305,25 @@ public class ThrownShuriken extends Projectile implements ToolProjectile, Projec
   private static final String KEY_TASKS = "tasks";
 
   @Override
-  public void addAdditionalSaveData(CompoundTag tag) {
+  public void addAdditionalSaveData(ValueOutput tag) {
     super.addAdditionalSaveData(tag);
     if (!this.stack.isEmpty()) {
-      tag.put(KEY_STACK, this.stack.save(this.registryAccess()));
+      tag.store(KEY_STACK, ItemStack.CODEC, this.stack);
     }
     tag.putFloat(KEY_WATER_INERTIA, this.entityData.get(WATER_INERTIA));
     if (!this.tasks.isEmpty()) {
-      tag.put(KEY_TASKS, this.tasks.serialize());
+      this.tasks.serialize(tag.childrenList(KEY_TASKS));
     }
   }
 
   @Override
-  public void readAdditionalSaveData(CompoundTag tag) {
+  public void readAdditionalSaveData(ValueInput tag) {
     super.readAdditionalSaveData(tag);
-    if (TagUtil.contains(tag, KEY_STACK, Tag.TAG_COMPOUND)) {
-      setStack(ItemStack.parse(this.registryAccess(), tag.getCompoundOrEmpty(KEY_STACK)).orElse(ItemStack.EMPTY));
+    // only replace the stack if the key holds a compound, an invalid stack becomes empty as before
+    if (tag.child(KEY_STACK).isPresent()) {
+      setStack(tag.read(KEY_STACK, ItemStack.CODEC).orElse(ItemStack.EMPTY));
     }
     this.entityData.set(WATER_INERTIA, tag.getFloatOr(KEY_WATER_INERTIA, 0f));
-    if (TagUtil.contains(tag, KEY_TASKS, Tag.TAG_LIST)) {
-      this.tasks = Schedule.deserialize(TagUtil.getList(tag, KEY_TASKS, Tag.TAG_COMPOUND));
-    }
+    tag.childrenList(KEY_TASKS).ifPresent(list -> this.tasks = Schedule.deserialize(list));
   }
 }

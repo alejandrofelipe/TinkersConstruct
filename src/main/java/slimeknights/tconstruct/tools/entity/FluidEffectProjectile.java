@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -21,6 +20,8 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -38,7 +39,6 @@ import slimeknights.tconstruct.library.modifiers.entity.ProjectileWithPower;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectManager;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffects;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.library.utils.Util;
 import slimeknights.tconstruct.tools.TinkerModifiers;
 
@@ -335,31 +335,29 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
   }
 
   @Override
-  protected void addAdditionalSaveData(CompoundTag nbt) {
+  protected void addAdditionalSaveData(ValueOutput nbt) {
     super.addAdditionalSaveData(nbt);
     nbt.putFloat(KEY_POWER, power);
     nbt.putFloat(KEY_KNOCKBACK, knockback);
     nbt.putFloat(KEY_WATER_INERTIA, this.entityData.get(WATER_INERTIA));
     if (cannon != null) {
-      nbt.put(KEY_CANNON, TagUtil.writePos(cannon));
+      // BlockPos.CODEC writes the same int array as TagUtil.writePos
+      nbt.store(KEY_CANNON, BlockPos.CODEC, cannon);
     }
     FluidStack fluid = getFluid();
     if (!fluid.isEmpty()) {
-      nbt.put(KEY_FLUID, fluid.save(this.registryAccess()));
+      nbt.store(KEY_FLUID, FluidStack.CODEC, fluid);
     }
   }
 
   @Override
-  protected void readAdditionalSaveData(CompoundTag nbt) {
+  protected void readAdditionalSaveData(ValueInput nbt) {
     super.readAdditionalSaveData(nbt);
     this.power = nbt.getFloatOr(KEY_POWER, 0f);
     this.knockback = nbt.getFloatOr(KEY_KNOCKBACK, 0f);
     this.entityData.set(WATER_INERTIA, nbt.getFloatOr(KEY_WATER_INERTIA, 0f));
-    if (nbt.contains(KEY_CANNON)) {
-      this.cannon = TagUtil.readPos(nbt, KEY_CANNON).orElse(null);
-    } else {
-      this.cannon = null;
-    }
-    setFluid(FluidStack.parseOptional(this.registryAccess(), nbt.getCompoundOrEmpty(KEY_FLUID)));
+    this.cannon = nbt.read(KEY_CANNON, BlockPos.CODEC).orElse(null);
+    // OPTIONAL_CODEC treats an empty compound as an empty fluid like the old parseOptional
+    setFluid(nbt.read(KEY_FLUID, FluidStack.OPTIONAL_CODEC).orElse(FluidStack.EMPTY));
   }
 }

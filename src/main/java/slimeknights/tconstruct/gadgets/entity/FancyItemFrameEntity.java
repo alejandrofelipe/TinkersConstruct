@@ -2,7 +2,6 @@ package slimeknights.tconstruct.gadgets.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -17,6 +16,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import slimeknights.tconstruct.common.Sounds;
 import slimeknights.tconstruct.gadgets.TinkerGadgets;
 import slimeknights.tconstruct.library.utils.Util;
@@ -52,11 +53,11 @@ public class FancyItemFrameEntity extends ItemFrame {
   @Override
   public InteractionResult interact(Player player, InteractionHand hand) {
     if (!player.isShiftKeyDown() && getFrameId() == FrameType.CLEAR.getId() && !getItem().isEmpty()) {
-      BlockPos behind = blockPosition().relative(direction.getOpposite());
+      BlockPos behind = blockPosition().relative(getDirection().getOpposite());
       Level level = level();
       BlockState state = level.getBlockState(behind);
       if (!state.isAir()) {
-        InteractionResult result = state.useWithoutItem(level, player, Util.createTraceResult(behind, direction, false));
+        InteractionResult result = state.useWithoutItem(level, player, Util.createTraceResult(behind, getDirection(), false));
         if (result.consumesAction()) {
           return result;
         }
@@ -208,7 +209,7 @@ public class FancyItemFrameEntity extends ItemFrame {
 
 
   @Override
-  public void addAdditionalSaveData(CompoundTag compound) {
+  protected void addAdditionalSaveData(ValueOutput compound) {
     super.addAdditionalSaveData(compound);
     int frameId = this.getFrameId();
     compound.putInt(TAG_VARIANT, frameId);
@@ -218,7 +219,7 @@ public class FancyItemFrameEntity extends ItemFrame {
   }
 
   @Override
-  public void readAdditionalSaveData(CompoundTag compound) {
+  protected void readAdditionalSaveData(ValueInput compound) {
     super.readAdditionalSaveData(compound);
     int frameId = compound.getIntOr(TAG_VARIANT, 0);
     this.entityData.set(VARIANT, frameId);

@@ -3,8 +3,6 @@ package slimeknights.tconstruct.tools.entity;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -24,6 +22,8 @@ import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import slimeknights.tconstruct.TConstruct;
@@ -50,7 +50,6 @@ import slimeknights.tconstruct.library.tools.nbt.ModifierNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import slimeknights.tconstruct.library.utils.Schedule;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.shared.TinkerEffects;
 import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.data.ModifierIds;
@@ -414,7 +413,7 @@ public class ThrownTool extends ThrownTrident implements ToolProjectile {
   private static final String KEY_TASKS = "tasks";
 
   @Override
-  public void addAdditionalSaveData(CompoundTag tag) {
+  public void addAdditionalSaveData(ValueOutput tag) {
     super.addAdditionalSaveData(tag);
     tag.putFloat(KEY_CHARGE, this.charge);
     tag.putFloat(KEY_MULTIPLIER, this.multiplier);
@@ -424,28 +423,22 @@ public class ThrownTool extends ThrownTrident implements ToolProjectile {
       tag.putInt(KEY_ORIGINAL_SLOT, this.originalSlot);
     }
     if (!this.tasks.isEmpty()) {
-      tag.put(KEY_TASKS, this.tasks.serialize());
+      this.tasks.serialize(tag.childrenList(KEY_TASKS));
     }
   }
 
   @Override
-  public void readAdditionalSaveData(CompoundTag tag) {
+  public void readAdditionalSaveData(ValueInput tag) {
     super.readAdditionalSaveData(tag);
     // update the tool to sync to client, if its set
-    if (TagUtil.contains(tag, "Trident", Tag.TAG_COMPOUND)) {
+    if (tag.child("Trident").isPresent()) {
       updateFromStack();
     }
     this.charge = tag.getFloatOr(KEY_CHARGE, 0f);
     this.multiplier = tag.getFloatOr(KEY_MULTIPLIER, 0f);
     this.entityData.set(WATER_INERTIA, tag.getFloatOr(KEY_WATER_INERTIA, 0f));
     this.hitBlock = tag.getBooleanOr(KEY_HIT_BLOCK, false);
-    if (TagUtil.contains(tag, KEY_ORIGINAL_SLOT, TagUtil.TAG_ANY_NUMERIC)) {
-      this.originalSlot = tag.getIntOr(KEY_ORIGINAL_SLOT, 0);
-    } else {
-      this.originalSlot = -1;
-    }
-    if (TagUtil.contains(tag, KEY_TASKS, Tag.TAG_LIST)) {
-      this.tasks = Schedule.deserialize(TagUtil.getList(tag, KEY_TASKS, Tag.TAG_COMPOUND));
-    }
+    this.originalSlot = tag.getIntOr(KEY_ORIGINAL_SLOT, -1);
+    tag.childrenList(KEY_TASKS).ifPresent(list -> this.tasks = Schedule.deserialize(list));
   }
 }

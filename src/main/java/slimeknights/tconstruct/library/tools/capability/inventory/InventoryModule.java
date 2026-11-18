@@ -271,7 +271,8 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
    */
   public static CompoundTag writeStack(ItemStack stack, int slot, CompoundTag compound) {
     // 1.21: ItemStack (de)serialization needs a HolderLookup.Provider; this modifier inventory runs server-side
-    stack.save(registries(), compound);
+    // 1.21.8: the encoded stack is a new tag (the old ItemStack.save also returned a copy, which was discarded here, losing the stack), so merge it in
+    compound.merge((CompoundTag) TagUtil.saveItem(registries(), stack, new CompoundTag()));
     compound.putInt(TAG_SLOT, slot);
     return compound;
   }

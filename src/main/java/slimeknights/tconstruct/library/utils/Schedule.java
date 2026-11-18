@@ -3,8 +3,8 @@ package slimeknights.tconstruct.library.utils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -55,40 +55,32 @@ public class Schedule {
 
   /* NBT */
 
-  /** Serializes the schedule to NBT */
-  public ListTag serialize() {
-    ListTag list = new ListTag();
+  /** Serializes the schedule to NBT, as a list of compounds */
+  public void serialize(ValueOutput.ValueOutputList list) {
     // don't serialize complete tasks, saves effort
     for (int i = nextIndex; i < entries.length; i++) {
-      list.add(entries[i].serialize());
+      entries[i].serialize(list.addChild());
     }
-    return list;
   }
 
   /** Deserializes an schedule from NBT */
-  public static Schedule deserialize(ListTag list) {
+  public static Schedule deserialize(ValueInput.ValueInputList list) {
     if (list.isEmpty()) {
       return EMPTY;
     }
-    ScheduleEntry[] entries = new ScheduleEntry[list.size()];
-    for (int i = 0; i < entries.length; i++) {
-      entries[i] = ScheduleEntry.deserialize(list.getCompoundOrEmpty(i));
-    }
-    return new Schedule(entries);
+    return new Schedule(list.stream().map(ScheduleEntry::deserialize).toArray(ScheduleEntry[]::new));
   }
 
   /** Single entry in the schedule */
   private record ScheduleEntry(int task, int time) {
     /** Serializes an entry to NBT */
-    public CompoundTag serialize() {
-      CompoundTag tag = new CompoundTag();
+    public void serialize(ValueOutput tag) {
       tag.putInt("task", task);
       tag.putInt("time", time);
-      return tag;
     }
 
     /** Deserializes an entry from NBT */
-    public static ScheduleEntry deserialize(CompoundTag nbt) {
+    public static ScheduleEntry deserialize(ValueInput nbt) {
       return new ScheduleEntry(nbt.getIntOr("task", 0), nbt.getIntOr("time", 0));
     }
   }
