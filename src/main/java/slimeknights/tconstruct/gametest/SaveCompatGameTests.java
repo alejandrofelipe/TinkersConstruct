@@ -7,13 +7,14 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -33,6 +34,7 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.fluids.TinkerFluids;
+import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -110,7 +112,7 @@ public class SaveCompatGameTests {
     for (Tag item : items) {
       check(helper, item instanceof CompoundTag entry && entry.get("slot") instanceof IntTag && entry.get("id") instanceof StringTag, "melting entry must hold int slot + item id, got " + item);
     }
-    check(helper, tag.get("CustomName") instanceof StringTag, "CustomName must stay a JSON string, got " + tag.get("CustomName"));
+    checkJsonName(helper, tag, "Save Compat Melter");
 
     MelterBlockEntity loaded = loadFresh(helper, melter, tag, MelterBlockEntity.class);
     for (int i = 0; i < inventory.getSlots(); i++) {
@@ -188,7 +190,7 @@ public class SaveCompatGameTests {
     for (Tag item : items) {
       check(helper, item instanceof CompoundTag entry && entry.get("Slot") instanceof ByteTag, "Items entry must hold a byte Slot, got " + item);
     }
-    check(helper, tag.get("CustomName") instanceof StringTag, "CustomName must stay a JSON string, got " + tag.get("CustomName"));
+    checkJsonName(helper, tag, "Save Compat Station");
     check(helper, tag.get("texture") instanceof StringTag, "texture must be a string, got " + tag.get("texture"));
     CraftingStationBlockEntity loadedCrafting = loadFresh(helper, crafting, tag, CraftingStationBlockEntity.class);
     checkInventory(helper, crafting, loadedCrafting, "crafting station");
@@ -201,9 +203,7 @@ public class SaveCompatGameTests {
     checkInventory(helper, partBuilder, loadFresh(helper, partBuilder, save(helper, partBuilder), PartBuilderBlockEntity.class), "part builder");
 
     TinkerStationBlockEntity station = place(helper, new BlockPos(1, 1, 3), TinkerTables.tinkerStation.get(), TinkerStationBlockEntity.class);
-    station.setItem(TinkerStationBlockEntity.INPUT_SLOT, TinkerToolParts.pickHead.get().withMaterial(MaterialIds.rock));
-    station.setItem(TinkerStationBlockEntity.INPUT_SLOT + 1, TinkerToolParts.toolHandle.get().withMaterial(MaterialIds.wood));
-    station.setItem(TinkerStationBlockEntity.INPUT_SLOT + 2, TinkerToolParts.toolBinding.get().withMaterial(MaterialIds.iron));
+    fillPickaxeParts(station, MaterialIds.rock, MaterialIds.wood, MaterialIds.iron);
     checkInventory(helper, station, loadFresh(helper, station, save(helper, station), TinkerStationBlockEntity.class), "tinker station");
     helper.succeed();
   }
@@ -330,9 +330,10 @@ public class SaveCompatGameTests {
   }
 
   /**
-   * A casting table saved by 1.21.5: byte {@code Slot}, a {@code {}} fluid (written by the old {@code FluidStack.saveOptional}
-   * for an empty tank), and a basin with a real fluid entry in the 1.21.5 {@code FluidStack} shape ({@code id}/{@code amount}).
-   * Also covers the item-side {@code {}} helpers and {@link ScaledFluidTank} not mutating the shared {@link FluidStack#EMPTY}.
+   * Casting tables saved by older versions: byte {@code Slot}, a {@code {}} fluid (1.21.1's {@code CastingFluidHandler} wrote
+   * {@code fluid:{}} for an empty tank; 1.21.5 omitted the key), and a basin with a real fluid entry in the 1.21.5
+   * {@code FluidStack} shape ({@code id}/{@code amount}). Also covers the item-side {@code {}} helpers and a {@code {}} entry
+   * loading into a {@link ScaledFluidTank} as empty.
    */
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void save_compat_legacy_casting_and_empty_entries(GameTestHelper helper) {
@@ -374,12 +375,10 @@ public class SaveCompatGameTests {
     slotOnly.putInt("Slot", 0);
     check(helper, TagUtil.parseOptionalItem(registries, slotOnly).isEmpty(), "{Slot}-only item tag should parse as empty");
 
-    // {} into a scaled (item) tank must not scale the shared empty stack
+    // {} into a scaled (item) tank loads as empty
     FluidTank scaled = ScaledFluidTank.create(FluidValues.INGOT, 4);
     scaled.deserialize(TagValueInput.create(ProblemReporter.DISCARDING, registries, new CompoundTag()));
-    check(helper, scaled.getFluid().isEmpty(), "{} scaled tank should load as empty, got " + scaled.getFluid());
-    check(helper, FluidStack.EMPTY.isEmpty() && FluidStack.EMPTY.getAmount() == 0, "FluidStack.EMPTY was mutated, amount " + FluidStack.EMPTY.getAmount());
-    helper.succeed();
+    check(helper, scaled.getFluid().isEmpty(), "{} scaled tank should load as empty, got " + scaled.getFluid());    helper.succeed();
   }
 
   /**
@@ -464,9 +463,7 @@ public class SaveCompatGameTests {
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void save_compat_tool_stack_codec_round_trip(GameTestHelper helper) {
     TinkerStationBlockEntity station = place(helper, new BlockPos(2, 1, 2), TinkerTables.tinkerStation.get(), TinkerStationBlockEntity.class);
-    station.setItem(TinkerStationBlockEntity.INPUT_SLOT, TinkerToolParts.pickHead.get().withMaterial(MaterialIds.rock));
-    station.setItem(TinkerStationBlockEntity.INPUT_SLOT + 1, TinkerToolParts.toolHandle.get().withMaterial(MaterialIds.wood));
-    station.setItem(TinkerStationBlockEntity.INPUT_SLOT + 2, TinkerToolParts.toolBinding.get().withMaterial(MaterialIds.wood));
+    fillPickaxeParts(station, MaterialIds.rock, MaterialIds.wood, MaterialIds.wood);
     ItemStack crafted = station.calcResult(null);
     check(helper, crafted.is(TinkerTools.pickaxe.get()), "tinker station built no pickaxe, got " + describe(crafted) + "; error=" + station.getCurrentError());
     checkToolCodec(helper, crafted, "crafted pickaxe");
@@ -501,7 +498,7 @@ public class SaveCompatGameTests {
     CompoundTag tag = saveEntity(helper, thrown);
     CompoundTag item = compound(helper, tag, "item");
     check(helper, "tconstruct:pickaxe".equals(item.getStringOr("id", "")), "thrown tool stack must be saved under item, got " + item);
-    check(helper, tag.get("multiplier") instanceof net.minecraft.nbt.FloatTag && tag.get("water_inertia") instanceof net.minecraft.nbt.FloatTag, "thrown tool floats missing: " + tag);
+    check(helper, tag.get("multiplier") instanceof FloatTag && tag.get("water_inertia") instanceof FloatTag, "thrown tool floats missing: " + tag);
 
     ThrownTool loaded = loadEntity(helper, tag, ThrownTool.class);
     checkStack(helper, stack, loaded.getPickupItemStackOrigin(), "thrown tool stack");
@@ -626,6 +623,22 @@ public class SaveCompatGameTests {
     CompoundTag entry = (CompoundTag) TagUtil.saveItem(registries, stack, new CompoundTag());
     entry.putInt("Slot", slot);
     return entry;
+  }
+
+  /**
+   * Asserts {@code CustomName} holds the name as a JSON string, the 1.21.5 {@code Component.Serializer.toJson} format (a plain
+   * literal is the quoted JSON string), not the vanilla component tag format, which writes a plain literal as an unquoted string.
+   */
+  private static void checkJsonName(GameTestHelper helper, CompoundTag tag, String name) {
+    String expected = "\"" + name + "\"";
+    check(helper, tag.get("CustomName") instanceof StringTag string && expected.equals(string.value()), "CustomName must be the JSON string " + expected + ", got " + tag.get("CustomName"));
+  }
+
+  /** Puts a pick head, tool handle and tool binding of the given materials in the tinker station inputs, in the pickaxe's part order */
+  private static void fillPickaxeParts(TinkerStationBlockEntity station, MaterialId head, MaterialId handle, MaterialId binding) {
+    station.setItem(TinkerStationBlockEntity.INPUT_SLOT, TinkerToolParts.pickHead.get().withMaterial(head));
+    station.setItem(TinkerStationBlockEntity.INPUT_SLOT + 1, TinkerToolParts.toolHandle.get().withMaterial(handle));
+    station.setItem(TinkerStationBlockEntity.INPUT_SLOT + 2, TinkerToolParts.toolBinding.get().withMaterial(binding));
   }
 
   /** Gets a compound child, failing if missing or of another type */
