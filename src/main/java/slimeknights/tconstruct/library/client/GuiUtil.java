@@ -272,8 +272,8 @@ public final class GuiUtil {
    * @param height    Element height
    */
   public static void renderHighlight(GuiGraphics graphics, int x, int y, int width, int height) {
-      // 1.21.8: GUI draws are layered by submission order (no depth buffer), so a plain fill after the content draws over it
-      graphics.fill(x, y, x + width, y + height, 0x80FFFFFF);
+    // 1.21.8: GUI draws are layered by submission order (no depth buffer), so a plain fill after the content draws over it
+    graphics.fill(x, y, x + width, y + height, 0x80FFFFFF);
   }
 
   /** Renders a pattern at the given location */

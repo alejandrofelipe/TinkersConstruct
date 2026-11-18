@@ -121,8 +121,7 @@ public class ToolRenderEvents {
   /** Renders the block damage process on the extra blocks */
   @SubscribeEvent
   static void renderBlockDamageProgress(RenderLevelStageEvent.AfterTripwireBlocks event) {
-    // TODO: validate this is the right stage for block breaking particles, maybe I want a bit earlier
-
+    // TODO: AfterTripwireBlocks: confirm this is the right stage for crumbling, maybe earlier
     // validate required variables are set
     MultiPlayerGameMode controller = Minecraft.getInstance().gameMode;
     if (controller == null || !controller.isDestroying()) {

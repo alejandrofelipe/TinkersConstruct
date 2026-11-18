@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.smeltery.client.render;
 
+import net.minecraft.world.phys.AABB;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -73,5 +74,10 @@ public class FaucetBlockEntityRenderer implements BlockEntityRenderer<FaucetBloc
         matrices.popPose();
       }
     }
+  }
+
+  @Override
+  public AABB getRenderBoundingBox(FaucetBlockEntity be) {
+    return be.getRenderBoundingBox();
   }
 }

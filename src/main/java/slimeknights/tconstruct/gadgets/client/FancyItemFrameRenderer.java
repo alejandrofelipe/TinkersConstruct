@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.gadgets.client;
 
+import net.neoforged.neoforge.client.model.standalone.SimpleUnbakedStandaloneModel;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -28,8 +30,8 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends ItemFrameRenderer<T> {
-  // 1.21.5: ModelResourceLocation and ModelManager#getModel are gone; standalone models use typed keys
-  // 1.21.8: keys take a ModelDebugName (not a location); the model id is registered separately via SimpleUnbakedStandaloneModel
+  // 1.21.5+: ModelResourceLocation and ModelManager#getModel are gone; standalone models use typed keys. In 1.21.8 a key only
+  // carries a ModelDebugName, so the model id is passed separately to SimpleUnbakedStandaloneModel in registerModels
   public static final Map<FrameType, StandaloneModelKey<BlockStateModel>> LOCATIONS_MODEL = new EnumMap<>(FrameType.class);
   public static final Map<FrameType, StandaloneModelKey<BlockStateModel>> LOCATIONS_MODEL_MAP = new EnumMap<>(FrameType.class);
   static {
@@ -40,13 +42,21 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
   }
 
   /** Gets the block model location for the given frame type */
-  public static ResourceLocation modelId(FrameType type, boolean map) {
+  private static ResourceLocation modelId(FrameType type, boolean map) {
     String name = type == FrameType.REVERSED_GOLD ? FrameType.GOLD.getSerializedName() : type.getSerializedName();
     return TConstruct.getResource("block/frame/" + name + (map ? "_map" : ""));
   }
 
   private static StandaloneModelKey<BlockStateModel> key(ResourceLocation id) {
     return new StandaloneModelKey<>(id::toString);
+  }
+
+  /** Registers all frame models as block state models, frames are block models */
+  public static void registerModels(ModelEvent.RegisterStandalone event) {
+    for (FrameType type : FrameType.values()) {
+      event.register(LOCATIONS_MODEL.get(type), SimpleUnbakedStandaloneModel.blockStateModel(modelId(type, false)));
+      event.register(LOCATIONS_MODEL_MAP.get(type), SimpleUnbakedStandaloneModel.blockStateModel(modelId(type, true)));
+    }
   }
 
   private final MapRenderer mapRenderer;

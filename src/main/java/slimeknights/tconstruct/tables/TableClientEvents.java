@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.tables;
 
+import slimeknights.tconstruct.tables.block.entity.table.RetexturedTableBlockEntity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.api.distmarker.Dist;
@@ -24,7 +26,13 @@ import slimeknights.tconstruct.tables.client.inventory.TinkerStationScreen;
 public class TableClientEvents extends ClientEventBase {
   @SubscribeEvent
   static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-    BlockEntityRendererProvider<TableBlockEntity> tableRenderer = InventoryBlockEntityRenderer::new;
+    // 1.21.8: the frustum test uses the renderer's box, so delegate to the tall box of retextured tables
+    BlockEntityRendererProvider<TableBlockEntity> tableRenderer = context -> new InventoryBlockEntityRenderer<>(context) {
+      @Override
+      public AABB getRenderBoundingBox(TableBlockEntity be) {
+        return be instanceof RetexturedTableBlockEntity retextured ? retextured.getRenderBoundingBox() : super.getRenderBoundingBox(be);
+      }
+    };
     event.registerBlockEntityRenderer(TinkerTables.craftingStationTile.get(), tableRenderer);
     event.registerBlockEntityRenderer(TinkerTables.tinkerStationTile.get(), tableRenderer);
     event.registerBlockEntityRenderer(TinkerTables.modifierWorktableTile.get(), tableRenderer);

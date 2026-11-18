@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.smeltery.client.render;
 
+import net.minecraft.world.phys.AABB;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -133,11 +134,19 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
 
   /**
    * 1.21.8: shouldRenderOffScreen lost its block entity parameter, so the old per-tile condition
-   * (IN_STRUCTURE && structure != null) can no longer be checked here. The fluid is drawn across the whole multiblock,
-   * far beyond the controller's chunk section, so always register as globally rendered (still frustum-culled by vanilla).
+   * (IN_STRUCTURE && structure != null) can no longer be restored: the flag is read once, when the block entity is added
+   * to the level, before the structure state is known, and would go stale after formation anyway. The fluid is drawn
+   * across the whole multiblock, far beyond the controller's chunk section, so always register as globally rendered.
+   * Global renderers get no distance limit, only the frustum test against {@link #getRenderBoundingBox}.
    */
   @Override
   public boolean shouldRenderOffScreen() {
     return true;
+  }
+
+  /** The frustum test uses the renderer's box (default is one block), so use the multiblock bounds to keep the fluid visible when the controller is off screen */
+  @Override
+  public AABB getRenderBoundingBox(HeatingStructureBlockEntity be) {
+    return be.getRenderBoundingBox();
   }
 }

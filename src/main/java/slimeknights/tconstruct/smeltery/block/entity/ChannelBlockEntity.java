@@ -72,7 +72,7 @@ public class ChannelBlockEntity extends MantleBlockEntity implements IFluidPacke
 		return this.tank.getFluid();
 	}
 
-	// PORT M3: getRenderBoundingBox moved to client BlockEntityRenderer in 1.21.1; renderer should delegate here
+	// Render bounds, used by the client renderer's getRenderBoundingBox since the BE method no longer applies in 1.21.8
 	public AABB getRenderBoundingBox() {
 		return new AABB(worldPosition.getX(), worldPosition.getY() - 1, worldPosition.getZ(), worldPosition.getX() + 1, worldPosition.getY() + 1, worldPosition.getZ() + 1);
 	}

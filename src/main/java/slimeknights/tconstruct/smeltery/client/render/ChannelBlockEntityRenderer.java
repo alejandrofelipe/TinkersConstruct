@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.smeltery.client.render;
 
+import net.minecraft.world.phys.AABB;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -115,4 +116,9 @@ public class ChannelBlockEntityRenderer implements BlockEntityRenderer<ChannelBl
 			RenderingHelper.renderFaucetFluids(world, pos, Direction.DOWN, matrices, builder, still, flowing, color, light);
 		}
 	}
+
+  @Override
+  public AABB getRenderBoundingBox(ChannelBlockEntity be) {
+    return be.getRenderBoundingBox();
+  }
 }
