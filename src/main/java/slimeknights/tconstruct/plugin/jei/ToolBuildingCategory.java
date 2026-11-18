@@ -14,7 +14,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix3x2fStack;
 import slimeknights.tconstruct.TConstruct;
@@ -105,10 +104,10 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
     // next, overlay the item with transparent grey, makes it appear transparent
     // 1.21.8: GUI draws are layered by submission order, so the cover paints over the item without depth tricks. IDrawable.draw
     // takes no color and the shader color is gone, so the translucent parts are blitted directly with an alpha color
-    graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND_LOC, 5, 6, 122, 77, 70, 60, 256, 256, ARGB.white(0.82f));
+    graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND_LOC, 5, 6, 122, 77, 70, 60, 256, 256, GuiUtil.ITEM_COVER_COLOR);
 
     // next, draw slot backgrounds very transparent
-    int slotBgColor = ARGB.white(0.28f);
+    int slotBgColor = GuiUtil.SLOT_BACKGROUND_COLOR;
     for (LayoutSlot layoutSlot : recipe.getLayoutSlots()) {
       // need to offset by 1 because the inventory slot icons are 18x18
       graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND_LOC, layoutSlot.getX() + X_OFFSET - 1, layoutSlot.getY() + Y_OFFSET - 1, 144, 59, SLOT_SIZE, SLOT_SIZE, 256, 256, slotBgColor);

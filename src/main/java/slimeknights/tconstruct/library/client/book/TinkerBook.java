@@ -214,7 +214,13 @@ public class TinkerBook extends BookData {
   private record ComponentAdapter(DynamicOps<JsonElement> ops) implements JsonDeserializer<Component>, JsonSerializer<Component> {
     @Override
     public Component deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
-      return ComponentSerialization.CODEC.parse(ops, json).getOrThrow(JsonParseException::new);
+      return ComponentSerialization.CODEC.parse(ops, json).getOrThrow(error -> {
+        String text = json.toString();
+        if (text.length() > 200) {
+          text = text.substring(0, 200) + "...";
+        }
+        return new JsonParseException("Failed to parse book component " + text + ": " + error);
+      });
     }
 
     @Override

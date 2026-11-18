@@ -18,6 +18,7 @@ import slimeknights.mantle.client.screen.ModuleScreen;
 import slimeknights.mantle.client.screen.MultiModuleScreen;
 import slimeknights.mantle.client.screen.ScalableElementScreen;
 import slimeknights.mantle.client.screen.SliderWidget;
+import slimeknights.tconstruct.library.client.GuiUtil;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.tables.client.inventory.ResponsiveLayout;
 import slimeknights.tconstruct.tables.client.inventory.widget.BorderWidget;
@@ -34,6 +35,8 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
   /** Default caption displayed until one is set */
   private static final Component DEFAULT_CAPTION = TConstruct.makeTranslation("gui", "caption").withStyle(ChatFormatting.UNDERLINE);
+  /** Help marker drawn in the top right corner when the panel has tooltips */
+  protected static final FormattedCharSequence HELP_MARKER = Component.literal("?").getVisualOrderText();
 
   protected static ResourceLocation BACKGROUND_IMAGE = TConstruct.getResource("textures/gui/panel.png");
 
@@ -145,21 +148,24 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
   /** Draws the panel unconditionally at its current position; the collapsed-tier overlay pass calls this above the slots (the normal module pass is gated off by {@link #hidden}/{@link #overlayMode}). */
   public void drawOverlay(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
-    beginOpaqueOverlayBlit(graphics);
+    beginOverlayStratum(graphics);
     this.renderBg(graphics, partialTicks, mouseX, mouseY);
   }
 
   /**
-   * Shared opaque-blit GL setup for the collapsed-tier overlays (this info panel and the station's selector overlay),
-   * which draw manually after the parent's whole render(). The centered overlay overlaps the station's faded tool icon
-   * so it must start a new stratum (the idiom TinkerStationScreen.renderBg uses for ITEM_COVER) to paint over the icon and slots.
+   * Starts a new GUI stratum for the collapsed-tier overlays (this info panel and the station's selector overlay), which draw
+   * manually after the parent's whole render(). Everything submitted afterwards paints over what was drawn before, so the
+   * centered overlay covers the station's faded tool icon and the slots (replaces clearing the depth buffer before 1.21.6).
    */
-  public static void beginOpaqueOverlayBlit(GuiGraphics graphics) {
-    // 1.21.8: GUI draws are deferred and layered; a new stratum replaces clearing the depth buffer, so the overlay paints over everything drawn before it
+  public static void beginOverlayStratum(GuiGraphics graphics) {
     graphics.nextStratum();
   }
 
-  /** Draws the panel's hover tooltips (help "?" and per-line entries) unconditionally; the overlay pass calls this after {@link #drawOverlay} so they sit above the panel, since the normal tooltip pass is gated off by {@link #overlayMode}. */
+  /**
+   * Sets the panel's hover tooltips (help "?" and per-line entries) unconditionally; the overlay pass calls this since the
+   * normal tooltip pass is gated off by {@link #overlayMode}. Tooltips are deferred to the end of the frame, so they always
+   * draw above the panel; see {@link GuiUtil} for the first-wins/focused rule they follow.
+   */
   public void drawOverlayTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
     this.renderTooltip(graphics, mouseX, mouseY);
   }
@@ -404,7 +410,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
     // info ? in the top right corner
     if (this.hasTooltips()) {
-      drawString(graphics, Component.literal("?").getVisualOrderText(), guiRight() - this.border.w - this.font.width("?") / 2f, this.topPos + 5, 0xff5f5f5f, false);
+      drawString(graphics, HELP_MARKER, guiRight() - this.border.w - this.font.width("?") / 2f, this.topPos + 5, 0xff5f5f5f, false);
     }
 
     // draw caption

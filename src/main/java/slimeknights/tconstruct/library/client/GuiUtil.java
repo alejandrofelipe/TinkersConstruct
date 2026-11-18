@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.joml.Matrix3x2f;
@@ -21,8 +22,20 @@ import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
 
 import javax.annotation.Nullable;
 
+/**
+ * GUI helpers for the deferred GUI rendering of 1.21.6+.
+ * <p>
+ * Deferred tooltip rule used across Tinkers screens: {@link GuiGraphics#setTooltipForNextFrame} keeps the <em>first</em> tooltip
+ * set in a frame, unless a later one is set with {@code focused = true}. Tooltips that up to 1.21.5 were drawn immediately
+ * after (so on top of) the slot item tooltip, and whose area can overlap a slot, are set as focused to keep that priority
+ * (e.g. the melting heat errors and the info panel tooltips); all others use the plain first-wins overloads.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GuiUtil {
+  /** Tint for translucent item covers drawn over a faded item (82% alpha), replaces the old shader color */
+  public static final int ITEM_COVER_COLOR = ARGB.white(0.82f);
+  /** Tint for translucent slot backgrounds (28% alpha), replaces the old shader color */
+  public static final int SLOT_BACKGROUND_COLOR = ARGB.white(0.28f);
   /**
    * Draws the background of a container
    * @param graphics    Graphics context
@@ -78,7 +91,7 @@ public final class GuiUtil {
    * @param y         Tank Y position
    * @param width     Tank width
    * @param height    Tank height
-   * @param depth     Tank depth
+   * @param depth     Unused since 1.21.8 (the GUI has no depth anymore), kept for source compatibility
    */
   public static void renderFluidTank(GuiGraphics graphics, AbstractContainerScreen<?> screen, FluidStack stack, int capacity, int x, int y, int width, int height, int depth) {
     renderFluidTank(graphics, screen, stack, stack.getAmount(), capacity, x, y, width, height, depth);
@@ -93,7 +106,7 @@ public final class GuiUtil {
    * @param y         Tank Y position
    * @param width     Tank width
    * @param height    Tank height
-   * @param depth     Tank depth
+   * @param depth     Unused since 1.21.8 (the GUI has no depth anymore), kept for source compatibility
    */
   public static void renderFluidTank(GuiGraphics graphics, AbstractContainerScreen<?> screen, FluidStack stack, int amount, int capacity, int x, int y, int width, int height, int depth) {
     if(!stack.isEmpty() && capacity > 0) {
@@ -112,7 +125,7 @@ public final class GuiUtil {
    * @param y       Fluid Y
    * @param width   Fluid width
    * @param height  Fluid height
-   * @param depth   Fluid depth
+   * @param depth   Unused since 1.21.8 (the GUI has no depth anymore), kept for source compatibility
    */
   public static void renderTiledFluid(GuiGraphics graphics, AbstractContainerScreen<?> screen, FluidStack stack, int x, int y, int width, int height, int depth) {
     if (!stack.isEmpty()) {
@@ -132,7 +145,7 @@ public final class GuiUtil {
    * @param y           Y position to render
    * @param width       Render width
    * @param height      Render height
-   * @param depth       Render depth
+   * @param depth       Unused since 1.21.8 (the GUI has no depth anymore), kept for source compatibility
    * @param upsideDown  If true, flips the sprite
    */
   public static void renderTiledTextureAtlas(GuiGraphics graphics, AbstractContainerScreen<?> screen, TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown) {
@@ -148,11 +161,15 @@ public final class GuiUtil {
    * @param y           Y position to render
    * @param width       Render width
    * @param height      Render height
-   * @param depth       Render depth
+   * @param depth       Unused since 1.21.8 (the GUI has no depth anymore), kept for source compatibility
    * @param upsideDown  If true, flips the sprite
    * @param color       ARGB tint color
    */
   public static void renderTiledTextureAtlas(GuiGraphics graphics, AbstractContainerScreen<?> screen, TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown, int color) {
+    // nothing to draw: tiny tank amounts would otherwise submit a degenerate tile every frame, and negative sizes must not loop
+    if (width <= 0 || height <= 0) {
+      return;
+    }
     // 1.21.8: GUI rendering is deferred, so each tile is submitted as a blit render state. The public blitSprite overloads
     // only draw a whole atlas sprite (or a sub-region of a GUI atlas sprite), so partial tiles are submitted directly with
     // their exact sub-UVs, same as the old immediate quads. Depth is ignored: later submissions draw above earlier ones.

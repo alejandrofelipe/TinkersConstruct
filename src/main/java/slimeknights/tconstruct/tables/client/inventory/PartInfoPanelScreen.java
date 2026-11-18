@@ -125,7 +125,7 @@ public class PartInfoPanelScreen extends InfoPanelScreen<PartBuilderScreen,PartB
 
     // info ? in the top right corner
     if (this.hasTooltips()) {
-      drawString(graphics, Component.literal("?").getVisualOrderText(), guiRight() - this.border.w - this.font.width("?") / 2f, this.topPos + 5, 0xff5f5f5f, false);
+      drawString(graphics, HELP_MARKER, guiRight() - this.border.w - this.font.width("?") / 2f, this.topPos + 5, 0xff5f5f5f, false);
     }
 
     int scaledFontHeight = this.getScaledFontHeight();

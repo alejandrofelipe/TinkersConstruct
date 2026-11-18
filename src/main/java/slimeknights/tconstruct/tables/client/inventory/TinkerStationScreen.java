@@ -11,7 +11,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -282,7 +281,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     super.render(graphics, mouseX, mouseY, partialTicks); // base render + the info-overlay pass
     // COLLAPSED tier: the centered selector overlay draws above the slots (its docked draw in renderBg is gated off)
     if (this.overlayOpen == OverlayPanel.SELECTOR) {
-      InfoPanelScreen.beginOpaqueOverlayBlit(graphics); // shared opaque-blit setup, see InfoPanelScreen.drawOverlay
+      InfoPanelScreen.beginOverlayStratum(graphics); // shared overlay stratum, see InfoPanelScreen.drawOverlay
       this.buttonsScreen.render(graphics, mouseX, mouseY, partialTicks);
     }
   }
@@ -435,11 +434,11 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     // 1.21.8: start a new stratum so the cover paints over the icon (replaces clearing the depth buffer);
     // the 82% alpha shader color is now the blit color
     graphics.nextStratum();
-    GuiUtil.drawElement(graphics, ITEM_COVER, this.cornerX + 7, this.cornerY + 18, ARGB.white(0.82f));
+    GuiUtil.drawElement(graphics, ITEM_COVER, this.cornerX + 7, this.cornerY + 18, GuiUtil.ITEM_COVER_COLOR);
     }
 
     // slot backgrounds, are transparent (28% alpha)
-    int slotBackgroundColor = ARGB.white(0.28f);
+    int slotBackgroundColor = GuiUtil.SLOT_BACKGROUND_COLOR;
     if (!this.currentLayout.getToolSlot().isHidden()) {
       Slot slot = this.getMenu().getSlot(TINKER_SLOT);
       GuiUtil.drawElement(graphics, SLOT_BACKGROUND, x + this.cornerX + slot.x - 1, y + this.cornerY + slot.y - 1, slotBackgroundColor);

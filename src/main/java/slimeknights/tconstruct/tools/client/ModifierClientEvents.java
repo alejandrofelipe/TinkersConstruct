@@ -148,6 +148,7 @@ public class ModifierClientEvents {
   /** Total map size */
   private static final int MAP_SIZE = 2 * MAP_PADDING + 128;
   /** Map background textures, same as {@code ItemInHandRenderer.MAP_BACKGROUND} and {@code MAP_BACKGROUND_CHECKERBOARD} */
+  // the blit passes MAP_SIZE as the texture width/height so the UVs span 0..1 regardless of the PNG size (as the old setUv(0..1) quad)
   private static final ResourceLocation MAP_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/map/map_background.png");
   private static final ResourceLocation MAP_BACKGROUND_CHECKERBOARD = ResourceLocation.withDefaultNamespace("textures/map/map_background_checkerboard.png");
 
