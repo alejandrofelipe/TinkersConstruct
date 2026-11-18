@@ -6,7 +6,6 @@
   "fog": {
     "calculate_color": true,
     "end": 4.0,
-    "shape": "sphere",
     "start": 0.25
   },
   "still": "tconstruct:fluid/molten/ore/amethyst/still"

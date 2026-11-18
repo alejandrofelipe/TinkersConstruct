@@ -6,7 +6,6 @@
   "fog": {
     "color": "478A33",
     "end": 2.0,
-    "shape": "sphere",
     "start": 0.25
   },
   "still": "tconstruct:fluid/molten/alloy/queens_slime/still"

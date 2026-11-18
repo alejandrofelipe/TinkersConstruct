@@ -6,7 +6,6 @@
   "fog": {
     "calculate_color": true,
     "end": 24.0,
-    "shape": "sphere",
     "start": -8.0
   },
   "still": "tconstruct:fluid/slime/sky/still"
