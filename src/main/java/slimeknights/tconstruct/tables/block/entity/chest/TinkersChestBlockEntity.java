@@ -4,17 +4,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.TConstruct;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.entity.inventory.IChestItemHandler;
 
@@ -53,19 +51,17 @@ public class TinkersChestBlockEntity extends AbstractChestBlockEntity {
   }
 
   @Override
-  public void saveSynced(CompoundTag tags, HolderLookup.Provider registries) {
-    super.saveSynced(tags, registries);
+  public void saveSynced(ValueOutput tags) {
+    super.saveSynced(tags);
     if (hasColor) {
       tags.putInt(TAG_CHEST_COLOR, color);
     }
   }
 
   @Override
-  public void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
-    super.loadAdditional(tags, registries);
-    if (TagUtil.contains(tags, TAG_CHEST_COLOR, TagUtil.TAG_ANY_NUMERIC)) {
-      setColor(tags.getIntOr(TAG_CHEST_COLOR, 0));
-    }
+  public void loadAdditional(ValueInput tags) {
+    super.loadAdditional(tags);
+    tags.getInt(TAG_CHEST_COLOR).ifPresent(this::setColor);
   }
 
   /** Item handler for tinkers chests */

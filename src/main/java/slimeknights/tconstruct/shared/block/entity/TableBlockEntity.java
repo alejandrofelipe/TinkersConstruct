@@ -15,6 +15,7 @@ import slimeknights.tconstruct.common.SoundUtils;
 import slimeknights.tconstruct.common.Sounds;
 import slimeknights.tconstruct.common.network.InventorySlotSyncPacket;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
+import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.tables.menu.TabbedContainerMenu;
 import slimeknights.tconstruct.tables.network.UpdateStationScreenPacket;
 
@@ -58,7 +59,7 @@ public abstract class TableBlockEntity extends InventoryBlockEntity {
   public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
     CompoundTag nbt = super.getUpdateTag(registries);
     // inventory is already in main NBT, include it in update tag
-    writeInventoryToNBT(nbt, registries);
+    nbt.merge(TagUtil.writeTag(problemPath(), registries, this::writeInventory));
     return nbt;
   }
 

@@ -4,14 +4,17 @@ import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import slimeknights.mantle.block.entity.NameableBlockEntity;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.tables.block.entity.inventory.IChestItemHandler;
@@ -48,25 +51,35 @@ public abstract class AbstractChestBlockEntity extends NameableBlockEntity {
   }
 
   @Override
-  public void saveAdditional(CompoundTag tags, HolderLookup.Provider registries) {
-    super.saveAdditional(tags, registries);
-    // move the items from the serialized result
+  public void saveAdditional(ValueOutput tags) {
+    super.saveAdditional(tags);
+    // write just the items list, same as the handler's serialized "Items" (ItemStackWithSlot)
     // we don't care about the size and need it here for compat with old worlds
-    CompoundTag handlerNBT = itemHandler.serializeNBT(registries);
-    tags.put(KEY_ITEMS, TagUtil.getList(handlerNBT, KEY_ITEMS, Tag.TAG_COMPOUND));
+    ValueOutput.TypedOutputList<ItemStackWithSlot> items = tags.list(KEY_ITEMS, ItemStackWithSlot.CODEC);
+    for (int i = 0; i < itemHandler.getSlots(); i++) {
+      ItemStack stack = itemHandler.getStackInSlot(i);
+      if (!stack.isEmpty()) {
+        items.add(new ItemStackWithSlot(i, stack));
+      }
+    }
   }
 
-  /** Reads the inventory from NBT */
+  /** Reads the inventory from a raw tag, used for the legacy item data */
   public void readInventory(CompoundTag tags, HolderLookup.Provider registries) {
+    TagUtil.readTag(problemPath(), registries, tags, this::readInventory);
+  }
+
+  /** Reads the inventory from the given input */
+  public void readInventory(ValueInput tags) {
     // copy in just the items key for deserializing, don't want to change the size
     CompoundTag handlerNBT = new CompoundTag();
-    handlerNBT.put(KEY_ITEMS, TagUtil.getList(tags, KEY_ITEMS, Tag.TAG_COMPOUND));
-    itemHandler.deserializeNBT(registries, handlerNBT);
+    tags.read(KEY_ITEMS, ExtraCodecs.NBT).ifPresent(items -> handlerNBT.put(KEY_ITEMS, items));
+    TagUtil.readTag(problemPath(), tags.lookup(), handlerNBT, itemHandler::deserialize);
   }
 
   @Override
-  public void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
-    super.loadAdditional(tags, registries);
-    readInventory(tags, registries);
+  protected void loadAdditional(ValueInput tags) {
+    super.loadAdditional(tags);
+    readInventory(tags);
   }
 }
