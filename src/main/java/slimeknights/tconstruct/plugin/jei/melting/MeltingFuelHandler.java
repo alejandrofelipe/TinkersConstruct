@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class MeltingFuelHandler {
   /**
    * List of pairs of temperature and list of fluids with that or greater temperature
-   * Sorted from highest to lowest temperature
+   * Sorted from lowest to highest temperature
    */
   private static List<Pair<Integer,List<FluidStack>>> fuelLookup = Collections.emptyList();
 
@@ -31,7 +31,7 @@ public class MeltingFuelHandler {
    * @param fuels  List of fuel recipes
    */
   public static void setMeltngFuels(List<MeltingFuel> recipes) {
-    // sort the fuels highest first; sort a copy, as callers pass immutable lists (Stream#toList)
+    // sort the fuels lowest temperature first, as getUsableFuels returns the first entry hot enough; sort a copy, as callers pass immutable lists (Stream#toList)
     List<MeltingFuel> fuels = new ArrayList<>(recipes);
     fuels.sort(Comparator.comparingInt(MeltingFuel::getTemperature));
     // get a list of temperature to fuel
