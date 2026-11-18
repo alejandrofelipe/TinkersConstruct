@@ -147,16 +147,22 @@ public class SaveCompatGameTests {
     checkFluid(helper, tableFluid, loaded.getTank().getFluid(), "casting table tank");
     check(helper, loaded.getTank().getCapacity() == tableCapacity, "casting table capacity " + tableCapacity + " became " + loaded.getTank().getCapacity());
 
-    // basin: no cast, a partial block poured. The tank is set directly: filling an empty basin finds no recipe, as
-    // RecipeMap#getRecipesFor skips inputs whose items are all empty (a castless casting container)
+    // basin: no cast, a partial iron block poured through the real fill path (the recipe lookup must accept a castless input)
     CastingBlockEntity basin = place(helper, new BlockPos(3, 1, 2), TinkerSmeltery.searedBasin.get(), CastingBlockEntity.class);
     FluidStack basinFluid = new FluidStack(TinkerFluids.moltenIron.get(), FluidValues.INGOT * 2);
-    basin.getTank().setFluid(basinFluid.copy());
-    basin.getTank().setCapacity(FluidValues.METAL_BLOCK);
+    int basinFilled = basin.getTank().fill(basinFluid.copy(), FluidAction.EXECUTE);
+    check(helper, basinFilled == basinFluid.getAmount(), "empty seared basin accepted " + basinFilled + "mb of " + basinFluid.getAmount() + "mb molten iron; no castless iron block recipe found");
     int basinCapacity = basin.getTank().getCapacity();
+    check(helper, basinCapacity == FluidValues.METAL_BLOCK, "empty basin + molten iron should size the tank to the iron block recipe (" + FluidValues.METAL_BLOCK + "), got " + basinCapacity);
     CastingBlockEntity loadedBasin = loadFresh(helper, basin, save(helper, basin), CastingBlockEntity.class);
     checkFluid(helper, basinFluid, loadedBasin.getTank().getFluid(), "casting basin tank");
     check(helper, loadedBasin.getTank().getCapacity() == basinCapacity, "casting basin capacity " + basinCapacity + " became " + loadedBasin.getTank().getCapacity());
+
+    // table without a cast: molten iron casts iron bars (smeltery/casting/metal/iron/bars.json, 30mb)
+    CastingBlockEntity castless = place(helper, new BlockPos(2, 1, 4), TinkerSmeltery.searedTable.get(), CastingBlockEntity.class);
+    int castlessFilled = castless.getTank().fill(new FluidStack(TinkerFluids.moltenIron.get(), 20), FluidAction.EXECUTE);
+    check(helper, castlessFilled == 20, "empty casting table accepted " + castlessFilled + "mb of 20mb molten iron; no castless iron bars recipe found");
+    check(helper, castless.getTank().getCapacity() == 30, "empty table + molten iron should size the tank to the iron bars recipe (30), got " + castless.getTank().getCapacity());
     helper.succeed();
   }
 

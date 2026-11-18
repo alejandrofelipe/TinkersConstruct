@@ -47,9 +47,14 @@ public final class TinkerRecipeAccess {
     return clientRecipeMap;
   }
 
-  /** Finds the first recipe of the given type matching the input, mirroring the removed {@code RecipeManager#getRecipeFor}. */
+  /**
+   * Finds the first recipe of the given type matching the input, mirroring the removed {@code RecipeManager#getRecipeFor}.
+   * Does not use {@link RecipeMap#getRecipesFor}: it returns nothing when {@link RecipeInput#isEmpty()}, i.e. when every
+   * item slot is empty, which skipped inputs that match on more than items, such as casting into an empty basin or table
+   * (the fluid is the input). Each recipe's own {@code matches} decides instead.
+   */
   public static <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeHolder<T>> getRecipeFor(RecipeType<T> type, I input, Level level) {
-    return getRecipeMap(level).getRecipesFor(type, input, level).findFirst();
+    return getRecipeMap(level).byType(type).stream().filter(holder -> holder.value().matches(input, level)).findFirst();
   }
 
   /** Gets all recipes of the given type, mirroring the removed {@code RecipeManager#getAllRecipesFor}. */
