@@ -37,7 +37,7 @@ public class GameTestStructureProvider extends GenericNBTProvider {
     ListTag palette = new ListTag();
     palette.add(NbtUtils.writeBlockState(Blocks.AIR.defaultBlockState()));
     nbt.put("palette", palette);
-    nbt.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+    nbt.putInt("DataVersion", SharedConstants.getCurrentVersion().dataVersion().version());
     return saveNBT(cache, TConstruct.getResource(name), nbt);
   }
 

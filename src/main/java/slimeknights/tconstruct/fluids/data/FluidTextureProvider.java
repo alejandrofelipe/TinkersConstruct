@@ -1,6 +1,5 @@
 package slimeknights.tconstruct.fluids.data;
 
-import com.mojang.blaze3d.shaders.FogShape;
 import net.minecraft.data.PackOutput;
 import slimeknights.mantle.fluid.texture.AbstractFluidTextureProvider;
 import slimeknights.mantle.fluid.texture.FluidTexture;
@@ -38,7 +37,7 @@ public class FluidTextureProvider extends AbstractFluidTextureProvider {
     tintedStew(TinkerFluids.meatSoup).color(0xFFE03E35);
 
     // molten
-    molten(TinkerFluids.moltenGlass).fog(FogShape.SPHERE, 0.25f, 8);
+    molten(TinkerFluids.moltenGlass).fog(0.25f, 8);
     named(TinkerFluids.blazingBlood, "molten/blaze");
     // stone
     tintedStone(TinkerFluids.searedStone).color(0xFF4F4A47);
@@ -118,12 +117,12 @@ public class FluidTextureProvider extends AbstractFluidTextureProvider {
 
   /** Sets builder properties to make it act like water with fog */
   private static FluidTexture.Builder waterFog(FluidTexture.Builder builder) {
-    return builder.fog(FogShape.SPHERE, -8, 24);
+    return builder.fog(-8, 24);
   }
 
   /** Sets builder properties to make it act like water with fog */
   private static FluidTexture.Builder moltenFog(FluidTexture.Builder builder) {
-    return builder.fog(FogShape.SPHERE, 0.25f, 4);
+    return builder.fog(0.25f, 4);
   }
 
   /** Creates a texture in the root folder */
@@ -134,7 +133,7 @@ public class FluidTextureProvider extends AbstractFluidTextureProvider {
   /** Creates a texture using the given fixed name in the fluid folder */
   private FluidTexture.Builder named(FluidObject<?> fluid, String name) {
     return texture(fluid).root(getResource("fluid/"+name+"/"))
-      .still().flowing().camera().calculateFogColor(true).fog(FogShape.SPHERE, 0.25f, 2);
+      .still().flowing().camera().calculateFogColor(true).fog(0.25f, 2);
   }
 
   /** Creates a texture using the fluid's ID in the given folder */

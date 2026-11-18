@@ -3,7 +3,10 @@ package slimeknights.tconstruct.common.data.tags;
 import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.TagsProvider;
+import net.minecraft.tags.TagEntry;
+import net.minecraft.data.tags.KeyTagProvider;
+import net.minecraft.data.tags.TagAppender;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -14,7 +17,7 @@ import slimeknights.tconstruct.tools.data.ModifierIds;
 
 import java.util.concurrent.CompletableFuture;
 
-public class EnchantmentTagProvider extends TagsProvider<Enchantment> {
+public class EnchantmentTagProvider extends KeyTagProvider<Enchantment> {
   public EnchantmentTagProvider(PackOutput packOutput, CompletableFuture<Provider> lookupProvider) {
     super(packOutput, Registries.ENCHANTMENT, lookupProvider, TConstruct.MOD_ID);
   }
@@ -52,9 +55,9 @@ public class EnchantmentTagProvider extends TagsProvider<Enchantment> {
   /** Creates a builder for a tag for the given modifier */
   @SuppressWarnings("removal")
   private void modifierTag(ModifierId modifier, String... ids) {
-    TagsProvider.TagAppender<Enchantment> appender = tag(TagKey.create(Registries.ENCHANTMENT, TConstruct.getResource("modifier_like/" + modifier.getPath())));
+    TagAppender<ResourceKey<Enchantment>,Enchantment> appender = tag(TagKey.create(Registries.ENCHANTMENT, TConstruct.getResource("modifier_like/" + modifier.getPath())));
     for (String id : ids) {
-      appender.addOptional(ResourceLocation.parse(id));
+      appender.add(TagEntry.optionalElement(ResourceLocation.parse(id)));
     }
   }
 

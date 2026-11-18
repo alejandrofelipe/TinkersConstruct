@@ -3,6 +3,9 @@ package slimeknights.tconstruct.common.data.tags;
 import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
+import net.minecraft.tags.TagEntry;
+import net.minecraft.data.tags.TagAppender;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.data.tags.DamageTypeTagsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -106,9 +109,9 @@ public class DamageTypeTagProvider extends DamageTypeTagsProvider {
 
   /** Adds the given IDs from the given domain to the tag as optional entries. */
   private void addOptional(TagKey<DamageType> tag, String domain, String... names) {
-    TagAppender<DamageType> appender = tag(tag);
+    TagAppender<ResourceKey<DamageType>,DamageType> appender = tag(tag);
     for (String name : names) {
-      appender.addOptional(ResourceLocation.fromNamespaceAndPath(domain, name));
+      appender.add(TagEntry.optionalElement(ResourceLocation.fromNamespaceAndPath(domain, name)));
     }
   }
 }

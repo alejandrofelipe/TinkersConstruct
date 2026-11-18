@@ -3,6 +3,7 @@ package slimeknights.tconstruct.common.data.tags;
 import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
+import net.minecraft.tags.TagEntry;
 import net.minecraft.world.item.alchemy.Potion;
 import slimeknights.mantle.data.BuiltinRegistryTagProvider;
 import slimeknights.tconstruct.TConstruct;
@@ -18,7 +19,7 @@ public class PotionTagProvider extends BuiltinRegistryTagProvider<Potion> {
 
   @Override
   protected void addTags(Provider provider) {
-    tag(TinkerTags.Potions.HIDDEN_FLUID).addOptional(TinkerTags.HIDDEN_FROM_RECIPE_VIEWERS);
+    tag(TinkerTags.Potions.HIDDEN_FLUID).add(TagEntry.optionalElement(TinkerTags.HIDDEN_FROM_RECIPE_VIEWERS));
   }
 
   @Override

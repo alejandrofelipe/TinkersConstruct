@@ -3,10 +3,9 @@ package slimeknights.tconstruct.library.data.recipe;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CheckReturnValue;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.data.tags.IntrinsicHolderTagsProvider.IntrinsicTagAppender;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.data.tags.TagAppender;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagEntry;
 import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import slimeknights.mantle.Mantle;
@@ -24,25 +23,25 @@ public class CostTagAppender {
   private final String metal;
   private final ResourceLocation prefix;
   private final String suffix;
-  private final Function<ResourceLocation,IntrinsicTagAppender<Item>> tag;
-  private final Map<Integer, IntrinsicTagAppender<Item>> tags = new HashMap<>();
+  private final Function<ResourceLocation,TagAppender<Item,Item>> tag;
+  private final Map<Integer, TagAppender<Item,Item>> tags = new HashMap<>();
 
   /** Creates a builder for a molten gear */
-  public static CostTagAppender moltenToolMelting(FluidObject<?> fluid, Function<ResourceLocation,IntrinsicTagAppender<Item>> tag) {
+  public static CostTagAppender moltenToolMelting(FluidObject<?> fluid, Function<ResourceLocation,TagAppender<Item,Item>> tag) {
     ResourceLocation id = fluid.getId();
     String metal = id.getPath().substring("molten_".length());
     return moltenToolMelting(id.getNamespace(), metal, tag);
   }
 
   /** Creates a builder for a molten gear */
-  public static CostTagAppender moltenToolMelting(String domain, String metal, Function<ResourceLocation,IntrinsicTagAppender<Item>> tag) {
+  public static CostTagAppender moltenToolMelting(String domain, String metal, Function<ResourceLocation,TagAppender<Item,Item>> tag) {
     return new CostTagAppender(metal, ResourceLocation.fromNamespaceAndPath(domain, "melting/" + metal + "/tools_costing_"), "", tag);
   }
 
   /** Creates a tag for the given cost */
   @CheckReturnValue
-  public IntrinsicTagAppender<Item> tag(int cost) {
-    IntrinsicTagAppender<Item> appender = tags.get(cost);
+  public TagAppender<Item,Item> tag(int cost) {
+    TagAppender<Item,Item> appender = tags.get(cost);
     if (appender == null) {
       appender = this.tag.apply(prefix.withSuffix(cost + suffix));
       this.tags.put(cost, appender);
@@ -58,18 +57,18 @@ public class CostTagAppender {
 
   /** Adds the passed items to the tag. */
   public CostTagAppender add(int cost, boolean optional, ResourceLocation prefix, String... suffixes) {
-    IntrinsicTagAppender<Item> tag = tag(cost);
+    TagAppender<Item,Item> tag = tag(cost);
     if (optional) {
       if (suffixes.length == 0) {
-        tag.addOptional(prefix);
+        tag.add(TagEntry.optionalElement(prefix));
       } else for (String path : suffixes) {
-        tag.addOptional(prefix.withSuffix('_' + path));
+        tag.add(TagEntry.optionalElement(prefix.withSuffix('_' + path)));
       }
     } else {
       if (suffixes.length == 0) {
-        tag.add(ResourceKey.create(Registries.ITEM, prefix));
+        tag.add(TagEntry.element(prefix));
       } else for (String path : suffixes) {
-        tag.add(ResourceKey.create(Registries.ITEM, prefix.withSuffix('_' + path)));
+        tag.add(TagEntry.element(prefix.withSuffix('_' + path)));
       }
     }
     return this;
@@ -82,9 +81,9 @@ public class CostTagAppender {
 
   /** Adds the given optional tag to the builder with the given prefix using our metal */
   public CostTagAppender metalTag(int cost, String prefix, String... names) {
-    IntrinsicTagAppender<Item> tag = tag(cost);
+    TagAppender<Item,Item> tag = tag(cost);
     for (String name : names) {
-      tag.addOptionalTag(ResourceLocation.fromNamespaceAndPath(Mantle.COMMON, prefix + name + '/' + metal));
+      tag.add(TagEntry.optionalTag(ResourceLocation.fromNamespaceAndPath(Mantle.COMMON, prefix + name + '/' + metal)));
     }
     return this;
   }
