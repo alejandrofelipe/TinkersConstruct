@@ -3,9 +3,7 @@ package slimeknights.tconstruct.tools.modifiers.effect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.MobEffectTextureManager;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -34,7 +32,8 @@ public class HelmetChargingEffect extends MobEffect {
   // (e.g. event.registerMobEffect(ext, effect)) from a client mod-bus handler. Kept here as the extension factory.
   public void initializeClient(Consumer<IClientMobEffectExtensions> consumer) {
     consumer.accept(new IClientMobEffectExtensions() {
-      private static final ResourceLocation BAR_KEY = TConstruct.getResource("helmet_charging_bar");
+      // 1.21.6+: mob effect icons are GUI sprites (textures/gui/sprites/mob_effect/), the mob effect atlas is gone
+      private static final ResourceLocation BAR_KEY = TConstruct.getResource("mob_effect/helmet_charging_bar");
       private final Minecraft mc = Minecraft.getInstance();
 
       @Override
@@ -45,9 +44,7 @@ public class HelmetChargingEffect extends MobEffect {
       @Override
       public boolean renderGuiIcon(MobEffectInstance instance, Gui gui, GuiGraphics graphics, int x, int y, float z, float alpha) {
         // start by drawing the original texture, skip alpha
-        MobEffectTextureManager textures = mc.getMobEffectTextures();
-        TextureAtlasSprite sprite = textures.get(instance.getEffect());
-        graphics.blitSprite(RenderType::guiTextured, sprite, x + 3, y + 3, 18, 18);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, Gui.getMobEffectSprite(instance.getEffect()), x + 3, y + 3, 18, 18);
 
         // if the helmet has a drawtime, render the extra bar
         if (mc.player != null) {
@@ -58,7 +55,6 @@ public class HelmetChargingEffect extends MobEffect {
             int drawtime = ModifierUtil.getPersistentInt(helmet, GeneralInteractionModifierHook.KEY_DRAWTIME, 0);
             int dd = drawtime + 20;
             if (drawtime > 0 && duration < dd) {
-              sprite = textures.getSprite(BAR_KEY);
               int height;
               if (duration < 20) {
                 height = 18;
@@ -68,7 +64,7 @@ public class HelmetChargingEffect extends MobEffect {
               int yOffset = (18 - height);
               // 1.21.4: GuiGraphics#innerBlit is private; clip the full bar sprite to its lower portion with a scissor
               graphics.enableScissor(x + 3, y + 3 + yOffset, x + 21, y + 21);
-              graphics.blitSprite(RenderType::guiTextured, sprite, x + 3, y + 3, 18, 18);
+              graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BAR_KEY, x + 3, y + 3, 18, 18);
               graphics.disableScissor();
             }
           }

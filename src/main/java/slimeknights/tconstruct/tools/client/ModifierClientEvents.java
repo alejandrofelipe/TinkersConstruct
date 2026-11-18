@@ -1,16 +1,14 @@
 package slimeknights.tconstruct.tools.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
-import net.minecraft.client.renderer.ItemInHandRenderer;
-import net.minecraft.client.renderer.MapRenderer;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -34,8 +32,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.EventBusSubscriber.Bus;
-import org.joml.Matrix4f;
+import org.joml.Matrix3x2fStack;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.config.Config;
@@ -64,7 +61,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Modifier event hooks that run client side */
-@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT, bus = Bus.GAME)
+@EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT)
 public class ModifierClientEvents {
   @SubscribeEvent
   static void onTooltipEvent(ItemTooltipEvent event) {
@@ -150,6 +147,9 @@ public class ModifierClientEvents {
   private static final int MAP_PADDING = 7;
   /** Total map size */
   private static final int MAP_SIZE = 2 * MAP_PADDING + 128;
+  /** Map background textures, same as {@code ItemInHandRenderer.MAP_BACKGROUND} and {@code MAP_BACKGROUND_CHECKERBOARD} */
+  private static final ResourceLocation MAP_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/map/map_background.png");
+  private static final ResourceLocation MAP_BACKGROUND_CHECKERBOARD = ResourceLocation.withDefaultNamespace("textures/map/map_background_checkerboard.png");
 
   @Nonnull
   private static ItemStack nextOffhand = ItemStack.EMPTY;
@@ -267,14 +267,14 @@ public class ModifierClientEvents {
       if (renderShield) {
         int x = scaledWidth / 2 + (rightHanded ? -117 : 101);
         int y = scaledHeight - 38;
-        graphics.blit(RenderType::guiTextured, Icons.ICONS, x - 3, y - 3, emptyOffhand ? 211 : 189, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, Icons.ICONS, x - 3, y - 3, emptyOffhand ? 211 : 189, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
         mc.gui.renderSlot(graphics, x, y, partialTicks, player, nextOffhand, 11);
       }
       // want to the side above the normal offhand item
       if (renderSleeves) {
         int x = scaledWidth / 2 + (rightHanded ? -136 : 120);
         int y = scaledHeight - 19;
-        graphics.blit(RenderType::guiTextured, Icons.ICONS, x - 3, y - 3, emptyOffhand ? 211 : rightHanded ? 145 : 123, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, Icons.ICONS, x - 3, y - 3, emptyOffhand ? 211 : rightHanded ? 145 : 123, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
         mc.gui.renderSlot(graphics, x, y, partialTicks, player, currentSleeve, 11);
       }
 
@@ -307,33 +307,21 @@ public class ModifierClientEvents {
         }
 
         // setup renderer
-        PoseStack poseStack = graphics.pose();
-        poseStack.pushPose();
+        Matrix3x2fStack pose = graphics.pose();
+        pose.pushMatrix();
         float padding = MAP_PADDING * mapScale;
-        poseStack.translate(xStart + padding, yStart + padding, 0);
-        poseStack.scale(mapScale, mapScale, -1);
+        pose.translate(xStart + padding, yStart + padding);
+        pose.scale(mapScale, mapScale);
 
-        // draw background
-        int light = 0xF000F0;
-        Matrix4f matrix = poseStack.last().pose();
-        // 1.21.4: GuiGraphics#bufferSource is gone; custom geometry goes through drawSpecial, and maps render from a MapRenderState
-        boolean hasMap = data != null && index != null;
-        MapRenderState mapRenderState = new MapRenderState();
-        MapRenderer mapRenderer = Minecraft.getInstance().getMapRenderer();
-        if (hasMap) {
-          mapRenderer.extractRenderState(index, data, mapRenderState);
+        // 1.21.8: GUI rendering is deferred; the background is a GUI blit of the same textures as ItemInHandRenderer's map
+        // backgrounds, and the map draws through the GUI map render state, both under the current pose
+        graphics.blit(RenderPipelines.GUI_TEXTURED, data == null ? MAP_BACKGROUND : MAP_BACKGROUND_CHECKERBOARD, -MAP_PADDING, -MAP_PADDING, 0, 0, MAP_SIZE, MAP_SIZE, MAP_SIZE, MAP_SIZE);
+        if (data != null && index != null) {
+          MapRenderState mapRenderState = new MapRenderState();
+          Minecraft.getInstance().getMapRenderer().extractRenderState(index, data, mapRenderState);
+          graphics.submitMapRenderState(mapRenderState);
         }
-        graphics.drawSpecial(bufferSource -> {
-          VertexConsumer consumer = bufferSource.getBuffer(data == null ? ItemInHandRenderer.MAP_BACKGROUND : ItemInHandRenderer.MAP_BACKGROUND_CHECKERBOARD);
-          consumer.addVertex(matrix,  -7, 135, 0).setColor(255, 255, 255, 255).setUv(0, 1).setLight(light);
-          consumer.addVertex(matrix, 135, 135, 0).setColor(255, 255, 255, 255).setUv(1, 1).setLight(light);
-          consumer.addVertex(matrix, 135,  -7, 0).setColor(255, 255, 255, 255).setUv(1, 0).setLight(light);
-          consumer.addVertex(matrix,  -7,  -7, 0).setColor(255, 255, 255, 255).setUv(0, 0).setLight(light);
-          if (hasMap) {
-            mapRenderer.render(mapRenderState, poseStack, bufferSource, false, light);
-          }
-        });
-        poseStack.popPose();
+        pose.popMatrix();
       }
 
       if (renderItemFrame) {
@@ -374,13 +362,13 @@ public class ModifierClientEvents {
         int lastRow = rows - 1;
         for (int r = 0; r < lastRow; r++) {
           for (int c = 0; c < columns; c++) {
-            graphics.blit(RenderType::guiTextured, Icons.ICONS, xStart + c * SLOT_BACKGROUND_SIZE, yStart + r * SLOT_BACKGROUND_SIZE, 167, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, Icons.ICONS, xStart + c * SLOT_BACKGROUND_SIZE, yStart + r * SLOT_BACKGROUND_SIZE, 167, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
           }
         }
         // last row will be aligned in the direction of x orientation (center, left, or right)
         int lastRowOffset = xOrientation.align((columns - inLastRow) * 2) * SLOT_BACKGROUND_SIZE / 2;
         for (int c = 0; c < inLastRow; c++) {
-          graphics.blit(RenderType::guiTextured, Icons.ICONS, xStart + c * SLOT_BACKGROUND_SIZE + lastRowOffset, yStart + lastRow * SLOT_BACKGROUND_SIZE, 167, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
+          graphics.blit(RenderPipelines.GUI_TEXTURED, Icons.ICONS, xStart + c * SLOT_BACKGROUND_SIZE + lastRowOffset, yStart + lastRow * SLOT_BACKGROUND_SIZE, 167, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
         }
 
         // draw items

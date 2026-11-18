@@ -1,10 +1,9 @@
 package slimeknights.tconstruct.gadgets.item;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -91,7 +90,7 @@ public class PiggyBackPackItem extends TooltipItem {
   }
 
   private static boolean pickupEntity(Player player, Entity target) {
-    if (player.getCommandSenderWorld().isClientSide || target.getType().is(TinkerTags.EntityTypes.PIGGYBACKPACK_BLACKLIST)) {
+    if (player.level().isClientSide || target.getType().is(TinkerTags.EntityTypes.PIGGYBACKPACK_BLACKLIST)) {
       return false;
     }
     // silly players, clicking on entities they're already carrying or riding
@@ -178,7 +177,7 @@ public class PiggyBackPackItem extends TooltipItem {
         TinkerGadgets.piggyBackpack.get().matchCarriedEntitiesToCount(livingEntityIn, 0);
       } else {
         TinkerGadgets.piggyBackpack.get().matchCarriedEntitiesToCount(livingEntityIn, chestArmor.getCount());
-        if (!livingEntityIn.getCommandSenderWorld().isClientSide) {
+        if (!livingEntityIn.level().isClientSide) {
           PiggybackHandler handler = livingEntityIn.getCapability(PiggybackCapability.PIGGYBACK, null);
           if (handler != null) {
             handler.updatePassengers();
@@ -192,11 +191,10 @@ public class PiggyBackPackItem extends TooltipItem {
     // (e.g. event.registerMobEffect(ext, effect)) from a client mod-bus handler. Kept here as the extension factory.
     public void initializeClient(Consumer<IClientMobEffectExtensions> consumer) {
       consumer.accept(new IClientMobEffectExtensions() {
-        private final Minecraft mc = Minecraft.getInstance();
         private static final ResourceLocation[] ICONS = {
-          TConstruct.getResource("carry"),
-          TConstruct.getResource("carry_2"),
-          TConstruct.getResource("carry_3")
+          TConstruct.getResource("mob_effect/carry"),
+          TConstruct.getResource("mob_effect/carry_2"),
+          TConstruct.getResource("mob_effect/carry_3")
         };
 
         /** Common logic to render the icon */
@@ -205,7 +203,8 @@ public class PiggyBackPackItem extends TooltipItem {
           if (amplifier > 2) {
             amplifier = 2;
           }
-          graphics.blitSprite(RenderType::guiTextured, mc.getMobEffectTextures().getSprite(ICONS[amplifier]), x, y, 18, 18);
+          // 1.21.6+: mob effect icons are GUI sprites (textures/gui/sprites/mob_effect/), the mob effect atlas is gone
+          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ICONS[amplifier], x, y, 18, 18);
         }
 
         @Override
