@@ -12,37 +12,37 @@ public class TestWorldVersion implements WorldVersion {
   private static final DataVersion DATA = new DataVersion(0, "tconstruct_test");
 
   @Override
-  public DataVersion getDataVersion() {
+  public DataVersion dataVersion() {
     return DATA;
   }
 
   @Override
-  public String getId() {
+  public String id() {
     return "tconstruct_test";
   }
 
   @Override
-  public String getName() {
+  public String name() {
     return "Tinkers' Construct Automated Test";
   }
 
   @Override
-  public int getProtocolVersion() {
+  public int protocolVersion() {
     return SharedConstants.getProtocolVersion();
   }
 
   @Override
-  public int getPackVersion(PackType pPackType) {
+  public int packVersion(PackType pPackType) {
     return 0;
   }
 
   @Override
-  public Date getBuildTime() {
+  public Date buildTime() {
     return new Date();
   }
 
   @Override
-  public boolean isStable() {
+  public boolean stable() {
     return true;
   }
 }

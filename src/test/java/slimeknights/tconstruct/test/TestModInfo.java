@@ -1,7 +1,6 @@
 package slimeknights.tconstruct.test;
 
 import cpw.mods.jarhandling.SecureJar;
-import cpw.mods.jarhandling.SecureJar.Status;
 import lombok.Getter;
 import net.neoforged.neoforgespi.language.IConfigurable;
 import net.neoforged.neoforgespi.language.IModFileInfo;
@@ -200,9 +199,6 @@ public enum TestModInfo implements IModInfo {
       // yeah, I gave up here, if we ever got this far in my fake mod info I'd be surprised
       return null;
     }
-
-    @Override
-    public void setSecurityStatus(Status status) {}
 
     @Override
     public List<IModInfo> getModInfos() {
