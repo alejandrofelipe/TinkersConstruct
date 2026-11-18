@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.gametest;
 
+import com.mojang.serialization.DataResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
@@ -8,6 +9,8 @@ import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -37,6 +40,7 @@ import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.tools.capability.inventory.InventoryModule;
 import slimeknights.tconstruct.library.tools.helper.ToolBuildHandler;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
+import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
@@ -442,7 +446,40 @@ public class SaveCompatGameTests {
   }
 
 
-  /* Entity round-trips */
+  /* Tool stacks */
+
+  /**
+   * A tool built at a tinker station (and one built through {@code ToolStack#createStack} directly) must survive
+   * {@link ItemStack#CODEC}, the codec every inventory, container and entity save goes through. {@code createStack} marks
+   * tools damageable with a {@code minecraft:max_damage} marker; that component is {@code POSITIVE_INT}, so the old
+   * {@code -1} marker failed the encode and every built tool vanished from saves (1.21.4–1.21.8). The marker must keep the
+   * stack damageable, with the real max damage still coming from the durability stat.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void save_compat_tool_stack_codec_round_trip(GameTestHelper helper) {
+    TinkerStationBlockEntity station = place(helper, new BlockPos(2, 1, 2), TinkerTables.tinkerStation.get(), TinkerStationBlockEntity.class);
+    station.setItem(TinkerStationBlockEntity.INPUT_SLOT, TinkerToolParts.pickHead.get().withMaterial(MaterialIds.rock));
+    station.setItem(TinkerStationBlockEntity.INPUT_SLOT + 1, TinkerToolParts.toolHandle.get().withMaterial(MaterialIds.wood));
+    station.setItem(TinkerStationBlockEntity.INPUT_SLOT + 2, TinkerToolParts.toolBinding.get().withMaterial(MaterialIds.wood));
+    ItemStack crafted = station.calcResult(null);
+    check(helper, crafted.is(TinkerTools.pickaxe.get()), "tinker station built no pickaxe, got " + describe(crafted) + "; error=" + station.getCurrentError());
+    checkToolCodec(helper, crafted, "crafted pickaxe");
+    checkToolCodec(helper, damagedTool(pickaxe()), "damaged iron pickaxe");
+    helper.succeed();
+  }
+
+  /**
+   * The dagger is the one tool stackable to 2; its built stack must round-trip {@link ItemStack#CODEC} like any other tool
+   * (no {@code max_damage} the codec rejects), and keep its durability.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void save_compat_dagger_codec_round_trip(GameTestHelper helper) {
+    ItemStack dagger = ToolBuildHandler.createSingleMaterial(TinkerTools.dagger.get(), MaterialVariant.of((MaterialVariantId) MaterialIds.iron));
+    check(helper, !dagger.isEmpty(), "could not build an iron dagger");
+    checkToolCodec(helper, dagger, "iron dagger");
+    checkToolCodec(helper, dagger.copyWithCount(2), "stack of 2 iron daggers");
+    helper.succeed();
+  }
 
   /**
    * A thrown tool keeps its tool stack (item, damage, persistent data) and its synced display stack through save → load.
@@ -563,12 +600,7 @@ public class SaveCompatGameTests {
     ToolStack tool = ToolStack.from(stack);
     tool.setDamage(3);
     tool.getPersistentData().putInt(TConstruct.getResource("save_compat"), 42);
-    ItemStack result = tool.createStack(stack.getCount());
-    // FIXME: ToolStack#createStack marks tools damageable with minecraft:max_damage=-1, which ItemStack.CODEC rejects
-    // (POSITIVE_INT), so the stack cannot be saved at all (reported separately). Strip the marker so these tests cover the
-    // entity save keys; remove this line once createStack writes an encodable stack.
-    result.remove(DataComponents.MAX_DAMAGE);
-    return result;
+    return tool.createStack(stack.getCount());
   }
 
   /** Builds a melting module entry in the 1.21.5 shape */
@@ -607,6 +639,25 @@ public class SaveCompatGameTests {
     for (int i = 0; i < expected.getContainerSize(); i++) {
       checkStack(helper, expected.getItem(i), actual.getItem(i), name + " slot " + i);
     }
+  }
+
+  /**
+   * Asserts the tool stack encodes and decodes through {@link ItemStack#CODEC} with equal components, any {@code max_damage}
+   * in its patch is positive, and it stays damageable with the durability stat as max damage.
+   */
+  private static void checkToolCodec(GameTestHelper helper, ItemStack stack, String name) {
+    RegistryOps<Tag> ops = helper.getLevel().registryAccess().createSerializationContext(NbtOps.INSTANCE);
+    DataResult<Tag> encoded = ItemStack.CODEC.encodeStart(ops, stack);
+    check(helper, encoded.isSuccess(), name + " " + describe(stack) + " failed to encode: " + encoded.error().map(DataResult.Error::message).orElse(""));
+    DataResult<ItemStack> decoded = ItemStack.CODEC.parse(ops, encoded.getOrThrow());
+    check(helper, decoded.isSuccess(), name + " failed to decode: " + decoded.error().map(DataResult.Error::message).orElse(""));
+    ItemStack read = decoded.getOrThrow();
+    check(helper, ItemStack.isSameItemSameComponents(stack, read) && read.getCount() == stack.getCount(), name + " changed through the codec: " + describe(stack) + " became " + describe(read));
+    Integer marker = stack.get(DataComponents.MAX_DAMAGE);
+    check(helper, marker == null || marker > 0, name + " has a non-positive max_damage " + marker);
+    check(helper, stack.isDamageableItem() && read.isDamageableItem(), name + " is no longer damageable: " + describe(read));
+    int durability = ToolStack.from(read).getStats().getInt(ToolStats.DURABILITY);
+    check(helper, read.getMaxDamage() == durability, name + " max damage " + read.getMaxDamage() + " should be the durability stat " + durability);
   }
 
   private static void checkStack(GameTestHelper helper, ItemStack expected, ItemStack actual, String name) {
