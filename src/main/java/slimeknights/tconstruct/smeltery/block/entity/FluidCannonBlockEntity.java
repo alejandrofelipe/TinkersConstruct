@@ -3,7 +3,6 @@ package slimeknights.tconstruct.smeltery.block.entity;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -32,6 +31,7 @@ import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectManager;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffects;
 import slimeknights.tconstruct.library.utils.NBTTags;
+import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.library.utils.Util;
 import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.shared.particle.FluidParticleData;
@@ -179,14 +179,13 @@ public class FluidCannonBlockEntity extends TankBlockEntity implements ITankInve
   public void loadAdditional(ValueInput tag) {
     super.loadAdditional(tag);
     tank.deserialize(tag.childOrEmpty(NBTTags.TANK));
-    tag.read(TAG_ITEM, CompoundTag.CODEC).ifPresent(item -> itemHandler.readFromNBT(tag.lookup(), item));
+    TagUtil.readSingleItem(tag, TAG_ITEM, itemHandler);
   }
 
   @Override
   public void saveSynced(ValueOutput tag) {
     super.saveSynced(tag);
-    // OPTIONAL_CODEC matches SingleItemHandler#writeToNBT: an empty compound for an empty stack, else the encoded stack
-    tag.store(TAG_ITEM, ItemStack.OPTIONAL_CODEC, itemHandler.getStack());
+    TagUtil.writeSingleItem(tag, TAG_ITEM, itemHandler);
   }
 
 

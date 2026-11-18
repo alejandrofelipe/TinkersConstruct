@@ -21,7 +21,6 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
@@ -45,7 +44,6 @@ import slimeknights.tconstruct.smeltery.item.TankItem;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlockEntity.ITankInventoryBlockEntity, WorldlyContainer {
   /** Max capacity for the tank */
@@ -273,19 +271,14 @@ public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlo
    * Updates the tank from an NBT tag, used in the block
    * @param nbt  tank NBT, empty if missing
    */
-  public void updateTank(Optional<ValueInput> nbt) {
-    if (nbt.isEmpty() || nbt.get().keySet().isEmpty()) {
-      tank.setFluid(FluidStack.EMPTY);
-    } else {
-      tank.deserialize(nbt.get());
-      TankBlockEntity.updateLight(this, tank);
-    }
+  public void updateTank(ValueInput nbt) {
+    TankBlockEntity.updateTank(this, tank, nbt);
   }
 
   @Override
   public void loadAdditional(ValueInput tag) {
     tank.setCapacity(getCapacity(getBlockState().getBlock()));
-    updateTank(tag.child(NBTTags.TANK));
+    updateTank(tag.childOrEmpty(NBTTags.TANK));
     lastRedstone = tag.getBooleanOr(TAG_REDSTONE, false);
     super.loadAdditional(tag);
   }

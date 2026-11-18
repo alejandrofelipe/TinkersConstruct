@@ -263,13 +263,19 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
   /* Helpers */
 
   /**
-   * Writes a stack to NBT, including the slot
-   * @param stack  Stack to write
+   * Writes a stack to NBT, including the slot.
+   * Any previous stack in {@code compound} is replaced: its item keys ({@code id}, {@code count}, {@code components}) are removed first,
+   * so no stale component survives. Unrelated keys (e.g. a smelting {@code time}) are kept.
+   * @param stack  Stack to write, must not be empty
    * @param slot   Target slot
    * @param compound  Tag to write to, use new for new tag
    * @return Tag written to, same as {@code compound}.
    */
   public static CompoundTag writeStack(ItemStack stack, int slot, CompoundTag compound) {
+    // CompoundTag#merge deep merges nested compounds, so drop the old stack before merging the new one
+    compound.remove("id");
+    compound.remove("count");
+    compound.remove("components");
     // 1.21: ItemStack (de)serialization needs a HolderLookup.Provider; this modifier inventory runs server-side
     // 1.21.8: the encoded stack is a new tag (the old ItemStack.save also returned a copy, which was discarded here, losing the stack), so merge it in
     compound.merge((CompoundTag) TagUtil.saveItem(registries(), stack, new CompoundTag()));

@@ -18,6 +18,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.model.data.ModelData;
 import slimeknights.tconstruct.common.multiblock.IMasterLogic;
 import slimeknights.tconstruct.library.client.model.ModelProperties;
@@ -31,7 +32,6 @@ import slimeknights.tconstruct.smeltery.item.TankItem;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITankBlockEntity {
   /** Max capacity for the tank */
@@ -118,6 +118,21 @@ public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITa
     }
   }
 
+  /**
+   * Updates the tank from its NBT; an empty or missing tank tag clears the fluid without a light update
+   * @param be     Tank block entity
+   * @param tank   Tank to update
+   * @param input  Tank tag, empty if missing
+   */
+  public static void updateTank(BlockEntity be, FluidTank tank, ValueInput input) {
+    if (input.keySet().isEmpty()) {
+      tank.setFluid(FluidStack.EMPTY);
+    } else {
+      tank.deserialize(input);
+      updateLight(be, tank);
+    }
+  }
+
   @Override
   public void onTankContentsChanged() {
     ITankBlockEntity.super.onTankContentsChanged();
@@ -154,13 +169,8 @@ public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITa
    * Updates the tank from an NBT tag, used in the block
    * @param nbt  tank NBT, empty if missing
    */
-  public void updateTank(Optional<ValueInput> nbt) {
-    if (nbt.isEmpty() || nbt.get().keySet().isEmpty()) {
-      tank.setFluid(FluidStack.EMPTY);
-    } else {
-      tank.deserialize(nbt.get());
-      updateLight(this, tank);
-    }
+  public void updateTank(ValueInput nbt) {
+    updateTank(this, tank, nbt);
   }
 
   @Override
@@ -171,7 +181,7 @@ public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITa
   @Override
   public void loadAdditional(ValueInput tag) {
     tank.setCapacity(getCapacity(getBlockState().getBlock()));
-    updateTank(tag.child(NBTTags.TANK));
+    updateTank(tag.childOrEmpty(NBTTags.TANK));
     super.loadAdditional(tag);
   }
 

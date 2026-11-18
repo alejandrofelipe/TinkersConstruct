@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Consumer;
+import slimeknights.mantle.inventory.SingleItemHandler;
 
 /** Helpers related to Tag */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -104,14 +105,19 @@ public final class TagUtil {
   }
 
   /**
-   * Parses an item stack, treating an empty tag as an empty stack. Replacement for the removed {@code ItemStack.parseOptional}.
+   * Parses an item stack, treating a tag without an item ID (including an empty tag) as an empty stack. Replacement for the removed {@code ItemStack.parseOptional}.
    * @param registries  Registry access
    * @param tag         Tag to parse
-   * @return  Parsed stack, or empty if the tag is empty or invalid
+   * @return  Parsed stack, or empty if the tag has no ID or is invalid
    */
   public static ItemStack parseOptionalItem(HolderLookup.Provider registries, CompoundTag tag) {
+    // no ID silently means no stack: covers empty tags and the {Slot}-only tool inventory entries saved by 1.21.1-1.21.5,
+    // which are read every tick/tooltip; stacks that have an ID but fail to parse are still logged
+    if (!tag.contains("id")) {
+      return ItemStack.EMPTY;
+    }
     // 1.21.8: ItemStack.parse was removed; same codec and context it used internally
-    return tag.isEmpty() ? ItemStack.EMPTY : ItemStack.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag)
+    return ItemStack.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag)
       .resultOrPartial(error -> LOGGER.error("Tried to load invalid item: '{}'", error)).orElse(ItemStack.EMPTY);
   }
 
@@ -158,6 +164,28 @@ public final class TagUtil {
     try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(path, LOGGER)) {
       reader.accept(TagValueInput.create(reporter, registries, tag));
     }
+  }
+
+  /**
+   * Writes a single item handler under the given key, same blob as {@link SingleItemHandler#writeToNBT(HolderLookup.Provider)}:
+   * an empty compound for an empty stack, else the encoded stack. Needs no registry provider, unlike the handler method.
+   * @param output   Output to write to
+   * @param key      Key for the blob
+   * @param handler  Handler to write
+   */
+  public static void writeSingleItem(ValueOutput output, String key, SingleItemHandler<?> handler) {
+    output.store(key, ItemStack.OPTIONAL_CODEC, handler.getStack());
+  }
+
+  /**
+   * Reads a single item handler from the given key, if it holds a compound, through {@link SingleItemHandler#readFromNBT(HolderLookup.Provider, CompoundTag)}.
+   * @param input    Input to read from
+   * @param key      Key for the blob
+   * @param handler  Handler to read into
+   */
+  @SuppressWarnings("deprecation") // lookup is the only way to hand the handler its registry provider
+  public static void readSingleItem(ValueInput input, String key, SingleItemHandler<?> handler) {
+    input.read(key, CompoundTag.CODEC).ifPresent(tag -> handler.readFromNBT(input.lookup(), tag));
   }
 
   /**

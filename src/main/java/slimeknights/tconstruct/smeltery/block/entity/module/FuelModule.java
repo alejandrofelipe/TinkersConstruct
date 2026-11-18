@@ -152,9 +152,9 @@ public abstract class FuelModule implements ContainerData {
    */
   public void readFromTag(ValueInput nbt) {
     nbt.getInt(TAG_FUEL).ifPresent(value -> fuel = value);
-    Optional<Integer> temperature = nbt.getInt(TAG_TEMPERATURE);
-    if (temperature.isPresent()) {
-      this.temperature = temperature.get();
+    Optional<Integer> savedTemperature = nbt.getInt(TAG_TEMPERATURE);
+    if (savedTemperature.isPresent()) {
+      temperature = savedTemperature.get();
       rate = nbt.getIntOr(TAG_RATE, 0);
     }
   }

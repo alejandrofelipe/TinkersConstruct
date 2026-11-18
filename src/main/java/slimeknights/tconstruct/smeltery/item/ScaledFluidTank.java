@@ -89,8 +89,11 @@ public class ScaledFluidTank extends FluidTank {
   @Override
   public void deserialize(ValueInput input) {
     // scale the fluid on reading from NBT; as each instance should store the fluid relative to stack size 1
-    FluidStack fluid = input.read(FluidStack.MAP_CODEC).orElse(FluidStack.EMPTY);
-    fluid.setAmount(fluid.getAmount() * scale);
+    // never scale the shared FluidStack.EMPTY, setAmount mutates it
+    FluidStack fluid = input.read(FluidStack.MAP_CODEC).filter(stack -> !stack.isEmpty()).orElse(FluidStack.EMPTY);
+    if (!fluid.isEmpty()) {
+      fluid.setAmount(fluid.getAmount() * scale);
+    }
     setFluid(fluid);
   }
 

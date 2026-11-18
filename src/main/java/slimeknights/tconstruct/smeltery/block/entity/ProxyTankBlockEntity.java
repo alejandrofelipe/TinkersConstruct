@@ -2,7 +2,6 @@ package slimeknights.tconstruct.smeltery.block.entity;
 
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -14,6 +13,7 @@ import slimeknights.mantle.block.InventoryBlock;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.tconstruct.library.fluid.IFluidTankUpdater;
+import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.tank.ProxyItemTank;
 
@@ -143,13 +143,12 @@ public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTan
   @Override
   public void loadAdditional(ValueInput tag) {
     super.loadAdditional(tag);
-    tag.read(TAG_ITEM, CompoundTag.CODEC).ifPresent(item -> itemTank.readFromNBT(tag.lookup(), item));
+    TagUtil.readSingleItem(tag, TAG_ITEM, itemTank);
   }
 
   @Override
   protected void saveSynced(ValueOutput tag) {
     super.saveSynced(tag);
-    // OPTIONAL_CODEC matches SingleItemHandler#writeToNBT: an empty compound for an empty stack, else the encoded stack
-    tag.store(TAG_ITEM, ItemStack.OPTIONAL_CODEC, itemTank.getStack());
+    TagUtil.writeSingleItem(tag, TAG_ITEM, itemTank);
   }
 }
