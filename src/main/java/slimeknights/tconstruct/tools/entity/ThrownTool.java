@@ -430,8 +430,8 @@ public class ThrownTool extends ThrownTrident implements ToolProjectile {
   @Override
   public void readAdditionalSaveData(CompoundTag tag) {
     super.readAdditionalSaveData(tag);
-    // update the tool to sync to client, if its set
-    if (tag.contains("Trident", CompoundTag.TAG_COMPOUND)) {
+    // update the tool to sync to client, if its set; since 1.20.5 vanilla stores the pickup stack under "item" (AbstractArrow), not "Trident"
+    if (tag.contains("item", CompoundTag.TAG_COMPOUND)) {
       updateFromStack();
     }
     this.charge = tag.getFloat(KEY_CHARGE);
