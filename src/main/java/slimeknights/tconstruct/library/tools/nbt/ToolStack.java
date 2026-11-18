@@ -280,11 +280,12 @@ public class ToolStack implements IToolStackView {
     setStackTag(stack, nbt);
     // damage value is already enforced via the stack creation above
     // 1.21.4: vanilla damageability is now driven by the MAX_DAMAGE + DAMAGE data components (ItemStack#isDamageableItem).
-    // Modifiable tools register unstackable without a durability component (only the dagger passes durability(-1)), so mark
-    // the built stack damageable. The value is just a marker mirroring the dagger: the real max damage stays dynamic via
-    // ToolDamageUtil#getFakeMaxDamage (Item#getMaxDamage/getDamage overrides). Guarded so the dagger is not double-marked.
+    // Modifiable tools register without a durability component, so mark the built stack damageable. The value is just a
+    // marker: the real max damage stays dynamic via ToolDamageUtil#getFakeMaxDamage (Item#getMaxDamage/getDamage overrides).
+    // It must be positive: DataComponents.MAX_DAMAGE uses ExtraCodecs.POSITIVE_INT, which validates on encode, so the old -1
+    // made every built tool fail ItemStack.CODEC and vanish from saves (inventories, containers, entities; 1.21.4+).
     if (!stack.isDamageableItem()) {
-      stack.set(DataComponents.MAX_DAMAGE, -1);
+      stack.set(DataComponents.MAX_DAMAGE, 1);
       stack.set(DataComponents.DAMAGE, 0);
     }
     return stack;
