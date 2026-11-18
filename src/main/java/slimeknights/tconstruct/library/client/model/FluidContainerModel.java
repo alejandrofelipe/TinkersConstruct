@@ -4,6 +4,7 @@ import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -21,6 +22,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStackLinkedSet;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import org.joml.Quaternionf;
@@ -30,10 +32,10 @@ import slimeknights.tconstruct.library.client.model.ItemModelUtil.BakedItem;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Item model for a fluid container (copper can, etc): composites a base sprite with a fluid clipped to a mask sprite,
@@ -98,7 +100,8 @@ public final class FluidContainerModel {
     @Nullable private final Material particle;
     private final FluidStack staticFluid;
     private final boolean flipGas;
-    private final Map<FluidStack, BakedItem> cache = new ConcurrentHashMap<>();
+    /** FluidStack does not override equals/hashCode, so key by fluid and components or the cache never hits */
+    private final Map<FluidStack, BakedItem> cache = Collections.synchronizedMap(new Object2ObjectOpenCustomHashMap<>(FluidStackLinkedSet.TYPE_AND_COMPONENTS));
 
     Baked(ItemTransforms itemTransforms, @Nullable Material base, @Nullable Material fluidMask, @Nullable Material particle, FluidStack staticFluid, boolean flipGas) {
       this.itemTransforms = itemTransforms;
