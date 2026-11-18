@@ -1,9 +1,16 @@
 package slimeknights.tconstruct.gametest;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestion;
+import com.mojang.brigadier.suggestion.Suggestions;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+
+import java.util.List;
 
 /**
  * Gametests for Mantle's debug/admin commands. Mantle has no gametest infrastructure of its own, and its
@@ -19,7 +26,8 @@ import net.minecraft.server.MinecraftServer;
  * their feedback message threw and aborted the command. Executing through the dispatcher lets that exception
  * propagate and fail the test; a fixed command completes and reaches {@link GameTestHelper#succeed()}.
  *
- * <p>Only read-only commands are covered here (dump_tag, tag_preference). Commands that write a datapack
+ * <p>Only read-only commands are covered here (dump_tag, tag_preference, sources), plus the suggestion providers
+ * of {@code sources}, queried through {@code dispatcher.getCompletionSuggestions}. Commands that write a datapack
  * ({@code RemoveDataCommand} — its condition-remove would unbind a registry entry and corrupt the persistent
  * gametest world) or are client-only ({@code BookCommand}) share the identical {@code .toString()} fix and are
  * verified by inspection.
@@ -56,5 +64,47 @@ public class MantleCommandGameTests {
   public static void tag_preference(GameTestHelper helper) {
     runCommand(helper, "mantle tags preference minecraft:item minecraft:planks");
     helper.succeed();
+  }
+
+  /**
+   * {@code /mantle sources data loot_table <id>} suggests ids from the reloadable loot table registry
+   * ({@code MantleCommand.init}); 1.21 moved loot tables from {@code LootDataManager} to
+   * {@code ReloadableServerRegistries}, so the provider must still list the vanilla tables.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void sources_loot_table_suggestions(GameTestHelper helper) {
+    assertSuggests(helper, "mantle sources data loot_table minecraft:chests/", "minecraft:chests/simple_dungeon");
+    helper.succeed();
+  }
+
+  /**
+   * {@code /mantle sources data recipes <id>} suggests ids from the server's {@code RecipeManager}; 1.21.4 removed
+   * {@code CommandSourceStack#getRecipeNames}, so the provider reads the recipe holders instead.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void sources_recipe_suggestions(GameTestHelper helper) {
+    assertSuggests(helper, "mantle sources data recipes minecraft:oak_pl", "minecraft:oak_planks");
+    helper.succeed();
+  }
+
+  /**
+   * {@code /mantle sources data loot_table <id>} finds the vanilla loot table file in the {@code loot_table} folder
+   * ({@code SourcesCommand}) and builds its feedback message; a missing file throws a syntax exception.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void sources_loot_table(GameTestHelper helper) {
+    runCommand(helper, "mantle sources data loot_table minecraft:chests/simple_dungeon");
+    helper.succeed();
+  }
+
+  /** Asserts the completion suggestions for the partial command contain the expected text, failing with the full list. */
+  private static void assertSuggests(GameTestHelper helper, String input, String expected) {
+    MinecraftServer server = helper.getLevel().getServer();
+    CommandSourceStack source = server.createCommandSourceStack();
+    CommandDispatcher<CommandSourceStack> dispatcher = server.getCommands().getDispatcher();
+    ParseResults<CommandSourceStack> parse = dispatcher.parse(input, source);
+    Suggestions suggestions = dispatcher.getCompletionSuggestions(parse).join();
+    List<String> texts = suggestions.getList().stream().map(Suggestion::getText).toList();
+    helper.assertTrue(texts.contains(expected), Component.literal("expected suggestion '" + expected + "' for '" + input + "', got " + texts));
   }
 }
