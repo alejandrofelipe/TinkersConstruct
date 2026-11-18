@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -19,7 +19,6 @@ import net.neoforged.bus.api.IEventBus;
 import slimeknights.mantle.data.listener.IEarlySafeManagerReloadListener;
 import slimeknights.mantle.util.JsonHelper;
 import slimeknights.tconstruct.TConstruct;
-import slimeknights.tconstruct.library.client.RenderUtils;
 import slimeknights.tconstruct.library.modifiers.Modifier;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 
@@ -124,13 +123,12 @@ public class ModifierIconManager implements IEarlySafeManagerReloadListener {
     List<ResourceLocation> icons = modifierIcons.getOrDefault(modifier.getId(), Collections.emptyList());
     if (!icons.isEmpty()) {
       for (ResourceLocation icon : icons) {
-        graphics.blitSprite(RenderType::guiTextured, atlas.getSprite(icon), x, y, size, size);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, atlas.getSprite(icon), x, y, size, size);
       }
     } else {
-      graphics.blitSprite(RenderType::guiTextured, atlas.getSprite(DEFAULT_PAGES), x, y, size, size);
-      RenderUtils.setColorRGBA(0xFF000000 | modifier.getColor());
-      graphics.blitSprite(RenderType::guiTextured, atlas.getSprite(DEFAULT_COVER), x, y, size, size);
-      RenderUtils.setColorRGBA(-1);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, atlas.getSprite(DEFAULT_PAGES), x, y, size, size);
+      // 1.21.8: shader color is gone, the tint is the blit color
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, atlas.getSprite(DEFAULT_COVER), x, y, size, size, 0xFF000000 | modifier.getColor());
     }
   }
 }

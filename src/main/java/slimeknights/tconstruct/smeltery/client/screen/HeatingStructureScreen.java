@@ -102,7 +102,7 @@ public class HeatingStructureScreen extends MultiModuleScreen<HeatingStructureCo
     super.renderBg(graphics, partialTicks, mouseX, mouseY);
 
     // render fluids
-    if (tank != null) tank.renderFluids(graphics.pose());
+    if (tank != null) tank.renderFluids(graphics);
   }
 
   /** Checks if the bucket button is hovered */
@@ -148,7 +148,7 @@ public class HeatingStructureScreen extends MultiModuleScreen<HeatingStructureCo
 
     // add the hover text giving info on the button
     if (bucketButtonHovered(mouseX - leftPos, mouseY - topPos)) {
-      graphics.renderTooltip(font, switch (menu.getTransferDirection()) {
+      graphics.setTooltipForNextFrame(font, switch (menu.getTransferDirection()) {
         default -> TOOLTIP_AUTO;
         case EMPTY_ITEM -> TOOLTIP_EMPTY;
         case FILL_ITEM -> TOOLTIP_FILL;

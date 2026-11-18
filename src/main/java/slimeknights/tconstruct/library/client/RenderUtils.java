@@ -1,13 +1,10 @@
 package slimeknights.tconstruct.library.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
@@ -18,37 +15,6 @@ import slimeknights.tconstruct.library.fluid.FluidTankAnimated;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RenderUtils {
-  /**
-   * Binds a texture for rendering
-   * @param texture  Texture
-   * @deprecated 1.21.5: shaders are part of render pipelines now, so this only sets the shader texture. Draw through a {@link net.minecraft.client.renderer.RenderType} using the texture instead.
-   */
-  @Deprecated
-  public static void bindTexture(ResourceLocation texture) {
-    RenderSystem.setShaderTexture(0, Minecraft.getInstance().getTextureManager().getTexture(texture).getTexture());
-  }
-
-  /**
-   * Sets up the shader for rendering
-   * @param texture  Texture
-   * @param red      Red tint
-   * @param green    Green tint
-   * @param blue     Blue tint
-   * @param alpha    Alpha tint
-   */
-  public static void setup(ResourceLocation texture, float red, float green, float blue, float alpha) {
-    bindTexture(texture);
-    RenderSystem.setShaderColor(red, green, blue, alpha);
-  }
-
-  /**
-   * Sets up the shader for rendering.
-   * @param texture  Texture
-   */
-  public static void setup(ResourceLocation texture) {
-    setup(texture, 1.0f, 1.0f, 1.0f, 1.0f);
-  }
-
   /**
    * Adds a fluid cuboid with transparency
    * @param matrices  Matrix stack instance
@@ -112,14 +78,6 @@ public final class RenderUtils {
       // clear render offet if no liquid
       tank.setRenderOffset(0);
     }
-  }
-
-  public static void setColorRGBA(int color) {
-    float a = alpha(color) / 255.0F;
-    float r = red(color) / 255.0F;
-    float g = green(color) / 255.0F;
-    float b = blue(color) / 255.0F;
-    RenderSystem.setShaderColor(r, g, b, a);
   }
 
   public static int alpha(int c) {

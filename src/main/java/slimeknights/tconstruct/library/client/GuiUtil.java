@@ -1,23 +1,25 @@
 package slimeknights.tconstruct.library.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.gui.render.state.BlitRenderState;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
-import org.joml.Matrix4f;
+import org.joml.Matrix3x2f;
 import slimeknights.mantle.client.screen.ElementScreen;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
+
+import javax.annotation.Nullable;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GuiUtil {
@@ -28,7 +30,7 @@ public final class GuiUtil {
    * @param background  Background location
    */
   public static void drawBackground(GuiGraphics graphics, AbstractContainerScreen<?> screen, ResourceLocation background) {
-    graphics.blit(RenderType::guiTextured, background, screen.leftPos, screen.topPos, 0.0F, 0.0F, screen.imageWidth, screen.imageHeight, 256, 256);
+    graphics.blit(RenderPipelines.GUI_TEXTURED, background, screen.leftPos, screen.topPos, 0.0F, 0.0F, screen.imageWidth, screen.imageHeight, 256, 256);
   }
 
   /**
@@ -78,8 +80,8 @@ public final class GuiUtil {
    * @param height    Tank height
    * @param depth     Tank depth
    */
-  public static void renderFluidTank(PoseStack matrices, AbstractContainerScreen<?> screen, FluidStack stack, int capacity, int x, int y, int width, int height, int depth) {
-    renderFluidTank(matrices, screen, stack, stack.getAmount(), capacity, x, y, width, height, depth);
+  public static void renderFluidTank(GuiGraphics graphics, AbstractContainerScreen<?> screen, FluidStack stack, int capacity, int x, int y, int width, int height, int depth) {
+    renderFluidTank(graphics, screen, stack, stack.getAmount(), capacity, x, y, width, height, depth);
   }
 
   /**
@@ -93,17 +95,17 @@ public final class GuiUtil {
    * @param height    Tank height
    * @param depth     Tank depth
    */
-  public static void renderFluidTank(PoseStack matrices, AbstractContainerScreen<?> screen, FluidStack stack, int amount, int capacity, int x, int y, int width, int height, int depth) {
+  public static void renderFluidTank(GuiGraphics graphics, AbstractContainerScreen<?> screen, FluidStack stack, int amount, int capacity, int x, int y, int width, int height, int depth) {
     if(!stack.isEmpty() && capacity > 0) {
       int maxY = y + height;
       int fluidHeight = Math.min(height * amount / capacity, height);
-      renderTiledFluid(matrices, screen, stack, x, maxY - fluidHeight, width, fluidHeight, depth);
+      renderTiledFluid(graphics, screen, stack, x, maxY - fluidHeight, width, fluidHeight, depth);
     }
   }
 
   /**
    * Colors and renders a fluid sprite
-   * @param matrices    Matrix instance
+   * @param graphics    Graphics instance
    * @param screen  Parent screen
    * @param stack   Fluid stack
    * @param x       Fluid X
@@ -112,18 +114,18 @@ public final class GuiUtil {
    * @param height  Fluid height
    * @param depth   Fluid depth
    */
-  public static void renderTiledFluid(PoseStack matrices, AbstractContainerScreen<?> screen, FluidStack stack, int x, int y, int width, int height, int depth) {
+  public static void renderTiledFluid(GuiGraphics graphics, AbstractContainerScreen<?> screen, FluidStack stack, int x, int y, int width, int height, int depth) {
     if (!stack.isEmpty()) {
       IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(stack.getFluid());
       TextureAtlasSprite fluidSprite = screen.getMinecraft().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(clientFluid.getStillTexture(stack));
       // 1.21.5: tint is passed as vertex color instead of the shader color
-      renderTiledTextureAtlas(matrices, screen, fluidSprite, x, y, width, height, depth, stack.getFluid().getFluidType().isLighterThanAir(), clientFluid.getTintColor(stack));
+      renderTiledTextureAtlas(graphics, screen, fluidSprite, x, y, width, height, depth, stack.getFluid().getFluidType().isLighterThanAir(), clientFluid.getTintColor(stack));
     }
   }
 
   /**
    * Renders a texture atlas sprite tiled over the given area
-   * @param matrices    Matrix instance
+   * @param graphics    Graphics instance
    * @param screen      Parent screen
    * @param sprite      Sprite to render
    * @param x           X position to render
@@ -133,13 +135,13 @@ public final class GuiUtil {
    * @param depth       Render depth
    * @param upsideDown  If true, flips the sprite
    */
-  public static void renderTiledTextureAtlas(PoseStack matrices, AbstractContainerScreen<?> screen, TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown) {
-    renderTiledTextureAtlas(matrices, screen, sprite, x, y, width, height, depth, upsideDown, -1);
+  public static void renderTiledTextureAtlas(GuiGraphics graphics, AbstractContainerScreen<?> screen, TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown) {
+    renderTiledTextureAtlas(graphics, screen, sprite, x, y, width, height, depth, upsideDown, -1);
   }
 
   /**
    * Renders a texture atlas sprite tiled over the given area
-   * @param matrices    Matrix instance
+   * @param graphics    Graphics instance
    * @param screen      Parent screen
    * @param sprite      Sprite to render
    * @param x           X position to render
@@ -150,12 +152,14 @@ public final class GuiUtil {
    * @param upsideDown  If true, flips the sprite
    * @param color       ARGB tint color
    */
-  public static void renderTiledTextureAtlas(PoseStack matrices, AbstractContainerScreen<?> screen, TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown, int color) {
-    // start drawing sprites
-    // 1.21.5: BufferUploader is gone, draw through the GUI buffer source (shared with GuiGraphics) and flush right away
-    MultiBufferSource.BufferSource bufferSource = screen.getMinecraft().renderBuffers().bufferSource();
-    RenderType renderType = RenderType.guiTextured(sprite.atlasLocation());
-    VertexConsumer builder = bufferSource.getBuffer(renderType);
+  public static void renderTiledTextureAtlas(GuiGraphics graphics, AbstractContainerScreen<?> screen, TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown, int color) {
+    // 1.21.8: GUI rendering is deferred, so each tile is submitted as a blit render state. The public blitSprite overloads
+    // only draw a whole atlas sprite (or a sub-region of a GUI atlas sprite), so partial tiles are submitted directly with
+    // their exact sub-UVs, same as the old immediate quads. Depth is ignored: later submissions draw above earlier ones.
+    GpuTextureView texture = screen.getMinecraft().getTextureManager().getTexture(sprite.atlasLocation()).getTextureView();
+    TextureSetup textureSetup = TextureSetup.singleTexture(texture);
+    Matrix3x2f pose = new Matrix3x2f(graphics.pose());
+    ScreenRectangle scissor = graphics.peekScissorStack();
 
     // tile vertically
     float u1 = sprite.getU0();
@@ -173,7 +177,6 @@ public final class GuiUtil {
       // we need to draw the quads per width too
       int x2 = startX;
       int widthLeft = width;
-      Matrix4f matrix = matrices.last().pose();
       // tile horizontally
       do {
         int renderWidth = Math.min(spriteWidth, widthLeft);
@@ -182,39 +185,31 @@ public final class GuiUtil {
         float u2 = sprite.getU((float) renderWidth / spriteWidth);
         if(upsideDown) {
           // FIXME: I think this causes tiling errors, look into it
-          buildSquare(matrix, builder, x2, x2 + renderWidth, startY, startY + renderHeight, depth, u1, u2, v2, v1, color);
+          blitTile(graphics, textureSetup, pose, scissor, x2, x2 + renderWidth, startY, startY + renderHeight, u1, u2, v2, v1, color);
         } else {
-          buildSquare(matrix, builder, x2, x2 + renderWidth, startY, startY + renderHeight, depth, u1, u2, v1, v2, color);
+          blitTile(graphics, textureSetup, pose, scissor, x2, x2 + renderWidth, startY, startY + renderHeight, u1, u2, v1, v2, color);
         }
         x2 += renderWidth;
       } while(widthLeft > 0);
 
       startY += renderHeight;
     } while(height > 0);
-
-    // finish drawing sprites
-    bufferSource.endBatch(renderType);
   }
 
   /**
-   * Adds a square of texture to a buffer builder
-   * @param builder  Builder instance
+   * Submits a single textured tile to the GUI render state
    * @param x1       X start
    * @param x2       X end
    * @param y1       Y start
    * @param y2       Y end
-   * @param z        Depth
    * @param u1       Texture U start
    * @param u2       Texture U end
    * @param v1       Texture V start
    * @param v2       Texture V end
    * @param color    ARGB color
    */
-  private static void buildSquare(Matrix4f matrix, VertexConsumer builder, int x1, int x2, int y1, int y2, int z, float u1, float u2, float v1, float v2, int color) {
-    builder.addVertex(matrix, x1, y2, z).setUv(u1, v2).setColor(color);
-    builder.addVertex(matrix, x2, y2, z).setUv(u2, v2).setColor(color);
-    builder.addVertex(matrix, x2, y1, z).setUv(u2, v1).setColor(color);
-    builder.addVertex(matrix, x1, y1, z).setUv(u1, v1).setColor(color);
+  private static void blitTile(GuiGraphics graphics, TextureSetup textureSetup, Matrix3x2f pose, @Nullable ScreenRectangle scissor, int x1, int x2, int y1, int y2, float u1, float u2, float v1, float v2, int color) {
+    graphics.submitGuiElementRenderState(new BlitRenderState(RenderPipelines.GUI_TEXTURED, textureSetup, pose, x1, y1, x2, y2, u1, u2, v1, v2, color, scissor));
   }
 
   /**
@@ -236,7 +231,19 @@ public final class GuiUtil {
     }
     // amount to offset element by for the height
     int deltaY = element.h - height;
-    graphics.blit(RenderType::guiTextured, element.texture, x, y + deltaY, (float) element.x, (float) (element.y + deltaY), element.w, height, element.texW, element.texH);
+    graphics.blit(RenderPipelines.GUI_TEXTURED, element.texture, x, y + deltaY, (float) element.x, (float) (element.y + deltaY), element.w, height, element.texW, element.texH);
+  }
+
+  /**
+   * Draws an element with a tint color. Replaces drawing an element under {@code RenderSystem.setShaderColor}, which is gone in 1.21.6+.
+   * @param graphics  Graphics instance
+   * @param element   Element to draw
+   * @param x         X position
+   * @param y         Y position
+   * @param color     ARGB tint, typically {@link net.minecraft.util.ARGB#white(float)} for translucency
+   */
+  public static void drawElement(GuiGraphics graphics, ElementScreen element, int x, int y, int color) {
+    graphics.blit(RenderPipelines.GUI_TEXTURED, element.texture, x, y, (float) element.x, (float) element.y, element.w, element.h, element.texW, element.texH, color);
   }
 
   /**
@@ -248,23 +255,13 @@ public final class GuiUtil {
    * @param height    Element height
    */
   public static void renderHighlight(GuiGraphics graphics, int x, int y, int width, int height) {
-      // 1.21.5: depth test and color mask moved into the render type's pipeline
-      graphics.fill(TinkerRenderTypes.GUI_HIGHLIGHT, x, y, x + width, y + height, 100, 0x80FFFFFF);
-  }
-
-  /**
-   * Flushes pending GUI draws and clears the depth buffer, so everything drawn afterwards paints over what was drawn
-   * before regardless of its depth. Replaces the old {@code RenderSystem.disableDepthTest()} idiom for overlays, which
-   * no longer exists in 1.21.5 (depth testing is part of the render pipeline); same approach as vanilla {@code PopupScreen}.
-   */
-  public static void clearDepth(GuiGraphics graphics) {
-    graphics.flush();
-    RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(Minecraft.getInstance().getMainRenderTarget().getDepthTexture(), 1.0);
+      // 1.21.8: GUI draws are layered by submission order (no depth buffer), so a plain fill after the content draws over it
+      graphics.fill(x, y, x + width, y + height, 0x80FFFFFF);
   }
 
   /** Renders a pattern at the given location */
   public static void renderPattern(GuiGraphics graphics, Pattern pattern, int x, int y) {
     TextureAtlasSprite sprite = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(pattern.getTexture());
-    graphics.blitSprite(RenderType::guiTextured, sprite, x, y, 16, 16);
+    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, 16, 16);
   }
 }

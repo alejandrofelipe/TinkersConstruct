@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.smeltery.client.screen.module;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -12,6 +13,7 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.GuiUtil;
 import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModuleInventory;
 
+import java.util.List;
 import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 
@@ -114,7 +116,9 @@ public class GuiMeltingModule {
 
           // draw tooltip if relevant
           if (tooltip != null) {
-            graphics.renderTooltip(screen.font, tooltip, mouseX, mouseY);
+            // 1.21.8: tooltips are deferred and the first one set wins; the slot's item tooltip is set before this, but the old
+            // immediate tooltip drew on top of it, so mark this one focused to take priority
+            graphics.setTooltipForNextFrame(screen.font, List.of(tooltip.getVisualOrderText()), DefaultTooltipPositioner.INSTANCE, mouseX, mouseY, true);
           }
 
           // cannot hover two slots, so done

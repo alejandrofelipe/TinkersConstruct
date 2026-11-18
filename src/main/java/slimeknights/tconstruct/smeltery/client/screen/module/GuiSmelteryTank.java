@@ -1,6 +1,5 @@
 package slimeknights.tconstruct.smeltery.client.screen.module;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -73,9 +72,9 @@ public class GuiSmelteryTank implements IScreenWithFluidTank {
 
   /**
    * Renders the smeltery tank
-   * @param matrices  Matrix stack instance
+   * @param graphics  GuiGraphics instance
    */
-  public void renderFluids(PoseStack matrices) {
+  public void renderFluids(GuiGraphics graphics) {
     // draw liquids
     if (tank.getContained() > 0) {
       int[] heights = calcLiquidHeights(true);
@@ -84,7 +83,7 @@ public class GuiSmelteryTank implements IScreenWithFluidTank {
       for (int i = 0; i < heights.length; i++) {
         int fluidH = heights[i];
         FluidStack liquid = tank.getFluids().get(i);
-        GuiUtil.renderTiledFluid(matrices, parent, liquid, x, bottom - fluidH, width, fluidH, 100);
+        GuiUtil.renderTiledFluid(graphics, parent, liquid, x, bottom - fluidH, width, fluidH, 100);
         bottom -= fluidH;
       }
     } else if (liquidHeights != null && liquidHeights.length > 0) {
@@ -181,7 +180,7 @@ public class GuiSmelteryTank implements IScreenWithFluidTank {
       else {
         tooltip = FluidTooltipHandler.getFluidTooltip(tank.getFluidInTank(hovered));
       }
-      graphics.renderComponentTooltip(parent.font, tooltip, mouseX, mouseY);
+      graphics.setComponentTooltipForNextFrame(parent.font, tooltip, mouseX, mouseY);
     }
   }
 
