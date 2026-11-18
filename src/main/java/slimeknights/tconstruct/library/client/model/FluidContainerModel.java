@@ -150,9 +150,9 @@ public final class FluidContainerModel {
 
     /** Gets the cached model for the given fluid */
     private BakedItem getCachedModel(FluidStack fluid) {
-      // normalize amount so the cache key is consistent
-      FluidStack key = fluid.copy();
-      key.setAmount(FluidType.BUCKET_VOLUME);
+      // normalize amount so the cache key is consistent; copyWithAmount returns the shared FluidStack.EMPTY untouched
+      // for an empty fluid, where copy() + setAmount would mutate it
+      FluidStack key = fluid.copyWithAmount(FluidType.BUCKET_VOLUME);
       return cache.computeIfAbsent(key, this::bakeWith);
     }
 
