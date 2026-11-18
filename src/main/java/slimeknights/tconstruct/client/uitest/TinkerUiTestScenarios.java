@@ -1,7 +1,13 @@
 package slimeknights.tconstruct.client.uitest;
 
+import mezz.jei.api.recipe.IRecipeManager;
+import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.runtime.IJeiRuntime;
+import mezz.jei.api.runtime.IRecipesGui;
+import net.blay09.mods.craftingtweaks.client.GuiTweakButton;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -9,6 +15,8 @@ import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -22,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -29,6 +38,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
 import slimeknights.mantle.client.screen.book.BookScreen;
+import slimeknights.mantle.client.screen.book.element.StructureElement;
 import slimeknights.mantle.client.uitest.UiTestContext;
 import slimeknights.mantle.client.uitest.UiTestScenario;
 import slimeknights.mantle.client.uitest.UiTestScenarios;
@@ -42,11 +52,14 @@ import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.gametest.SmelteryRigs;
 import slimeknights.tconstruct.plugin.jei.JEIPlugin;
 import slimeknights.tconstruct.plugin.jei.TConstructJEIConstants;
+import slimeknights.tconstruct.plugin.jei.entity.DefaultEntityMeltingRecipe;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 import slimeknights.tconstruct.smeltery.item.CopperCanItem;
 import slimeknights.tconstruct.tables.TinkerTables;
+import slimeknights.tconstruct.tables.block.entity.table.CraftingStationBlockEntity;
+import slimeknights.tconstruct.tables.menu.CraftingStationContainerMenu;
 import slimeknights.tconstruct.tables.client.inventory.TinkerStationScreen;
 import slimeknights.tconstruct.tables.client.inventory.ToolTableScreen;
 import slimeknights.tconstruct.tools.TinkerModifiers;
@@ -61,6 +74,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /** Registers TConstruct's automated GUI screenshot scenarios (active only with -Dmantle.uitest=true). */
@@ -83,7 +97,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new MelterScenario());
     UiTestScenarios.register(new CastingPourScenario());
     UiTestScenarios.register(new BookScenario());
-    UiTestScenarios.register(new JeiCategoryScenario());
+    UiTestScenarios.register(new JeiCategoryScenario<>("melting", TConstructJEIConstants.MELTING));
     UiTestScenarios.register(new JeiItemListCleanupScenario());
     UiTestScenarios.register(new BookInteriorScenario());
     UiTestScenarios.register(new StationReflowScenario());
@@ -93,6 +107,24 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new DynamicBlockModelsScenario());
     UiTestScenarios.register(new HeadItemsScenario());
     UiTestScenarios.register(new DynamicItemIconsScenario());
+    // every other Tinkers JEI category (JEIPlugin#registerCategories), melting is registered above
+    UiTestScenarios.register(new JeiCategoryScenario<>("casting_table", TConstructJEIConstants.CASTING_TABLE));
+    UiTestScenarios.register(new JeiCategoryScenario<>("casting_basin", TConstructJEIConstants.CASTING_BASIN));
+    // patternless (pick up) molding recipes have a null pattern, which the category used to NPE on
+    UiTestScenarios.register(new JeiCategoryScenario<>("molding", TConstructJEIConstants.MOLDING, "a recipe without pattern", recipe -> recipe.getPattern() == null));
+    UiTestScenarios.register(new JeiCategoryScenario<>("alloy", TConstructJEIConstants.ALLOY));
+    // the generated default recipe is always there, so require a datapack recipe (synced to the client)
+    UiTestScenarios.register(new JeiCategoryScenario<>("entity_melting", TConstructJEIConstants.ENTITY_MELTING, "a datapack recipe", recipe -> !(recipe instanceof DefaultEntityMeltingRecipe)));
+    UiTestScenarios.register(new JeiCategoryScenario<>("foundry", TConstructJEIConstants.FOUNDRY));
+    UiTestScenarios.register(new JeiCategoryScenario<>("modifiers", TConstructJEIConstants.MODIFIERS));
+    UiTestScenarios.register(new JeiCategoryScenario<>("severing", TConstructJEIConstants.SEVERING));
+    UiTestScenarios.register(new JeiCategoryScenario<>("tool_building", TConstructJEIConstants.TOOL_BUILDING));
+    UiTestScenarios.register(new JeiCategoryScenario<>("part_builder", TConstructJEIConstants.PART_BUILDER));
+    UiTestScenarios.register(new JeiCategoryScenario<>("worktable", TConstructJEIConstants.MODIFIER_WORKTABLE));
+    UiTestScenarios.register(new BookStructureScenario());
+    if (ModList.get().isLoaded("craftingtweaks")) {
+      UiTestScenarios.register(new CraftingTweaksRotateScenario());
+    }
   }
 
   /** Places a single block and opens its GUI. */
@@ -331,15 +363,38 @@ public class TinkerUiTestScenarios {
     public void close(UiTestContext ctx) { /* nothing open */ }
   }
 
-  /** Opens the JEI recipes GUI on the Tinkers melting category and captures it. */
-  private static class JeiCategoryScenario implements UiTestScenario {
-    @Override
-    public ResourceLocation id() {
-      return TConstruct.getResource("jei_melting_category");
+  /**
+   * Opens the JEI recipes GUI on one Tinkers recipe category and captures its first page. Fails when the runtime is missing,
+   * the category is not registered, no recipe of the type matches {@code mustShow} (any recipe by default), or the recipes
+   * GUI did not open. The mouse is parked in the corner every tick while open, so no hover tooltip covers the recipes.
+   */
+  private static class JeiCategoryScenario<T> implements UiTestScenario {
+    private final String name;
+    private final RecipeType<T> type;
+    private final String mustShowDescription;
+    /** A recipe JEI must list, e.g. one kind the category dropped before (JEI only logs recipes that fail to lay out) */
+    private final Predicate<T> mustShow;
+    /** Re-parks every tick: a recentering cursor event from opening the screen may land after open() */
+    private final Consumer<ClientTickEvent.Post> mouseParker = event -> new UiTestContext(Minecraft.getInstance()).parkMouse();
+
+    private JeiCategoryScenario(String name, RecipeType<T> type, String mustShowDescription, Predicate<T> mustShow) {
+      this.name = name;
+      this.type = type;
+      this.mustShowDescription = mustShowDescription;
+      this.mustShow = mustShow;
+    }
+
+    private JeiCategoryScenario(String name, RecipeType<T> type) {
+      this(name, type, "any recipe", recipe -> true);
     }
 
     @Override
-    public void prepare(UiTestContext ctx) { /* nothing to build; JEI's async indexing captures the runtime long before this 7th scenario */ }
+    public ResourceLocation id() {
+      return TConstruct.getResource("jei_" + name + "_category");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) { /* nothing to build; JEI's async indexing captures the runtime long before the JEI scenarios */ }
 
     @Override
     public void open(UiTestContext ctx) {
@@ -347,12 +402,175 @@ public class TinkerUiTestScenarios {
       if (runtime == null) {
         throw new IllegalStateException("JEI runtime not captured - onRuntimeAvailable never fired");
       }
-      runtime.getRecipesGui().showTypes(List.of(TConstructJEIConstants.MELTING));
+      IRecipeManager recipes = runtime.getRecipeManager();
+      // throws if the category was never registered
+      Objects.requireNonNull(recipes.getRecipeCategory(type), () -> "no JEI category for " + type.getUid());
+      if (recipes.createRecipeLookup(type).get().noneMatch(mustShow)) {
+        throw new IllegalStateException("JEI category " + type.getUid() + " is missing " + mustShowDescription);
+      }
+      runtime.getRecipesGui().showTypes(List.of(type));
+      ctx.parkMouse();
+      NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, mouseParker);
     }
 
     @Override
     public int settleTicks() {
-      return 40; // recipe layouts/item renders settle
+      return 30; // recipe layouts/item renders settle
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(mouseParker);
+      if (!(ctx.mc().screen instanceof IRecipesGui)) {
+        throw new IllegalStateException(id().getPath() + " expected the JEI recipes GUI at capture, found " + ctx.mc().screen);
+      }
+      ctx.mc().setScreen(null);
+    }
+  }
+
+  /**
+   * Opens "Mighty Smelting" on the smeltery structure page and captures the 3D multiblock preview, drawn by Mantle's
+   * {@code StructurePiPRenderer} as a picture-in-picture with absolute bounds.
+   */
+  private static class BookStructureScenario implements UiTestScenario {
+    private static final String PAGE = "smeltery.structure";
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("book_structure");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      // same deterministic hotbar.0 placement as book_materials_and_you (see its comment)
+      ctx.sendCommand("item replace entity @s hotbar.0 with tconstruct:mighty_smelting");
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      InteractionResult result = ctx.player().getItemInHand(InteractionHand.MAIN_HAND)
+        .getItem().use(ctx.mc().level, ctx.player(), InteractionHand.MAIN_HAND);
+      if (result == InteractionResult.PASS) {
+        throw new IllegalStateException("book item use() passed - book screen did not open");
+      }
+      if (!(ctx.mc().screen instanceof BookScreen book)) {
+        throw new IllegalStateException("expected BookScreen after use(), found " + ctx.mc().screen);
+      }
+      int page = book.book.findPageNumber(PAGE, book.advancementCache);
+      if (page < 0) {
+        throw new IllegalStateException("book page " + PAGE + " not found");
+      }
+      int side = book.openPage(page);
+      StructureElement structure = book.getElements(side).stream()
+        .filter(StructureElement.class::isInstance).map(StructureElement.class::cast)
+        .findFirst().orElseThrow(() -> new IllegalStateException("book page " + PAGE + " has no structure element"));
+      if (structure.renderInfo.structureLength == 0 || structure.renderInfo.structureHeight == 0 || structure.renderInfo.structureWidth == 0) {
+        throw new IllegalStateException("book page " + PAGE + " has an empty structure");
+      }
+    }
+
+    @Override
+    public int settleTicks() {
+      return 40; // book textures/pages lazy-load
+    }
+  }
+
+  /**
+   * Fills the crafting station grid, presses the Crafting Tweaks rotate button once the menu is open, captures the rotated
+   * grid, and asserts the items moved. The button is pressed from a client tick poller as the menu opens through a server
+   * round trip, see {@link StationCollapsedOverlayScenario}.
+   */
+  private static class CraftingTweaksRotateScenario implements UiTestScenario {
+    private final BlockPos pos = SITE.offset(80, 0, 0);
+    private final Consumer<ClientTickEvent.Post> poller = this::rotateWhenReady;
+    private boolean rotated = false;
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("crafting_tweaks_rotate");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      rotated = false;
+      ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + pos.getY() + " " + pos.getZ());
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        level.setBlockAndUpdate(pos, TinkerTables.craftingStation.get().defaultBlockState());
+        if (!(level.getBlockEntity(pos) instanceof CraftingStationBlockEntity station)) {
+          throw new IllegalStateException("Expected crafting station at " + pos + ", found " + level.getBlockEntity(pos));
+        }
+        // the saved world persists across runs, so reset the whole grid: an L along the top row and left column
+        for (int i = 0; i < 9; i++) {
+          station.setItem(i, ItemStack.EMPTY);
+        }
+        station.setItem(0, new ItemStack(Items.STICK));
+        station.setItem(1, new ItemStack(Items.COBBLESTONE));
+        station.setItem(3, new ItemStack(Items.COBBLESTONE));
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.useBlock(pos);
+      NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, poller);
+    }
+
+    /** Presses rotate on the first tick the menu is open with the grid synced, then self-removes. */
+    private void rotateWhenReady(ClientTickEvent.Post event) {
+      if (rotated || !(Minecraft.getInstance().screen instanceof AbstractContainerScreen<?> screen)
+          || !(screen.getMenu() instanceof CraftingStationContainerMenu menu) || !menu.getSlot(0).getItem().is(Items.STICK)) {
+        return;
+      }
+      for (GuiEventListener child : screen.children()) {
+        if (child instanceof GuiTweakButton button && button.getTooltipComponents().stream().anyMatch(CraftingTweaksRotateScenario::isRotateTooltip)) {
+          button.onClick(button.getX(), button.getY());
+          rotated = true;
+          NeoForge.EVENT_BUS.unregister(poller);
+          return;
+        }
+      }
+    }
+
+    private static boolean isRotateTooltip(Component component) {
+      return component.getContents() instanceof TranslatableContents translatable && "tooltip.craftingtweaks.rotate".equals(translatable.getKey());
+    }
+
+    @Override
+    public int settleTicks() {
+      return 30; // menu round trip + rotate packet + slot sync
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(poller); // safety net if the menu never opened
+      if (!(ctx.mc().screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)) {
+        throw new IllegalStateException("crafting_tweaks_rotate expected the crafting station menu at capture, found " + ctx.mc().screen);
+      }
+      if (!rotated) {
+        throw new IllegalStateException("crafting_tweaks_rotate found no Crafting Tweaks rotate button on the crafting station");
+      }
+      // the stick started in the top left corner, any rotation moves it to another corner
+      int stick = -1;
+      for (int i = 0; i < 9; i++) {
+        if (menu.getSlot(i).getItem().is(Items.STICK)) {
+          stick = i;
+        }
+      }
+      if (stick == -1 || stick == 0) {
+        throw new IllegalStateException("crafting_tweaks_rotate expected the stick to leave slot 0, found it in slot " + stick);
+      }
+      ctx.mc().setScreen(null);
     }
   }
 
