@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.world.inventory.Slot;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -115,7 +115,7 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
     this.drawBackground(graphics, BACKGROUND);
 
     // draw scrollbar
-    graphics.blit(RenderType::guiTextured, BACKGROUND, this.cornerX + SLIDER_LEFT, this.cornerY + SLIDER_TOP + (int) (SROLLABLE_AREA * this.sliderProgress), canScroll() ? HANDLE_U : HANDLE_U_DISABLE, 0, SLIDER_WIDTH, HANDLE_HEIGHT, 256, 256);
+    graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, this.cornerX + SLIDER_LEFT, this.cornerY + SLIDER_TOP + (int) (SROLLABLE_AREA * this.sliderProgress), canScroll() ? HANDLE_U : HANDLE_U_DISABLE, 0, SLIDER_WIDTH, HANDLE_HEIGHT, 256, 256);
     this.drawModifierBackgrounds(graphics, mouseX, mouseY, this.cornerX + MODIFIER_LEFT, this.cornerY + MODIFIER_TOP);
 
     // draw slot icons
@@ -167,7 +167,7 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
       if (!buttons.isEmpty()) {
         int index = getButtonAt(mouseX, mouseY);
         if (index >= 0) {
-          graphics.renderTooltip(this.font, buttons.get(index).getDisplayName(), mouseX, mouseY);
+          graphics.setTooltipForNextFrame(this.font, buttons.get(index).getDisplayName(), mouseX, mouseY);
         }
       }
     }
@@ -188,7 +188,7 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
         } else if (mouseX >= x && mouseY >= y && mouseX < x + MODIFIER_SIZE && mouseY < y + MODIFIER_SIZE) {
           v += 2 * MODIFIER_SIZE;
         }
-        graphics.blit(RenderType::guiTextured, BACKGROUND, x, y, MODIFIER_U, v, MODIFIER_SIZE, MODIFIER_SIZE, 256, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, x, y, MODIFIER_U, v, MODIFIER_SIZE, MODIFIER_SIZE, 256, 256);
       }
     }
   }

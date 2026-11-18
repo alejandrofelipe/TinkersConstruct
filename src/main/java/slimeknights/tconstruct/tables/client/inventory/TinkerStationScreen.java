@@ -1,8 +1,6 @@
 package slimeknights.tconstruct.tables.client.inventory;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.Getter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -13,9 +11,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix3x2fStack;
 import org.lwjgl.glfw.GLFW;
 import slimeknights.mantle.client.screen.ElementScreen;
 import slimeknights.mantle.client.screen.ModuleScreen;
@@ -392,7 +392,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
 
   @Override
   protected void drawContainerName(GuiGraphics graphics) {
-    graphics.drawString(this.font, this.getTitle(), 8, 8, 4210752, false);
+    graphics.drawString(this.font, this.getTitle(), 8, 8, 0xFF404040, false);
   }
 
   public static void renderIcon(GuiGraphics graphics, LayoutIcon icon, int x, int y) {
@@ -425,35 +425,31 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     final float yOff = 22f;
 
     // render the background icon
-    PoseStack renderPose = graphics.pose();
-    renderPose.pushPose();
-    renderPose.translate(xOff, yOff, 0.0F);
-    renderPose.scale(scale, scale, 1.0f);
+    Matrix3x2fStack renderPose = graphics.pose();
+    renderPose.pushMatrix();
+    renderPose.translate(xOff, yOff);
+    renderPose.scale(scale, scale);
     renderIcon(graphics, currentLayout.getIcon(), (int) (this.cornerX / scale), (int) (this.cornerY / scale));
-    renderPose.popPose();
+    renderPose.popMatrix();
 
-    // rebind gui texture since itemstack drawing sets it to something else
-    // 1.21.5: GUI blits always blend; clearing the depth buffer replaces disabling the depth test so the cover paints over the icon
-    GuiUtil.clearDepth(graphics);
-    RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 0.82f);
-    //RenderSystem.enableAlphaTest();
-    //RenderHelper.turnOff();
-    ITEM_COVER.draw(graphics, this.cornerX + 7, this.cornerY + 18);
+    // 1.21.8: start a new stratum so the cover paints over the icon (replaces clearing the depth buffer);
+    // the 82% alpha shader color is now the blit color
+    graphics.nextStratum();
+    GuiUtil.drawElement(graphics, ITEM_COVER, this.cornerX + 7, this.cornerY + 18, ARGB.white(0.82f));
     }
 
-    // slot backgrounds, are transparent
-    RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 0.28f);
+    // slot backgrounds, are transparent (28% alpha)
+    int slotBackgroundColor = ARGB.white(0.28f);
     if (!this.currentLayout.getToolSlot().isHidden()) {
       Slot slot = this.getMenu().getSlot(TINKER_SLOT);
-      SLOT_BACKGROUND.draw(graphics, x + this.cornerX + slot.x - 1, y + this.cornerY + slot.y - 1);
+      GuiUtil.drawElement(graphics, SLOT_BACKGROUND, x + this.cornerX + slot.x - 1, y + this.cornerY + slot.y - 1, slotBackgroundColor);
     }
     for (int i = 0; i < this.activeInputs; i++) {
       Slot slot = this.getMenu().getSlot(i + INPUT_SLOT);
-      SLOT_BACKGROUND.draw(graphics, x + this.cornerX + slot.x - 1, y + this.cornerY + slot.y - 1);
+      GuiUtil.drawElement(graphics, SLOT_BACKGROUND, x + this.cornerX + slot.x - 1, y + this.cornerY + slot.y - 1, slotBackgroundColor);
     }
 
     // slot borders, are opaque
-    RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
     for (int i = 0; i <= maxInputs; i++) {
       Slot slot = this.getMenu().getSlot(i);
       if ((slot instanceof TinkerStationSlot tinkerSlot && (!tinkerSlot.isDormant() || slot.hasItem()))) {

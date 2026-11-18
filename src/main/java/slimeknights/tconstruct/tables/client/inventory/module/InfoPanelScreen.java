@@ -1,11 +1,10 @@
 package slimeknights.tconstruct.tables.client.inventory.module;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.Setter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -13,13 +12,13 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import org.joml.Matrix3x2fStack;
 import slimeknights.mantle.client.screen.ElementScreen;
 import slimeknights.mantle.client.screen.ModuleScreen;
 import slimeknights.mantle.client.screen.MultiModuleScreen;
 import slimeknights.mantle.client.screen.ScalableElementScreen;
 import slimeknights.mantle.client.screen.SliderWidget;
 import slimeknights.tconstruct.TConstruct;
-import slimeknights.tconstruct.library.client.GuiUtil;
 import slimeknights.tconstruct.tables.client.inventory.ResponsiveLayout;
 import slimeknights.tconstruct.tables.client.inventory.widget.BorderWidget;
 
@@ -153,14 +152,11 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
   /**
    * Shared opaque-blit GL setup for the collapsed-tier overlays (this info panel and the station's selector overlay),
    * which draw manually after the parent's whole render(). The centered overlay overlaps the station's faded tool icon
-   * rendered at the high item z, so leaving depth test on culls the overlay there and the icon bleeds through; disable
-   * it (the idiom TinkerStationScreen.renderBg uses for ITEM_COVER) and reset color/blend so it paints opaque.
+   * so it must start a new stratum (the idiom TinkerStationScreen.renderBg uses for ITEM_COVER) to paint over the icon and slots.
    */
   public static void beginOpaqueOverlayBlit(GuiGraphics graphics) {
-    // 1.21.5: blend and depth test are part of the render pipelines; GUI blits always blend, and clearing the depth
-    // buffer replaces disabling the depth test (same idiom as vanilla PopupScreen)
-    RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-    GuiUtil.clearDepth(graphics);
+    // 1.21.8: GUI draws are deferred and layered; a new stratum replaces clearing the depth buffer, so the overlay paints over everything drawn before it
+    graphics.nextStratum();
   }
 
   /** Draws the panel's hover tooltips (help "?" and per-line entries) unconditionally; the overlay pass calls this after {@link #drawOverlay} so they sit above the panel, since the normal tooltip pass is gated off by {@link #overlayMode}. */
@@ -327,7 +323,8 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
     int scaledFontHeight = this.getScaledFontHeight();
     if (this.hasTooltips() && mouseX >= this.guiRight() - this.border.w - this.font.width("?") / 2 && mouseX < this.guiRight()
         && mouseY > this.topPos + 5 && mouseY < this.topPos + 5 + scaledFontHeight) {
-      graphics.renderTooltip(this.font, this.font.split(Component.translatable("gui.tconstruct.general.hover"), 150), mouseX - 155, mouseY);
+      // 1.21.8: deferred tooltips are first-wins; the old immediate tooltip drew over any slot tooltip set before it, so mark it focused
+      graphics.setTooltipForNextFrame(this.font, this.font.split(Component.translatable("gui.tconstruct.general.hover"), 150), DefaultTooltipPositioner.INSTANCE, mouseX - 155, mouseY, true);
     }
 
     // are we hovering over an entry?
@@ -378,7 +375,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
     List<FormattedCharSequence> lines = this.font.split(this.tooltips.get(i), w);
 
-    graphics.renderTooltip(this.font, lines, mouseX, (mouseY - lines.size() * this.getScaledFontHeight() / 2));
+    graphics.setTooltipForNextFrame(this.font, lines, DefaultTooltipPositioner.INSTANCE, mouseX, (mouseY - lines.size() * this.getScaledFontHeight() / 2), true);
   }
 
   /**
@@ -407,7 +404,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
     // info ? in the top right corner
     if (this.hasTooltips()) {
-      graphics.drawString(this.font, "?", guiRight() - this.border.w - this.font.width("?") / 2f, this.topPos + 5, 0xff5f5f5f, false);
+      drawString(graphics, Component.literal("?").getVisualOrderText(), guiRight() - this.border.w - this.font.width("?") / 2f, this.topPos + 5, 0xff5f5f5f, false);
     }
 
     // draw caption
@@ -416,7 +413,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
       int x2 = this.imageWidth / 2;
       x2 -= this.font.width(this.caption) / 2;
 
-      graphics.drawString(this.font, this.caption.getVisualOrderText(), (float) this.leftPos + x2, y, color, true);
+      drawString(graphics, this.caption.getVisualOrderText(), (float) this.leftPos + x2, y, color, true);
       y += scaledFontHeight + 3;
     }
 
@@ -427,9 +424,9 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
     float textHeight = font.lineHeight + 0.5f;
     float lowerBound = (this.topPos + this.imageHeight - 5) / this.textScale;
-    PoseStack matrices = graphics.pose();
-    matrices.pushPose();
-    matrices.scale(this.textScale, this.textScale, 1.0f);
+    Matrix3x2fStack matrices = graphics.pose();
+    matrices.pushMatrix();
+    matrices.scale(this.textScale, this.textScale);
     //RenderSystem.scalef(this.textScale, this.textScale, 1.0f);
     x /= this.textScale;
     y /= this.textScale;
@@ -442,16 +439,25 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
       }
 
       FormattedCharSequence line = iter.next();
-      graphics.drawString(this.font, line, x, y, color, true);
+      drawString(graphics, line, x, y, color, true);
       y += textHeight;
     }
 
-    matrices.popPose();
+    matrices.popMatrix();
     //RenderSystem.scalef(1f / textScale, 1f / textScale, 1.0f);
 
     //RenderSystem.setShaderTexture(0, BACKGROUND_IMAGE);
     this.slider.update(mouseX, mouseY);
     this.slider.draw(graphics);
+  }
+
+  /** Draws text at a sub-pixel position, as {@link GuiGraphics#drawString} only takes integer coordinates since 1.21.6 */
+  protected void drawString(GuiGraphics graphics, FormattedCharSequence text, float x, float y, int color, boolean shadow) {
+    Matrix3x2fStack pose = graphics.pose();
+    pose.pushMatrix();
+    pose.translate(x, y);
+    graphics.drawString(this.font, text, 0, 0, color, shadow);
+    pose.popMatrix();
   }
 
   /** COLLAPSED tier: a hidden tab draws nothing; the open overlay is drawn above the slots by {@code ToolTableScreen.render} via {@link #drawOverlay}. */

@@ -253,7 +253,7 @@ public class SideInventoryScreen<P extends MultiModuleScreen<?>, C extends Abstr
   @Override
   public void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
     if (this.shouldDrawName()) {
-      graphics.drawString(this.font, this.getTitle().getString(), this.border.w, this.border.h - 1, 0x404040, false);
+      graphics.drawString(this.font, this.getTitle().getString(), this.border.w, this.border.h - 1, 0xFF404040, false);
     }
   }
 

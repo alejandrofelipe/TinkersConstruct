@@ -3,7 +3,7 @@ package slimeknights.tconstruct.tables.client.inventory;
 import com.google.common.collect.Lists;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -101,7 +101,7 @@ public class PartBuilderScreen extends BaseTabbedScreen<PartBuilderBlockEntity,P
     this.drawBackground(graphics, BACKGROUND);
 
     // draw scrollbar
-    graphics.blit(RenderType::guiTextured, BACKGROUND, this.cornerX + SLIDER_LEFT, this.cornerY + SLIDER_TOP + (int) (SROLLABLE_AREA * this.sliderProgress), canScroll() ? HANDLE_U : HANDLE_U_DISABLE, 0, SLIDER_WIDTH, HANDLE_HEIGHT, 256, 256);
+    graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, this.cornerX + SLIDER_LEFT, this.cornerY + SLIDER_TOP + (int) (SROLLABLE_AREA * this.sliderProgress), canScroll() ? HANDLE_U : HANDLE_U_DISABLE, 0, SLIDER_WIDTH, HANDLE_HEIGHT, 256, 256);
     this.drawRecipesBackground(graphics, mouseX, mouseY, this.cornerX + PATTERN_LEFT, this.cornerY + PATTERN_TOP);
 
     // draw slot icons
@@ -148,7 +148,7 @@ public class PartBuilderScreen extends BaseTabbedScreen<PartBuilderBlockEntity,P
       if (!buttons.isEmpty()) {
         int index = getButtonAt(mouseX, mouseY);
         if (index >= 0) {
-          graphics.renderTooltip(this.font, buttons.get(index).getDisplayName(), mouseX, mouseY);
+          graphics.setTooltipForNextFrame(this.font, buttons.get(index).getDisplayName(), mouseX, mouseY);
         }
       }
     }
@@ -170,7 +170,7 @@ public class PartBuilderScreen extends BaseTabbedScreen<PartBuilderBlockEntity,P
       } else if (mouseX >= x && mouseY >= y && mouseX < x + PATTERN_SIZE && mouseY < y + PATTERN_SIZE) {
         v += 2 * PATTERN_SIZE;
       }
-      graphics.blit(RenderType::guiTextured, BACKGROUND, x, y, PATTERN_U, v, PATTERN_SIZE, PATTERN_SIZE, 256, 256);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, x, y, PATTERN_U, v, PATTERN_SIZE, PATTERN_SIZE, 256, 256);
     }
   }
 
@@ -189,7 +189,7 @@ public class PartBuilderScreen extends BaseTabbedScreen<PartBuilderBlockEntity,P
       int y = top + (relative / 4) * PATTERN_SIZE + 1;
       // get the sprite for the pattern and draw
       Pattern pattern = list.get(i);
-      graphics.blitSprite(RenderType::guiTextured, spriteGetter.apply(pattern.getTexture()), x, y, 16, 16);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, spriteGetter.apply(pattern.getTexture()), x, y, 16, 16);
     }
   }
 

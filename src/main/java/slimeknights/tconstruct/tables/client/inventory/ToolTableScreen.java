@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -49,7 +49,7 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
 
   private static final ResourceLocation ICON_TEXTURE = TConstruct.getResource("textures/gui/icons.png");
   /** Translation for the rendered armor stand, matches vanilla SmithingScreen.ARMOR_STAND_TRANSLATION */
-  private static final Vector3f ARMOR_STAND_TRANSLATION = new Vector3f(0.0F, 0.0F, 0.0F);
+  private static final Vector3f ARMOR_STAND_TRANSLATION = new Vector3f(0.0F, 1.0F, 0.0F);
 
   /** Side panels, for tools and modifiers */
   protected final InfoPanelScreen<ToolTableScreen<T,C>,C> tinkerInfo;
@@ -230,9 +230,16 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
       // matches vanilla SmithingScreen.ARMOR_STAND_ANGLE (X 25 degrees plus the Z 180 flip renderEntityInInventory expects in the pose since 1.21), then animate around Y
       Quaternionf pose = new Quaternionf().rotationXYZ(0.43633232F, 0.0F, (float) Math.PI);
       pose.rotateY(this.armorStandAngle);
-      InventoryScreen.renderEntityInInventory(graphics, this.armorStandX, this.armorStandY, this.armorStandScale, ARMOR_STAND_TRANSLATION, pose, null, this.armorStandPreview);
+      // 1.21.8: the entity is drawn as a picture-in-picture in an absolute screen rectangle (the pose is ignored, armorStandX/Y
+      // are already absolute), with its origin at the rectangle center plus the translation. As vanilla SmithingScreen, center
+      // the rectangle one block above the feet and translate one block down, so the feet stay at (armorStandX, armorStandY);
+      // the rectangle spans 2.5 blocks up and 1.5 blocks to each side so the stand and its held tool are not clipped.
+      int halfWidth = this.armorStandScale * 3 / 2;
+      InventoryScreen.renderEntityInInventory(graphics, this.armorStandX - halfWidth, this.armorStandY - this.armorStandScale * 5 / 2,
+                                              this.armorStandX + halfWidth, this.armorStandY + this.armorStandScale / 2,
+                                              this.armorStandScale, ARMOR_STAND_TRANSLATION, pose, null, this.armorStandPreview);
 
-      graphics.blit(RenderType::guiTextured, ICON_TEXTURE, armorStandX - 16, armorStandY - 16, 0, 184, 32, 32, 256, 256);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, ICON_TEXTURE, armorStandX - 16, armorStandY - 16, 0, 184, 32, 32, 256, 256);
     }
   }
 

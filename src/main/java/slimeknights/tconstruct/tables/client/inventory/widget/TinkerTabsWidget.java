@@ -1,7 +1,6 @@
 package slimeknights.tconstruct.tables.client.inventory.widget;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
@@ -156,7 +155,6 @@ public class TinkerTabsWidget implements Renderable, GuiEventListener, Narratabl
 
   @Override
   public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-    RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     int sel = this.tabs.selected;
     this.tabs.update(mouseX, mouseY);
     this.tabs.draw(graphics);
@@ -183,8 +181,7 @@ public class TinkerTabsWidget implements Renderable, GuiEventListener, Narratabl
         title = world.getBlockState(pos).getBlock().getName();
       }
 
-      // TODO: renderComponentTooltip->renderTooltip
-      graphics.renderComponentTooltip(parent.font, Lists.newArrayList(title), mouseX, mouseY);
+      graphics.setComponentTooltipForNextFrame(parent.font, Lists.newArrayList(title), mouseX, mouseY);
     }
   }
 
