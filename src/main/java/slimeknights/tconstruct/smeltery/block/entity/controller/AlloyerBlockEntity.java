@@ -3,8 +3,6 @@ package slimeknights.tconstruct.smeltery.block.entity.controller;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -13,6 +11,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import slimeknights.mantle.block.entity.NameableBlockEntity;
 import slimeknights.tconstruct.TConstruct;
@@ -163,21 +163,21 @@ public class AlloyerBlockEntity extends NameableBlockEntity implements ITankBloc
   }
 
   @Override
-  public void saveSynced(CompoundTag tag, HolderLookup.Provider registries) {
-    super.saveSynced(tag, registries);
-    tag.put(NBTTags.TANK, tank.writeToNBT(registries, new CompoundTag()));
+  public void saveSynced(ValueOutput tag) {
+    super.saveSynced(tag);
+    tank.serialize(tag.child(NBTTags.TANK));
   }
 
   @Override
-  public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-    super.saveAdditional(tag, registries);
+  public void saveAdditional(ValueOutput tag) {
+    super.saveAdditional(tag);
     fuelModule.writeToTag(tag);
   }
 
   @Override
-  public void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
-    super.loadAdditional(nbt, registries);
-    tank.readFromNBT(registries, nbt.getCompoundOrEmpty(NBTTags.TANK));
+  public void loadAdditional(ValueInput nbt) {
+    super.loadAdditional(nbt);
+    tank.deserialize(nbt.childOrEmpty(NBTTags.TANK));
     fuelModule.readFromTag(nbt);
   }
 }

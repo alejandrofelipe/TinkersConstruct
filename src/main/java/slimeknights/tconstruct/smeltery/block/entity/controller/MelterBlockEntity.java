@@ -4,9 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -15,6 +12,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.model.data.ModelData;
@@ -27,7 +26,6 @@ import slimeknights.tconstruct.library.client.model.ModelProperties;
 import slimeknights.tconstruct.library.fluid.FluidTankAnimated;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.utils.NBTTags;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.controller.ControllerBlock;
 import slimeknights.tconstruct.smeltery.block.controller.MelterBlock;
@@ -181,25 +179,23 @@ public class MelterBlockEntity extends NameableBlockEntity implements ITankInven
   }
 
   @Override
-  public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-    super.loadAdditional(tag, registries);
-    tank.readFromNBT(registries, tag.getCompoundOrEmpty(NBTTags.TANK));
+  public void loadAdditional(ValueInput tag) {
+    super.loadAdditional(tag);
+    tank.deserialize(tag.childOrEmpty(NBTTags.TANK));
     fuelModule.readFromTag(tag);
-    if (TagUtil.contains(tag, TAG_INVENTORY, Tag.TAG_COMPOUND)) {
-      meltingInventory.readFromTag(registries, tag.getCompoundOrEmpty(TAG_INVENTORY));
-    }
+    tag.child(TAG_INVENTORY).ifPresent(meltingInventory::readFromTag);
   }
 
   @Override
-  public void saveSynced(CompoundTag tag, HolderLookup.Provider registries) {
-    super.saveSynced(tag, registries);
-    tag.put(NBTTags.TANK, tank.writeToNBT(registries, new CompoundTag()));
-    tag.put(TAG_INVENTORY, meltingInventory.writeToTag(registries));
+  public void saveSynced(ValueOutput tag) {
+    super.saveSynced(tag);
+    tank.serialize(tag.child(NBTTags.TANK));
+    meltingInventory.writeToTag(tag.child(TAG_INVENTORY));
   }
 
   @Override
-  public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-    super.saveAdditional(tag, registries);
+  public void saveAdditional(ValueOutput tag) {
+    super.saveAdditional(tag);
     fuelModule.writeToTag(tag);
   }
 }

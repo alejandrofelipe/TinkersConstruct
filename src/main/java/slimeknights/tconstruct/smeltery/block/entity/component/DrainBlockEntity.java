@@ -10,6 +10,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.model.data.ModelData;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.library.client.model.ModelProperties;
+import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.component.SmelteryInputOutputBlockEntity.SmelteryFluidIO;
 import slimeknights.tconstruct.smeltery.block.entity.tank.IDisplayFluidListener;
@@ -56,7 +57,7 @@ public class DrainBlockEntity extends SmelteryFluidIO implements IDisplayFluidLi
   @Override
   public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
     CompoundTag nbt = super.getUpdateTag(registries);
-    writeMaster(nbt);
+    nbt.merge(TagUtil.writeTag(problemPath(), registries, this::writeMaster));
     return nbt;
   }
 

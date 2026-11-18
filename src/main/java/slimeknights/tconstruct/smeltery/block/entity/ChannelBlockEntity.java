@@ -1,15 +1,16 @@
 package slimeknights.tconstruct.smeltery.block.entity;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Plane;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -29,8 +30,10 @@ import slimeknights.tconstruct.smeltery.network.FluidUpdatePacket;
 import slimeknights.tconstruct.smeltery.network.FluidUpdatePacket.IFluidPacketReceiver;
 
 import javax.annotation.Nullable;
+import java.nio.ByteBuffer;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Logic for channel fluid transfer
@@ -344,22 +347,24 @@ public class ChannelBlockEntity extends MantleBlockEntity implements IFluidPacke
   }
 
   @Override
-  protected void saveSynced(CompoundTag nbt, HolderLookup.Provider registries) {
-    super.saveSynced(nbt, registries);
-    nbt.putByteArray(TAG_IS_FLOWING, isFlowing);
-    nbt.put(TAG_TANK, tank.writeToNBT(registries, new CompoundTag()));
+  protected void saveSynced(ValueOutput nbt) {
+    super.saveSynced(nbt);
+    // BYTE_BUFFER encodes to the same byte array tag as the old putByteArray
+    nbt.store(TAG_IS_FLOWING, Codec.BYTE_BUFFER, ByteBuffer.wrap(isFlowing));
+    tank.serialize(nbt.child(TAG_TANK));
   }
 
 	@Override
-	public void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
-		super.loadAdditional(nbt, registries);
+	protected void loadAdditional(ValueInput nbt) {
+		super.loadAdditional(nbt);
 
 		// isFlowing
-		if (nbt.contains(TAG_IS_FLOWING)) {
-			byte[] nbtFlowing = nbt.getByteArray(TAG_IS_FLOWING).orElseGet(() -> new byte[0]);
-			int max = Math.min(5, nbtFlowing.length);
+		Optional<ByteBuffer> flowingBuffer = nbt.read(TAG_IS_FLOWING, Codec.BYTE_BUFFER);
+		if (flowingBuffer.isPresent()) {
+			ByteBuffer nbtFlowing = flowingBuffer.get();
+			int max = Math.min(5, nbtFlowing.limit());
 			for (int i = 0; i < max; i++) {
-				byte b = nbtFlowing[i];
+				byte b = nbtFlowing.get(i);
 				if (b > 2) {
 					isFlowing[i] = 2;
 				} else if (b < 0) {
@@ -371,7 +376,6 @@ public class ChannelBlockEntity extends MantleBlockEntity implements IFluidPacke
 		}
 
 		// tank
-		CompoundTag tankTag = nbt.getCompoundOrEmpty(TAG_TANK);
-		tank.readFromNBT(registries, tankTag);
+		tank.deserialize(nbt.childOrEmpty(TAG_TANK));
 	}
 }

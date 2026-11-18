@@ -4,11 +4,11 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
@@ -16,10 +16,10 @@ import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.recipe.fuel.MeltingFuel;
 import slimeknights.tconstruct.library.recipe.fuel.MeltingFuelLookup;
-import slimeknights.tconstruct.library.utils.TagUtil;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Module handling fuel consumption for the melter and smeltery
@@ -150,12 +150,11 @@ public abstract class FuelModule implements ContainerData {
    * Reads the fuel from NBT
    * @param nbt  Tag to read from
    */
-  public void readFromTag(CompoundTag nbt) {
-    if (TagUtil.contains(nbt, TAG_FUEL, TagUtil.TAG_ANY_NUMERIC)) {
-      fuel = nbt.getIntOr(TAG_FUEL, 0);
-    }
-    if (TagUtil.contains(nbt, TAG_TEMPERATURE, TagUtil.TAG_ANY_NUMERIC)) {
-      temperature = nbt.getIntOr(TAG_TEMPERATURE, 0);
+  public void readFromTag(ValueInput nbt) {
+    nbt.getInt(TAG_FUEL).ifPresent(value -> fuel = value);
+    Optional<Integer> temperature = nbt.getInt(TAG_TEMPERATURE);
+    if (temperature.isPresent()) {
+      this.temperature = temperature.get();
       rate = nbt.getIntOr(TAG_RATE, 0);
     }
   }
@@ -163,13 +162,11 @@ public abstract class FuelModule implements ContainerData {
   /**
    * Writes the fuel to NBT
    * @param nbt  Tag to write to
-   * @return  Tag written to
    */
-  public CompoundTag writeToTag(CompoundTag nbt) {
+  public void writeToTag(ValueOutput nbt) {
     nbt.putInt(TAG_FUEL, fuel);
     nbt.putInt(TAG_TEMPERATURE, temperature);
     nbt.putInt(TAG_RATE, rate);
-    return nbt;
   }
 
 

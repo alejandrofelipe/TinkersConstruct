@@ -3,13 +3,12 @@ package slimeknights.tconstruct.smeltery.block.entity;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -18,7 +17,6 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.recipe.FluidValues;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.network.FaucetActivationPacket;
 
@@ -316,42 +314,34 @@ public class FaucetBlockEntity extends MantleBlockEntity {
   }
 
   @Override
-  protected void saveSynced(CompoundTag compound, HolderLookup.Provider registries) {
-    super.saveSynced(compound, registries);
+  protected void saveSynced(ValueOutput compound) {
+    super.saveSynced(compound);
     compound.putByte(TAG_STATE, (byte)faucetState.ordinal());
     if (!renderFluid.isEmpty()) {
-      compound.put(TAG_RENDER_FLUID, renderFluid.save(registries, new CompoundTag()));
+      compound.store(TAG_RENDER_FLUID, FluidStack.CODEC, renderFluid);
     }
   }
 
   @Override
-  public void saveAdditional(CompoundTag compound, HolderLookup.Provider registries) {
-    super.saveAdditional(compound, registries);
+  public void saveAdditional(ValueOutput compound) {
+    super.saveAdditional(compound);
     compound.putBoolean(TAG_STOP, stopPouring);
     compound.putBoolean(TAG_LAST_REDSTONE, lastRedstoneState);
     if (!drained.isEmpty()) {
-      compound.put(TAG_DRAINED, drained.save(registries, new CompoundTag()));
+      compound.store(TAG_DRAINED, FluidStack.CODEC, drained);
     }
   }
 
   @Override
-  public void loadAdditional(CompoundTag compound, HolderLookup.Provider registries) {
-    super.loadAdditional(compound, registries);
+  protected void loadAdditional(ValueInput compound) {
+    super.loadAdditional(compound);
 
     faucetState = FaucetState.fromIndex(compound.getByteOr(TAG_STATE, (byte) 0));
     stopPouring = compound.getBooleanOr(TAG_STOP, false);
     lastRedstoneState = compound.getBooleanOr(TAG_LAST_REDSTONE, false);
-    // fluids
-    if (TagUtil.contains(compound, TAG_DRAINED, Tag.TAG_COMPOUND)) {
-      drained = FluidStack.parseOptional(registries, compound.getCompoundOrEmpty(TAG_DRAINED));
-    } else {
-      drained = FluidStack.EMPTY;
-    }
-    if (TagUtil.contains(compound, TAG_RENDER_FLUID, Tag.TAG_COMPOUND)) {
-      renderFluid = FluidStack.parseOptional(registries, compound.getCompoundOrEmpty(TAG_RENDER_FLUID));
-    } else {
-      renderFluid = FluidStack.EMPTY;
-    }
+    // fluids, OPTIONAL_CODEC treats an empty compound as empty like the old parseOptional
+    drained = compound.read(TAG_DRAINED, FluidStack.OPTIONAL_CODEC).orElse(FluidStack.EMPTY);
+    renderFluid = compound.read(TAG_RENDER_FLUID, FluidStack.OPTIONAL_CODEC).orElse(FluidStack.EMPTY);
   }
 
   private enum FaucetState {

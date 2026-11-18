@@ -3,13 +3,13 @@ package slimeknights.tconstruct.smeltery.block.entity.component;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -20,13 +20,13 @@ import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
 import slimeknights.mantle.inventory.EmptyItemHandler;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.common.multiblock.IMasterLogic;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.tank.ISmelteryTankHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 import static slimeknights.mantle.util.RetexturedHelper.TAG_TEXTURE;
 
@@ -154,18 +154,19 @@ public abstract class SmelteryInputOutputBlockEntity<T> extends SmelteryComponen
   }
 
   @Override
-  protected void saveSynced(CompoundTag tags, net.minecraft.core.HolderLookup.Provider registries) {
-    super.saveSynced(tags, registries);
+  protected void saveSynced(ValueOutput tags) {
+    super.saveSynced(tags);
     if (texture != Blocks.AIR) {
       tags.putString(TAG_TEXTURE, getTextureName());
     }
   }
 
   @Override
-  public void loadAdditional(CompoundTag tags, net.minecraft.core.HolderLookup.Provider registries) {
-    super.loadAdditional(tags, registries);
-    if (TagUtil.contains(tags, TAG_TEXTURE, Tag.TAG_STRING)) {
-      texture = RetexturedHelper.getBlock(tags.getStringOr(TAG_TEXTURE, ""));
+  public void loadAdditional(ValueInput tags) {
+    super.loadAdditional(tags);
+    Optional<String> textureName = tags.getString(TAG_TEXTURE);
+    if (textureName.isPresent()) {
+      texture = RetexturedHelper.getBlock(textureName.get());
       RetexturedHelper.onTextureUpdated(this);
     }
   }

@@ -4,7 +4,6 @@ import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -20,6 +19,8 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -58,6 +59,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static slimeknights.mantle.util.RetexturedHelper.TAG_TEXTURE;
@@ -617,50 +619,52 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
   }
 
   @Override
-  public void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
-    super.loadAdditional(nbt, registries);
-    if (TagUtil.contains(nbt, TAG_TANK, Tag.TAG_COMPOUND)) {
-      tank.read(registries, nbt.getCompoundOrEmpty(TAG_TANK));
+  public void loadAdditional(ValueInput nbt) {
+    super.loadAdditional(nbt);
+    Optional<ValueInput> tankTag = nbt.child(TAG_TANK);
+    if (tankTag.isPresent()) {
+      tank.read(tankTag.get());
       FluidStack first = tank.getFluidInTank(0);
       if (!first.isEmpty()) {
         updateDisplayFluid(first);
       }
     }
-    if (TagUtil.contains(nbt, TAG_INVENTORY, Tag.TAG_COMPOUND)) {
-      meltingInventory.readFromTag(registries, nbt.getCompoundOrEmpty(TAG_INVENTORY));
-    }
-    if (TagUtil.contains(nbt, TAG_STRUCTURE, Tag.TAG_COMPOUND)) {
-      setStructure(multiblock.readFromTag(nbt.getCompoundOrEmpty(TAG_STRUCTURE), this.worldPosition));
+    nbt.child(TAG_INVENTORY).ifPresent(meltingInventory::readFromTag);
+    // structure data is still NBT based, read the raw compound
+    Optional<CompoundTag> structureTag = nbt.read(TAG_STRUCTURE, CompoundTag.CODEC);
+    if (structureTag.isPresent()) {
+      setStructure(multiblock.readFromTag(structureTag.get(), this.worldPosition));
       if (structure != null) {
         fluidCapability = tank;
       }
     }
     // only exists to be sent server to client in update packets
-    // 1.21: writeBlockPos stores an INT_ARRAY, so no TAG_COMPOUND guard — readBlockPos's Optional handles missing keys
-    TagUtil.readPos(nbt, TAG_ERROR_POS).ifPresent(pos -> this.errorPos = pos.offset(this.worldPosition));
+    // 1.21: writeBlockPos stores an INT_ARRAY, so no TAG_COMPOUND guard — the Optional handles missing keys
+    nbt.read(TAG_ERROR_POS, BlockPos.CODEC).ifPresent(pos -> this.errorPos = pos.offset(this.worldPosition));
     fuelModule.readFromTag(nbt);
-    if (TagUtil.contains(nbt, TAG_TEXTURE, Tag.TAG_STRING)) {
-      texture = RetexturedHelper.getBlock(nbt.getStringOr(TAG_TEXTURE, ""));
+    Optional<String> textureName = nbt.getString(TAG_TEXTURE);
+    if (textureName.isPresent()) {
+      texture = RetexturedHelper.getBlock(textureName.get());
       RetexturedHelper.onTextureUpdated(this);
     }
   }
 
   @Override
-  public void saveAdditional(CompoundTag compound, HolderLookup.Provider registries) {
+  public void saveAdditional(ValueOutput compound) {
     // Tag that just writes to disk
-    super.saveAdditional(compound, registries);
+    super.saveAdditional(compound);
     if (structure != null) {
-      compound.put(TAG_STRUCTURE, structure.writeToTag(this.worldPosition));
+      compound.store(TAG_STRUCTURE, CompoundTag.CODEC, structure.writeToTag(this.worldPosition));
     }
     fuelModule.writeToTag(compound);
   }
 
   @Override
-  public void saveSynced(CompoundTag compound, HolderLookup.Provider registries) {
+  public void saveSynced(ValueOutput compound) {
     // Tag that writes to disk and syncs to client
-    super.saveSynced(compound, registries);
-    compound.put(TAG_TANK, tank.write(registries, new CompoundTag()));
-    compound.put(TAG_INVENTORY, meltingInventory.writeToTag(registries));
+    super.saveSynced(compound);
+    tank.write(compound.child(TAG_TANK));
+    meltingInventory.writeToTag(compound.child(TAG_INVENTORY));
     if (texture != Blocks.AIR) {
       compound.putString(TAG_TEXTURE, getTextureName());
     }

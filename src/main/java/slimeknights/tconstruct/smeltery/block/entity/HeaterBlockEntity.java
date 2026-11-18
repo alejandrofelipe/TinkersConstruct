@@ -2,19 +2,19 @@ package slimeknights.tconstruct.smeltery.block.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.items.IItemHandler;
 import slimeknights.mantle.block.entity.NameableBlockEntity;
 import slimeknights.tconstruct.TConstruct;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.inventory.HeaterItemHandler;
 import slimeknights.tconstruct.smeltery.menu.SingleItemContainerMenu;
@@ -56,16 +56,15 @@ public class HeaterBlockEntity extends NameableBlockEntity {
   /* NBT */
 
   @Override
-  public void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
-    super.loadAdditional(tags, registries);
-    if (TagUtil.contains(tags, TAG_ITEM, Tag.TAG_COMPOUND)) {
-      itemHandler.readFromNBT(registries, tags.getCompoundOrEmpty(TAG_ITEM));
-    }
+  public void loadAdditional(ValueInput tags) {
+    super.loadAdditional(tags);
+    tags.read(TAG_ITEM, CompoundTag.CODEC).ifPresent(tag -> itemHandler.readFromNBT(tags.lookup(), tag));
   }
 
   @Override
-  public void saveAdditional(CompoundTag tags, HolderLookup.Provider registries) {
-    super.saveAdditional(tags, registries);
-    tags.put(TAG_ITEM, itemHandler.writeToNBT(registries));
+  public void saveAdditional(ValueOutput tags) {
+    super.saveAdditional(tags);
+    // OPTIONAL_CODEC matches SingleItemHandler#writeToNBT: an empty compound for an empty stack, else the encoded stack
+    tags.store(TAG_ITEM, ItemStack.OPTIONAL_CODEC, itemHandler.getStack());
   }
 }

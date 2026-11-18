@@ -1,11 +1,11 @@
 package slimeknights.tconstruct.smeltery.block.entity.module;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.ByteTag;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
@@ -13,7 +13,6 @@ import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer.IOreRate;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
-import slimeknights.tconstruct.library.utils.TagUtil;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -310,32 +309,31 @@ public class MeltingModuleInventory implements IItemHandlerModifiable {
 
   /**
    * Writes this module to Tag
-   * @return  Module in Tag
+   * @param nbt  Output to write to
    */
-  public CompoundTag writeToTag(HolderLookup.Provider registries) {
-    CompoundTag nbt = new CompoundTag();
-    ListTag list = new ListTag();
+  public void writeToTag(ValueOutput nbt) {
+    ValueOutput.ValueOutputList list = nbt.childrenList(TAG_ITEMS);
     for (int i = 0; i < modules.length; i++) {
       if (modules[i] != null && !modules[i].getStack().isEmpty()) {
-        CompoundTag moduleTag = modules[i].writeToTag(registries);
+        ValueOutput moduleTag = list.addChild();
+        modules[i].writeToTag(moduleTag);
         moduleTag.putInt(TAG_SLOT, i);
-        list.add(moduleTag);
       }
     }
-    if (!list.isEmpty()) {
-      nbt.put(TAG_ITEMS, list);
+    // list is omitted when empty, as before
+    if (list.isEmpty()) {
+      nbt.discard(TAG_ITEMS);
     }
     nbt.putInt(TAG_SIZE, modules.length);
-    return nbt;
   }
 
   /**
    * Reads this inventory from Tag
    * @param nbt  Tag compound
    */
-  public void readFromTag(HolderLookup.Provider registries, CompoundTag nbt) {
+  public void readFromTag(ValueInput nbt) {
     if (!strictSize) {
-      int newSize = TagUtil.contains(nbt, TAG_SIZE, Tag.TAG_BYTE) ? nbt.getByteOr(TAG_SIZE, (byte) 0) & 255 : nbt.getIntOr(TAG_SIZE, 0);
+      int newSize = readUnsigned(nbt, TAG_SIZE);
       if (newSize != modules.length) {
         modules = Arrays.copyOf(modules, newSize);
       }
@@ -347,17 +345,21 @@ public class MeltingModuleInventory implements IItemHandlerModifiable {
       }
     }
 
-    ListTag list = TagUtil.getList(nbt, TAG_ITEMS, Tag.TAG_COMPOUND);
-    for (int i = 0; i < list.size(); i++) {
-      CompoundTag item = list.getCompoundOrEmpty(i);
-      // ANY_NUMERIC: old saves wrote (unsigned) bytes - mask them; new saves write ints
-      if (TagUtil.contains(item, TAG_SLOT, TagUtil.TAG_ANY_NUMERIC)) {
-        int slot = TagUtil.contains(item, TAG_SLOT, Tag.TAG_BYTE) ? item.getByteOr(TAG_SLOT, (byte) 0) & 255 : item.getIntOr(TAG_SLOT, 0);
+    for (ValueInput item : nbt.childrenListOrEmpty(TAG_ITEMS)) {
+      // any numeric: old saves wrote (unsigned) bytes - mask them; new saves write ints
+      if (item.getInt(TAG_SLOT).isPresent()) {
+        int slot = readUnsigned(item, TAG_SLOT);
         if (validSlot(slot)) {
-          getModule(slot).readFromTag(registries, item);
+          getModule(slot).readFromTag(item);
         }
       }
     }
+  }
+
+  /** Reads an int that may have been saved as an unsigned byte by old versions */
+  private static int readUnsigned(ValueInput input, String key) {
+    // old saves wrote a byte, mask it so values above 127 stay unsigned; new saves write ints
+    return input.read(key, ExtraCodecs.NBT).orElse(null) instanceof ByteTag byteTag ? byteTag.byteValue() & 255 : input.getIntOr(key, 0);
   }
 
 

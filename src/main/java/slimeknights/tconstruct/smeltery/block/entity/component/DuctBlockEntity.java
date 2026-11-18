@@ -2,23 +2,23 @@ package slimeknights.tconstruct.smeltery.block.entity.component;
 
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.model.data.ModelData;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.model.ModelProperties;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.component.SmelteryInputOutputBlockEntity.SmelteryFluidIO;
 import slimeknights.tconstruct.smeltery.block.entity.inventory.DuctItemHandler;
@@ -96,24 +96,23 @@ public class DuctBlockEntity extends SmelteryFluidIO implements MenuProvider {
   }
 
   @Override
-  public void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
-    super.loadAdditional(tags, registries);
-    if (TagUtil.contains(tags, TAG_ITEM, Tag.TAG_COMPOUND)) {
-      itemHandler.readFromNBT(registries, tags.getCompoundOrEmpty(TAG_ITEM));
-    }
+  public void loadAdditional(ValueInput tags) {
+    super.loadAdditional(tags);
+    tags.read(TAG_ITEM, CompoundTag.CODEC).ifPresent(tag -> itemHandler.readFromNBT(tags.lookup(), tag));
   }
 
   @Override
-  public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
-    super.handleUpdateTag(tag, registries);
+  public void handleUpdateTag(ValueInput tag) {
+    super.handleUpdateTag(tag);
     if (level != null && level.isClientSide) {
       updateFluid();
     }
   }
 
   @Override
-  public void saveSynced(CompoundTag tags, HolderLookup.Provider registries) {
-    super.saveSynced(tags, registries);
-    tags.put(TAG_ITEM, itemHandler.writeToNBT(registries));
+  public void saveSynced(ValueOutput tags) {
+    super.saveSynced(tags);
+    // OPTIONAL_CODEC matches SingleItemHandler#writeToNBT: an empty compound for an empty stack, else the encoded stack
+    tags.store(TAG_ITEM, ItemStack.OPTIONAL_CODEC, itemHandler.getStack());
   }
 }

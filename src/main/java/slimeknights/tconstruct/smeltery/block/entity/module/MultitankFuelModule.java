@@ -1,16 +1,15 @@
 package slimeknights.tconstruct.smeltery.block.entity.module;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
-import slimeknights.tconstruct.library.utils.TagUtil;
 
 import javax.annotation.Nonnull;
 import java.util.LinkedHashMap;
@@ -147,19 +146,19 @@ public class MultitankFuelModule extends FuelModule implements IFluidHandler {
   private static final String TAG_LAST_FUEL = "last_fuel";
 
   @Override
-  public void readFromTag(CompoundTag nbt) {
+  public void readFromTag(ValueInput nbt) {
     super.readFromTag(nbt);
-    // 1.21: writeBlockPos stores an INT_ARRAY, so no TAG_COMPOUND guard — readBlockPos's Optional handles missing keys
-    TagUtil.readPos(nbt, TAG_LAST_FUEL).ifPresent(pos -> lastPos = pos.offset(parent.getBlockPos()));
+    // 1.21: writeBlockPos stores an INT_ARRAY, so no TAG_COMPOUND guard — the Optional handles missing keys
+    nbt.read(TAG_LAST_FUEL, BlockPos.CODEC).ifPresent(pos -> lastPos = pos.offset(parent.getBlockPos()));
   }
 
   @Override
-  public CompoundTag writeToTag(CompoundTag nbt) {
-    nbt = super.writeToTag(nbt);
+  public void writeToTag(ValueOutput nbt) {
+    super.writeToTag(nbt);
     if (lastPos != NULL_POS) {
-      nbt.put(TAG_LAST_FUEL, TagUtil.writePos(lastPos.subtract(parent.getBlockPos())));
+      // BlockPos.CODEC writes the same int array as TagUtil.writePos
+      nbt.store(TAG_LAST_FUEL, BlockPos.CODEC, lastPos.subtract(parent.getBlockPos()));
     }
-    return nbt;
   }
 
 

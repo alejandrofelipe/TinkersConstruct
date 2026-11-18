@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -14,6 +12,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.IFluidTank;
@@ -31,6 +31,7 @@ import slimeknights.tconstruct.smeltery.item.TankItem;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITankBlockEntity {
   /** Max capacity for the tank */
@@ -151,13 +152,13 @@ public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITa
 
   /**
    * Updates the tank from an NBT tag, used in the block
-   * @param nbt  tank NBT
+   * @param nbt  tank NBT, empty if missing
    */
-  public void updateTank(CompoundTag nbt, HolderLookup.Provider registries) {
-    if (nbt.isEmpty()) {
+  public void updateTank(Optional<ValueInput> nbt) {
+    if (nbt.isEmpty() || nbt.get().keySet().isEmpty()) {
       tank.setFluid(FluidStack.EMPTY);
     } else {
-      tank.readFromNBT(registries, nbt);
+      tank.deserialize(nbt.get());
       updateLight(this, tank);
     }
   }
@@ -168,18 +169,18 @@ public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITa
   }
 
   @Override
-  public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+  public void loadAdditional(ValueInput tag) {
     tank.setCapacity(getCapacity(getBlockState().getBlock()));
-    updateTank(tag.getCompoundOrEmpty(NBTTags.TANK), registries);
-    super.loadAdditional(tag, registries);
+    updateTank(tag.child(NBTTags.TANK));
+    super.loadAdditional(tag);
   }
 
   @Override
-  public void saveSynced(CompoundTag tag, HolderLookup.Provider registries) {
-    super.saveSynced(tag, registries);
+  public void saveSynced(ValueOutput tag) {
+    super.saveSynced(tag);
     // want tank on the client on world load
     if (!tank.isEmpty()) {
-      tag.put(NBTTags.TANK, tank.writeToNBT(registries, new CompoundTag()));
+      tank.serialize(tag.child(NBTTags.TANK));
     }
   }
 

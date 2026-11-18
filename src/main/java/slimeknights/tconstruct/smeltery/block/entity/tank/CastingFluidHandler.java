@@ -3,20 +3,19 @@ package slimeknights.tconstruct.smeltery.block.entity.tank;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class CastingFluidHandler implements IFluidHandler {
@@ -174,13 +173,15 @@ public class CastingFluidHandler implements IFluidHandler {
   private static final String TAG_CAPACITY = "capacity";
 
   /** Reads the tank from Tag */
-  public void readFromTag(HolderLookup.Provider registries, CompoundTag nbt) {
+  public void read(ValueInput nbt) {
     capacity = nbt.getIntOr(TAG_CAPACITY, 0);
-    if (TagUtil.contains(nbt, TAG_FLUID, Tag.TAG_COMPOUND)) {
-      setFluid(FluidStack.parseOptional(registries, nbt.getCompoundOrEmpty(TAG_FLUID)));
+    // only replace the fluid if the key holds a compound, OPTIONAL_CODEC treats an empty compound as empty like the old parseOptional
+    if (nbt.child(TAG_FLUID).isPresent()) {
+      setFluid(nbt.read(TAG_FLUID, FluidStack.OPTIONAL_CODEC).orElse(FluidStack.EMPTY));
     }
-    if (TagUtil.contains(nbt, TAG_FILTER, Tag.TAG_STRING)) {
-      Fluid fluid = BuiltInRegistries.FLUID.getValue(Objects.requireNonNull(ResourceLocation.tryParse(nbt.getStringOr(TAG_FILTER, ""))));
+    Optional<String> filterName = nbt.getString(TAG_FILTER);
+    if (filterName.isPresent()) {
+      Fluid fluid = BuiltInRegistries.FLUID.getValue(Objects.requireNonNull(ResourceLocation.tryParse(filterName.get())));
       if (fluid != null) {
         filter = fluid;
       }
@@ -188,14 +189,13 @@ public class CastingFluidHandler implements IFluidHandler {
   }
 
   /** Write the tank from NBT */
-  public CompoundTag writeToTag(HolderLookup.Provider registries, CompoundTag nbt) {
+  public void write(ValueOutput nbt) {
     nbt.putInt(TAG_CAPACITY, capacity);
     if (!fluid.isEmpty()) {
-      nbt.put(TAG_FLUID, fluid.save(registries, new CompoundTag()));
+      nbt.store(TAG_FLUID, FluidStack.CODEC, fluid);
     }
     if (filter != Fluids.EMPTY) {
       nbt.putString(TAG_FILTER, BuiltInRegistries.FLUID.getKey(filter).toString());
     }
-    return nbt;
   }
 }

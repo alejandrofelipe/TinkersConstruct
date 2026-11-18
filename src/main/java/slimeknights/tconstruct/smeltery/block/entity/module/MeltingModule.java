@@ -2,12 +2,12 @@ package slimeknights.tconstruct.smeltery.block.entity.module;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.common.network.InventorySlotSyncPacket;
@@ -16,7 +16,6 @@ import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
-import slimeknights.tconstruct.library.utils.TagUtil;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -209,28 +208,27 @@ public class MeltingModule implements IMeltingContainer, ContainerData {
   }
 
   /**
-   * Writes this module to NBT
-   * @return  Module in NBT
+   * Writes this module to NBT. The stack fields are written inline (no nested key), alongside the timing fields.
+   * @param nbt  Output to write to
    */
-  public CompoundTag writeToTag(HolderLookup.Provider registries) {
-    CompoundTag nbt = new CompoundTag();
+  @SuppressWarnings("deprecation")
+  public void writeToTag(ValueOutput nbt) {
     if (!stack.isEmpty()) {
-      // 1.21: ItemStack.save no longer mutates the passed tag — it RETURNS the encoded tag merged with the prefix.
-      // Discarding the return saved a tag with no item id, so the stack failed to parse (and vanished) on world load.
-      nbt = (CompoundTag) stack.save(registries, nbt);
+      // inline map codec merges the stack into this compound, same as the old ItemStack.save(registries, prefix)
+      nbt.store(ItemStack.MAP_CODEC, stack);
       nbt.putInt(TAG_CURRENT_TIME, currentTime);
       nbt.putInt(TAG_REQUIRED_TIME, requiredTime);
       nbt.putInt(TAG_REQUIRED_TEMP, requiredTemp);
     }
-    return nbt;
   }
 
   /**
    * Reads this module from NBT
    * @param nbt  NBT
    */
-  public void readFromTag(HolderLookup.Provider registries, CompoundTag nbt) {
-    stack = TagUtil.parseOptionalItem(registries, nbt);
+  @SuppressWarnings("deprecation")
+  public void readFromTag(ValueInput nbt) {
+    stack = nbt.read(ItemStack.MAP_CODEC).orElse(ItemStack.EMPTY);
     if (!stack.isEmpty()) {
       currentTime = nbt.getIntOr(TAG_CURRENT_TIME, 0);
       requiredTime = nbt.getIntOr(TAG_REQUIRED_TIME, 0);

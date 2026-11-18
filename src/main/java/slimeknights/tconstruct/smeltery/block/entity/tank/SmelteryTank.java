@@ -3,17 +3,14 @@ package slimeknights.tconstruct.smeltery.block.entity.tank;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.fluid.IMultitankListChange;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.library.utils.WeakListenerList;
 import slimeknights.tconstruct.smeltery.block.entity.tank.ISmelteryTankHandler.FluidChange;
 import slimeknights.tconstruct.smeltery.network.SmelteryTankUpdatePacket;
@@ -293,24 +290,21 @@ public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> im
   }
 
   /** Writes the tank to NBT */
-  public CompoundTag write(HolderLookup.Provider registries, CompoundTag nbt) {
-    ListTag list = new ListTag();
+  public void write(ValueOutput nbt) {
+    // list is always written, even when empty
+    ValueOutput.TypedOutputList<FluidStack> list = nbt.list(TAG_FLUIDS, FluidStack.CODEC);
     for (FluidStack liquid : fluids) {
-      list.add(liquid.save(registries, new CompoundTag()));
+      list.add(liquid);
     }
-    nbt.put(TAG_FLUIDS, list);
     nbt.putInt(TAG_CAPACITY, capacity);
-    return nbt;
   }
 
   /** Reads the tank from NBT */
-  public void read(HolderLookup.Provider registries, CompoundTag tag) {
-    ListTag list = TagUtil.getList(tag, TAG_FLUIDS, Tag.TAG_COMPOUND);
+  public void read(ValueInput tag) {
     fluids.clear();
     contained = 0;
-    for (int i = 0; i < list.size(); i++) {
-      CompoundTag fluidTag = list.getCompoundOrEmpty(i);
-      FluidStack fluid = FluidStack.parseOptional(registries, fluidTag);
+    // OPTIONAL_CODEC treats an empty compound as an empty fluid like the old parseOptional
+    for (FluidStack fluid : tag.listOrEmpty(TAG_FLUIDS, FluidStack.OPTIONAL_CODEC)) {
       if (!fluid.isEmpty()) {
         fluids.add(fluid);
         contained += fluid.getAmount();

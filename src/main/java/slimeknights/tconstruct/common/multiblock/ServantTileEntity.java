@@ -2,14 +2,13 @@ package slimeknights.tconstruct.common.multiblock;
 
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.mantle.util.BlockEntityHelper;
 import slimeknights.tconstruct.library.utils.TagUtil;
@@ -110,12 +109,12 @@ public class ServantTileEntity extends MantleBlockEntity implements IServantLogi
    * Reads the master from NBT
    * @param tags  NBT to read
    */
-  protected void readMaster(CompoundTag tags) {
+  protected void readMaster(ValueInput tags) {
     BlockPos masterPos = TagUtil.readOptionalPos(tags, TAG_MASTER_POS, this.worldPosition);
     Block masterBlock = null;
     // if the master position is valid, get the master block
-    if (masterPos != null && TagUtil.contains(tags, TAG_MASTER_BLOCK, Tag.TAG_STRING)) {
-      ResourceLocation masterBlockName = ResourceLocation.tryParse(tags.getStringOr(TAG_MASTER_BLOCK, ""));
+    if (masterPos != null) {
+      ResourceLocation masterBlockName = tags.getString(TAG_MASTER_BLOCK).map(ResourceLocation::tryParse).orElse(null);
       if (masterBlockName != null && BuiltInRegistries.BLOCK.containsKey(masterBlockName)) {
         masterBlock = BuiltInRegistries.BLOCK.getValue(masterBlockName);
       }
@@ -128,26 +127,26 @@ public class ServantTileEntity extends MantleBlockEntity implements IServantLogi
   }
 
   @Override
-  public void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
-    super.loadAdditional(tags, registries);
+  protected void loadAdditional(ValueInput tags) {
+    super.loadAdditional(tags);
     readMaster(tags);
   }
 
   /**
-   * Writes the master position and master block to the given compound
+   * Writes the master position and master block to the given output
    * @param tags  Tags
    */
-  protected CompoundTag writeMaster(CompoundTag tags) {
+  protected void writeMaster(ValueOutput tags) {
     if (masterPos != null && masterBlock != null) {
-      tags.put(TAG_MASTER_POS, TagUtil.writePos(masterPos.subtract(this.worldPosition)));
+      // BlockPos.CODEC writes the same int array as TagUtil.writePos
+      tags.store(TAG_MASTER_POS, BlockPos.CODEC, masterPos.subtract(this.worldPosition));
       tags.putString(TAG_MASTER_BLOCK, BuiltInRegistries.BLOCK.getKey(masterBlock).toString());
     }
-    return tags;
   }
 
   @Override
-  public void saveAdditional(CompoundTag tags, HolderLookup.Provider registries) {
-    super.saveAdditional(tags, registries);
+  public void saveAdditional(ValueOutput tags) {
+    super.saveAdditional(tags);
     writeMaster(tags);
   }
 }

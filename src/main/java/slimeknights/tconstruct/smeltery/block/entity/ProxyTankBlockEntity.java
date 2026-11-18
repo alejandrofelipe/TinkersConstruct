@@ -2,19 +2,18 @@ package slimeknights.tconstruct.smeltery.block.entity;
 
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import slimeknights.mantle.block.InventoryBlock;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.tconstruct.library.fluid.IFluidTankUpdater;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.tank.ProxyItemTank;
 
@@ -142,16 +141,15 @@ public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTan
   }
 
   @Override
-  public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-    super.loadAdditional(tag, registries);
-    if (TagUtil.contains(tag, TAG_ITEM, Tag.TAG_COMPOUND)) {
-      itemTank.readFromNBT(registries, tag.getCompoundOrEmpty(TAG_ITEM));
-    }
+  public void loadAdditional(ValueInput tag) {
+    super.loadAdditional(tag);
+    tag.read(TAG_ITEM, CompoundTag.CODEC).ifPresent(item -> itemTank.readFromNBT(tag.lookup(), item));
   }
 
   @Override
-  protected void saveSynced(CompoundTag tag, HolderLookup.Provider registries) {
-    super.saveSynced(tag, registries);
-    tag.put(TAG_ITEM, itemTank.writeToNBT(registries));
+  protected void saveSynced(ValueOutput tag) {
+    super.saveSynced(tag);
+    // OPTIONAL_CODEC matches SingleItemHandler#writeToNBT: an empty compound for an empty stack, else the encoded stack
+    tag.store(TAG_ITEM, ItemStack.OPTIONAL_CODEC, itemTank.getStack());
   }
 }

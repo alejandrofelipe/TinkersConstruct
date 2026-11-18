@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.smeltery.item;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
@@ -84,24 +84,24 @@ public class ScaledFluidTank extends FluidTank {
 
   /* NBT */
 
+  // 1.21.8: the fluid is still stored inline (no "Fluid" key) like the old readFromNBT/writeToNBT overrides, hence the map codec
+  @SuppressWarnings("deprecation")
   @Override
-  public FluidTank readFromNBT(HolderLookup.Provider lookupProvider, CompoundTag nbt) {
+  public void deserialize(ValueInput input) {
     // scale the fluid on reading from NBT; as each instance should store the fluid relative to stack size 1
-    FluidStack fluid = FluidStack.parseOptional(lookupProvider, nbt);
+    FluidStack fluid = input.read(FluidStack.MAP_CODEC).orElse(FluidStack.EMPTY);
     fluid.setAmount(fluid.getAmount() * scale);
     setFluid(fluid);
-    return this;
   }
 
+  @SuppressWarnings("deprecation")
   @Override
-  public CompoundTag writeToNBT(HolderLookup.Provider lookupProvider, CompoundTag nbt) {
+  public void serialize(ValueOutput output) {
     // scale the fluid on writing to NBT; as each instance should store the fluid relative to stack size 1
     if (!this.fluid.isEmpty()) {
       FluidStack fluid = this.fluid.copy();
       fluid.setAmount(fluid.getAmount() / scale);
-      // 1.21: FluidStack.save returns the encoded tag merged with the prefix instead of mutating it
-      return (CompoundTag) fluid.save(lookupProvider, nbt);
+      output.store(FluidStack.MAP_CODEC, fluid);
     }
-    return nbt;
   }
 }

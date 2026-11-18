@@ -3,10 +3,7 @@ package slimeknights.tconstruct.smeltery.block.entity;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +24,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -43,7 +42,6 @@ import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.casting.ICastingRecipe;
 import slimeknights.tconstruct.library.recipe.molding.MoldingRecipe;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.shared.block.entity.TableBlockEntity;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.AbstractCastingBlock;
@@ -583,15 +581,15 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
   }
 
   @Override
-  public void saveAdditional(CompoundTag tags, HolderLookup.Provider registries) {
-    super.saveAdditional(tags, registries);
+  public void saveAdditional(ValueOutput tags) {
+    super.saveAdditional(tags);
     tags.putBoolean(TAG_REDSTONE, lastRedstone);
   }
 
   @Override
-  public void saveSynced(CompoundTag tags, HolderLookup.Provider registries) {
-    super.saveSynced(tags, registries);
-    tags.put(TAG_TANK, tank.writeToTag(registries, new CompoundTag()));
+  public void saveSynced(ValueOutput tags) {
+    super.saveSynced(tags);
+    tank.write(tags.child(TAG_TANK));
     if (currentRecipe != null || recipeName != null) {
       tags.putInt(TAG_TIMER, timer);
     }
@@ -603,12 +601,13 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
   }
 
   @Override
-  public void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
-    super.loadAdditional(tags, registries);
-    tank.readFromTag(registries, tags.getCompoundOrEmpty(TAG_TANK));
+  public void loadAdditional(ValueInput tags) {
+    super.loadAdditional(tags);
+    tank.read(tags.childOrEmpty(TAG_TANK));
     timer = tags.getIntOr(TAG_TIMER, 0);
-    if (TagUtil.contains(tags, TAG_RECIPE, Tag.TAG_STRING)) {
-      ResourceLocation name = ResourceLocation.parse(tags.getStringOr(TAG_RECIPE, ""));
+    Optional<String> recipe = tags.getString(TAG_RECIPE);
+    if (recipe.isPresent()) {
+      ResourceLocation name = ResourceLocation.parse(recipe.get());
       // if we have a level, fetch the recipe
       if (level != null) {
         loadRecipe(level, name);

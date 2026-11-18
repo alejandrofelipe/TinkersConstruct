@@ -3,9 +3,7 @@ package slimeknights.tconstruct.smeltery.block.entity;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -18,6 +16,8 @@ import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -32,7 +32,6 @@ import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectManager;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffects;
 import slimeknights.tconstruct.library.utils.NBTTags;
-import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.library.utils.Util;
 import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.shared.particle.FluidParticleData;
@@ -177,18 +176,17 @@ public class FluidCannonBlockEntity extends TankBlockEntity implements ITankInve
   }
 
   @Override
-  public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-    super.loadAdditional(tag, registries);
-    tank.readFromNBT(registries, tag.getCompoundOrEmpty(NBTTags.TANK));
-    if (TagUtil.contains(tag, TAG_ITEM, Tag.TAG_COMPOUND)) {
-      itemHandler.readFromNBT(registries, tag.getCompoundOrEmpty(TAG_ITEM));
-    }
+  public void loadAdditional(ValueInput tag) {
+    super.loadAdditional(tag);
+    tank.deserialize(tag.childOrEmpty(NBTTags.TANK));
+    tag.read(TAG_ITEM, CompoundTag.CODEC).ifPresent(item -> itemHandler.readFromNBT(tag.lookup(), item));
   }
 
   @Override
-  public void saveSynced(CompoundTag tag, HolderLookup.Provider registries) {
-    super.saveSynced(tag, registries);
-    tag.put(TAG_ITEM, itemHandler.writeToNBT(registries));
+  public void saveSynced(ValueOutput tag) {
+    super.saveSynced(tag);
+    // OPTIONAL_CODEC matches SingleItemHandler#writeToNBT: an empty compound for an empty stack, else the encoded stack
+    tag.store(TAG_ITEM, ItemStack.OPTIONAL_CODEC, itemHandler.getStack());
   }
 
 
