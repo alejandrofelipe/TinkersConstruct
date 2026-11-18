@@ -4,12 +4,16 @@ import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -27,7 +31,11 @@ import slimeknights.mantle.client.screen.book.BookScreen;
 import slimeknights.mantle.client.uitest.UiTestContext;
 import slimeknights.mantle.client.uitest.UiTestScenario;
 import slimeknights.mantle.client.uitest.UiTestScenarios;
+import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.fluids.TinkerFluids;
+import slimeknights.tconstruct.library.recipe.FluidValues;
+import slimeknights.tconstruct.library.tools.nbt.MaterialIdNBT;
 import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.gametest.SmelteryRigs;
 import slimeknights.tconstruct.plugin.jei.JEIPlugin;
@@ -35,13 +43,18 @@ import slimeknights.tconstruct.plugin.jei.TConstructJEIConstants;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
+import slimeknights.tconstruct.smeltery.item.CopperCanItem;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.client.inventory.TinkerStationScreen;
 import slimeknights.tconstruct.tables.client.inventory.ToolTableScreen;
 import slimeknights.tconstruct.tools.TinkerModifiers;
+import slimeknights.tconstruct.tools.TinkerToolParts;
+import slimeknights.tconstruct.tools.TinkerTools;
+import slimeknights.tconstruct.tools.data.material.MaterialIds;
 import slimeknights.tconstruct.world.TinkerHeadType;
 import slimeknights.tconstruct.world.TinkerWorld;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -76,6 +89,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new ExtraHeartsScenario());
     UiTestScenarios.register(new DynamicBlockModelsScenario());
     UiTestScenarios.register(new HeadItemsScenario());
+    UiTestScenarios.register(new DynamicItemIconsScenario());
   }
 
   /** Places a single block and opens its GUI. */
@@ -603,6 +617,95 @@ public class TinkerUiTestScenarios {
     public void open(UiTestContext ctx) {
       LocalPlayer player = Objects.requireNonNull(ctx.mc().player);
       player.getInventory().setSelectedSlot(0); // hotbar.0 -> the blaze head is held
+      ctx.mc().setScreen(new InventoryScreen(player));
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      ctx.mc().setScreen(null);
+      ctx.sendCommand("clear @s");
+      ctx.sendCommand("gamemode creative");
+    }
+  }
+
+  /**
+   * Opens the player inventory filled with items drawn by the Mantle/Tinkers custom item models (retextured tables, tools,
+   * material parts, fluid containers, material blocks, NBT key) to guard the 1.21.6+ GUI item atlas: it caches one icon
+   * per model identity, so a custom model that appends no identity shares a slot with every other one (station tabs
+   * showed an arrow instead of the table). Asserts each stack has a non-empty identity that is stable across resolves
+   * and distinct from the others, then captures the inventory for a visual check.
+   */
+  private static class DynamicItemIconsScenario implements UiTestScenario {
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("dynamic_item_icons");
+    }
+
+    /** Built fresh per call: once on the server thread for the inventory, once on the client thread for the assert */
+    private static List<ItemStack> stacks() {
+      return List.of(
+        new ItemStack(TinkerTables.craftingStation),
+        RetexturedHelper.setTexture(new ItemStack(TinkerTables.craftingStation), Blocks.DARK_OAK_PLANKS),
+        RetexturedHelper.setTexture(new ItemStack(TinkerTables.tinkerStation), Blocks.BIRCH_PLANKS),
+        RetexturedHelper.setTexture(new ItemStack(TinkerTables.partBuilder), Blocks.CRIMSON_PLANKS),
+        new MaterialIdNBT(List.of(MaterialIds.cobalt, MaterialIds.wood, MaterialIds.iron)).updateStack(new ItemStack(TinkerTools.pickaxe)),
+        TinkerTools.pickaxe.get().getRenderTool(),
+        TinkerTools.arrow.get().getRenderTool(),
+        TinkerToolParts.pickHead.get().withMaterial(MaterialIds.iron),
+        TinkerToolParts.pickHead.get().withMaterial(MaterialIds.cobalt),
+        new ItemStack(TinkerFluids.moltenIron.getBucket()),
+        CopperCanItem.setFluid(new ItemStack(TinkerSmeltery.copperCan), new FluidStack(Fluids.WATER, FluidValues.BOTTLE)),
+        CopperCanItem.setFluid(new ItemStack(TinkerSmeltery.copperCan), new FluidStack(Fluids.LAVA, FluidValues.BOTTLE)),
+        new ItemStack(TinkerTables.tinkersAnvil),
+        new ItemStack(TinkerModifiers.creativeSlotItem)
+      );
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      // survival: in creative the inventory screen is replaced by the creative tabs
+      ctx.sendCommand("gamemode survival");
+      ctx.runOnServer(() -> {
+        Inventory inventory = ctx.serverLevel().getServer().getPlayerList().getPlayers().getFirst().getInventory();
+        inventory.clearContent();
+        List<ItemStack> stacks = stacks();
+        for (int i = 0; i < stacks.size(); i++) {
+          inventory.setItem(i, stacks.get(i));
+        }
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      // resolve each stack like GuiGraphics#renderItem does, twice: the identity must be stable for the atlas to reuse it
+      ItemModelResolver resolver = ctx.mc().getItemModelResolver();
+      List<ItemStack> stacks = stacks();
+      List<Object> identities = new ArrayList<>();
+      for (ItemStack stack : stacks) {
+        TrackingItemStackRenderState first = new TrackingItemStackRenderState();
+        resolver.updateForTopItem(first, stack, ItemDisplayContext.GUI, ctx.mc().level, ctx.player(), 0);
+        TrackingItemStackRenderState second = new TrackingItemStackRenderState();
+        resolver.updateForTopItem(second, stack, ItemDisplayContext.GUI, ctx.mc().level, ctx.player(), 0);
+        Object identity = first.getModelIdentity();
+        if (((List<?>) identity).isEmpty()) {
+          throw new IllegalStateException("dynamic_item_icons: " + stack + " has an empty GUI model identity");
+        }
+        if (!identity.equals(second.getModelIdentity())) {
+          throw new IllegalStateException("dynamic_item_icons: " + stack + " GUI model identity is not stable across resolves");
+        }
+        for (int i = 0; i < identities.size(); i++) {
+          if (identities.get(i).equals(identity)) {
+            throw new IllegalStateException("dynamic_item_icons: " + stack + " shares its GUI model identity with " + stacks.get(i));
+          }
+        }
+        identities.add(identity);
+      }
+      LocalPlayer player = Objects.requireNonNull(ctx.mc().player);
       ctx.mc().setScreen(new InventoryScreen(player));
     }
 
