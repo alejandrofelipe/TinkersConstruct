@@ -38,7 +38,7 @@ public class GlowballEntity extends ThrowableItemProjectile {
   @Override
   protected void onHit(HitResult result) {
     Level level = level();
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       BlockPos position = null;
       Direction direction = Direction.DOWN;
 
@@ -57,7 +57,7 @@ public class GlowballEntity extends ThrowableItemProjectile {
       }
     }
 
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       level.broadcastEntityEvent(this, (byte) 3);
       this.discard();
     }

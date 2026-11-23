@@ -60,7 +60,7 @@ public class AntigravityEffect extends TinkerEffect {
     // ensure we are actually under the effects of antigrav, might have a double negative
     if (living.getAttributeValue(Attributes.GRAVITY) < 0) {
       Level level = living.level();
-      if (!living.level().isClientSide) {
+      if (!living.level().isClientSide()) {
         // 6100 meters is when it starts becoming hard to breathe, assuming world height is 320
         // really just need some arbitrarily big number to start damaging entities so you don't get entities falling up forever
         if (living.getY() > level.getMaxY() + 5780) {

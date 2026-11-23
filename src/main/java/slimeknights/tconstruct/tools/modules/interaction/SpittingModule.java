@@ -154,7 +154,7 @@ public record SpittingModule(LevelingInt shots) implements ModifierModule, Gener
 
   @Override
   public void onStoppedUsing(IToolStackView tool, ModifierEntry modifier, LivingEntity entity, int timeLeft) {
-    if (!entity.level().isClientSide) {
+    if (!entity.level().isClientSide()) {
       int chargeTime = getUseDuration(tool, modifier) - timeLeft;
       if (chargeTime > 0) {
         spit(tool, modifier, entity, chargeTime);
@@ -182,7 +182,7 @@ public record SpittingModule(LevelingInt shots) implements ModifierModule, Gener
   @Override
   public void stopInteract(IToolStackView tool, ModifierEntry modifier, Player player, EquipmentSlot slot, int chargeTime, ModifierEntry activeModifier) {
     if (modifier == activeModifier) {
-      if (chargeTime > 0 && !player.level().isClientSide) {
+      if (chargeTime > 0 && !player.level().isClientSide()) {
         spit(tool, modifier, player, chargeTime);
       }
       tool.getPersistentData().remove(modifier.getId().getLocation());

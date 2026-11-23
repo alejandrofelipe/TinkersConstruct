@@ -90,7 +90,7 @@ public class PiggyBackPackItem extends TooltipItem {
   }
 
   private static boolean pickupEntity(Player player, Entity target) {
-    if (player.level().isClientSide || target.getType().is(TinkerTags.EntityTypes.PIGGYBACKPACK_BLACKLIST)) {
+    if (player.level().isClientSide() || target.getType().is(TinkerTags.EntityTypes.PIGGYBACKPACK_BLACKLIST)) {
       return false;
     }
     // silly players, clicking on entities they're already carrying or riding
@@ -177,7 +177,7 @@ public class PiggyBackPackItem extends TooltipItem {
         TinkerGadgets.piggyBackpack.get().matchCarriedEntitiesToCount(livingEntityIn, 0);
       } else {
         TinkerGadgets.piggyBackpack.get().matchCarriedEntitiesToCount(livingEntityIn, chestArmor.getCount());
-        if (!livingEntityIn.level().isClientSide) {
+        if (!livingEntityIn.level().isClientSide()) {
           PiggybackHandler handler = livingEntityIn.getCapability(PiggybackCapability.PIGGYBACK, null);
           if (handler != null) {
             handler.updatePassengers();

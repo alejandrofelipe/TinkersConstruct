@@ -60,7 +60,7 @@ public class EnderportingModifier extends NoLevelsModifier implements PlantHarve
   private static boolean tryTeleport(ModifierEntry modifier, LivingEntity living, double x, double y, double z) {
     Level world = living.level();
     // should never happen with the hooks, but just in case
-    if (world.isClientSide) {
+    if (world.isClientSide()) {
       return false;
     }
     // this logic is cloned from suffocation damage logic

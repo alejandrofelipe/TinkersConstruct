@@ -133,7 +133,7 @@ public class GlowBlock extends Block {
     if (state.getBlock() != this && state.canBeReplaced()) {
       // if the location is valid, place the block directly
       if (this.canSurvive(newState, world, pos)) {
-        if (!world.isClientSide) {
+        if (!world.isClientSide()) {
           world.setBlockAndUpdate(pos, newState);
         }
         return true;
@@ -141,7 +141,7 @@ public class GlowBlock extends Block {
         for (Direction direction1 : Direction.values()) {
           newState = this.defaultBlockState().setValue(FACING, direction1);
           if (this.canSurvive(newState, world, pos)) {
-            if (!world.isClientSide) {
+            if (!world.isClientSide()) {
               world.setBlockAndUpdate(pos, newState);
             }
             return true;

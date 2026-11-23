@@ -47,7 +47,7 @@ public class ProxyItemTank<T extends MantleBlockEntity & IFluidTankUpdater> exte
 
     // server side may need to sync
     Level world = parent.getLevel();
-    boolean needsUpdate = world != null && !world.isClientSide;
+    boolean needsUpdate = world != null && !world.isClientSide();
     if (oldStack != newStack) {
       // if the stack instance changed, discard cached cap and sync
       itemTank = null;

@@ -160,7 +160,7 @@ public class ToolAttackUtil {
 
   /** Checks if this tool can be used to attack */
   public static boolean isAttackable(LivingEntity attacker, Entity target) {
-    return !attacker.level().isClientSide && target.isAttackable() && !target.skipAttackInteraction(attacker);
+    return !attacker.level().isClientSide() && target.isAttackable() && !target.skipAttackInteraction(attacker);
   }
 
   /**
@@ -332,7 +332,7 @@ public class ToolAttackUtil {
     // final attack hooks
     if (attackerPlayer != null) {
       if (targetLiving != null) {
-        if (!level.isClientSide && !isExtraAttack) {
+        if (!level.isClientSide() && !isExtraAttack) {
           ItemStack held = attackerLiving.getItemBySlot(sourceSlot);
           if (!held.isEmpty()) {
             held.hurtEnemy(targetLiving, attackerPlayer);
@@ -518,7 +518,7 @@ public class ToolAttackUtil {
    */
   @Deprecated(forRemoval = true)
   public static float getAttributeAttackDamage(IToolStackView tool, LivingEntity holder, EquipmentSlot slotType) {
-    if (holder.level().isClientSide) {
+    if (holder.level().isClientSide()) {
       return (float) holder.getAttributeValue(Attributes.ATTACK_DAMAGE);
     }
     // TODO 1.21: consider inlining this method as its only used once

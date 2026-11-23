@@ -33,7 +33,7 @@ public record SlotInChargeModule(TinkerDataKey<SlotInCharge> key, @Nullable TagK
 
   /** Checks if the given tool cares about this modifier */
   private boolean toolValid(IToolStackView tool, EquipmentSlot slot, EquipmentChangeContext context) {
-    return !tool.isBroken() && !context.getEntity().level().isClientSide && ArmorLevelModule.validSlot(tool, slot, heldTag);
+    return !tool.isBroken() && !context.getEntity().level().isClientSide() && ArmorLevelModule.validSlot(tool, slot, heldTag);
   }
 
   @Override

@@ -225,7 +225,7 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
 
   /** Handles the server tick */
   protected void serverTick(Level level, BlockPos pos, BlockState state) {
-    if (level.isClientSide) {
+    if (level.isClientSide()) {
       if (errorVisibleFor > 0) {
         errorVisibleFor--;
       }
@@ -291,7 +291,7 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
    */
   protected void dropItem(ItemStack stack) {
     assert level != null;
-    if (!level.isClientSide && !stack.isEmpty()) {
+    if (!level.isClientSide() && !stack.isEmpty()) {
       double x = (double)(level.random.nextFloat() * 0.5F) + 0.25D;
       double y = (double)(level.random.nextFloat() * 0.5F) + 0.25D;
       double z = (double)(level.random.nextFloat() * 0.5F) + 0.25D;
@@ -309,7 +309,7 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
   public void onLoad() {
     super.onLoad();
     // just to clear out invalid references to the old master/no master, nothing should actually change behavior
-    if (level != null && !level.isClientSide && structure != null) {
+    if (level != null && !level.isClientSide() && structure != null) {
       structure.forEachContained(pos -> {
         if (level.getBlockEntity(pos) instanceof IServantLogic servant) {
           servant.onMasterLoad(this);
@@ -362,7 +362,7 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
    * Attempts to locate a valid smeltery structure
    */
   protected void checkStructure() {
-    if (level == null || level.isClientSide) {
+    if (level == null || level.isClientSide()) {
       return;
     }
     boolean wasFormed = getBlockState().getValue(ControllerBlock.IN_STRUCTURE);
@@ -491,7 +491,7 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
    * @param fluid  Fluid
    */
   private void updateDisplayFluid(FluidStack fluid) {
-    if (level != null && level.isClientSide) {
+    if (level != null && level.isClientSide()) {
       // update ourself
       this.displayFluid = fluid.copy();
       this.requestModelDataUpdate();
@@ -691,6 +691,6 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
   /** Handles the unchecked cast for a block entity ticker */
   @Nullable
   public static <HAVE extends HeatingStructureBlockEntity, RET extends BlockEntity> BlockEntityTicker<RET> getTicker(Level level, BlockEntityType<RET> expected, BlockEntityType<HAVE> have) {
-    return BlockEntityHelper.castTicker(expected, have, level.isClientSide ? CLIENT_TICKER : SERVER_TICKER);
+    return BlockEntityHelper.castTicker(expected, have, level.isClientSide() ? CLIENT_TICKER : SERVER_TICKER);
   }
 }

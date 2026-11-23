@@ -115,7 +115,7 @@ public class FaucetBlockEntity extends MantleBlockEntity {
    */
   public void activate() {
     // don't run on client
-    if (level == null || level.isClientSide) {
+    if (level == null || level.isClientSide()) {
       return;
     }
     // already pouring? we want to start

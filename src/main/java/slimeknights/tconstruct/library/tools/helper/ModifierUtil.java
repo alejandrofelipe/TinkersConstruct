@@ -64,7 +64,7 @@ public final class ModifierUtil {
 
   /** Drops an item at the given position */
   public static void dropItem(Level level, double x, double y, double z, ItemStack stack) {
-    if (!stack.isEmpty() && !level.isClientSide) {
+    if (!stack.isEmpty() && !level.isClientSide()) {
       ItemEntity ent = new ItemEntity(level, x, y, z, stack);
       ent.setDefaultPickUpDelay();
       RandomSource rand = level.random;

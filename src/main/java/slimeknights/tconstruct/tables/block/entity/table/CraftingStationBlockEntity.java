@@ -73,7 +73,7 @@ public class CraftingStationBlockEntity extends RetexturedTableBlockEntity imple
     // assume empty unless we learn otherwise
     ItemStack result = ItemStack.EMPTY;
     CraftingInput input = this.craftingInventory.asCraftInput();
-    if (!this.level.isClientSide && this.level.getServer() != null) {
+    if (!this.level.isClientSide() && this.level.getServer() != null) {
       RecipeManager manager = this.level.getServer().getRecipeManager();
 
       // first, try the cached recipe
@@ -199,7 +199,7 @@ public class CraftingStationBlockEntity extends RetexturedTableBlockEntity imple
   public void notifyUncraftable(Player player) {
     // if empty, send a message so the player is more aware of why they cannot craft it, sent to chat as status bar is not visible
     // TODO: consider moving into the UI somewhere
-    if (level != null && !level.isClientSide) {
+    if (level != null && !level.isClientSide()) {
       player.displayClientMessage(CraftingStationBlockEntity.UNCRAFTABLE, false);
     }
   }
@@ -228,7 +228,7 @@ public class CraftingStationBlockEntity extends RetexturedTableBlockEntity imple
    */
   public void syncRecipe(Player player) {
     // must have a last recipe and a server world
-    if (this.lastRecipe != null && this.level != null && !this.level.isClientSide && player instanceof ServerPlayer) {
+    if (this.lastRecipe != null && this.level != null && !this.level.isClientSide() && player instanceof ServerPlayer) {
       TinkerNetwork.getInstance().sendTo(new UpdateCraftingRecipePacket(this.worldPosition, this.lastRecipe.id().location()), (ServerPlayer) player);
     }
   }

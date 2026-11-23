@@ -120,7 +120,7 @@ public class ThrownTool extends ThrownTrident implements ToolProjectile {
     this.entityData.set(ID_LOYALTY, (byte) ModifierUtil.getVolatileInt(tridentItem(), LOYALTY));
     this.entityData.set(ID_FOIL, ModifierUtil.checkVolatileFlag(tridentItem(), ModifiableItem.SHINY));
     this.noDespawn = ModifierUtil.checkVolatileFlag(tridentItem(), IndestructibleItemEntity.INDESTRUCTIBLE_ENTITY);
-    if (!level().isClientSide) {
+    if (!level().isClientSide()) {
       this.magnet = ModifierUtil.getVolatileInt(tridentItem(), MAGNET);
     }
   }
@@ -206,7 +206,7 @@ public class ThrownTool extends ThrownTrident implements ToolProjectile {
     // TODO: consider expiry time for loyalty
     if (!dealtDamage && inGroundTime > 4) {
       // we don't damage the tool on throw, so instead damage it when it hits a block or an entity
-      if (!tridentItem().isEmpty() && !level().isClientSide) {
+      if (!tridentItem().isEmpty() && !level().isClientSide()) {
         ToolDamageUtil.damage(getTool(), 1, getOwner() instanceof LivingEntity l ? l : null, tridentItem());
         // update the stack so visual changes to the tool render (e.g. broken or fluid)
         // need to force since its the same instance, just NBT changes
@@ -271,7 +271,7 @@ public class ThrownTool extends ThrownTrident implements ToolProjectile {
 
       // back off from the target
       this.setDeltaMovement(this.getDeltaMovement().multiply(-0.01, -0.1, -0.01));
-      if (!level().isClientSide) {
+      if (!level().isClientSide()) {
         // play sound
         if (tool.getModifiers().getLevel(ModifierIds.channeling) == 0) {
           this.playSound(tool.isBroken() ? SoundEvents.ITEM_BREAK.value() : SoundEvents.TRIDENT_HIT, 1.0f, 1.0f);
@@ -341,7 +341,7 @@ public class ThrownTool extends ThrownTrident implements ToolProjectile {
                 this.setDeltaMovement(this.getDeltaMovement().multiply(-0.01, -0.1, -0.01));
                 // update the stack so visual changes to the tool render (e.g. broken or fluid)
                 // need to force since its the same instance, just NBT changes
-                if (!level.isClientSide) {
+                if (!level.isClientSide()) {
                   this.entityData.set(STACK, tridentItem(), true);
                 }
                 return;

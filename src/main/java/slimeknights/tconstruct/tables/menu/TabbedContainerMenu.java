@@ -187,7 +187,7 @@ public class TabbedContainerMenu<TILE extends BlockEntity> extends TriggeringMul
   public void updateScreen() {
     if (this.tile != null) {
       if (this.tile.getLevel() != null) {
-        if (this.tile.getLevel().isClientSide && FMLEnvironment.dist == Dist.CLIENT) {
+        if (this.tile.getLevel().isClientSide() && FMLEnvironment.dist == Dist.CLIENT) {
           ClientOnly.clientScreenUpdate();
         }
       }
@@ -200,7 +200,7 @@ public class TabbedContainerMenu<TILE extends BlockEntity> extends TriggeringMul
   public void error(final MutableComponent message) {
     if (this.tile != null) {
       if (this.tile.getLevel() != null) {
-        if (this.tile.getLevel().isClientSide && FMLEnvironment.dist == Dist.CLIENT) {
+        if (this.tile.getLevel().isClientSide() && FMLEnvironment.dist == Dist.CLIENT) {
           ClientOnly.clientError(message);
         }
       }
@@ -213,7 +213,7 @@ public class TabbedContainerMenu<TILE extends BlockEntity> extends TriggeringMul
   public void warning(final MutableComponent message) {
     if (this.tile != null) {
       if (this.tile.getLevel() != null) {
-        if (this.tile.getLevel().isClientSide && FMLEnvironment.dist == Dist.CLIENT) {
+        if (this.tile.getLevel().isClientSide() && FMLEnvironment.dist == Dist.CLIENT) {
           ClientOnly.clientWarning(message);
         }
       }

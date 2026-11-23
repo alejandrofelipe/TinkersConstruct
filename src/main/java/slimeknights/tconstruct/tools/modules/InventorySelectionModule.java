@@ -40,7 +40,7 @@ public interface InventorySelectionModule {
 
     // display a message about what is now selected
     if (newSelected != current) {
-      if (!player.level().isClientSide) {
+      if (!player.level().isClientSide()) {
         data.putInt(selectedSlot, newSelected);
         if (newSelected == totalSlots) {
           onDisableSelection(tool, modifier, player);

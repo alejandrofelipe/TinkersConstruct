@@ -249,7 +249,7 @@ public class ToolHarvestLogic {
     }*/
 
     // client can run normal block breaking
-    if (player.level().isClientSide || !(player instanceof ServerPlayer serverPlayer)) {
+    if (player.level().isClientSide() || !(player instanceof ServerPlayer serverPlayer)) {
       return false;
     }
 
@@ -338,7 +338,7 @@ public class ToolHarvestLogic {
       return false;
     }
 
-    if (!worldIn.isClientSide && worldIn instanceof ServerLevel) {
+    if (!worldIn.isClientSide() && worldIn instanceof ServerLevel) {
       // must not be broken, and the tool definition must be effective
       boolean isEffective = IsEffectiveToolHook.isEffective(tool, state);
       ToolHarvestContext context = new ToolHarvestContext((ServerLevel) worldIn, entityLiving, state, pos, Direction.UP, true, isEffective);

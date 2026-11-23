@@ -338,7 +338,7 @@ public class ModifierEvents {
     }
     // update airborn status
     event.setDistance(0.0F);
-    if (!living.level().isClientSide) {
+    if (!living.level().isClientSide()) {
       living.hasImpulse = true;
       event.setCanceled(true);
       living.setOnGround(false); // need to be on ground for server to process this event
@@ -386,7 +386,7 @@ public class ModifierEvents {
     if (hit.getType() == Type.ENTITY && ((EntityHitResult) hit).getEntity() instanceof LivingEntity target) {
       // reflecting //
       // handle blacklist for projectiles
-      if (!level.isClientSide && !RegistryHelper.contains(TinkerTags.EntityTypes.REFLECTING_BLACKLIST, projectile.getType()) && target != projectile.getOwner() && target.isUsingItem()) {
+      if (!level.isClientSide() && !RegistryHelper.contains(TinkerTags.EntityTypes.REFLECTING_BLACKLIST, projectile.getType()) && target != projectile.getOwner() && target.isUsingItem()) {
         ItemStack stack = target.getUseItem();
         // living entity must be using one of our shields
         if (stack.is(TinkerTags.Items.SHIELDS)) {
@@ -487,7 +487,7 @@ public class ModifierEvents {
 
         // hurt the enderman
         if (target.hurtOrSimulate(damageSource, (float) damage)) {
-          if (!level.isClientSide && arrow.getPierceLevel() <= 0) {
+          if (!level.isClientSide() && arrow.getPierceLevel() <= 0) {
             target.setArrowCount(target.getArrowCount() + 1);
           }
 
@@ -496,7 +496,7 @@ public class ModifierEvents {
           // weapon item's WEAPON component and is applied via the protected doKnockback(target, source).
           // No public accessor exists for the arrow's knockback level, so the manual punch knockback is dropped here.
 
-          if (!level.isClientSide && livingOwner != null && level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+          if (!level.isClientSide() && livingOwner != null && level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             // 1.21: doPostHurtEffects + doPostDamageEffects were merged into doPostAttackEffects(level, target, source)
             EnchantmentHelper.doPostAttackEffects(serverLevel, target, damageSource);
           }
@@ -520,7 +520,7 @@ public class ModifierEvents {
           arrow.setDeltaMovement(arrow.getDeltaMovement().scale(-0.1D));
           arrow.setYRot(arrow.getYRot() + 180.0F);
           arrow.yRotO += 180.0F;
-          if (!level.isClientSide && arrow.getDeltaMovement().lengthSqr() < 1.0E-7D) {
+          if (!level.isClientSide() && arrow.getDeltaMovement().lengthSqr() < 1.0E-7D) {
             if (arrow.pickup == AbstractArrow.Pickup.ALLOWED) {
               arrow.spawnAtLocation((net.minecraft.server.level.ServerLevel) level, arrow.getPickupItem(), 0.1F);
             }

@@ -33,7 +33,7 @@ public class EFLNEntity extends ThrowableItemProjectile {
   @Override
   protected void onHit(HitResult result) {
     Level level = level();
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       new EFLNExplosion(level, position(), 4f, this, 8f, null, 1, false, BlockInteraction.DESTROY).handleServer();
       this.discard();
     }

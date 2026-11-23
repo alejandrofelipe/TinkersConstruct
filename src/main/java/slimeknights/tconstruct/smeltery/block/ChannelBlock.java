@@ -349,7 +349,7 @@ public class ChannelBlock extends Block implements EntityBlock {
 		// if we have changes, apply them and return success
 		if (newState != null) {
 			Direction finalSide = side;
-			if (!world.isClientSide) {
+			if (!world.isClientSide()) {
 				BlockEntityHelper.get(ChannelBlockEntity.class, world, pos).ifPresent(te -> te.refreshNeighbor(newState, finalSide));
 			}
 			world.setBlockAndUpdate(pos, newState);
@@ -364,7 +364,7 @@ public class ChannelBlock extends Block implements EntityBlock {
 	@Deprecated
 	public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, net.minecraft.world.level.redstone.Orientation orientation, boolean isMoving) {
 		super.neighborChanged(state, worldIn, pos, blockIn, orientation, isMoving);
-		if (!worldIn.isClientSide) {
+		if (!worldIn.isClientSide()) {
 			boolean isPowered = worldIn.hasNeighborSignal(pos);
 			if (isPowered != state.getValue(POWERED)) {
 				state = state.setValue(POWERED, isPowered).setValue(DOWN, isPowered && canConnect(worldIn, pos, Direction.DOWN));
@@ -396,7 +396,7 @@ public class ChannelBlock extends Block implements EntityBlock {
   @Nullable
   @Override
   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> givenType) {
-    return pLevel.isClientSide ? null : BlockEntityHelper.castTicker(givenType, TinkerSmeltery.channel.get(), ChannelBlockEntity.SERVER_TICKER);
+    return pLevel.isClientSide() ? null : BlockEntityHelper.castTicker(givenType, TinkerSmeltery.channel.get(), ChannelBlockEntity.SERVER_TICKER);
   }
 
   public enum ChannelConnection implements StringRepresentable {

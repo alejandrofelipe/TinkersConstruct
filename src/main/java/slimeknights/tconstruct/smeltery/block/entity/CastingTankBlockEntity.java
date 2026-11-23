@@ -105,7 +105,7 @@ public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlo
    */
   public void interact(Player player, InteractionHand hand, boolean clickedTank) {
     // skip client side
-    if (level == null || level.isClientSide) {
+    if (level == null || level.isClientSide()) {
       return;
     }
 

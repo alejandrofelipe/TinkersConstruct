@@ -78,7 +78,7 @@ public record LightspeedAttributeModule(String unique, UUID uuid, Attribute attr
   public void onWalk(IToolStackView tool, ModifierEntry modifier, LivingEntity living, BlockPos prevPos, BlockPos newPos) {
     // no point trying if not on the ground
     Level level = living.level();
-    if (tool.isBroken() || !living.onGround() || level.isClientSide) {
+    if (tool.isBroken() || !living.onGround() || level.isClientSide()) {
       return;
     }
     // must have speed

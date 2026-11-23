@@ -144,7 +144,7 @@ public class ToolContainerMenu extends AbstractContainerMenu {
     this.tool = ToolStack.from(stack);
     this.itemHandler = handler;
     this.player = playerInventory.player;
-    this.tank = new ToolFluidHandler(tool, player.level().isClientSide ? null : player);
+    this.tank = new ToolFluidHandler(tool, player.level().isClientSide() ? null : player);
     this.slotIndex = slotIndex;
 
     // if requested, add 3x3 crafting area
@@ -316,7 +316,7 @@ public class ToolContainerMenu extends AbstractContainerMenu {
   public boolean clickMenuButton(Player player, int id) {
     ItemStack held = getCarried();
     if ((id == 0 || id == 1) && !held.isEmpty() && !player.isSpectator()) {
-      if (!player.level().isClientSide) {
+      if (!player.level().isClientSide()) {
         TransferResult result = FluidTransferHelper.interactWithStack(tank, held, id == 0 ? TransferDirection.FILL_ITEM : TransferDirection.EMPTY_ITEM);
         setCarried(FluidTransferHelper.handleUIResult(player, held, result));
       }

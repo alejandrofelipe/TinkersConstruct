@@ -21,7 +21,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 public record FillBottle(Item filled) implements CauldronInteraction {
   @Override
   public InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, PotionContents.createItemStack(filled, Potions.WATER)));
       player.awardStat(Stats.USE_CAULDRON);
       player.awardStat(Stats.ITEM_USED.get(stack.getItem()));

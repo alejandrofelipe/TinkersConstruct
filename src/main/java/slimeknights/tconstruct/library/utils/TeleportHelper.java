@@ -34,7 +34,7 @@ public class TeleportHelper {
   @CanIgnoreReturnValue
   public static boolean randomNearbyTeleport(LivingEntity living, ITeleportEventFactory factory, int diameter, int chances) {
     Level level = living.level();
-    if (level.isClientSide) {
+    if (level.isClientSide()) {
       return true;
     }
     double posX = living.getX();

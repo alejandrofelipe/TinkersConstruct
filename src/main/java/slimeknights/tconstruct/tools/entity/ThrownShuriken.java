@@ -234,7 +234,7 @@ public class ThrownShuriken extends Projectile implements ToolProjectile, Projec
     }
 
     Level level = level();
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       if ((!hit || reclaim) && !this.isRemoved()) {
         this.spawnAtLocation((ServerLevel) level, stack.copy());
       } else {

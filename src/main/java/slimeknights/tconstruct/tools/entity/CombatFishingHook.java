@@ -172,7 +172,7 @@ public class CombatFishingHook extends FishingHook implements ProjectileWithKnoc
   /** Damages the rod if locatable */
   private void damageRod() {
     // we damage on both cast and release to prevent some cheese with some modifiers and swapping items post cast
-    if (!level().isClientSide && getOwner() instanceof LivingEntity living) {
+    if (!level().isClientSide() && getOwner() instanceof LivingEntity living) {
       ItemStack stack = living.getMainHandItem();
       InteractionHand hand = InteractionHand.MAIN_HAND;
       // must be able to cast
@@ -238,7 +238,7 @@ public class CombatFishingHook extends FishingHook implements ProjectileWithKnoc
         // actually hurt the entity
         float oldHealth = targetLiving != null ? targetLiving.getHealth() : 0;
         if (target.hurtOrSimulate(source, damage)) {
-          if (!this.level().isClientSide && owner instanceof LivingEntity ownerLiving) {
+          if (!this.level().isClientSide() && owner instanceof LivingEntity ownerLiving) {
             // 1.21: EnchantmentHelper#doPostHurtEffects(LivingEntity, Entity) was unified into
             // doPostAttackEffectsWithItemSource which runs the target's post-hit enchantment effects (e.g. thorns)
             if (targetLiving != null && this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
@@ -379,7 +379,7 @@ public class CombatFishingHook extends FishingHook implements ProjectileWithKnoc
     // if in the wall, continue ticking life
     int oldLife = this.life;
     super.tick();
-    if (this.wallState != null && !level().isClientSide) {
+    if (this.wallState != null && !level().isClientSide()) {
       this.life = oldLife + 1;
       if (this.life >= 1200) {
         this.discard();

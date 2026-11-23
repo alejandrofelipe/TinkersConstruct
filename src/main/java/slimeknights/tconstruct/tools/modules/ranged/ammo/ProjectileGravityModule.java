@@ -50,7 +50,7 @@ public record ProjectileGravityModule(LevelingInt delay) implements ModifierModu
 
   @Override
   public void onScheduledProjectileTask(IToolStackView tool, ModifierEntry modifier, ItemStack ammo, Projectile projectile, @Nullable AbstractArrow arrow, ModDataNBT persistentData, int task) {
-    if (task == 0 && !projectile.level().isClientSide) {
+    if (task == 0 && !projectile.level().isClientSide()) {
       projectile.setNoGravity(false);
     }
   }

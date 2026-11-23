@@ -495,7 +495,7 @@ public class InteractionHandler {
           // 1.21: setShieldTakesDamage(false) became setShieldDamage(0)
           event.setShieldDamage(0);
           // this code is based on code from Player#hurtCurrentlyUsedShield
-          if (!entity.level().isClientSide) {
+          if (!entity.level().isClientSide()) {
             player.awardStat(Stats.ITEM_USED.get(tool.getItem()));
           }
 

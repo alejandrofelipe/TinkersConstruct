@@ -48,7 +48,7 @@ public record PlaceGlowModule(int damage) implements ModifierModule, BlockIntera
   public InteractionResult afterBlockUse(IToolStackView tool, ModifierEntry modifier, UseOnContext context, InteractionSource source) {
     if (!tool.isBroken() && tool.getHook(ToolHooks.INTERACTION).canInteract(tool, modifier.getId(), source)) {
       Player player = context.getPlayer();
-      if (!context.getLevel().isClientSide) {
+      if (!context.getLevel().isClientSide()) {
         Level world = context.getLevel();
         Direction face = context.getClickedFace();
         BlockPos pos = context.getClickedPos().relative(face);

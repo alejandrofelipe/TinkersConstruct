@@ -95,7 +95,7 @@ public enum MinimapModule implements ModifierModule, EquipmentChangeModifierHook
 
   @Override
   public void onInventoryTick(IToolStackView tool, ModifierEntry modifier, Level world, LivingEntity holder, int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack) {
-    if (isCorrectSlot && !world.isClientSide) {
+    if (isCorrectSlot && !world.isClientSide()) {
       TinkerDataCapability.Holder data = TinkerDataCapability.getData(holder);
       if (data != null) {
         ItemStack map = data.get(MAP, ItemStack.EMPTY);

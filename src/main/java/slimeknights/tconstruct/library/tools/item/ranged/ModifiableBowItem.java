@@ -149,7 +149,7 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
       }
     }
     player.startUsingItem(hand);
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       level.playSound(null, player.getX(), player.getY(), player.getZ(), Sounds.LONGBOW_CHARGE.getSound(), SoundSource.PLAYERS, 0.75F, 1.0F);
     }
     return InteractionResult.CONSUME;
@@ -204,7 +204,7 @@ public class ModifiableBowItem extends ModifiableLauncherItem {
     }
 
     // launch the arrow
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       int originalSlot = -1;
       int desiredProjectiles = 1;
       // if it's a ballista shot, locate the original slot so we can store it on the entity

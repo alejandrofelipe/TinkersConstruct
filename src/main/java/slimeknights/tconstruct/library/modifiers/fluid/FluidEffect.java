@@ -90,7 +90,7 @@ public interface FluidEffect<C extends FluidEffectContext> extends IHaveLoader, 
       BlockState original = world.getBlockState(pos);
       BlockState replacement = world.getFluidState(pos).createLegacyBlock();
       if (original != replacement) {
-        if (action.execute() && !world.isClientSide) {
+        if (action.execute() && !world.isClientSide()) {
           if (world.setBlockAndUpdate(pos, replacement)) {
             world.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(original));
           }

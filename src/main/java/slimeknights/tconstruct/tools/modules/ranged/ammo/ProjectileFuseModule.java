@@ -62,7 +62,7 @@ public record ProjectileFuseModule(SimpleParticleType particle, LevelingInt time
         entry.getHook(ModifierHooks.PROJECTILE_FUSE).onProjectileFuseFinish(modifiers, persistentData, entry, ammo, projectile, arrow);
       }
 
-      if (!projectile.level().isClientSide) {
+      if (!projectile.level().isClientSide()) {
         // fuse animation
         Vec3 position = projectile.position();
         if (projectile.level() instanceof ServerLevel level) {

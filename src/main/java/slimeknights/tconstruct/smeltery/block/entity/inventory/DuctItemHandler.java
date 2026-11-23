@@ -54,7 +54,7 @@ public class DuctItemHandler extends SingleItemHandler<DuctBlockEntity> {
     if (hasChange) {
       updateFluid();
       if (world != null) {
-        if (!world.isClientSide) {
+        if (!world.isClientSide()) {
           BlockPos pos = parent.getBlockPos();
           TinkerNetwork.getInstance().sendToClientsAround(new InventorySlotSyncPacket(newStack, 0, pos), world, pos);
         } else {

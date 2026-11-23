@@ -97,7 +97,7 @@ public class CustomFireball extends Fireball implements ProjectileWithPower {
     super.onHitEntity(hit);
 
     // based on SmallFireball, uses custom damage type and power though
-    if (!this.level().isClientSide) {
+    if (!this.level().isClientSide()) {
       Entity target = hit.getEntity();
       Entity owner = this.getOwner();
       // PORT M3: 1.21 removed AbstractHurtingProjectile#doEnchantDamageEffects; post-hit enchantment
@@ -110,7 +110,7 @@ public class CustomFireball extends Fireball implements ProjectileWithPower {
   @Override
   protected void onHit(HitResult pResult) {
     super.onHit(pResult);
-    if (!this.level().isClientSide) {
+    if (!this.level().isClientSide()) {
       this.discard();
     }
   }

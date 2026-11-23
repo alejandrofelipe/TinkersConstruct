@@ -48,7 +48,7 @@ public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> im
    */
   public void syncFluids() {
     Level world = parent.getLevel();
-    if (world != null && !world.isClientSide) {
+    if (world != null && !world.isClientSide()) {
       BlockPos pos = parent.getBlockPos();
       TinkerNetwork.getInstance().sendToClientsAround(new SmelteryTankUpdatePacket(pos, fluids), world, pos);
     }

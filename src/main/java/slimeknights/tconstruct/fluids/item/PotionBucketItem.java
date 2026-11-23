@@ -69,7 +69,7 @@ public class PotionBucketItem extends PotionItem {
     }
 
     // effects are 2.5x duration
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       getContents(stack).forEachEffect(effect -> {
         if (effect.getEffect().value().isInstantenous()) {
           effect.getEffect().value().applyInstantenousEffect((ServerLevel) level, player, player, living, effect.getAmplifier(), 2.5D);

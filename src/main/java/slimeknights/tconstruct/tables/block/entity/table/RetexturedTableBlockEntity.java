@@ -48,7 +48,7 @@ public abstract class RetexturedTableBlockEntity extends TableBlockEntity implem
 
   private void textureUpdated() {
     // update the texture in BE data
-    if (level != null && level.isClientSide) {
+    if (level != null && level.isClientSide()) {
       Block normalizedTexture = texture == Blocks.AIR ? null : texture;
       ModelData data = getModelData();
       if (data.get(RetexturedHelper.BLOCK_PROPERTY) != normalizedTexture) {

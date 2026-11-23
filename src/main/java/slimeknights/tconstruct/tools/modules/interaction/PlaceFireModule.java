@@ -81,7 +81,7 @@ public enum PlaceFireModule implements ModifierModule, EntityInteractionModifier
     if (tool.getHook(ToolHooks.INTERACTION).canInteract(tool, modifier.getId(), source) && target instanceof Creeper creeper) {
       Level level = player.level();
       level.playSound(player, creeper.getX(), creeper.getY(), creeper.getZ(), SoundEvents.FLINTANDSTEEL_USE, creeper.getSoundSource(), 1.0F, level.random.nextFloat() * 0.4F + 0.8F);
-      if (!level.isClientSide) {
+      if (!level.isClientSide()) {
         creeper.ignite();
         ToolDamageUtil.damageAnimated(tool, 1, player, source.getSlot(hand), modifier.getId());
       }

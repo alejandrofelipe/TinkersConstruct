@@ -141,13 +141,13 @@ public enum BrushModule implements ModifierModule, GeneralInteractionModifierHoo
     Level level = player.level();
     if (state.getBlock() instanceof BrushableBlock brushable) {
       brushEffects(player, blockHit, state, arm, brushable.getBrushSound());
-      if (level.isClientSide) {
+      if (level.isClientSide()) {
         return true;
       }
     }
 
     // brush the block
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       return level.getBlockEntity(blockHit.getBlockPos()) instanceof BrushableBlockEntity brushable && brushable.brush(level.getGameTime(), (net.minecraft.server.level.ServerLevel) level, player, blockHit.getDirection(), player.getMainHandItem());
     }
     return false;
@@ -183,12 +183,12 @@ public enum BrushModule implements ModifierModule, GeneralInteractionModifierHoo
           }
 
           // if nothing was brushed clientside, play the effect for the center block
-          if (damage == 0 && level.isClientSide) {
+          if (damage == 0 && level.isClientSide()) {
             brushEffects(player, blockHit, state, arm, SoundEvents.BRUSH_GENERIC);
           }
 
           // apply all tool damage, and stop using if needed
-          if (damage > 0 && !level.isClientSide && ToolDamageUtil.damageAnimated(tool, damage, entity, hand, modifier.getId())) {
+          if (damage > 0 && !level.isClientSide() && ToolDamageUtil.damageAnimated(tool, damage, entity, hand, modifier.getId())) {
             entity.stopUsingItem();
           }
         }

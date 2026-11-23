@@ -161,7 +161,7 @@ public interface BowAmmoModifierHook {
   static ItemStack consumeAmmo(IToolStackView tool, ItemStack bow, LivingEntity living, @Nullable Player player, @Nullable Predicate<ItemStack> predicate, int projectilesDesired) {
     // treat client side as creative, no need to shrink the stacks clientside
     Level level = living.level();
-    boolean creative = (player != null && player.getAbilities().instabuild) || level.isClientSide;
+    boolean creative = (player != null && player.getAbilities().instabuild) || level.isClientSide();
 
     // first search, find what ammo type we want
     boolean skipInventoryAmmo = tool.getVolatileData().getBoolean(SKIP_INVENTORY_AMMO);
@@ -216,7 +216,7 @@ public interface BowAmmoModifierHook {
     // if we made it this far, we found ammo and are not in creative
     // we may be done already, saves making a predicate
     // can also return if on client side, they don't need the full stack
-    if (resultStack.getCount() >= projectilesDesired || level.isClientSide) {
+    if (resultStack.getCount() >= projectilesDesired || level.isClientSide()) {
       return resultStack;
     }
 

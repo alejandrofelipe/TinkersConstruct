@@ -50,7 +50,7 @@ public abstract class ShurikenEntityBase extends ThrowableItemProjectile impleme
     super.onHit(result);
 
     Level level = level();
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       level.broadcastEntityEvent(this, (byte) 3); // TODO: find the proper constant for this event ID
       this.discard();
     }

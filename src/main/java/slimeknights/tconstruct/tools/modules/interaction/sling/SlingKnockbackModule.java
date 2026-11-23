@@ -115,7 +115,7 @@ public record SlingKnockbackModule(LevelingValue forceMultiplier, float drawtime
   @Override
   public void sling(IToolStackView tool, ModifierEntry modifier, LivingEntity entity, int chargeTime, ModifierEntry activeModifier) {
     Level level = entity.level();
-    if (!level.isClientSide && entity instanceof Player player) {
+    if (!level.isClientSide() && entity instanceof Player player) {
       float charge = GeneralInteractionModifierHook.getToolCharge(tool, chargeTime);
       if (charge > 0) {
         Vec3 start = player.getEyePosition(1F);

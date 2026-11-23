@@ -75,7 +75,7 @@ public enum FishingModule implements ModifierModule, GeneralInteractionModifierH
       if (player.fishing != null) {
         ItemStack stack = player.getItemInHand(hand);
         // due to fishing rod buggy behavior, chance we end up retrieving someone else's cast, so keep this logic 1 to 1 with vanilla
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
           int damage = player.fishing.retrieve(stack);
           if (damage > 0) {
             ToolDamageUtil.damageAnimated(tool, damage, player, Util.getSlotType(hand));
@@ -88,7 +88,7 @@ public enum FishingModule implements ModifierModule, GeneralInteractionModifierH
         player.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
       } else {
         level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.FISHING_BOBBER_THROW, SoundSource.NEUTRAL, 0.5f, 0.4f / (level.getRandom().nextFloat() * 0.4f + 0.8f));
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
           float luck = ConditionalStatModifierHook.getModifiedStat(tool, player, ToolStats.SEA_LUCK);
           float lure = ConditionalStatModifierHook.getModifiedStat(tool, player, ToolStats.LURE);
           float velocity = ConditionalStatModifierHook.getModifiedStat(tool, player, ToolStats.VELOCITY);
@@ -124,7 +124,7 @@ public enum FishingModule implements ModifierModule, GeneralInteractionModifierH
         player.gameEvent(GameEvent.ITEM_INTERACT_START);
       }
 
-      if (level.isClientSide) {
+      if (level.isClientSide()) {
         OffhandCooldownTracker.swingHand(player, hand, false);
       }
       return InteractionResult.CONSUME;

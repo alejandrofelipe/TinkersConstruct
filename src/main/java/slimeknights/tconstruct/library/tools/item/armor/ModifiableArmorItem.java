@@ -356,7 +356,7 @@ public class ModifiableArmorItem extends Item implements IModifiableDisplay {
           }
         }
         // damage the tool and keep flying
-        if (!entity.level().isClientSide && (flightTicks + 1) % 20 == 0) {
+        if (!entity.level().isClientSide() && (flightTicks + 1) % 20 == 0) {
           ToolDamageUtil.damageAnimated(tool, 1, entity, EquipmentSlot.CHEST);
         }
         return true;

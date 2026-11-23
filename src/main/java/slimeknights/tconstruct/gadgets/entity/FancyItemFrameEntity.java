@@ -77,7 +77,7 @@ public class FancyItemFrameEntity extends ItemFrame {
       // diamond winds down every 30 seconds, but does not go past 0, makes a full timer 3:30
       if (rotationTimer >= 300) {
         rotationTimer = 0;
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
           int curRotation = getRotation();
           if (curRotation > 0) {
             this.setRotation(curRotation - 1);
@@ -87,7 +87,7 @@ public class FancyItemFrameEntity extends ItemFrame {
       return;
     }
     // for gold and reversed gold, only increment timer serverside
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       if (doesRotate(frameId)) {
         rotationTimer++;
         if (rotationTimer >= 20) {
@@ -112,7 +112,7 @@ public class FancyItemFrameEntity extends ItemFrame {
   public void setItem(ItemStack stack, boolean updateComparator) {
     super.setItem(stack, updateComparator);
     // spinning frames reset to 0 on changing item
-    if (updateComparator && !level().isClientSide && doesRotate(getFrameId())) {
+    if (updateComparator && !level().isClientSide() && doesRotate(getFrameId())) {
       setRotation(0, false);
     }
   }
@@ -132,7 +132,7 @@ public class FancyItemFrameEntity extends ItemFrame {
     if (FrameType.hasMoreRotations(id)) {
       // diamond caps at 16, while the others circle around
       if (id == FrameType.DIAMOND.getId()) {
-        if (!level().isClientSide && updateComparator) {
+        if (!level().isClientSide() && updateComparator) {
           // play a sound as diamond is special
           this.playSound(Sounds.ITEM_FRAME_CLICK.getSound(), 1.0f, 1.0f);
         }

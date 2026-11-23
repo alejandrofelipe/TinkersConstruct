@@ -330,7 +330,7 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
   public void onUseTick(Level level, LivingEntity living, ItemStack bow, int chargeRemaining) {
     // play the sound at the end of loading as an indicator its loaded, texture is another indicator
     int duration = getUseDuration(bow, living);
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       if (duration - chargeRemaining == ModifierUtil.getPersistentInt(bow, KEY_DRAWTIME, -1)) {
         level.playSound(null, living.getX(), living.getY(), living.getZ(), SoundEvents.CROSSBOW_LOADING_MIDDLE, SoundSource.PLAYERS, 0.75F, 1.0F);
       }

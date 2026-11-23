@@ -230,7 +230,7 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
     }
     FluidStack fluid = getFluid();
     Level level = level();
-    if (!level.isClientSide && !fluid.isEmpty()) {
+    if (!level.isClientSide() && !fluid.isEmpty()) {
       FluidEffects recipe = FluidEffectManager.INSTANCE.find(fluid.getFluid());
       if (recipe.hasEntityEffects()) {
         FluidEffectContext.Entity context = buildContext().location(result.getLocation()).target(target);
@@ -272,7 +272,7 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
     // hit the block
     // handle the fluid
     Level level = level();
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       FluidStack fluid = getFluid();
       if (!fluid.isEmpty()) {
         FluidEffects recipe = FluidEffectManager.INSTANCE.find(fluid.getFluid());

@@ -63,7 +63,7 @@ public record TankInteractionModule(@Nullable InteractionSource source) implemen
     }
 
     // only the server needs to deal with actually handling stuff
-    if (!world.isClientSide) {
+    if (!world.isClientSide()) {
       Player player = context.getPlayer();
       boolean sneaking = player != null && player.isShiftKeyDown();
       FluidStack fluidStack = TANK_HELPER.getFluid(tool);

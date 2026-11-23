@@ -76,7 +76,7 @@ public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTan
 
   @Override
   public void onTankContentsChanged() {
-    if (level != null && !level.isClientSide) {
+    if (level != null && !level.isClientSide()) {
       setChangedFast();
       int newStrength = calculateComparatorStrength();
       if (newStrength != lastStrength) {
@@ -91,7 +91,7 @@ public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTan
   /** Called when a player interacts with the fluid cannon */
   public void interact(Player player, InteractionHand hand, boolean clickedTank) {
     // skip client side
-    if (level == null || level.isClientSide) {
+    if (level == null || level.isClientSide()) {
       return;
     }
 

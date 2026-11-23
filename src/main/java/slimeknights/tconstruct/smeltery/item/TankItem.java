@@ -108,7 +108,7 @@ public class TankItem extends BlockTooltipItem {
           // update held tank and slot item if something changed
           if (result != null) {
             // play sound
-            if (player.level().isClientSide) {
+            if (player.level().isClientSide()) {
               player.playSound(result.getSound());
             }
             // update stack
@@ -176,7 +176,7 @@ public class TankItem extends BlockTooltipItem {
         TransferResult result = FluidTransferHelper.interactWithStack(tank, held, TransferDirection.AUTO);
         if (result != null) {
           // play sound
-          if (player.level().isClientSide) {
+          if (player.level().isClientSide()) {
             player.playSound(result.getSound());
           }
           // update tank

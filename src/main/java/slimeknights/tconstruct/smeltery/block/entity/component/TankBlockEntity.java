@@ -108,7 +108,7 @@ public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITa
   /** Updates the light for this tank using {@link SearedTankBlock#LIGHT} */
   public static void updateLight(BlockEntity be, IFluidTank tank) {
     Level level = be.getLevel();
-    if (level != null && !level.isClientSide) {
+    if (level != null && !level.isClientSide()) {
       FluidStack fluid = tank.getFluid();
       int light = fluid.isEmpty() ? 0 : fluid.getFluid().getFluidType().getLightLevel(fluid);
       BlockState state = be.getBlockState();
@@ -145,7 +145,7 @@ public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITa
   @Override
   public void onLoad() {
     super.onLoad();
-    if (level != null && !level.isClientSide) {
+    if (level != null && !level.isClientSide()) {
       BlockPos masterPos = getMasterPos();
       if (masterPos != null && level.getBlockEntity(masterPos) instanceof IMasterLogic master) {
         master.onServantLoad(this);

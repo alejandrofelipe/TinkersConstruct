@@ -91,7 +91,7 @@ public enum OverburnModule implements ModifierModule, InventoryTickModifierHook,
 
     // don't run if drawing back a bow, prevents losing animation
     // does mean you may end up wasting some fuel, could be as much as 19 lost. So, don't hold your bows for 20 updates?
-    if (!world.isClientSide && holder.tickCount % updateInterval == 0 && holder.getUseItem() != stack) {
+    if (!world.isClientSide() && holder.tickCount % updateInterval == 0 && holder.getUseItem() != stack) {
       // must have overslime and space to fill
       if (OverslimeModule.INSTANCE.getAmount(tool) < OverslimeModule.getCapacity(tool)) {
         // find current fuel info

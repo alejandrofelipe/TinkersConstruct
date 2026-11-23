@@ -100,7 +100,7 @@ public record ProjectileExplosionModule(LevelingValue radius, float eflnBonus, L
     // also make sure we have not exploded yet, deals with reusable ammo
     if (radius > 0.5f && !projectile.getType().is(TinkerTags.EntityTypes.REUSABLE_AMMO)) {
       Level world = projectile.level();
-      if (!world.isClientSide) {
+      if (!world.isClientSide()) {
         float power = ProjectileWithPower.getDamage(projectile);
         // figure out who to blame for the damage
         Entity cause = projectile.getOwner();

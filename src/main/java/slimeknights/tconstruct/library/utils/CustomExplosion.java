@@ -263,7 +263,7 @@ public class CustomExplosion extends ServerExplosion {
   /** Runs the logic on the server, syncing to the client. */
   public void handleServer() {
     // based on ServerLevel#explode
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       if (!EventHooks.onExplosionStart(level, this)) {
         explode();
         finalizeExplosion(false);

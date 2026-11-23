@@ -84,7 +84,7 @@ public record SplashingModule(LevelingValue strength) implements ModifierModule,
           // applied before we do the effect to block recursive calls, notably ender might cause that
           player.getCooldowns().addCooldown(new ItemStack(tool.getItem()), (int)(20 / ConditionalStatModifierHook.getModifiedStat(tool, player, ToolStats.DRAW_SPEED)));
 
-          if (!world.isClientSide) {
+          if (!world.isClientSide()) {
             // for the main target, consume fluids
             float level = this.strength.compute(modifier);
             int numTargets = 0;
@@ -157,7 +157,7 @@ public record SplashingModule(LevelingValue strength) implements ModifierModule,
             player.getCooldowns().addCooldown(new ItemStack(tool.getItem()), (int)(20 / ConditionalStatModifierHook.getModifiedStat(tool, player, ToolStats.DRAW_SPEED)));
           }
 
-          if (!world.isClientSide) {
+          if (!world.isClientSide()) {
             float level = strength.compute(modifier);
             int numTargets = 0;
             BlockHitResult hit = context.getHitResult();

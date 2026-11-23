@@ -47,7 +47,7 @@ public class FancyItemFrameItem extends Item {
     }
 
     if (frame.survives()) {
-      if (!world.isClientSide) {
+      if (!world.isClientSide()) {
         frame.playPlacementSound();
         world.addFreshEntity(frame);
       }

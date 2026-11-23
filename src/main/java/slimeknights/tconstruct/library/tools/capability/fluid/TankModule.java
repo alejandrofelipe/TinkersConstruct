@@ -204,7 +204,7 @@ public class TankModule implements HookProvider, FluidModifierHook, VolatileData
         TransferResult result = FluidTransferHelper.interactWithStack(tank, slotStack, TransferDirection.REVERSE);
         // update held tank and slot item if something changed (either we have a result or the stack in the slot was shrunk)
         if (result != null) {
-          if (player.level().isClientSide) {
+          if (player.level().isClientSide()) {
             player.playSound(result.getSound());
           }
           helper.setFluid(heldTool, tank.getFluid());
@@ -224,7 +224,7 @@ public class TankModule implements HookProvider, FluidModifierHook, VolatileData
       TransferResult result = FluidTransferHelper.interactWithStack(tank, held, TransferDirection.AUTO);
       // update tank if something happened
       if (result != null) {
-        if (player.level().isClientSide) {
+        if (player.level().isClientSide()) {
           player.playSound(result.getSound());
         }
         helper.setFluid(slotTool, tank.getFluid());

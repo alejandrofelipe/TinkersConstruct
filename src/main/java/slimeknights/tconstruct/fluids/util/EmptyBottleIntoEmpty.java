@@ -27,7 +27,7 @@ public record EmptyBottleIntoEmpty(Supplier<Item> empty, CauldronInteraction fal
     if (!stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).is(Potions.WATER)) {
       return fallback.interact(state, level, pos, player, hand, stack);
     }
-    if (!level.isClientSide) {
+    if (!level.isClientSide()) {
       Item item = stack.getItem();
       player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(empty.get())));
       player.awardStat(Stats.USE_CAULDRON);

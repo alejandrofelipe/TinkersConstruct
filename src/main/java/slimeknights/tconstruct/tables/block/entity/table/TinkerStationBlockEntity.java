@@ -152,7 +152,7 @@ public class TinkerStationBlockEntity extends RetexturedTableBlockEntity impleme
     result = null;
     this.currentError = null;
 
-    if (!this.level.isClientSide && this.level.getServer() != null) {
+    if (!this.level.isClientSide() && this.level.getServer() != null) {
       RecipeManager manager = this.level.getServer().getRecipeManager();
 
       // first, try the cached recipe
@@ -227,7 +227,7 @@ public class TinkerStationBlockEntity extends RetexturedTableBlockEntity impleme
     // run the recipe, will shrink inputs
     // run both sides for the sake of shift clicking
     this.inventoryWrapper.setPlayer(player);
-    this.lastRecipe.value().updateInputs(result, inventoryWrapper, !level.isClientSide);
+    this.lastRecipe.value().updateInputs(result, inventoryWrapper, !level.isClientSide());
     this.inventoryWrapper.setPlayer(null);
 
     // remove the center slot item, just clear it entirely (if you want shrinking you should use the outer slots or ask nicely for a shrink amount hook)
@@ -292,7 +292,7 @@ public class TinkerStationBlockEntity extends RetexturedTableBlockEntity impleme
    */
   public void syncRecipe(Player player) {
     // must have a last recipe and a server level
-    if (this.lastRecipe != null && this.level != null && !this.level.isClientSide && player instanceof ServerPlayer server) {
+    if (this.lastRecipe != null && this.level != null && !this.level.isClientSide() && player instanceof ServerPlayer server) {
       TinkerNetwork.getInstance().sendTo(new UpdateTinkerStationRecipePacket(this.worldPosition, this.lastRecipe.id().location()), server);
     }
   }

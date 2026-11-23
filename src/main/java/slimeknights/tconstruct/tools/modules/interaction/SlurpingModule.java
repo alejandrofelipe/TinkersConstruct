@@ -85,7 +85,7 @@ public record SlurpingModule(LevelingValue strength, LevelingInt duration) imple
       }
       addFluidParticles(entity, fluid, 16);
       // apply effect
-      if (!entity.level().isClientSide) {
+      if (!entity.level().isClientSide()) {
         Player player = asPlayer(entity);
         int consumed = slurp(fluid, modifier, entity, player, FluidAction.EXECUTE);
         if (consumed > 0 && (player == null || !player.isCreative())) {
@@ -204,7 +204,7 @@ public record SlurpingModule(LevelingValue strength, LevelingInt duration) imple
     IToolStackView replacement = context.getReplacementTool();
     // modifier list changing is a good heuristic for tool changing, avoids deleting during the slurp
     Level level = context.getLevel();
-    if (!level.isClientSide && (replacement == null || replacement.getItem() != tool.getItem() || !replacement.getModifiers().equals(tool.getModifiers()))) {
+    if (!level.isClientSide() && (replacement == null || replacement.getItem() != tool.getItem() || !replacement.getModifiers().equals(tool.getModifiers()))) {
       tool.getPersistentData().remove(modifier.getId().getLocation());
     }
   }
