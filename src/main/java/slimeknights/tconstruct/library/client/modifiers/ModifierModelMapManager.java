@@ -51,9 +51,10 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
     super(JsonHelper.DEFAULT_GSON, FOLDER, id -> new Builder());
   }
 
-  // PORT 1.21.4: reload no longer receives ProfilerFiller args
+  // PORT 1.21.4: reload no longer receives ProfilerFiller args; 1.21.9: the resource manager comes from the SharedState
   @Override
-  public CompletableFuture<Void> reload(PreparationBarrier stage, ResourceManager resourceManager, Executor backgroundExecutor, Executor gameExecutor) {
+  public CompletableFuture<Void> reload(SharedState sharedState, Executor backgroundExecutor, PreparationBarrier stage, Executor gameExecutor) {
+    ResourceManager resourceManager = sharedState.resourceManager();
     // run in the first stage instead of the second stage
     return CompletableFuture.runAsync(() -> {
       if (!ModLoader.hasErrors()) {

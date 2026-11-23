@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.common.data.loot;
 
+import com.google.gson.JsonPrimitive;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.advancements.critereon.EnchantmentPredicate;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
@@ -17,6 +19,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.MangrovePropaguleBlock;
+import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -32,6 +35,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePrope
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.MatchTool;
 import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
+import net.minecraft.world.level.storage.loot.providers.nbt.NbtProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.neoforged.neoforge.common.ItemAbilities;
@@ -64,6 +68,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class BlockLootTableProvider extends BlockLootSubProvider {
+  /** 1.21.9: {@code ContextNbtProvider.BLOCK_ENTITY} was removed and the block entity source has no public factory, so decode it like a loot table would */
+  private static final NbtProvider BLOCK_ENTITY_NBT = ContextNbtProvider.INLINE_CODEC.parse(JsonOps.INSTANCE, new JsonPrimitive(LootContext.BlockEntityTarget.BLOCK_ENTITY.getSerializedName())).getOrThrow();
   protected BlockLootTableProvider(HolderLookup.Provider registries) {
     super(Set.of(), FeatureFlags.REGISTRY.allFlags(), registries);
   }
@@ -140,14 +146,14 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
     // chests
     // tinker chest - name and color
     this.add(TinkerTables.tinkersChest.get(), block -> droppingWithFunctions(block, builder ->
-      builder.apply(COPY_NAME).apply(CopyCustomDataFunction.copyData(ContextNbtProvider.BLOCK_ENTITY).copy(TinkersChestBlockEntity.TAG_CHEST_COLOR, "display.color"))));
+      builder.apply(COPY_NAME).apply(CopyCustomDataFunction.copyData(BLOCK_ENTITY_NBT).copy(TinkersChestBlockEntity.TAG_CHEST_COLOR, "display.color"))));
     // part chest - just name
     this.add(TinkerTables.partChest.get(), block ->
       droppingWithFunctions(block, builder ->
         builder.apply(COPY_NAME)));
     // cast chest - name and inventory
     this.add(TinkerTables.castChest.get(), block -> droppingWithFunctions(block, builder ->
-      builder.apply(COPY_NAME).apply(CopyCustomDataFunction.copyData(ContextNbtProvider.BLOCK_ENTITY).copy("Items", "TinkerData.Items"))));
+      builder.apply(COPY_NAME).apply(CopyCustomDataFunction.copyData(BLOCK_ENTITY_NBT).copy("Items", "TinkerData.Items"))));
 
     // tables with legs
     this.dropTable(TinkerTables.craftingStation.get());
@@ -270,7 +276,7 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
     this.dropTable(TinkerSmeltery.searedDuct.get());
 
     Function<Block, LootTable.Builder> dropTank = block -> droppingWithFunctions(block, builder ->
-      builder.apply(COPY_NAME).apply(CopyCustomDataFunction.copyData(ContextNbtProvider.BLOCK_ENTITY).copy(NBTTags.TANK, NBTTags.TANK)));
+      builder.apply(COPY_NAME).apply(CopyCustomDataFunction.copyData(BLOCK_ENTITY_NBT).copy(NBTTags.TANK, NBTTags.TANK)));
     TinkerSmeltery.searedTank.forEach(block -> this.add(block, dropTank));
     this.add(TinkerSmeltery.searedFluidCannon.get(), dropTank);
     this.add(TinkerSmeltery.scorchedFluidCannon.get(), dropTank);
@@ -316,7 +322,7 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
 
     Function<Block, LootTable.Builder> dropTank = block -> droppingWithFunctions(block, builder ->
       builder.apply(COPY_NAME)
-             .apply(CopyCustomDataFunction.copyData(ContextNbtProvider.BLOCK_ENTITY).copy(NBTTags.TANK, NBTTags.TANK)));
+             .apply(CopyCustomDataFunction.copyData(BLOCK_ENTITY_NBT).copy(NBTTags.TANK, NBTTags.TANK)));
     TinkerSmeltery.scorchedTank.forEach(block -> this.add(block, dropTank));
     this.add(TinkerSmeltery.scorchedLantern.get(), dropTank);
 
@@ -422,9 +428,9 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
   }
 
   /** Copies a material block texture */
-  private final LootItemFunction.Builder COPY_NAME = CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY);
+  private final LootItemFunction.Builder COPY_NAME = CopyNameFunction.copyName(new CopyNameFunction.Source(LootContext.BlockEntityTarget.BLOCK_ENTITY.getParam()));
   /** Copies a material block texture */
-  private final LootItemFunction.Builder COPY_MATERIAL = CopyCustomDataFunction.copyData(ContextNbtProvider.BLOCK_ENTITY).copy(IMaterialItem.MATERIAL_TAG, IMaterialItem.MATERIAL_TAG);
+  private final LootItemFunction.Builder COPY_MATERIAL = CopyCustomDataFunction.copyData(BLOCK_ENTITY_NBT).copy(IMaterialItem.MATERIAL_TAG, IMaterialItem.MATERIAL_TAG);
   /** Properties for a standard table */
   private final Function<Block, LootTable.Builder> ADD_TABLE = block -> droppingWithFunctions(block, (builder) ->
     builder.apply(COPY_NAME).apply(RetexturedLootFunction::new));

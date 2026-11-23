@@ -4,6 +4,7 @@ import net.minecraft.client.renderer.texture.atlas.sources.DirectoryLister;
 import net.minecraft.client.renderer.texture.atlas.sources.PalettedPermutations;
 import net.minecraft.client.renderer.texture.atlas.sources.SingleFile;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -61,7 +62,7 @@ public class TinkerSpriteSourceProvider extends SpriteSourceProvider {
     // custom armor "modifier" textures that use the trim materials
     List<ResourceLocation> customItemTrims = Stream.of("item/tool/armor/travelers/goggles/trim", "item/tool/armor/slime/wings/trim").map(TConstruct::getResource).toList();
 
-    SourceList blocks = atlas(BLOCKS_ATLAS)
+    SourceList blocks = atlas(AtlasIds.BLOCKS)
       // We load our fluid textures from here
       .addSource(directory("fluid"))
       // PORT 1.21.4: material part / tool textures are looked up dynamically by name at bake time

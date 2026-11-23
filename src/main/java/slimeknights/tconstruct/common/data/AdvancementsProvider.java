@@ -521,7 +521,7 @@ public class AdvancementsProvider extends GenericDataProvider {
       Component.translatable(makeTranslationKey(name) + ".title"),
       Component.translatable(makeTranslationKey(name) + ".description"),
       // 1.21.5: backgrounds are client assets, the id is resolved under textures/
-      Optional.ofNullable(background).map(ClientAsset::new), frame, true, frame != AdvancementType.TASK, false));
+      Optional.ofNullable(background).map(ClientAsset.ResourceTexture::new), frame, true, frame != AdvancementType.TASK, false));
     consumer.accept(builder);
     AdvancementHolder holder = builder.build(name);
     this.advancements.add(holder);

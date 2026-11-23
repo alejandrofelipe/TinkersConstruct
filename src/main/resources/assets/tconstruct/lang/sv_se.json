@@ -1606,7 +1606,7 @@
   
   "_comment": "Modifiers",
   
-  "key.categories.tconstruct": "Tinkers' Construct",
+  "key.category.tconstruct.main": "Tinkers' Construct",
   "key.tconstruct.helmet_interact": "Hjälminteraktion",
   "key.tconstruct.leggings_interact": "Byxinteraktion",
   

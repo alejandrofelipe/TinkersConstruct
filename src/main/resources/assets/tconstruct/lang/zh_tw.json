@@ -1694,7 +1694,7 @@
 
   "_comment": "Modifiers",
 
-  "key.categories.tconstruct": "匠魂",
+  "key.category.tconstruct.main": "匠魂",
   "key.tconstruct.helmet_interact": "頭盔互動",
   "key.tconstruct.leggings_interact": "護腿互動",
 

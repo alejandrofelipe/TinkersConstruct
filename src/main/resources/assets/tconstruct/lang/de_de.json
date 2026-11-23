@@ -1536,7 +1536,7 @@
 
 "_comment": "Modifikatoren",
 
-"key.categories.tconstruct": "Tüftler-Konstrukt",
+"key.category.tconstruct.main": "Tüftler-Konstrukt",
 "key.tconstruct.helmet_interact": "Helminteraktion",
 "key.tconstruct.leggings_interact": "Leggings-Interaktion",
 
