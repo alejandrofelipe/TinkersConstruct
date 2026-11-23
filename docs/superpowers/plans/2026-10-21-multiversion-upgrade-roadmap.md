@@ -46,6 +46,18 @@ releases piggyback onto the next checkpoint), gating each with the full test bat
   kept open: stackable + damageable tools vs `ItemStack.validateStrict` (creative-slot packet). Release targets: Mantle
   `1.15` / Tinkers `3.14.0`, tags `v1.21.8-1.15` / `v1.21.8-3.14.0`. Gotchas:
   [`repo/docs/migration/1.21.5-to-1.21.8.md`](../../../../repo/docs/migration/1.21.5-to-1.21.8.md).
+- **M5 lands on 1.21.10 / NF 21.10.64 (user decision, 2026-11-23) — folds 1.21.9.** NeoForge 21.9 never left beta and
+  JEI abandoned 1.21.9; 1.21.10 has JEI `26.3.0.31` (new major), Crafting Tweaks `21.10.1` + Balm `21.10.11`, JSON Things
+  `0.16.0` (**re-added in M5's compat phase**), Parchment `2025.10.12`; IE stays excluded. Toolchain unchanged (NeoGradle
+  7.1.39 / Gradle 9.2.1 / Java 21 verified on 1.21.10). Mantle baseline: 100 compile errors / 48 files. The roadmap row
+  (`YawProvider`/`SkinTextures`, "baixo/médio") was wrong again: the walls are the **NeoForge transfer API rework**
+  (`ResourceHandler`/`ItemAccess`/transactions; the old `Capabilities.FluidHandler/ItemHandler/EnergyStorage` are
+  removed and NeoForge only bridges new → legacy), **two-phase rendering** (BER/entity/layer/particle
+  `extractRenderState` + `submit(SubmitNodeCollector)`) and **event-based input**, plus a mechanical sweep
+  (`Level#isClientSide()`, FML `getDist()`, reload-listener `SharedState`, …). Transfer decision (user): first only
+  registration/lookup on the new capabilities with the legacy handlers kept (Mantle adds a small legacy → new adapter),
+  then a separate full-migration phase inside M5. Branch `1.21.10`. Detailed plan:
+  [`2026-11-23-m5-1.21.10-port.md`](2026-11-23-m5-1.21.10-port.md).
 
 ## Global constraints (apply to every milestone)
 
@@ -74,8 +86,8 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
 | ~~**M2**~~ | ~~1.21.4 / NF 21.4~~ | — | **Merged into M1** (2026-10-21) — JEI/IE skipped 1.21.3, so M1 lands directly on 1.21.4 | — |
 | **M3** | 1.21.5 / NF 21.5 | — | 🔴 **Data components for weapons/tools/armor**; model-loading rewrite; `@Mod` constructed before MC | 🔴 **ENORME** — the core tool/armor/stat system |
 | **M4** | 1.21.8 / NF 21.8.57 (was 1.21.6) | 1.21.6, 1.21.7 | 🔴 Serialization `CompoundTag` → **`ValueInput`/`ValueOutput`**; **deferred GUI** (`RenderPipelines` blits, `Matrix3x2fStack`, PiP, GUI item atlas); UBO shaders + fog; tag datagen appenders | 🟠 **Alto** (smaller than predicted — tool NBT untouched; the cost was silent GUI breakage) |
-| **M5** | 1.21.9 / NF 21.9 | — (1.21.7/1.21.8 moved into M4) | Keybind categories string-based; `SkinTextures`/`PlayerSkin` relocation; waypoint API; `YawProvider` | **Baixo/médio** — client/keybinds |
-| **M6** | 1.21.11 / NF 21.11 | 1.21.10 | **`ResourceLocation` → `Identifier`** (Mojang rename); `FMLLoader.isProduction()` removed | 🟠 **Mecânico mas pervasivo** (MaterialId/ModifierId já saíram de ResourceLocation no 1.21.1 → ajuda) |
+| **M5** | 1.21.10 / NF 21.10.64 (was 1.21.9) | 1.21.9 | 🔴 NeoForge **transfer API rework** (`ResourceHandler<FluidResource/ItemResource>`, `ItemAccess`, transactions; old capabilities removed); **two-phase rendering** (BER/entity/layer/particle extract + `submit`, `ExtractBlockOutlineRenderStateEvent`, `AtlasManager`); **event-based input** (`MouseButtonEvent`/`KeyEvent`/`InputWithModifiers`, `KeyMapping.Category`); `Level#isClientSide()`, `Entity#getServer()` removed, reload `SharedState`, FML `getDist()`/`isProduction()`, `TypedEntityData`, `ContainerUser`, `entityInside(…, boolean)` | 🟠 **Médio-alto** — Mantle 100 errors / 48 files; Tinkers est. 450–650 (half mechanical `isClientSide`); transfer in two steps (bridge first, full migration later in M5) |
+| **M6** | 1.21.11 / NF 21.11 | — (1.21.10 moved into M5) | **`ResourceLocation` → `Identifier`** (Mojang rename); `FMLLoader.isProduction()` removed | 🟠 **Mecânico mas pervasivo** (MaterialId/ModifierId já saíram de ResourceLocation no 1.21.1 → ajuda). Ecosystem exists (checked 2026-11-23): NF `21.11.48`, JEI `27.55.0.122`, Crafting Tweaks `21.11.5`, Balm `21.11.9.1`, Parchment `2025.12.20`, JSON Things `0.17.0` |
 | **M7** | 26.2 / NF 26.2 | 26.1 | **Java 25**; new-series changes | **Médio** — toolchain bump + sweep |
 
 > Sources to pull each milestone's exact checklist from: NeoForge release notes
@@ -165,6 +177,6 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
 - [x] **M3** — 1.21.5 / NF 21.5.101 🏁 2026-10-24 — Mantle `1.14` / Tinkers `3.13.0`, tags `v1.21.5-1.14` / `v1.21.5-3.13.0`; battery: build + 673 unit + 40 gametest (39 + vanilla `always_pass`) + 15/15 uitest (visual verified). Plan [`2026-10-24-m3-1.21.5-port.md`](2026-10-24-m3-1.21.5-port.md); gotchas [`repo/docs/migration/1.21.4-to-1.21.5.md`](../../../../repo/docs/migration/1.21.4-to-1.21.5.md)
 - [x] **M3 patch** — Tinkers `3.13.1` (2026-10-24): mob head item rendering + legacy tool model cleanup (16 uitest)
 - [x] **M4** — **1.21.8** / NF 21.8.57 (1.21.6 + 1.21.7 folded in) 🔴 — **FECHADO 🏁 2026-11-23**: Fases 0–7 ✅ (2026-10-24 → 2026-11-23), release Mantle `1.15` / Tinkers `3.14.0`, tags `v1.21.8-1.15` / `v1.21.8-3.14.0` pushadas; battery: build + 674 unit + 58 gametest (57 + vanilla `always_pass`) + 31/31 uitest (visual verified vs 1.21.5 reference). Plano [`2026-10-24-m4-1.21.8-port.md`](2026-10-24-m4-1.21.8-port.md); gotchas [`repo/docs/migration/1.21.5-to-1.21.8.md`](../../../../repo/docs/migration/1.21.5-to-1.21.8.md)
-- [ ] **M5** — 1.21.9 / NF 21.9 (1.21.7/1.21.8 moved into M4)
-- [ ] **M6** — 1.21.11 / NF 21.11
+- [ ] **M5** — **1.21.10** / NF 21.10.64 (1.21.9 folded in) 🟠 — **em andamento**: Fase 0 ✅ 2026-11-23 (pins, toolchain verificado, baseline Mantle 100 erros / 48 arquivos, assinaturas verificadas no decompilado), branch `1.21.10`; próximo: Fase 1 (Mantle compila). Plano [`2026-11-23-m5-1.21.10-port.md`](2026-11-23-m5-1.21.10-port.md)
+- [ ] **M6** — 1.21.11 / NF 21.11 (1.21.10 moved into M5)
 - [ ] **M7** — 26.1 → 26.2 / NF 26.2 (Java 25) 🏁 target
