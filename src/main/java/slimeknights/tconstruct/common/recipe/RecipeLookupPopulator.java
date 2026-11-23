@@ -14,6 +14,7 @@ import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeLookup;
 import slimeknights.tconstruct.library.recipe.modifiers.ModifierRecipeLookup;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Populates static recipe lookups from the loaded recipes at reload, replacing recipe-constructor
@@ -60,17 +61,24 @@ public final class RecipeLookupPopulator {
   /**
    * Recipe types the client needs full recipes for: GUI block entities ({@link slimeknights.tconstruct.tables.block.entity.table.PartBuilderBlockEntity},
    * {@link slimeknights.tconstruct.tables.block.entity.table.ModifierWorktableBlockEntity}, casting tables), container
-   * wrappers (material resolution), recipe-sync packets, and the migrated static lookups populated in {@link #populate}.
+   * wrappers (material resolution), recipe-sync packets, the migrated static lookups populated in {@link #populate}, and every
+   * type the JEI plugin lists (alloying, entity melting and severing are only read client side by JEI).
    * 1.21.4 vanilla only syncs {@code RecipeDisplay}s, so these are requested explicitly via {@link OnDatapackSyncEvent#sendRecipes}.
    */
   private static final RecipeType<?>[] CLIENT_SYNCED_TYPES = {
     TinkerRecipeTypes.FUEL.get(), TinkerRecipeTypes.MELTING.get(), TinkerRecipeTypes.MATERIAL.get(),
+    TinkerRecipeTypes.ALLOYING.get(), TinkerRecipeTypes.ENTITY_MELTING.get(), TinkerRecipeTypes.SEVERING.get(),
     TinkerRecipeTypes.CASTING_TABLE.get(), TinkerRecipeTypes.CASTING_BASIN.get(),
     TinkerRecipeTypes.MOLDING_TABLE.get(), TinkerRecipeTypes.MOLDING_BASIN.get(),
     TinkerRecipeTypes.TINKER_STATION.get(), TinkerRecipeTypes.MODIFIER_WORKTABLE.get(),
     TinkerRecipeTypes.PART_BUILDER.get(), TinkerRecipeTypes.DATA.get(),
     RecipeType.CRAFTING,
   };
+
+  /** Recipe types sent to the client, see {@link #CLIENT_SYNCED_TYPES}; exposed for the recipe sync gametests. */
+  public static List<RecipeType<?>> clientSyncedTypes() {
+    return List.of(CLIENT_SYNCED_TYPES);
+  }
 
   /** Client: recipes synced from the server. */
   public static void onRecipesUpdated(RecipesReceivedEvent event) {
