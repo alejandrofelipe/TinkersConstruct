@@ -40,11 +40,9 @@ import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.apache.commons.lang3.mutable.MutableInt;
 import slimeknights.mantle.command.GeneratePackHelper;
@@ -62,6 +60,7 @@ import slimeknights.mantle.util.JsonHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeBuilder;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeLookup;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeLookup.MeltingFluid;
 
@@ -473,12 +472,10 @@ public class GenerateMeltingRecipesCommand {
       }
       // fluid capability check
       try {
-        IFluidHandlerItem capability = stack.getCapability(Capabilities.FluidHandler.ITEM);
-        if (capability != null) {
-          FluidStack contained = capability.getFluidInTank(0);
-          if (!contained.isEmpty()) {
-            return MeltingResult.from(contained);
-          }
+        // contents of a single container
+        FluidStack contained = TransferUtil.getFirstFluid(stack);
+        if (!contained.isEmpty()) {
+          return MeltingResult.from(contained);
         }
       } catch (Exception e) {
         TConstruct.LOG.error("Failed to read fluid handler capability from {}", item, e);

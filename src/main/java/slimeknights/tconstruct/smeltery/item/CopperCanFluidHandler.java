@@ -1,119 +1,63 @@
 package slimeknights.tconstruct.smeltery.item;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
+import net.neoforged.neoforge.fluids.SimpleFluidContent;
+import net.neoforged.neoforge.transfer.ItemAccessResourceHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.tconstruct.library.recipe.FluidValues;
+import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
-import javax.annotation.Nonnull;
+/**
+ * Fluid handler of a copper can: holds exactly one ingot of any fluid, filled and drained whole.
+ * <p>
+ * PORT 1.21.10 (transfer step 1): native {@link ItemAccessResourceHandler}, the fluid lives in the item's components and every change goes
+ * through the {@link ItemAccess} (exchanging the item), so it is transactional. Like the legacy handler, a stack of cans is filled or drained
+ * all together: amounts are totals over the accessed items, each holding one ingot.
+ */
+public class CopperCanFluidHandler extends ItemAccessResourceHandler<FluidResource> {
+  public CopperCanFluidHandler(ItemAccess access) {
+    super(access, 1);
+  }
 
-/** Capability handler instance for the copper can item */
-@AllArgsConstructor
-public class CopperCanFluidHandler implements IFluidHandlerItem {
-  @Getter
-  private final ItemStack container;
-
-
-  /* Tank properties */
-
-  @Override
-  public int getTanks() {
-    return 1;
+  /** Gets the fluid content of the item, empty if not a can */
+  private static SimpleFluidContent getContent(ItemResource item) {
+    if (!item.is(TinkerSmeltery.copperCan)) {
+      return SimpleFluidContent.EMPTY;
+    }
+    return item.getOrDefault(TinkerSmeltery.COPPER_CAN_FLUID.get(), SimpleFluidContent.EMPTY);
   }
 
   @Override
-  public boolean isFluidValid(int tank, FluidStack stack) {
-    return true;
-  }
-
-  /** Gets the stack size sensitive capacity of the container */
-  private int getCapacity() {
-    // scale up by the stack size to prevent dupes with people trying to fill a stack of containers
-    return FluidValues.INGOT * container.getCount();
+  protected FluidResource getResourceFrom(ItemResource item, int index) {
+    SimpleFluidContent content = getContent(item);
+    return content.isEmpty() ? FluidResource.EMPTY : FluidResource.of(content.copy());
   }
 
   @Override
-  public int getTankCapacity(int tank) {
-    return getCapacity();
+  protected int getAmountFrom(ItemResource item, int index) {
+    return getContent(item).isEmpty() ? 0 : FluidValues.INGOT;
   }
-
-  /** Gets the contained fluid (1 ingot), or empty */
-  private FluidStack getContained() {
-    return CopperCanItem.getFluidStack(container);
-  }
-
-  @Nonnull
-  @Override
-  public FluidStack getFluidInTank(int tank) {
-    FluidStack contained = getContained();
-    if (contained.isEmpty()) {
-      return FluidStack.EMPTY;
-    }
-    return contained.copyWithAmount(getCapacity());
-  }
-
-
-  /* Interaction */
 
   @Override
-  public int fill(FluidStack resource, FluidAction action) {
-    // must not be filled, must have enough
-    int capacity = getCapacity();
-    if (!getContained().isEmpty() || resource.getAmount() < capacity) {
-      return 0;
+  protected ItemResource update(ItemResource item, int index, FluidResource resource, int amount) {
+    if (amount == 0) {
+      return item.without(TinkerSmeltery.COPPER_CAN_FLUID.get());
     }
-    // update fluid and return
-    if (action.execute()) {
-      // this is not size sensitive so no need to shrink resource for stack size
-      CopperCanItem.setFluid(container, resource);
+    // cans only hold a whole ingot
+    if (amount != FluidValues.INGOT) {
+      return ItemResource.EMPTY;
     }
-    return capacity;
+    return item.with(TinkerSmeltery.COPPER_CAN_FLUID.get(), SimpleFluidContent.copyOf(resource.toStack(FluidValues.INGOT)));
   }
 
-  @Nonnull
   @Override
-  public FluidStack drain(FluidStack resource, FluidAction action) {
-    // must be draining at least an ingot
-    int capacity = getCapacity();
-    if (resource.isEmpty() || resource.getAmount() < capacity) {
-      return FluidStack.EMPTY;
-    }
-    // must have a fluid, must match what they are draining (fluid and components)
-    FluidStack contained = getContained();
-    if (contained.isEmpty()) {
-      return FluidStack.EMPTY;
-    }
-    FluidStack output = contained.copyWithAmount(capacity);
-    if (!FluidStack.isSameFluidSameComponents(resource, output)) {
-      return FluidStack.EMPTY;
-    }
-    // output 1 ingot times stack size
-    if (action.execute()) {
-      CopperCanItem.setFluid(container, FluidStack.EMPTY);
-    }
-    return output;
+  public boolean isValid(int index, FluidResource resource) {
+    return itemAccess.getResource().is(TinkerSmeltery.copperCan);
   }
 
-  @Nonnull
   @Override
-  public FluidStack drain(int maxDrain, FluidAction action) {
-    // must be draining at least an ingot
-    int capacity = getCapacity();
-    if (maxDrain < capacity) {
-      return FluidStack.EMPTY;
-    }
-    // must have a fluid
-    FluidStack contained = getContained();
-    if (contained.isEmpty()) {
-      return FluidStack.EMPTY;
-    }
-    // output 1 ingot
-    FluidStack output = contained.copyWithAmount(capacity);
-    if (action.execute()) {
-      CopperCanItem.setFluid(container, FluidStack.EMPTY);
-    }
-    return output;
+  protected int getCapacity(int index, FluidResource resource) {
+    return FluidValues.INGOT;
   }
 }

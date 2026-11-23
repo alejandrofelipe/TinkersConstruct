@@ -12,6 +12,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.SimpleFluidContent;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.recipe.FluidValues;
@@ -29,8 +30,8 @@ public class CopperCanItem extends Item {
   }
 
   /** Creates the fluid handler for the given stack; registered centrally on {@code RegisterCapabilitiesEvent}. */
-  public CopperCanFluidHandler getFluidHandler(ItemStack stack) {
-    return new CopperCanFluidHandler(stack);
+  public CopperCanFluidHandler getFluidHandler(ItemAccess access) {
+    return new CopperCanFluidHandler(access);
   }
 
   // PORT 1.21.4: IItemExtension#hasCraftingRemainingItem/getCraftingRemainingItem(ItemStack) were removed; a filled

@@ -5,7 +5,10 @@ import net.neoforged.neoforge.event.furnace.FurnaceFuelBurnTimeEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.fml.common.EventBusSubscriber;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.fluids.util.ConstantFluidContainerWrapper;
@@ -26,10 +29,10 @@ public class FluidEvents {
 
   /**
    * Creates the fluid handler for the vanilla powder snow bucket.
-   * PORT M3: register this on RegisterCapabilitiesEvent via
-   * {@code event.registerItem(Capabilities.FluidHandler.ITEM, FluidEvents::powderSnowHandler, Items.POWDER_SNOW_BUCKET)}.
+   * Registered on RegisterCapabilitiesEvent via
+   * {@code event.registerItem(Capabilities.Fluid.ITEM, FluidEvents::powderSnowHandler, Items.POWDER_SNOW_BUCKET)}.
    */
-  public static IFluidHandlerItem powderSnowHandler(net.minecraft.world.item.ItemStack stack, Void ctx) {
-    return new ConstantFluidContainerWrapper(new FluidStack(TinkerFluids.powderedSnow.get(), FluidType.BUCKET_VOLUME), stack, Items.BUCKET.getDefaultInstance());
+  public static ResourceHandler<FluidResource> powderSnowHandler(net.minecraft.world.item.ItemStack stack, ItemAccess access) {
+    return new ConstantFluidContainerWrapper(new FluidStack(TinkerFluids.powderedSnow.get(), FluidType.BUCKET_VOLUME), access, ItemResource.of(Items.BUCKET));
   }
 }

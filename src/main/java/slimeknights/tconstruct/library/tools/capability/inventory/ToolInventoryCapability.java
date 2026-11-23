@@ -14,6 +14,11 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ItemCapability;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.TransferPreconditions;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import slimeknights.mantle.inventory.EmptyItemHandler;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -29,6 +34,8 @@ import slimeknights.tconstruct.library.tools.definition.module.display.ToolNameH
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
+import slimeknights.tconstruct.library.tools.nbt.ToolStack;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
 
 import javax.annotation.Nonnull;
@@ -36,6 +43,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -120,7 +128,8 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
 
   /** If true, the given stack is blacklisted from being stored in a tool */
   public static boolean isBlacklisted(ItemStack stack) {
-    return !stack.getItem().canFitInsideContainerItems() || stack.is(TinkerTags.Items.TOOL_INVENTORY_BLACKLIST) || stack.getCapability(Capabilities.ItemHandler.ITEM) != null;
+    // PORT 1.21.10: transaction safe item capability check, as the native handler validates inserts with this
+    return !stack.getItem().canFitInsideContainerItems() || stack.is(TinkerTags.Items.TOOL_INVENTORY_BLACKLIST) || TransferUtil.hasItemHandler(stack);
   }
 
   @Override
@@ -486,26 +495,126 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
 
   /** Provider for an inventory tool capability */
   public static class Provider implements IToolCapabilityProvider {
-    private final ToolInventoryCapability handler;
     @SuppressWarnings("unused")
-    public Provider(ItemStack stack, Supplier<? extends IToolStackView> tool) {
-      this.handler = new ToolInventoryCapability(tool);
+    public Provider(ItemStack stack, Supplier<? extends IToolStackView> tool) {}
+
+    @Nullable
+    @Override
+    public <T> T getCapability(IToolStackView tool, ItemCapability<T, ?> cap) {
+      // the transfer capability needs the item access
+      return null;
     }
 
     @Nullable
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getCapability(IToolStackView tool, ItemCapability<T, ?> cap) {
-      if (cap == Capabilities.ItemHandler.ITEM && tool.getVolatileData().getInt(TOTAL_SLOTS) > 0) {
-        return (T) handler;
+    public <T> T getCapability(IToolStackView tool, ItemCapability<T, ?> cap, @Nullable ItemAccess access) {
+      if (cap == Capabilities.Item.ITEM && access != null && tool.getVolatileData().getInt(TOTAL_SLOTS) > 0) {
+        return (T) new ItemHandler(access);
       }
       return null;
     }
+  }
+
+  /**
+   * Native item handler of the tool in an item access, the form of {@code Capabilities.Item.ITEM}.
+   * <p>
+   * PORT 1.21.10 (transfer step 1): reads go through the tool's inventory hooks on a detached copy of the tool; every change runs the hooks
+   * on a detached copy, then exchanges the tool for the updated one through the access, so it is transactional and a simulation leaves the
+   * tool untouched. Only a single accessed tool can be changed, as stacked tools would share one inventory.
+   */
+  public record ItemHandler(ItemAccess access) implements ResourceHandler<ItemResource> {
+    /** Creates a legacy view of a detached copy of the given tool stack */
+    private static ToolInventoryCapability view(ToolStack tool) {
+      return new ToolInventoryCapability(() -> tool);
+    }
+
+    /** Creates a view of a detached copy of the accessed tool */
+    private ToolInventoryCapability view() {
+      return view(ToolStack.copyFrom(access.getResource().toStack()));
+    }
 
     @Override
-    public void clearCache() {
-      handler.clearCache();
+    public int size() {
+      return access.getResource().isEmpty() ? 0 : view().getSlots();
     }
+
+    @Override
+    public ItemResource getResource(int index) {
+      Objects.checkIndex(index, size());
+      return ItemResource.of(view().getStackInSlot(index));
+    }
+
+    @Override
+    public long getAmountAsLong(int index) {
+      Objects.checkIndex(index, size());
+      return view().getStackInSlot(index).getCount();
+    }
+
+    @Override
+    public long getCapacityAsLong(int index, ItemResource resource) {
+      Objects.checkIndex(index, size());
+      ToolInventoryCapability view = view();
+      if (!resource.isEmpty() && !view.isItemValid(index, resource.toStack())) {
+        return 0;
+      }
+      int limit = view.getSlotLimit(index);
+      return resource.isEmpty() ? limit : Math.min(limit, resource.getMaxStackSize());
+    }
+
+    @Override
+    public boolean isValid(int index, ItemResource resource) {
+      Objects.checkIndex(index, size());
+      return view().isItemValid(index, resource.toStack());
+    }
+
+    @Override
+    public int insert(int index, ItemResource resource, int amount, TransactionContext transaction) {
+      Objects.checkIndex(index, size());
+      TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+      if (access.getAmount() != 1) {
+        return 0;
+      }
+      ItemStack copy = access.getResource().toStack();
+      ToolStack tool = ToolStack.copyFrom(copy);
+      int inserted = amount - view(tool).insertItem(index, resource.toStack(amount), false).getCount();
+      if (inserted <= 0) {
+        return 0;
+      }
+      return access.exchange(ItemResource.of(tool.updateStack(copy)), 1, transaction) == 1 ? inserted : 0;
+    }
+
+    @Override
+    public int extract(int index, ItemResource resource, int amount, TransactionContext transaction) {
+      Objects.checkIndex(index, size());
+      TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+      if (access.getAmount() != 1) {
+        return 0;
+      }
+      ItemStack copy = access.getResource().toStack();
+      ToolStack tool = ToolStack.copyFrom(copy);
+      ToolInventoryCapability view = view(tool);
+      if (!resource.matches(view.getStackInSlot(index))) {
+        return 0;
+      }
+      int extracted = view.extractItem(index, amount, false).getCount();
+      if (extracted <= 0) {
+        return 0;
+      }
+      return access.exchange(ItemResource.of(tool.updateStack(copy)), 1, transaction) == 1 ? extracted : 0;
+    }
+  }
+
+  /**
+   * Gets the legacy handler over the real stacks of the given tool, for menus, when the tool exposes the native item capability.
+   * PORT 1.21.10: menus need the real stacks, which the native capability's legacy bridge does not give. Note no tool item registers the
+   * capability yet, as in 1.21.8, so this is empty for now.
+   */
+  public static IItemHandler getMenuHandler(ItemStack stack) {
+    if (!TransferUtil.hasItemHandler(stack)) {
+      return EmptyItemHandler.INSTANCE;
+    }
+    return new ToolInventoryCapability(() -> ToolStack.from(stack));
   }
 
 
@@ -536,8 +645,7 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
 
   /** Opens the tool inventory container if an inventory is present on the given tool */
   public static InteractionResult tryOpenContainer(ItemStack stack, @Nullable IToolStackView tool, ToolDefinition definition, Player player, int slotIndex) {
-    IItemHandler cap = stack.getCapability(Capabilities.ItemHandler.ITEM);
-    IItemHandler handler = cap instanceof IItemHandlerModifiable ? cap : EmptyItemHandler.INSTANCE;
+    IItemHandler handler = getMenuHandler(stack);
     // open if we have any slots or we have a crafting table
     if (handler.getSlots() > 0 || ModifierUtil.checkVolatileFlag(stack, CRAFTING_TABLE) || ModifierUtil.checkVolatileFlag(stack, INVENTORY_CRAFTING)) {
       if (player instanceof ServerPlayer serverPlayer) {

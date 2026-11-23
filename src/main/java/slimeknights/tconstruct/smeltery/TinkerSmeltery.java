@@ -503,10 +503,10 @@ public final class TinkerSmeltery extends TinkerModule {
     event.registerBlockEntity(Capabilities.Fluid.BLOCK, lantern.get(),     (be, side) -> be.getFluidHandler(side));
 
     // item fluid handlers: the copper can and every tank-style block item carry fluid in NBT
-    event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((CopperCanItem) stack.getItem()).getFluidHandler(stack), copperCan.get());
-    searedTank.forEach(block   -> event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> new TankItemFluidHandler((TankItem) stack.getItem(), stack), block));
-    scorchedTank.forEach(block -> event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> new TankItemFluidHandler((TankItem) stack.getItem(), stack), block));
-    event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> new TankItemFluidHandler((TankItem) stack.getItem(), stack),
+    event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> ((CopperCanItem) stack.getItem()).getFluidHandler(access), copperCan.get());
+    searedTank.forEach(block   -> event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> new TankItemFluidHandler((TankItem) stack.getItem(), access), block));
+    scorchedTank.forEach(block -> event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> new TankItemFluidHandler((TankItem) stack.getItem(), access), block));
+    event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> new TankItemFluidHandler((TankItem) stack.getItem(), access),
                        searedCastingTank.get(), searedLantern.get(), scorchedLantern.get(), searedFluidCannon.get(), scorchedFluidCannon.get(), endFluidCannon.get());
   }
 

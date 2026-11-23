@@ -4,12 +4,19 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ItemCapability;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.transfer.TransferPreconditions;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.modifiers.modules.ModifierModule;
 import slimeknights.tconstruct.library.modifiers.modules.build.ModifierTraitModule;
 import slimeknights.tconstruct.library.tools.capability.ToolCapabilityProvider.IToolCapabilityProvider;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
+import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.tools.stat.CapacityStat;
 import slimeknights.tconstruct.library.tools.stat.ToolStatId;
 import slimeknights.tconstruct.tools.TinkerModifiers;
@@ -126,19 +133,86 @@ public record ToolEnergyCapability(Supplier<? extends IToolStackView> tool) impl
     return true;
   }
 
+  /**
+   * Native energy handler of the tool in an item access, the form of {@code Capabilities.Energy.ITEM}.
+   * PORT 1.21.10 (transfer step 1): every change copies the tool, updates its energy and exchanges the item through the access, so it is
+   * transactional and a simulation leaves the tool untouched. Amounts are totals over the accessed items.
+   */
+  public record ItemHandler(ItemAccess access) implements EnergyHandler {
+    /** Gets a detached copy of the accessed tool */
+    private ToolStack tool() {
+      return ToolStack.copyFrom(access.getResource().toStack());
+    }
+
+    @Override
+    public long getAmountAsLong() {
+      return access.getResource().isEmpty() ? 0 : (long) access.getAmount() * getEnergy(tool());
+    }
+
+    @Override
+    public long getCapacityAsLong() {
+      return access.getResource().isEmpty() ? 0 : (long) access.getAmount() * getMaxEnergy(tool());
+    }
+
+    /** Changes the energy of every accessed tool by the given amount, returns the number of tools changed */
+    private int exchange(ItemStack copy, ToolStack tool, int energy, TransactionContext transaction) {
+      setEnergyRaw(tool, energy);
+      return access.exchange(ItemResource.of(tool.updateStack(copy)), access.getAmount(), transaction);
+    }
+
+    @Override
+    public int insert(int amount, TransactionContext transaction) {
+      TransferPreconditions.checkNonNegative(amount);
+      int count = access.getAmount();
+      if (count == 0 || access.getResource().isEmpty()) {
+        return 0;
+      }
+      ItemStack copy = access.getResource().toStack();
+      ToolStack tool = ToolStack.copyFrom(copy);
+      int current = getEnergy(tool);
+      int filled = Math.min(getMaxEnergy(tool) - current, amount / count);
+      if (filled <= 0) {
+        return 0;
+      }
+      return filled * exchange(copy, tool, current + filled, transaction);
+    }
+
+    @Override
+    public int extract(int amount, TransactionContext transaction) {
+      TransferPreconditions.checkNonNegative(amount);
+      int count = access.getAmount();
+      if (count == 0 || access.getResource().isEmpty()) {
+        return 0;
+      }
+      ItemStack copy = access.getResource().toStack();
+      ToolStack tool = ToolStack.copyFrom(copy);
+      int current = getEnergy(tool);
+      int drained = Math.min(current, amount / count);
+      if (drained <= 0) {
+        return 0;
+      }
+      return drained * exchange(copy, tool, current - drained, transaction);
+    }
+  }
+
   /** Provider instance for an energy cap */
   public static class Provider implements IToolCapabilityProvider {
-    private final IEnergyStorage energyCap;
-    public Provider(Supplier<? extends IToolStackView> toolStack) {
-      this.energyCap = new ToolEnergyCapability(toolStack);
+    @SuppressWarnings("unused")
+    public Provider(Supplier<? extends IToolStackView> toolStack) {}
+
+    @Nullable
+    @Override
+    public <T> T getCapability(IToolStackView tool, ItemCapability<T, ?> cap) {
+      // the transfer capability needs the item access
+      return null;
     }
 
     @Nullable
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getCapability(IToolStackView tool, ItemCapability<T, ?> cap) {
-      if (cap == Capabilities.EnergyStorage.ITEM && tool.getStats().getInt(MAX_STAT) > 0) {
-        return (T) energyCap;
+    public <T> T getCapability(IToolStackView tool, ItemCapability<T, ?> cap, @Nullable ItemAccess access) {
+      if (cap == Capabilities.Energy.ITEM && access != null && tool.getStats().getInt(MAX_STAT) > 0) {
+        return (T) new ItemHandler(access);
       }
       return null;
     }

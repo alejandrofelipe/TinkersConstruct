@@ -228,6 +228,11 @@ public class TankItem extends BlockTooltipItem {
     return setTank(stack, new FluidStack(fluidValue, amount));
   }
 
+  /** Checks if a stack of the given size may be filled, size limited tanks cannot fill stacks larger than 16 */
+  public boolean canFill(int count) {
+    return !(limitStackSize && count > 16);
+  }
+
   /**
    * Gets the tank for the given stack, scaled by the stack size.
    * @param stack  Tank stack

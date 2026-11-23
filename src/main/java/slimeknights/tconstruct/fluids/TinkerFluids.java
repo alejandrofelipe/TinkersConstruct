@@ -287,12 +287,12 @@ public final class TinkerFluids extends TinkerModule {
 
   @SubscribeEvent
   void registerCapabilities(RegisterCapabilitiesEvent event) {
-    event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((MagmaBottleItem) stack.getItem()).getFluidHandler(stack), magmaBottle.get());
-    event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((FluidContainerFoodItem) stack.getItem()).getFluidHandler(stack), venomBottle.get());
-    slimeBottle.forEach(item -> event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((FluidContainerFoodItem) stack.getItem()).getFluidHandler(stack), item));
-    event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> ((PotionBucketItem) stack.getItem()).getFluidHandler(stack), potion.getBucket());
+    event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> ((MagmaBottleItem) stack.getItem()).getFluidHandler(access), magmaBottle.get());
+    event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> ((FluidContainerFoodItem) stack.getItem()).getFluidHandler(access), venomBottle.get());
+    slimeBottle.forEach(item -> event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> ((FluidContainerFoodItem) stack.getItem()).getFluidHandler(access), item));
+    event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> ((PotionBucketItem) stack.getItem()).getFluidHandler(access), potion.getBucket());
     // vanilla powder snow bucket exposes powdered_snow so it can be drained/melted (PORT M3: handler existed but was never wired)
-    event.registerItem(Capabilities.FluidHandler.ITEM, FluidEvents::powderSnowHandler, Items.POWDER_SNOW_BUCKET);
+    event.registerItem(Capabilities.Fluid.ITEM, FluidEvents::powderSnowHandler, Items.POWDER_SNOW_BUCKET);
   }
 
   @SubscribeEvent

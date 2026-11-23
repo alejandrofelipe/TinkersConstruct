@@ -17,7 +17,9 @@ import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.minecraft.world.item.consume_effects.ConsumeEffect;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import slimeknights.tconstruct.fluids.util.ConstantFluidContainerWrapper;
 
 import javax.annotation.Nullable;
@@ -99,8 +101,8 @@ public class ContainerFoodItem extends Item {
     }
 
     /** Creates the fluid handler for the given stack; registered centrally on {@code RegisterCapabilitiesEvent}. */
-    public IFluidHandlerItem getFluidHandler(ItemStack stack) {
-      return new ConstantFluidContainerWrapper(fluid.get(), stack);
+    public ResourceHandler<FluidResource> getFluidHandler(ItemAccess access) {
+      return new ConstantFluidContainerWrapper(fluid.get(), access);
     }
   }
 }

@@ -22,8 +22,11 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
-import net.neoforged.neoforge.fluids.capability.wrappers.FluidBucketWrapper;
+import net.neoforged.neoforge.transfer.ItemAccessResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.tconstruct.library.utils.Util;
 
 import javax.annotation.Nonnull;
@@ -108,24 +111,52 @@ public class PotionBucketItem extends PotionItem {
   }
 
   /** Creates the fluid handler for the given stack; registered centrally on {@code RegisterCapabilitiesEvent}. */
-  public IFluidHandlerItem getFluidHandler(ItemStack stack) {
-    return new PotionBucketWrapper(stack);
+  public ResourceHandler<FluidResource> getFluidHandler(ItemAccess access) {
+    return new PotionBucketWrapper(access);
   }
 
-  public static class PotionBucketWrapper extends FluidBucketWrapper {
-    public PotionBucketWrapper(ItemStack container) {
-      super(container);
+  /**
+   * Fluid handler of a potion bucket: a bucket of potion fluid carrying the bucket's potion contents, drained whole into an empty bucket.
+   * PORT 1.21.10 (transfer step 1): native {@link ItemAccessResourceHandler} (was a legacy {@code FluidBucketWrapper}), the item swap goes
+   * through the {@link ItemAccess} so it is transactional.
+   */
+  public static class PotionBucketWrapper extends ItemAccessResourceHandler<FluidResource> {
+    public PotionBucketWrapper(ItemAccess access) {
+      super(access, 1);
     }
 
-    @Nonnull
     @Override
-    public FluidStack getFluid() {
-      FluidStack fluid = new FluidStack(((PotionBucketItem)container.getItem()).getFluid(), FluidType.BUCKET_VOLUME);
-      PotionContents contents = getContents(container);
+    protected FluidResource getResourceFrom(ItemResource item, int index) {
+      if (!(item.getItem() instanceof PotionBucketItem bucket)) {
+        return FluidResource.EMPTY;
+      }
+      FluidResource fluid = FluidResource.of(bucket.getFluid());
+      PotionContents contents = item.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
       if (contents != PotionContents.EMPTY) {
-        fluid.set(DataComponents.POTION_CONTENTS, contents);
+        fluid = fluid.with(DataComponents.POTION_CONTENTS, contents);
       }
       return fluid;
+    }
+
+    @Override
+    protected int getAmountFrom(ItemResource item, int index) {
+      return item.getItem() instanceof PotionBucketItem ? FluidType.BUCKET_VOLUME : 0;
+    }
+
+    @Override
+    protected ItemResource update(ItemResource item, int index, FluidResource resource, int amount) {
+      // like a bucket: only drained whole, filling is up to the empty bucket
+      return amount == 0 ? ItemResource.of(Items.BUCKET) : ItemResource.EMPTY;
+    }
+
+    @Override
+    public boolean isValid(int index, FluidResource resource) {
+      return false;
+    }
+
+    @Override
+    protected int getCapacity(int index, FluidResource resource) {
+      return FluidType.BUCKET_VOLUME;
     }
   }
 }

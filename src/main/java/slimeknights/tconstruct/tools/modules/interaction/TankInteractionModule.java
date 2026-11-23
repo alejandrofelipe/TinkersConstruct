@@ -9,7 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import slimeknights.mantle.transfer.TransferHelper;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
@@ -57,7 +57,8 @@ public record TankInteractionModule(@Nullable InteractionSource source) implemen
     BlockPos target = context.getClickedPos();
     // must have a block that exposes a fluid handler capability
     Direction face = context.getClickedFace();
-    IFluidHandler cap = world.getCapability(Capabilities.FluidHandler.BLOCK, target, face);
+    // player interaction, never inside a transaction
+    IFluidHandler cap = TransferHelper.getLegacyFluidHandler(world, target, face);
     if (cap == null) {
       return InteractionResult.PASS;
     }

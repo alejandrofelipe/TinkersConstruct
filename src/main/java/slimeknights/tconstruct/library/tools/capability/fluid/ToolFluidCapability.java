@@ -8,6 +8,12 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ItemCapability;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.TransferPreconditions;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
@@ -16,11 +22,13 @@ import slimeknights.tconstruct.library.tools.capability.ToolCapabilityProvider.I
 import slimeknights.tconstruct.library.tools.nbt.IModDataView;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
+import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -316,18 +324,113 @@ public class ToolFluidCapability extends FluidModifierHookIterator<ModifierEntry
   }
 
   /** Provider instance for a fluid cap */
+  /**
+   * Native fluid handler of the tool in an item access, the form of {@code Capabilities.Fluid.ITEM}.
+   * <p>
+   * PORT 1.21.10 (transfer step 1): reads go through the tool's fluid modifier hooks on a detached copy of the tool; every change runs the
+   * hooks on a detached one item copy, then exchanges the accessed items for the updated tool through the access, so it is transactional
+   * and a simulation leaves the tool untouched. Amounts are totals over the accessed items. Like the legacy {@code fill}, inserts go to
+   * the first tank accepting the fluid whatever the index, the index only matters to read.
+   */
+  public record ItemHandler(ItemAccess access) implements ResourceHandler<FluidResource> {
+    /** Creates a legacy view of a detached copy of the given single item */
+    private static ToolFluidCapability view(ItemStack copy) {
+      ToolStack tool = ToolStack.copyFrom(copy);
+      return new ToolFluidCapability(copy, () -> tool);
+    }
+
+    /** Creates a view of a detached copy of the accessed tool */
+    private ToolFluidCapability view() {
+      return view(access.getResource().toStack());
+    }
+
+    @Override
+    public int size() {
+      return access.getResource().isEmpty() ? 0 : view().getTanks();
+    }
+
+    @Override
+    public FluidResource getResource(int index) {
+      Objects.checkIndex(index, size());
+      return FluidResource.of(view().getFluidInTank(index));
+    }
+
+    @Override
+    public long getAmountAsLong(int index) {
+      Objects.checkIndex(index, size());
+      return (long) access.getAmount() * view().getFluidInTank(index).getAmount();
+    }
+
+    @Override
+    public long getCapacityAsLong(int index, FluidResource resource) {
+      Objects.checkIndex(index, size());
+      ToolFluidCapability view = view();
+      if (!resource.isEmpty() && !view.isFluidValid(index, resource.toStack(1))) {
+        return 0;
+      }
+      return (long) access.getAmount() * view.getTankCapacity(index);
+    }
+
+    @Override
+    public boolean isValid(int index, FluidResource resource) {
+      Objects.checkIndex(index, size());
+      return view().isFluidValid(index, resource.toStack(1));
+    }
+
+    @Override
+    public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
+      Objects.checkIndex(index, size());
+      TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+      int count = access.getAmount();
+      int perItem = count == 0 ? 0 : amount / count;
+      if (perItem <= 0) {
+        return 0;
+      }
+      ItemStack copy = access.getResource().toStack();
+      ToolStack tool = ToolStack.copyFrom(copy);
+      int filled = new ToolFluidCapability(copy, () -> tool).fill(resource.toStack(perItem), FluidAction.EXECUTE);
+      if (filled <= 0) {
+        return 0;
+      }
+      return filled * access.exchange(ItemResource.of(tool.updateStack(copy)), count, transaction);
+    }
+
+    @Override
+    public int extract(int index, FluidResource resource, int amount, TransactionContext transaction) {
+      Objects.checkIndex(index, size());
+      TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+      int count = access.getAmount();
+      int perItem = count == 0 ? 0 : amount / count;
+      if (perItem <= 0) {
+        return 0;
+      }
+      ItemStack copy = access.getResource().toStack();
+      ToolStack tool = ToolStack.copyFrom(copy);
+      int drained = new ToolFluidCapability(copy, () -> tool).drain(resource.toStack(perItem), FluidAction.EXECUTE).getAmount();
+      if (drained <= 0) {
+        return 0;
+      }
+      return drained * access.exchange(ItemResource.of(tool.updateStack(copy)), count, transaction);
+    }
+  }
+
   public static class Provider implements IToolCapabilityProvider {
-    private final IFluidHandlerItem fluidCap;
-    public Provider(ItemStack stack, Supplier<? extends IToolStackView> toolStack) {
-      this.fluidCap = new ToolFluidCapability(stack, toolStack);
+    @SuppressWarnings("unused")
+    public Provider(ItemStack stack, Supplier<? extends IToolStackView> toolStack) {}
+
+    @Nullable
+    @Override
+    public <T> T getCapability(IToolStackView tool, ItemCapability<T, ?> cap) {
+      // the transfer capability needs the item access
+      return null;
     }
 
     @Nullable
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getCapability(IToolStackView tool, ItemCapability<T, ?> cap) {
-      if (cap == Capabilities.FluidHandler.ITEM && tool.getVolatileData().getInt(TOTAL_TANKS) > 0) {
-        return (T) fluidCap;
+    public <T> T getCapability(IToolStackView tool, ItemCapability<T, ?> cap, @Nullable ItemAccess access) {
+      if (cap == Capabilities.Fluid.ITEM && access != null && tool.getVolatileData().getInt(TOTAL_TANKS) > 0) {
+        return (T) new ItemHandler(access);
       }
       return null;
     }
