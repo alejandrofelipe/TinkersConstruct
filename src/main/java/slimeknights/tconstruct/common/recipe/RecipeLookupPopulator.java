@@ -14,6 +14,7 @@ import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeLookup;
 import slimeknights.tconstruct.library.recipe.modifiers.ModifierRecipeLookup;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Populates static recipe lookups from the loaded recipes at reload, replacing recipe-constructor
@@ -73,6 +74,11 @@ public final class RecipeLookupPopulator {
     TinkerRecipeTypes.PART_BUILDER.get(), TinkerRecipeTypes.DATA.get(),
     RecipeType.CRAFTING,
   };
+
+  /** Recipe types sent to the client, see {@link #CLIENT_SYNCED_TYPES}; exposed for the recipe sync gametests. */
+  public static List<RecipeType<?>> clientSyncedTypes() {
+    return List.of(CLIENT_SYNCED_TYPES);
+  }
 
   /** Client: recipes synced from the server. */
   public static void onRecipesUpdated(RecipesReceivedEvent event) {
