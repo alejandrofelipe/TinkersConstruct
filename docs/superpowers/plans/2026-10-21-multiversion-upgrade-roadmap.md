@@ -36,7 +36,8 @@ releases piggyback onto the next checkpoint), gating each with the full test bat
   `RenderPipeline` blits, PiP for 3D in GUIs, silent text-alpha/depth traps), **`ValueInput`/`ValueOutput`** for
   BEs/entities (tool NBT itself unaffected), **UBO shaders + fog rewrite**, **tag datagen appenders**. **M5 keeps
   only 1.21.9.** Branch `1.21.8`. Detailed plan: [`2026-10-24-m4-1.21.8-port.md`](2026-10-24-m4-1.21.8-port.md).
-- **M4 status (2026-11-23): Phases 0–6 done, Phase 7 (release) pending.** Mantle 102 → 0 and Tinkers 546 → 0 compile
+- **M4 done 🏁 (2026-11-23): released Mantle `1.15` / Tinkers `3.14.0`, annotated tags `v1.21.8-1.15` /
+  `v1.21.8-3.14.0` + branch `1.21.8` pushed to origin.** Not deployed (no 1.21.8 game instance). Mantle 102 → 0 and Tinkers 546 → 0 compile
   errors; datagen tags byte-identical; battery green on the final code: `build` both repos + 674 unit + 58 gametest
   (57 + vanilla `always_pass`) + 31/31 uitest (30 scenarios + `mantle:suite_setup`), visual review side by side with a
   1.21.5 reference run. The port surfaced shipped bugs in earlier lines (built tools vanishing from saves, castless
@@ -163,7 +164,7 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
 - [x] **M1 patch** — Tinkers `3.12.1` (2026-10-24): first-boot staged-tags fix + worldgen gametests (38 gametest)
 - [x] **M3** — 1.21.5 / NF 21.5.101 🏁 2026-10-24 — Mantle `1.14` / Tinkers `3.13.0`, tags `v1.21.5-1.14` / `v1.21.5-3.13.0`; battery: build + 673 unit + 40 gametest (39 + vanilla `always_pass`) + 15/15 uitest (visual verified). Plan [`2026-10-24-m3-1.21.5-port.md`](2026-10-24-m3-1.21.5-port.md); gotchas [`repo/docs/migration/1.21.4-to-1.21.5.md`](../../../../repo/docs/migration/1.21.4-to-1.21.5.md)
 - [x] **M3 patch** — Tinkers `3.13.1` (2026-10-24): mob head item rendering + legacy tool model cleanup (16 uitest)
-- [ ] **M4** — **1.21.8** / NF 21.8.57 (1.21.6 + 1.21.7 folded in) 🔴 — **em andamento**: Fases 0–6 ✅ (2026-10-24 → 2026-11-23), Fase 7 (release Mantle `1.15` / Tinkers `3.14.0`, tags `v1.21.8-*`) pendente; battery: build + 674 unit + 58 gametest (57 + vanilla `always_pass`) + 31/31 uitest (visual verified vs 1.21.5 reference). Plano [`2026-10-24-m4-1.21.8-port.md`](2026-10-24-m4-1.21.8-port.md); gotchas [`repo/docs/migration/1.21.5-to-1.21.8.md`](../../../../repo/docs/migration/1.21.5-to-1.21.8.md)
+- [x] **M4** — **1.21.8** / NF 21.8.57 (1.21.6 + 1.21.7 folded in) 🔴 — **FECHADO 🏁 2026-11-23**: Fases 0–7 ✅ (2026-10-24 → 2026-11-23), release Mantle `1.15` / Tinkers `3.14.0`, tags `v1.21.8-1.15` / `v1.21.8-3.14.0` pushadas; battery: build + 674 unit + 58 gametest (57 + vanilla `always_pass`) + 31/31 uitest (visual verified vs 1.21.5 reference). Plano [`2026-10-24-m4-1.21.8-port.md`](2026-10-24-m4-1.21.8-port.md); gotchas [`repo/docs/migration/1.21.5-to-1.21.8.md`](../../../../repo/docs/migration/1.21.5-to-1.21.8.md)
 - [ ] **M5** — 1.21.9 / NF 21.9 (1.21.7/1.21.8 moved into M4)
 - [ ] **M6** — 1.21.11 / NF 21.11
 - [ ] **M7** — 26.1 → 26.2 / NF 26.2 (Java 25) 🏁 target
