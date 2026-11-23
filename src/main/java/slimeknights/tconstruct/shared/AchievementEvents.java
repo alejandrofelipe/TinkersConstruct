@@ -60,7 +60,7 @@ public final class AchievementEvents {
   }
 
   private static void grantAdvancement(ServerPlayer playerMP, String advancementResource) {
-    MinecraftServer server = playerMP.getServer();
+    MinecraftServer server = playerMP.level().getServer();
     if (server != null) {
       AdvancementHolder advancement = server.getAdvancements().get(Objects.requireNonNull(ResourceLocation.tryParse(advancementResource)));
       if (advancement != null) {

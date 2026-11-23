@@ -165,7 +165,7 @@ public class TinkerNetwork extends NetworkWrapper {
     if (targetedPlayer != null) {
       // a joining player receives OnDatapackSyncEvent during placeNewPlayer, before the connection is ready for
       // play-phase payloads ("may not be sent to the client"); defer to the next server tick when it is in play
-      MinecraftServer server = targetedPlayer.getServer();
+      MinecraftServer server = targetedPlayer.level().getServer();
       if (server != null) {
         server.execute(() -> sendTo(msg, targetedPlayer));
       } else {

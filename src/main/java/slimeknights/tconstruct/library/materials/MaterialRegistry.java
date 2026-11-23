@@ -282,7 +282,7 @@ public final class MaterialRegistry {
     if (targetedPlayer != null) {
       // a joining player receives this during placeNewPlayer, before its connection is ready for play-phase payloads;
       // defer to the next server tick when it is fully in play (also ensures player.connection is set)
-      MinecraftServer server = targetedPlayer.getServer();
+      MinecraftServer server = targetedPlayer.level().getServer();
       if (server != null) {
         server.execute(() -> sendPackets(targetedPlayer, packets));
       } else {

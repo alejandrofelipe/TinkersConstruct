@@ -225,11 +225,11 @@ public final class TinkerSmeltery extends TinkerModule {
   public static final ItemObject<SearedSoulGlassBlock> searedSoulGlass, scorchedSoulGlass;
   public static final ItemObject<SoulGlassPaneBlock> searedSoulGlassPane, scorchedSoulGlassPane;
   static {
-    Properties seared = searedNonSolidProps(SoundType.GLASS).noCollission().speedFactor(0.1f).isViewBlocking((state, getter, pos) -> true);
+    Properties seared = searedNonSolidProps(SoundType.GLASS).noCollision().speedFactor(0.1f).isViewBlocking((state, getter, pos) -> true);
     searedSoulGlass = BLOCKS.register("seared_soul_glass", SearedSoulGlassBlock::new, seared, TOOLTIP_BLOCK_ITEM);
     searedSoulGlassPane = BLOCKS.register("seared_soul_glass_pane", SoulGlassPaneBlock::new, seared, TOOLTIP_BLOCK_ITEM);
 
-    Properties scorched = scorchedNonSolidProps(SoundType.GLASS).noCollission().speedFactor(0.1f).isViewBlocking((state, getter, pos) -> true);
+    Properties scorched = scorchedNonSolidProps(SoundType.GLASS).noCollision().speedFactor(0.1f).isViewBlocking((state, getter, pos) -> true);
     scorchedSoulGlass = BLOCKS.register("scorched_soul_glass", SearedSoulGlassBlock::new, scorched, TOOLTIP_BLOCK_ITEM);
     scorchedSoulGlassPane = BLOCKS.register("scorched_soul_glass_pane", SoulGlassPaneBlock::new, scorched, TOOLTIP_BLOCK_ITEM);
   }
@@ -299,7 +299,7 @@ public final class TinkerSmeltery extends TinkerModule {
   // utility
   public static final ItemObject<GaugeBlock> copperGauge, obsidianGauge;
   static {
-    Properties gaugeProperties = Properties.of().mapColor(MapColor.NONE).pushReaction(PushReaction.DESTROY).noCollission().strength(0.5F).noOcclusion().requiresCorrectToolForDrops();
+    Properties gaugeProperties = Properties.of().mapColor(MapColor.NONE).pushReaction(PushReaction.DESTROY).noCollision().strength(0.5F).noOcclusion().requiresCorrectToolForDrops();
     copperGauge = BLOCKS.register("copper_gauge", GaugeBlock::new, gaugeProperties, TOOLTIP_BLOCK_ITEM);
     obsidianGauge = BLOCKS.register("obsidian_gauge", RenderingGaugeBlock::new, gaugeProperties, TOOLTIP_BLOCK_ITEM);
   }

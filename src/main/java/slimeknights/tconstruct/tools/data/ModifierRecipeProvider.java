@@ -524,7 +524,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                                     .save(consumer, wrap(ModifierIds.sharpness.getLocation(), upgradeFolder, "_from_block"));
     IncrementalModifierRecipeBuilder.modifier(ModifierIds.sweeping)
                                     .setTools(TinkerTags.Items.SWORD)
-                                    .setInput(Blocks.CHAIN, 1, 5) // 5% per chain, costing 55 nuggets, or just above 6 ingots
+                                    .setInput(Blocks.IRON_CHAIN, 1, 5) // 5% per chain, costing 55 nuggets, or just above 6 ingots
                                     .setMaxLevel(3) // goes 25%, 50%, 75%
                                     .setSlots(SlotType.UPGRADE, 1)
                                     .saveSalvage(consumer, prefix(ModifierIds.sweeping.getLocation(), upgradeSalvage))
@@ -640,7 +640,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
       .save(consumer, prefix(ModifierIds.sliver.getLocation(), abilityFolder));
     ModifierRecipeBuilder.modifier(ModifierIds.ballista)
       .addInput(TinkerMaterials.hepatizon.getIngotTag())
-      .addInput(Items.CHAIN)
+      .addInput(Items.IRON_CHAIN)
       .addInput(TinkerMaterials.hepatizon.getIngotTag())
       .setSlots(SlotType.ABILITY, 1)
       .setMaxLevel(1).checkTraitLevel()
@@ -726,8 +726,8 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
       .save(consumer, prefix(ModifierIds.lure.getLocation(), upgradeFolder));
     ModifierRecipeBuilder.modifier(ModifierIds.grapple)
       .setTools(TinkerTags.Items.FISHING_RODS)
-      .addInput(Items.CHAIN)
-      .addInput(Items.CHAIN)
+      .addInput(Items.IRON_CHAIN)
+      .addInput(Items.IRON_CHAIN)
       .addInput(TinkerMaterials.slimesteel.getIngotTag())
       .setSlots(SlotType.ABILITY, 1)
       .setMaxLevel(1).checkTraitLevel()

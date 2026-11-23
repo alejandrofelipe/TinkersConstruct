@@ -42,7 +42,7 @@ import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.event.IModBusEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 
-import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.fml.loading.FMLEnvironment;
 import slimeknights.mantle.data.loadable.RegistryJsonOps;
 import slimeknights.mantle.data.loadable.field.ContextKey;
 import slimeknights.mantle.util.JsonHelper;
@@ -190,7 +190,7 @@ public class ModifierManager extends SimpleJsonResourceReloadListener<JsonElemen
     }
     for (ModifierId id : staticModifiers.keySet()) {
       if (dynamicModifiers.containsKey(id)) {
-        if (FMLLoader.isProduction()) {
+        if (FMLEnvironment.isProduction()) {
           log.warn("Dynamic modifier {} is replacing static modifier with the same ID. The ability to do this may be removed in a future version, so if this is intentional please open an issue report with reasoning..", id);
         } else {
           log.error("Dynamic modifier {} is replacing static modifier with the same ID. This is likely a bug with your mod, but on the chance its intentional this error does become just a warning at runtime.", id);

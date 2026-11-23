@@ -1600,7 +1600,7 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
     MeltingRecipeBuilder.melting(Ingredient.of(Blocks.CAULDRON), TinkerFluids.moltenIron, FluidValues.INGOT * 7)
                         .save(consumer, location(metalFolder + "iron/cauldron"));
     // non-standard
-    MeltingRecipeBuilder.melting(Ingredient.of(Blocks.CHAIN), TinkerFluids.moltenIron, FluidValues.INGOT + FluidValues.NUGGET * 2)
+    MeltingRecipeBuilder.melting(Ingredient.of(Blocks.IRON_CHAIN), TinkerFluids.moltenIron, FluidValues.INGOT + FluidValues.NUGGET * 2)
                         .save(consumer, location(metalFolder + "iron/chain"));
     MeltingRecipeBuilder.melting(Ingredient.of(Blocks.ANVIL, Blocks.CHIPPED_ANVIL, Blocks.DAMAGED_ANVIL), TinkerFluids.moltenIron, FluidValues.INGOT * 4 + FluidValues.METAL_BLOCK * 3)
                         .save(consumer, location(metalFolder + "iron/anvil"));

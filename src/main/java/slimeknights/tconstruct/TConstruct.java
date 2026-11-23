@@ -171,8 +171,8 @@ public class TConstruct {
     bus.addListener(TinkerNetwork::registerPayloads);
     TinkerTags.init();
     // init client logic
-    // PORT: DistExecutor removed in NeoForge 1.21; guard with FMLEnvironment.dist instead
-    if (FMLEnvironment.dist == Dist.CLIENT) {
+    // PORT: DistExecutor removed in NeoForge 1.21; guard with FMLEnvironment.getDist() instead
+    if (FMLEnvironment.getDist() == Dist.CLIENT) {
       TinkerClient.onConstruct();
     }
 

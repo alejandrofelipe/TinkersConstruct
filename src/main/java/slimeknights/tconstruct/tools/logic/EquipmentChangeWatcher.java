@@ -40,7 +40,7 @@ public class EquipmentChangeWatcher {
     NeoForge.EVENT_BUS.addListener(EquipmentChangeWatcher::onEquipmentChange);
 
     // only need to track equipment and the player tick on the client
-    if (FMLEnvironment.dist == Dist.CLIENT) {
+    if (FMLEnvironment.getDist() == Dist.CLIENT) {
       NeoForge.EVENT_BUS.addListener(EquipmentChangeWatcher::onPlayerTick);
     }
   }

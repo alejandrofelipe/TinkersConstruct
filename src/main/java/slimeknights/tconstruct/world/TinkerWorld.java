@@ -219,7 +219,7 @@ public final class TinkerWorld extends TinkerModule {
       } else {
         properties.sound(SoundType.GRASS).offsetType(OffsetType.XYZ);
       }
-      return properties.replaceable().instabreak().noCollission().pushReaction(PushReaction.DESTROY);
+      return properties.replaceable().instabreak().noCollision().pushReaction(PushReaction.DESTROY);
     };
     slimeFern = BLOCKS.registerEnum(FoliageType.values(), "slime_fern", (key, type) -> new SlimeTallGrassBlock(props.apply(type).setId(key), type), BLOCK_ITEM);
     slimeTallGrass = BLOCKS.registerEnum(FoliageType.values(), "slime_tall_grass", (key, type) -> new SlimeTallGrassBlock(props.apply(type).setId(key), type), BLOCK_ITEM);
@@ -228,7 +228,7 @@ public final class TinkerWorld extends TinkerModule {
 
   // trees
   public static final EnumObject<FoliageType, Block> slimeSapling = Util.make(() -> {
-    Function<FoliageType,BlockBehaviour.Properties> props = type -> builder(type.getMapColor(), type.isNether() ? SoundType.FUNGUS : SoundType.GRASS).instabreak().noCollission().pushReaction(PushReaction.DESTROY);
+    Function<FoliageType,BlockBehaviour.Properties> props = type -> builder(type.getMapColor(), type.isNether() ? SoundType.FUNGUS : SoundType.GRASS).instabreak().noCollision().pushReaction(PushReaction.DESTROY);
     return new EnumObject.Builder<FoliageType,Block>(FoliageType.class)
       .putAll(BLOCKS.registerEnum(FoliageType.OVERWORLD, "slime_sapling", (key, type) -> new SlimeSaplingBlock(SlimeTree.create(type), type, props.apply(type).randomTicks().setId(key)), TOOLTIP_BLOCK_ITEM))
       .put(FoliageType.BLOOD, BLOCKS.register("blood_slime_sapling", p -> new SlimeFungusBlock(p, TinkerStructures.bloodSlimeFungus), props.apply(FoliageType.BLOOD), TOOLTIP_BLOCK_ITEM))
@@ -246,7 +246,7 @@ public final class TinkerWorld extends TinkerModule {
   // slime vines
   public static final ItemObject<SlimeVineBlock> skySlimeVine, enderSlimeVine;
   static {
-    Function<SlimeType,BlockBehaviour.Properties> props = type -> builder(type.getMapColor(), SoundType.GRASS).replaceable().strength(0.75F).noCollission().randomTicks().pushReaction(PushReaction.DESTROY);
+    Function<SlimeType,BlockBehaviour.Properties> props = type -> builder(type.getMapColor(), SoundType.GRASS).replaceable().strength(0.75F).noCollision().randomTicks().pushReaction(PushReaction.DESTROY);
     skySlimeVine = BLOCKS.register("sky_slime_vine", p -> new SlimeVineBlock(p, SlimeType.SKY), props.apply(SlimeType.SKY), BLOCK_ITEM);
     enderSlimeVine = BLOCKS.register("ender_slime_vine", p -> new SlimeVineBlock(p, SlimeType.ENDER), props.apply(SlimeType.ENDER), BLOCK_ITEM);
   }
