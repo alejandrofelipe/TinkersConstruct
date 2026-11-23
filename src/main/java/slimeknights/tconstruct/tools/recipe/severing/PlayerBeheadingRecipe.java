@@ -34,7 +34,7 @@ public class PlayerBeheadingRecipe extends SeveringRecipe {
     ItemStack stack = new ItemStack(Items.PLAYER_HEAD);
     if (entity instanceof Player) {
       GameProfile gameprofile = ((Player)entity).getGameProfile();
-      stack.set(DataComponents.PROFILE, new ResolvableProfile(gameprofile));
+      stack.set(DataComponents.PROFILE, ResolvableProfile.createResolved(gameprofile));
     }
     return stack;
   }

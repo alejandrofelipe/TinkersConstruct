@@ -47,11 +47,12 @@ public class WorldEvents {
     if (source != null) {
       Entity entity = source.getEntity();
       if (entity instanceof Creeper creeper) {
-        if (creeper.canDropMobsSkull()) {
+        // 1.21.9: canDropMobsSkull() == isPowered() && no skull dropped yet (vanilla sets the flag in killedEntity, before drops)
+        if (creeper.isPowered() && !creeper.droppedSkulls) {
           LivingEntity dying = event.getEntity();
           TinkerHeadType headType = TinkerHeadType.fromEntityType(dying.getType());
           if (headType != null && Config.COMMON.headDrops.get(headType).get()) {
-            creeper.increaseDroppedSkulls();
+            creeper.droppedSkulls = true;
             event.getDrops().add(dying.spawnAtLocation((net.minecraft.server.level.ServerLevel) dying.level(), TinkerWorld.heads.get(headType)));
           }
         }

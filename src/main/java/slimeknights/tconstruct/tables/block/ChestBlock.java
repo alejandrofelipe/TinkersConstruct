@@ -9,11 +9,12 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.BlockEntityType.BlockEntitySupplier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -59,9 +60,9 @@ public class ChestBlock extends TabbedTableBlock {
   public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
     super.setPlacedBy(worldIn, pos, state, placer, stack);
     // check if we also have an inventory
-    CustomData blockEntityData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+    TypedEntityData<BlockEntityType<?>> blockEntityData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
     if (blockEntityData != null) {
-      CompoundTag tag = blockEntityData.copyTag();
+      CompoundTag tag = blockEntityData.copyTagWithoutId();
       if (TagUtil.contains(tag, "TinkerData", Tag.TAG_COMPOUND)) {
         CompoundTag tinkerData = tag.getCompoundOrEmpty("TinkerData");
         BlockEntity te = worldIn.getBlockEntity(pos);

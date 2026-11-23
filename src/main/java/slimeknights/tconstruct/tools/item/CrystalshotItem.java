@@ -54,8 +54,8 @@ public class CrystalshotItem extends ArrowItem {
     CrystalshotEntity arrow = new CrystalshotEntity(pLevel, pShooter);
     String variant = "random";
     CustomData data = pStack.get(DataComponents.CUSTOM_DATA);
-    if (data != null && TagUtil.contains(data.getUnsafe(), TAG_VARIANT, Tag.TAG_STRING)) {
-      variant = data.getUnsafe().getStringOr(TAG_VARIANT, "");
+    if (data != null && TagUtil.contains(data.tag, TAG_VARIANT, Tag.TAG_STRING)) {
+      variant = data.tag.getStringOr(TAG_VARIANT, "");
     }
     if ("random".equals(variant)) {
       variant = RANDOM_VARIANTS.get(pShooter.getRandom().nextInt(RANDOM_VARIANTS.size()));

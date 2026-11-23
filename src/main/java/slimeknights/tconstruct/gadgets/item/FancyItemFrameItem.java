@@ -9,7 +9,7 @@ import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
@@ -41,9 +41,9 @@ public class FancyItemFrameItem extends Item {
 
     Level world = context.getLevel();
     HangingEntity frame = this.entityProvider.apply(world, placeLocation, facing);
-    CustomData customData = stack.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
-    if (!customData.isEmpty()) {
-      EntityType.updateCustomEntityTag(world, player, frame, customData);
+    TypedEntityData<EntityType<?>> entityData = stack.get(DataComponents.ENTITY_DATA);
+    if (entityData != null) {
+      EntityType.updateCustomEntityTag(world, player, frame, entityData);
     }
 
     if (frame.survives()) {

@@ -55,7 +55,7 @@ public class MaterialItem extends Item implements IMaterialItem {
   /** Gets the material ID stored in the stack's custom-data component */
   public static MaterialVariantId getMaterialFromData(ItemStack stack) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-    return getMaterialId(data == null ? null : data.getUnsafe());
+    return getMaterialId(data == null ? null : data.tag);
   }
 
   @Override

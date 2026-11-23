@@ -6,7 +6,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -16,6 +16,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import slimeknights.mantle.recipe.IMultiRecipe;
 import slimeknights.mantle.util.RegistryHelper;
 import slimeknights.tconstruct.TConstruct;
@@ -110,10 +111,11 @@ public class BannerModifierRecipe implements ITinkerStationRecipe, IMultiRecipe<
     // PORT M3: block entity data moved to DataComponents.BLOCK_ENTITY_DATA (CustomData) in 1.21;
     // banner patterns are now the BannerPatternLayers component, so this legacy "Patterns" list read
     // returns empty until BannerModule is reworked against the new component.
-    CustomData bannerData = banner.get(DataComponents.BLOCK_ENTITY_DATA);
+    // 1.21.9: BLOCK_ENTITY_DATA is a TypedEntityData now
+    TypedEntityData<BlockEntityType<?>> bannerData = banner.get(DataComponents.BLOCK_ENTITY_DATA);
     ListTag patterns = new ListTag();
     if (bannerData != null) {
-      patterns = TagUtil.getList(bannerData.copyTag(), "Patterns", Tag.TAG_COMPOUND);
+      patterns = TagUtil.getList(bannerData.copyTagWithoutId(), "Patterns", Tag.TAG_COMPOUND);
     }
 
     // apply the pattern

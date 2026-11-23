@@ -115,7 +115,7 @@ public class MaterialIdNBT {
   public static MaterialIdNBT from(ItemStack stack) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
     if (data != null) {
-      return readFromNBT(TagUtil.getList(data.getUnsafe(), ToolStack.TAG_MATERIALS, Tag.TAG_STRING));
+      return readFromNBT(TagUtil.getList(data.tag, ToolStack.TAG_MATERIALS, Tag.TAG_STRING));
     }
     return EMPTY;
   }

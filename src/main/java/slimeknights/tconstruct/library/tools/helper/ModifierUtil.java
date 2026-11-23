@@ -59,7 +59,7 @@ public final class ModifierUtil {
   @Nullable
   private static CompoundTag getStackTag(ItemStack stack) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-    return data == null ? null : data.getUnsafe();
+    return data == null ? null : data.tag;
   }
 
   /** Drops an item at the given position */

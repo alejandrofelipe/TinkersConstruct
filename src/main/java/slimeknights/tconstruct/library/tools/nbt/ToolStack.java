@@ -155,14 +155,14 @@ public class ToolStack implements IToolStackView {
    * Reads the tool's NBT from the stack's {@link DataComponents#CUSTOM_DATA} component.
    * <p>
    * In 1.20 the whole tool was stored in the free-form stack tag; in 1.21 stacks no longer carry a tag, so the tool data
-   * lives inside the custom-data component. Returns the live mutable tag held by the component (NeoForge's
-   * {@code CustomData#getUnsafe}), or null if the component is absent. Callers that mutate the returned tag must write it
+   * lives inside the custom-data component. Returns the live mutable tag held by the component (the
+   * access-transformed {@code CustomData#tag}; vanilla removed {@code getUnsafe} in 1.21.9), or null if the component is absent. Callers that mutate the returned tag must write it
    * back via {@link #setStackTag(ItemStack, CompoundTag)} for the change to persist on the stack.
    */
   @Nullable
   private static CompoundTag getStackTag(ItemStack stack) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-    return data == null ? null : data.getUnsafe();
+    return data == null ? null : data.tag;
   }
 
   /** Writes the given tag back onto the stack's {@link DataComponents#CUSTOM_DATA} component. */

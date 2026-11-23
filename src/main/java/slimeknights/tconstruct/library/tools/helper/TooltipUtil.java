@@ -95,7 +95,7 @@ public class TooltipUtil {
   @Nullable
   private static CompoundTag getStackTag(ItemStack stack) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-    return data == null ? null : data.getUnsafe();
+    return data == null ? null : data.tag;
   }
 
   /** Tooltip telling the player to hold shift for more info */

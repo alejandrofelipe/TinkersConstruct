@@ -34,7 +34,7 @@ public class TestHelper {
   @Nullable
   public static CompoundTag getTag(ItemStack stack) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-    return data == null ? null : data.getUnsafe();
+    return data == null ? null : data.tag;
   }
 
   /**
