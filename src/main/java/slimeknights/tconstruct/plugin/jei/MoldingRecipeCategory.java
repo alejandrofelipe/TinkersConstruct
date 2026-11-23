@@ -70,7 +70,8 @@ public class MoldingRecipeCategory implements IRecipeCategory<MoldingRecipe> {
     block.draw(graphics, 3, 40);
 
     // if no mold, we "pickup" the item, so draw no table
-    if (!recipe.getPattern().isEmpty()) {
+    Ingredient pattern = recipe.getPattern();
+    if (pattern != null && !pattern.isEmpty()) {
       block.draw(graphics, 51, 40);
       downArrow.draw(graphics, 8, 17);
     } else {
@@ -97,8 +98,9 @@ public class MoldingRecipeCategory implements IRecipeCategory<MoldingRecipe> {
     }
 
     // if we have a mold, we are pressing into the table, so draw pressed item on input and output
+    // null when the recipe has no pattern (1.21.4 removed the empty ingredient)
     Ingredient pattern = recipe.getPattern();
-    if (!pattern.isEmpty()) {
+    if (pattern != null && !pattern.isEmpty()) {
       IRecipeSlotBuilder inputSlot = builder.addSlot(RecipeIngredientRole.INPUT, 3, 1).addIngredients(pattern);
       if (!recipe.isPatternConsumed()) {
         IRecipeSlotBuilder preservedSlot = builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 51, 8).addIngredients(pattern);
