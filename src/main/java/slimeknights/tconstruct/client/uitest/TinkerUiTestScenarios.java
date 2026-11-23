@@ -420,10 +420,14 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      NeoForge.EVENT_BUS.unregister(mouseParker);
       if (!(ctx.mc().screen instanceof IRecipesGui)) {
         throw new IllegalStateException(id().getPath() + " expected the JEI recipes GUI at capture, found " + ctx.mc().screen);
       }
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(mouseParker);
       ctx.mc().setScreen(null);
     }
   }
@@ -553,14 +557,13 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      NeoForge.EVENT_BUS.unregister(poller); // safety net if the menu never opened
       if (!(ctx.mc().screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)) {
         throw new IllegalStateException("crafting_tweaks_rotate expected the crafting station menu at capture, found " + ctx.mc().screen);
       }
       if (!rotated) {
         throw new IllegalStateException("crafting_tweaks_rotate found no Crafting Tweaks rotate button on the crafting station");
       }
-      // the stick started in the top left corner, any rotation moves it to another corner
+      // the stick started in the top left corner; Crafting Tweaks rotates the grid ring one step, any rotation moves it out of slot 0
       int stick = -1;
       for (int i = 0; i < 9; i++) {
         if (menu.getSlot(i).getItem().is(Items.STICK)) {
@@ -570,6 +573,11 @@ public class TinkerUiTestScenarios {
       if (stick == -1 || stick == 0) {
         throw new IllegalStateException("crafting_tweaks_rotate expected the stick to leave slot 0, found it in slot " + stick);
       }
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(poller); // still registered if the menu never opened
       ctx.mc().setScreen(null);
     }
   }
@@ -622,6 +630,10 @@ public class TinkerUiTestScenarios {
       if (!(ctx.mc().screen instanceof TinkerStationScreen)) {
         throw new IllegalStateException("station_reflow expected TinkerStationScreen at capture, found " + ctx.mc().screen);
       }
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
       ctx.mc().setScreen(null);
       ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
     }
@@ -669,6 +681,10 @@ public class TinkerUiTestScenarios {
       if (!(ctx.mc().screen instanceof TinkerStationScreen)) {
         throw new IllegalStateException("station_collapsed expected TinkerStationScreen at capture, found " + ctx.mc().screen);
       }
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
       ctx.mc().setScreen(null);
       ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
     }
@@ -692,7 +708,7 @@ public class TinkerUiTestScenarios {
     private int restoreW = 1280, restoreH = 720;
     /** Set once the resolved screen has had the overlay opened, so the poller stops and won't toggle it back shut. */
     private boolean overlayOpened = false;
-    /** Retained so the poller can remove itself once it fires (and as a close() safety net). */
+    /** Retained so the poller can remove itself once it fires (and as a cleanup() safety net). */
     private final Consumer<ClientTickEvent.Post> overlayPoller = this::openOverlayWhenReady;
 
     @Override
@@ -734,7 +750,6 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      NeoForge.EVENT_BUS.unregister(this.overlayPoller); // safety net if the screen never resolved and it never fired
       if (!(ctx.mc().screen instanceof TinkerStationScreen station)) {
         throw new IllegalStateException("station_collapsed_overlay expected TinkerStationScreen at capture, found " + ctx.mc().screen);
       }
@@ -742,6 +757,11 @@ public class TinkerUiTestScenarios {
       if (station.getOpenOverlay() != ToolTableScreen.OverlayPanel.TOOL_INFO) {
         throw new IllegalStateException("station_collapsed_overlay expected TOOL_INFO overlay open at capture, found " + station.getOpenOverlay());
       }
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(this.overlayPoller); // still registered if the screen never resolved and it never fired
       ctx.mc().setScreen(null);
       ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
     }
@@ -842,7 +862,8 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
-    public void close(UiTestContext ctx) {
+    public void cleanup(UiTestContext ctx) {
+      // here rather than in close() so a failed assert in open() doesn't leave the rest of the suite in survival
       ctx.mc().setScreen(null);
       ctx.sendCommand("clear @s");
       ctx.sendCommand("gamemode creative");
@@ -945,7 +966,8 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
-    public void close(UiTestContext ctx) {
+    public void cleanup(UiTestContext ctx) {
+      // here rather than in close() so a failed assert in open() doesn't leave the rest of the suite in survival
       ctx.mc().setScreen(null);
       ctx.sendCommand("clear @s");
       ctx.sendCommand("gamemode creative");
