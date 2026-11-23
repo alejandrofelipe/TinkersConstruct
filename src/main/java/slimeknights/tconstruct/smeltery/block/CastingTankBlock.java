@@ -134,7 +134,7 @@ public class CastingTankBlock extends InventoryBlock implements ITankBlock, Enti
 
   @Deprecated
   @Override
-  public int getAnalogOutputSignal(BlockState blockState, Level worldIn, BlockPos pos) {
+  public int getAnalogOutputSignal(BlockState blockState, Level worldIn, BlockPos pos, Direction direction) {
     return ITankBlockEntity.getComparatorInputOverride(worldIn, pos);
   }
 

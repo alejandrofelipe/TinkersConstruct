@@ -2,6 +2,7 @@ package slimeknights.tconstruct.smeltery.block;
 
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -76,7 +77,7 @@ public class SearedLanternBlock extends LanternBlock implements ITankBlock, Enti
   @SuppressWarnings("deprecation")
   @Deprecated
   @Override
-  public int getAnalogOutputSignal(BlockState blockState, Level worldIn, BlockPos pos) {
+  public int getAnalogOutputSignal(BlockState blockState, Level worldIn, BlockPos pos, Direction direction) {
     return ITankBlockEntity.getComparatorInputOverride(worldIn, pos);
   }
 

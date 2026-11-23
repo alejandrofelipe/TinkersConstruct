@@ -77,10 +77,11 @@ public class ToolHarvestLogic {
   /**
    * Actually removes a block from the world. Cloned from {@link net.minecraft.server.level.ServerPlayerGameMode}
    * @param tool     Tool used in breaking
+   * @param stack    Stack instance, passed to the NeoForge hook as the tool
    * @param context  Harvest context
    * @return  True if the block was removed
    */
-  private static boolean removeBlock(IToolStackView tool, ToolHarvestContext context) {
+  private static boolean removeBlock(IToolStackView tool, ItemStack stack, ToolHarvestContext context) {
     Boolean removed = null;
     if (!tool.isBroken()) {
       for (ModifierEntry entry : tool.getModifierList()) {
@@ -95,7 +96,7 @@ public class ToolHarvestLogic {
     ServerLevel world = context.getWorld();
     BlockPos pos = context.getPos();
     if (removed == null) {
-      removed = state.onDestroyedByPlayer(world, pos, context.getPlayer(), context.canHarvest(), world.getFluidState(pos));
+      removed = state.onDestroyedByPlayer(world, pos, context.getPlayer(), stack, context.canHarvest(), world.getFluidState(pos));
     }
     // if removed by anything, finally destroy it
     if (removed) {
@@ -151,7 +152,7 @@ public class ToolHarvestLogic {
 
     // creative just removes the block
     if (player.isCreative()) {
-      removeBlock(tool, context);
+      removeBlock(tool, stack, context);
       return true;
     }
 
@@ -162,7 +163,7 @@ public class ToolHarvestLogic {
     // remove the block
     boolean canHarvest = context.canHarvest();
     BlockEntity te = canHarvest ? world.getBlockEntity(pos) : null; // ensures tile entity is fetched so it's around for afterBlockBreak
-    boolean removed = removeBlock(tool, context);
+    boolean removed = removeBlock(tool, stack, context);
 
     // harvest drops
     Block block = state.getBlock();

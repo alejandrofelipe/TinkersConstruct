@@ -112,7 +112,8 @@ public class PiggyBackPackItem extends TooltipItem {
     // can only ride one entity each
     if (!toRide.isVehicle() && count < MAX_ENTITY_STACK) {
       // todo: possibly throw off all passengers of the target
-      if (target.startRiding(toRide, true)) {
+      // 1.21.9: startRiding gained sendGameEvent; true keeps the start-riding criterion trigger (now also emits ENTITY_MOUNT)
+      if (target.startRiding(toRide, true, true)) {
         if (player instanceof ServerPlayer) {
           TinkerNetwork.getInstance().sendVanillaPacket(player, new ClientboundSetPassengersPacket(player));
         }

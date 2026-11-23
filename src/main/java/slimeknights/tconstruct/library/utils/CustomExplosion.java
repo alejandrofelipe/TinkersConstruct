@@ -6,6 +6,7 @@ import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.PrimedTnt;
@@ -112,11 +113,13 @@ public class CustomExplosion extends ServerExplosion {
     return this.blockInteraction != BlockInteraction.KEEP;
   }
 
+  /** 1.21.9: returns the number of blocks hit (vanilla uses it for the client block particles) */
   @Override
-  public void explode() {
+  public int explode() {
     this.level.gameEvent(this.source, GameEvent.EXPLODE, center());
     calculateHitBlocks();
     damageAndPushEntities();
+    return toBlow.size();
   }
 
   /** Calculates the list of blocks to hit; the actual block damage won't happen until {@link #finalizeExplosion(boolean)} */
@@ -285,7 +288,8 @@ public class CustomExplosion extends ServerExplosion {
     Vec3 position = center();
     for (ServerPlayer player : level.players()) {
       if (player.distanceToSqr(position) < 4096.0D) {
-        player.connection.send(new ClientboundExplodePacket(position, Optional.ofNullable(getHitPlayers().get(player)), isSmall() ? ParticleTypes.EXPLOSION : ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE));
+        // 1.21.9: block count 0 + no block particles keeps the pre-1.21.9 look (vanilla now also sprays block debris particles)
+        player.connection.send(new ClientboundExplodePacket(position, radius, 0, Optional.ofNullable(getHitPlayers().get(player)), isSmall() ? ParticleTypes.EXPLOSION : ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE, WeightedList.of()));
       }
     }
   }

@@ -324,9 +324,10 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
   public void recreateFromPacket(ClientboundAddEntityPacket packet) {
     // copied from llama spit
     super.recreateFromPacket(packet);
-    double x = packet.getXa();
-    double y = packet.getYa();
-    double z = packet.getZa();
+    Vec3 movement = packet.getMovement();
+    double x = movement.x;
+    double y = movement.y;
+    double z = movement.z;
     for(int i = 0; i < 7; i++) {
       double offset = 0.4D + 0.1D * i;
       this.level().addParticle(ParticleTypes.SPIT, this.getX(), this.getY(), this.getZ(), x * offset, y, z * offset);

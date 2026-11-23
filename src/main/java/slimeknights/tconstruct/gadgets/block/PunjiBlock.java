@@ -177,7 +177,7 @@ public class PunjiBlock extends Block {
   @SuppressWarnings("deprecation")
   @Override
   @Deprecated
-  public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn, InsideBlockEffectApplier effectApplier) {
+  public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn, InsideBlockEffectApplier effectApplier, boolean intersects) {
     if (entityIn instanceof LivingEntity) {
       Direction side = state.getValue(FACING);
       Axis axis = side.getAxis();
