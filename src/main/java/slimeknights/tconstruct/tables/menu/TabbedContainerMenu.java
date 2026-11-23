@@ -18,9 +18,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import org.apache.commons.lang3.tuple.Pair;
 import slimeknights.mantle.util.RegistryHelper;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -149,7 +148,7 @@ public class TabbedContainerMenu<TILE extends BlockEntity> extends TriggeringMul
 
       // if we found something, add the side inventory
       if (inventoryTE != null) {
-        IItemHandler handler = world.getCapability(Capabilities.ItemHandler.BLOCK, inventoryPos, accessDir);
+        IItemHandler handler = ILegacyItemHandlerProvider.find(world, inventoryPos, accessDir);
         int invSlots = handler != null ? handler.getSlots() : 0;
         int columns = Mth.clamp((invSlots - 1) / 9 + 1, 3, 6);
         this.addSubContainer(new SideInventoryContainer<>(TinkerTables.craftingStationContainer.get(), containerId, inv, inventoryTE, accessDir, -6 - 18 * 6, 8, columns), false);
@@ -177,7 +176,8 @@ public class TabbedContainerMenu<TILE extends BlockEntity> extends TriggeringMul
    * @return True if compatible.
    */
   private static boolean hasItemHandler(Level level, BlockPos pos, @Nullable Direction direction) {
-    return level.getCapability(Capabilities.ItemHandler.BLOCK, pos, direction) instanceof IItemHandlerModifiable;
+    // PORT 1.21.10: the native capability's legacy bridge is never modifiable, look up the real stacks instead
+    return ILegacyItemHandlerProvider.find(level, pos, direction) != null;
   }
 
 

@@ -12,11 +12,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
-import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
+import net.neoforged.neoforge.transfer.EmptyResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import slimeknights.mantle.transfer.TransferHelper;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.fluid.FillOnlyFluidHandler;
@@ -42,9 +44,9 @@ public class ChannelBlockEntity extends MantleBlockEntity implements IFluidPacke
 	/** Channel internal tank */
 	private final ChannelTank tank = new ChannelTank(FaucetBlockEntity.MB_PER_TICK * 4, this);
 	/** Handler to return from channel top */
-	private final IFluidHandler topHandler = new FillOnlyFluidHandler(tank);
+	private final ResourceHandler<FluidResource> topHandler = new FillOnlyFluidHandler(tank);
 	/** Tanks for inserting on each side */
-	private final Map<Direction,IFluidHandler> sideTanks = Util.make(new EnumMap<>(Direction.class), map -> {
+	private final Map<Direction,ResourceHandler<FluidResource>> sideTanks = Util.make(new EnumMap<>(Direction.class), map -> {
 		for (Direction direction : Plane.HORIZONTAL) {
 			map.put(direction, new ChannelSideTank(this, tank, direction));
 		}
@@ -85,7 +87,7 @@ public class ChannelBlockEntity extends MantleBlockEntity implements IFluidPacke
 	 * @return  Fluid handler, or null if none exposed on that side
 	 */
 	@Nullable
-	public IFluidHandler getFluidHandler(@Nullable Direction side) {
+	public ResourceHandler<FluidResource> getFluidHandler(@Nullable Direction side) {
 		// top side gets the insert direct
 		if (side == null || side == Direction.UP) {
 			return topHandler;
@@ -98,7 +100,7 @@ public class ChannelBlockEntity extends MantleBlockEntity implements IFluidPacke
 			}
 			// for out, return an empty fluid handler so the block we are pouring into knows we support fluids, even though we disallow any interaction
 			if (connection == ChannelConnection.OUT) {
-				return EmptyFluidHandler.INSTANCE;
+				return EmptyResourceHandler.instance();
 			}
 		}
 		return null;
@@ -112,7 +114,8 @@ public class ChannelBlockEntity extends MantleBlockEntity implements IFluidPacke
 	@Nullable
 	protected IFluidHandler getNeighborHandler(Direction side) {
 		assert level != null;
-		return level.getCapability(Capabilities.FluidHandler.BLOCK, worldPosition.relative(side), side.getOpposite());
+		// ticking, never inside a transaction
+		return TransferHelper.getLegacyFluidHandler(level, worldPosition.relative(side), side.getOpposite());
 	}
 
 	/**

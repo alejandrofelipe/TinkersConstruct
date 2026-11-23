@@ -83,6 +83,12 @@ public class TinkersChestBlockEntity extends AbstractChestBlockEntity {
     }
 
     @Override
+    public void setStackSilently(int slot, ItemStack stack) {
+      validateSlotIndex(slot);
+      stacks.set(slot, stack);
+    }
+
+    @Override
     protected void onContentsChanged(int slot) {
       if (parent != null) {
         parent.setChangedFast();

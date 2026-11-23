@@ -3,17 +3,27 @@ package slimeknights.tconstruct.smeltery.block.entity.inventory;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.TransferPreconditions;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import slimeknights.tconstruct.library.fluid.IMultitankListChange;
 
 import java.util.function.Consumer;
 
-public class DuctTankWrapper implements IFluidHandler {
-  private final IFluidHandler parent;
+/**
+ * Fluid handler of a duct, exposing only the smeltery fluid matching the duct's filter item.
+ * <p>
+ * PORT 1.21.10 (transfer step 1): native {@link ResourceHandler} over the smeltery's native handler; inserts and extracts are forwarded
+ * with the caller's transaction, so the smeltery journals them. Like the legacy wrapper they go to the whole tank (the smeltery merges by
+ * fluid), so the index is only used to read; the index mapping is refreshed by the tank list listeners, which run on commit.
+ */
+public class DuctTankWrapper implements ResourceHandler<FluidResource> {
+  private final ResourceHandler<FluidResource> parent;
   private final DuctItemHandler itemHandler;
   private int[] tankMapping;
 
-  public DuctTankWrapper(IFluidHandler parent, DuctItemHandler itemHandler) {
+  public DuctTankWrapper(ResourceHandler<FluidResource> parent, DuctItemHandler itemHandler) {
     this.parent = parent;
     this.itemHandler = itemHandler;
     // clear cache when the fluid changes or the smeltery list changes
@@ -28,10 +38,9 @@ public class DuctTankWrapper implements IFluidHandler {
   private int[] getTankMapping() {
     if (tankMapping == null) {
       FluidStack filter = itemHandler.getFluid();
-      int count = parent.getTanks();
+      int count = parent.size();
       if (filter.isEmpty()) {
-        FluidStack last = parent.getFluidInTank(count - 1);
-        if (last.isEmpty()) {
+        if (count > 0 && parent.getResource(count - 1).isEmpty()) {
           tankMapping = new int[] { count - 1 };
         } else {
           tankMapping = new int[0];
@@ -39,8 +48,8 @@ public class DuctTankWrapper implements IFluidHandler {
       } else {
         IntList list = new IntArrayList(count);
         for (int i = 0; i < count; i++) {
-          FluidStack contained = parent.getFluidInTank(i);
-          if (contained.isEmpty() || FluidStack.isSameFluidSameComponents(filter, contained)) {
+          FluidResource contained = parent.getResource(i);
+          if (contained.isEmpty() || contained.matches(filter)) {
             list.add(i);
           }
         }
@@ -50,68 +59,78 @@ public class DuctTankWrapper implements IFluidHandler {
     return tankMapping;
   }
 
+  /** Maps the index to a parent index, -1 if out of range or stale */
+  private int map(int index) {
+    int[] mapping = getTankMapping();
+    if (index < 0 || index >= mapping.length || mapping[index] >= parent.size()) {
+      return -1;
+    }
+    return mapping[index];
+  }
+
+  /** Checks if the resource matches the duct filter */
+  private boolean matchesFilter(FluidResource resource) {
+    FluidStack filter = itemHandler.getFluid();
+    return !filter.isEmpty() && resource.matches(filter);
+  }
 
   /* Properties */
 
   @Override
-  public int getTanks() {
+  public int size() {
     return getTankMapping().length;
   }
 
   @Override
-  public FluidStack getFluidInTank(int tank) {
-    if (tank < 0) {
-      return FluidStack.EMPTY;
-    }
-    int[] mapping = getTankMapping();
-    if (tank >= mapping.length) {
-      return FluidStack.EMPTY;
-    }
-    return parent.getFluidInTank(mapping[tank]);
+  public FluidResource getResource(int index) {
+    int mapped = map(index);
+    return mapped < 0 ? FluidResource.EMPTY : parent.getResource(mapped);
   }
 
   @Override
-  public int getTankCapacity(int tank) {
-    if (tank < 0) {
-      return 0;
-    }
-    int[] mapping = getTankMapping();
-    if (tank >= mapping.length) {
-      return 0;
-    }
-    return parent.getTankCapacity(mapping[tank]);
+  public long getAmountAsLong(int index) {
+    int mapped = map(index);
+    return mapped < 0 ? 0 : parent.getAmountAsLong(mapped);
   }
 
   @Override
-  public boolean isFluidValid(int tank, FluidStack stack) {
-    return FluidStack.isSameFluidSameComponents(itemHandler.getFluid(), stack);
+  public long getCapacityAsLong(int index, FluidResource resource) {
+    int mapped = map(index);
+    return mapped < 0 ? 0 : parent.getCapacityAsLong(mapped, resource);
   }
 
+  @Override
+  public boolean isValid(int index, FluidResource resource) {
+    return matchesFilter(resource);
+  }
 
   /* Interactions */
 
   @Override
-  public int fill(FluidStack resource, FluidAction action) {
-    if (resource.isEmpty() || !FluidStack.isSameFluidSameComponents(itemHandler.getFluid(), resource)) {
+  public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
+    return insert(resource, amount, transaction);
+  }
+
+  @Override
+  public int insert(FluidResource resource, int amount, TransactionContext transaction) {
+    TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+    if (!matchesFilter(resource)) {
       return 0;
     }
-    return parent.fill(resource, action);
+    return parent.insert(resource, amount, transaction);
   }
 
   @Override
-  public FluidStack drain(int maxDrain, FluidAction action) {
-    FluidStack fluid = itemHandler.getFluid();
-    if (fluid.isEmpty()) {
-      return FluidStack.EMPTY;
-    }
-    return parent.drain(fluid.copyWithAmount(maxDrain), action);
+  public int extract(int index, FluidResource resource, int amount, TransactionContext transaction) {
+    return extract(resource, amount, transaction);
   }
 
   @Override
-  public FluidStack drain(FluidStack resource, FluidAction action) {
-    if (resource.isEmpty() || !FluidStack.isSameFluidSameComponents(itemHandler.getFluid(), resource)) {
-      return FluidStack.EMPTY;
+  public int extract(FluidResource resource, int amount, TransactionContext transaction) {
+    TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+    if (!matchesFilter(resource)) {
+      return 0;
     }
-    return parent.drain(resource, action);
+    return parent.extract(resource, amount, transaction);
   }
 }

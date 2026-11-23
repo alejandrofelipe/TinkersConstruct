@@ -4,7 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
 import net.neoforged.neoforge.items.IItemHandler;
 import slimeknights.mantle.inventory.SmartItemHandlerSlot;
 import slimeknights.tconstruct.shared.inventory.TriggeringBaseContainerMenu;
@@ -20,7 +20,8 @@ public class SingleItemContainerMenu extends TriggeringBaseContainerMenu<BlockEn
     super(TinkerSmeltery.singleItemContainer.get(), id, inv, te);
     if (te != null) {
       Level level = te.getLevel();
-      IItemHandler handler = level == null ? null : level.getCapability(Capabilities.ItemHandler.BLOCK, te.getBlockPos(), null);
+      // PORT 1.21.10: menu slots need the real stacks, which the native capability's legacy bridge does not give
+      IItemHandler handler = level == null ? null : ILegacyItemHandlerProvider.find(level, te.getBlockPos(), null);
       if (handler != null) {
         this.addSlot(new SmartItemHandlerSlot(handler, 0, 80, 20));
       }

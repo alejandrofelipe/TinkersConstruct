@@ -6,7 +6,7 @@ import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import slimeknights.mantle.transfer.TransferHelper;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
@@ -139,7 +139,7 @@ public class MixerAlloyTank implements IMutableAlloyTank {
           // limit by blocks as that gives the modpack more control, say they want to allow only scorched tanks
           if (world.getBlockState(target).is(TinkerTags.Blocks.ALLOYER_TANKS)) {
             // if we found a tank, increment the number of tanks
-            IFluidHandler capability = world.getCapability(Capabilities.FluidHandler.BLOCK, target, direction.getOpposite());
+            IFluidHandler capability = TransferHelper.getLegacyFluidHandler(world, target, direction.getOpposite());
             checked.add(direction);
             if (capability != null) {
               inputs.put(direction, capability);

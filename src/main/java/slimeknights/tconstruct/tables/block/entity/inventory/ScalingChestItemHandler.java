@@ -74,6 +74,12 @@ public abstract class ScalingChestItemHandler extends ItemStackHandler implement
   }
 
 
+  @Override
+  public void setStackSilently(int slot, ItemStack stack) {
+    validateSlotIndex(slot);
+    stacks.set(slot, stack);
+  }
+
   /* Hook in visual size update */
 
   @Override

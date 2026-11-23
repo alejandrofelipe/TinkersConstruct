@@ -173,13 +173,13 @@ public final class TinkerTables extends TinkerModule {
    */
   @SubscribeEvent
   void registerCapabilities(RegisterCapabilitiesEvent event) {
-    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, craftingStationTile.get(),   (be, side) -> be.getItemHandler(side));
-    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, tinkerStationTile.get(),     (be, side) -> be.getItemHandler(side));
-    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, partBuilderTile.get(),       (be, side) -> be.getItemHandler(side));
-    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, modifierWorktableTile.get(), (be, side) -> be.getItemHandler(side));
-    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, tinkersChestTile.get(),      (be, side) -> be.getItemHandler());
-    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, partChestTile.get(),         (be, side) -> be.getItemHandler());
-    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, castChestTile.get(),         (be, side) -> be.getItemHandler());
+    event.registerBlockEntity(Capabilities.Item.BLOCK, craftingStationTile.get(),   (be, side) -> be.getItemHandler(side));
+    event.registerBlockEntity(Capabilities.Item.BLOCK, tinkerStationTile.get(),     (be, side) -> be.getItemHandler(side));
+    event.registerBlockEntity(Capabilities.Item.BLOCK, partBuilderTile.get(),       (be, side) -> be.getItemHandler(side));
+    event.registerBlockEntity(Capabilities.Item.BLOCK, modifierWorktableTile.get(), (be, side) -> be.getItemHandler(side));
+    event.registerBlockEntity(Capabilities.Item.BLOCK, tinkersChestTile.get(),      (be, side) -> be.getItemCapability());
+    event.registerBlockEntity(Capabilities.Item.BLOCK, partChestTile.get(),         (be, side) -> be.getItemCapability());
+    event.registerBlockEntity(Capabilities.Item.BLOCK, castChestTile.get(),         (be, side) -> be.getItemCapability());
   }
 
   @SubscribeEvent

@@ -23,8 +23,11 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.model.data.ModelData;
 import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
@@ -64,7 +67,7 @@ import java.util.function.Consumer;
 
 import static slimeknights.mantle.util.RetexturedHelper.TAG_TEXTURE;
 
-public abstract class HeatingStructureBlockEntity extends NameableBlockEntity implements IMasterLogic, ISmelteryTankHandler, IRetexturedBlockEntity {
+public abstract class HeatingStructureBlockEntity extends NameableBlockEntity implements IMasterLogic, ISmelteryTankHandler, IRetexturedBlockEntity, ILegacyItemHandlerProvider {
   private static final String TAG_STRUCTURE = "multiblock";
   private static final String TAG_TANK = "tank";
   private static final String TAG_INVENTORY = "inventory";
@@ -95,7 +98,7 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
   protected final SmelteryTank<HeatingStructureBlockEntity> tank = new SmelteryTank<>(this);
   /** Handler to pass to drains for fluid handling, null when the structure is not formed */
   @Nullable
-  private IFluidHandler fluidCapability = null;
+  private ResourceHandler<FluidResource> fluidCapability = null;
 
   /** Inventory handling melting items */
   @Getter
@@ -329,13 +332,18 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
   /* Capability */
 
   /** Gets the item handler exposed by this controller; registered centrally on {@code RegisterCapabilitiesEvent}. */
-  public IItemHandler getItemCapability() {
+  public ResourceHandler<ItemResource> getItemCapability() {
+    return meltingInventory.getItemCapability();
+  }
+
+  @Override
+  public IItemHandlerModifiable getLegacyItemHandler(@Nullable net.minecraft.core.Direction side) {
     return meltingInventory;
   }
 
   @Nullable
   @Override
-  public IFluidHandler getFluidCapability() {
+  public ResourceHandler<FluidResource> getFluidCapability() {
     return fluidCapability;
   }
 

@@ -76,6 +76,15 @@ public class MeltingModule implements IMeltingContainer, ContainerData {
   }
 
   /**
+   * Sets the contents of this module without any side effect: no client sync, recipe lookup or progress change.
+   * Used by the native item handler inside transactions, which replays the final stack through {@link #setStack(ItemStack)} on commit.
+   * @param newStack  New stack
+   */
+  public void setStackSilently(ItemStack newStack) {
+    this.stack = newStack;
+  }
+
+  /**
    * Sets the contents of this module
    * @param newStack  New stack
    */

@@ -3,14 +3,15 @@ package slimeknights.tconstruct.gadgets.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RailBlock;
 import net.minecraft.world.level.block.entity.Hopper;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import slimeknights.mantle.transfer.TransferHelper;
 
 import javax.annotation.Nullable;
 
@@ -25,24 +26,26 @@ public class DropperRailBlock extends RailBlock {
     if (!(cart instanceof Hopper)) {
       return;
     }
-    @Nullable IItemHandler itemHandlerCart = cart.getCapability(Capabilities.ItemHandler.ENTITY_AUTOMATION, Direction.UP);
+    @Nullable ResourceHandler<ItemResource> itemHandlerCart = cart.getCapability(Capabilities.Item.ENTITY_AUTOMATION, Direction.UP);
     if (itemHandlerCart == null) {
       return;
     }
-    @Nullable IItemHandler itemHandlerTE = world.getCapability(Capabilities.ItemHandler.BLOCK, pos.below(), Direction.UP);
+    @Nullable ResourceHandler<ItemResource> itemHandlerTE = TransferHelper.getItemResourceHandler(world, pos.below(), Direction.UP);
     if (itemHandlerTE == null) {
       return;
     }
 
-    for (int i = 0; i < itemHandlerCart.getSlots(); i++) {
-      ItemStack itemStack = itemHandlerCart.extractItem(i, 1, true);
-      if (itemStack.isEmpty()) {
+    // PORT 1.21.10: move one item natively, committing only if both the extraction and the insertion succeed
+    for (int i = 0; i < itemHandlerCart.size(); i++) {
+      ItemResource resource = itemHandlerCart.getResource(i);
+      if (resource.isEmpty()) {
         continue;
       }
-      if (ItemHandlerHelper.insertItem(itemHandlerTE, itemStack, true).isEmpty()) {
-        itemStack = itemHandlerCart.extractItem(i, 1, false);
-        ItemHandlerHelper.insertItem(itemHandlerTE, itemStack, false);
-        break;
+      try (Transaction tx = Transaction.openRoot()) {
+        if (itemHandlerCart.extract(i, resource, 1, tx) == 1 && itemHandlerTE.insert(resource, 1, tx) == 1) {
+          tx.commit();
+          break;
+        }
       }
     }
   }

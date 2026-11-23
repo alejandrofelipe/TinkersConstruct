@@ -2,6 +2,7 @@ package slimeknights.tconstruct.smeltery.block.entity;
 
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -9,10 +10,12 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import slimeknights.mantle.block.InventoryBlock;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.tconstruct.library.fluid.IFluidTankUpdater;
+import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.tank.ProxyItemTank;
@@ -20,7 +23,7 @@ import slimeknights.tconstruct.smeltery.block.entity.tank.ProxyItemTank;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
 
 /** Block entity with a tank that proxies to the nested item handler */
-public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTankUpdater {
+public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTankUpdater, ILegacyItemHandlerProvider {
   /** Direct access to the fluid handler and item handler */
   @Getter
   private final ProxyItemTank<ProxyTankBlockEntity> itemTank = new ProxyItemTank<>(this);
@@ -48,6 +51,11 @@ public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTan
 
   /** Gets the proxy tank exposed as both item and fluid handler; registered centrally on {@code RegisterCapabilitiesEvent}. */
   public ProxyItemTank<ProxyTankBlockEntity> getTank() {
+    return itemTank;
+  }
+
+  @Override
+  public IItemHandlerModifiable getLegacyItemHandler(@javax.annotation.Nullable Direction side) {
     return itemTank;
   }
 

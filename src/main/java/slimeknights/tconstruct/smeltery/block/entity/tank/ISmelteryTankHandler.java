@@ -1,7 +1,8 @@
 package slimeknights.tconstruct.smeltery.block.entity.tank;
 
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -24,7 +25,7 @@ public interface ISmelteryTankHandler {
    * @return  Fluid handler, or null if absent
    */
   @Nullable
-  IFluidHandler getFluidCapability();
+  ResourceHandler<FluidResource> getFluidCapability();
 
   /**
    * Called when the tank adds or removes a fluid to notify listeners

@@ -31,7 +31,9 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
-import net.neoforged.neoforge.items.wrapper.SidedInvWrapper;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import slimeknights.tconstruct.shared.block.entity.TableItemHandler;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.mantle.util.BlockEntityHelper;
 import slimeknights.tconstruct.TConstruct;
@@ -119,15 +121,15 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
     super(beType, pos, state, NAME, 2, 1);
     this.requireCast = state.getBlock() instanceof AbstractCastingBlock casting && casting.isRequireCast();
     this.emptyCastTag = emptyCastTag;
-    this.itemHandler = new SidedInvWrapper(this, Direction.DOWN);
+    this.itemHandler = new TableItemHandler<>(this, Direction.DOWN);
     this.castingType = castingType;
     this.moldingType = moldingType;
     this.castingInventory = new CastingContainerWrapper(this);
-    this.moldingInventory = new MoldingContainerWrapper(itemHandler, INPUT);
+    this.moldingInventory = new MoldingContainerWrapper(this, INPUT);
   }
 
   /** Gets the fluid handler for the casting tank; registered centrally on {@code RegisterCapabilitiesEvent}. */
-  public IFluidHandler getFluidHandler() {
+  public ResourceHandler<FluidResource> getFluidHandler() {
     return tank;
   }
 

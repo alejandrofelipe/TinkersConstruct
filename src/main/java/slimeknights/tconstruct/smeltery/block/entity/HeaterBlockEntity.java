@@ -10,7 +10,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.SingleItemResourceHandler;
 import slimeknights.mantle.block.entity.NameableBlockEntity;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.utils.TagUtil;
@@ -22,11 +26,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Tile entity for the heater block below the melter */
-public class HeaterBlockEntity extends NameableBlockEntity {
+public class HeaterBlockEntity extends NameableBlockEntity implements ILegacyItemHandlerProvider {
   private static final String TAG_ITEM = "item";
   private static final Component TITLE = TConstruct.makeTranslation("gui", "heater");
 
   private final HeaterItemHandler itemHandler = new HeaterItemHandler(this);
+  /** Native view of {@link #itemHandler}, registered as the item capability */
+  private final SingleItemResourceHandler itemCapability = new SingleItemResourceHandler(itemHandler, itemHandler::setStack);
 
   protected HeaterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
     super(type, pos, state, TITLE);
@@ -47,7 +53,12 @@ public class HeaterBlockEntity extends NameableBlockEntity {
 
   /** Exposes the item handler capability; registered centrally in RegisterCapabilitiesEvent */
   @Nullable
-  public IItemHandler getItemHandler(@Nullable Direction side) {
+  public ResourceHandler<ItemResource> getItemHandler(@Nullable Direction side) {
+    return itemCapability;
+  }
+
+  @Override
+  public IItemHandlerModifiable getLegacyItemHandler(@Nullable Direction side) {
     return itemHandler;
   }
 

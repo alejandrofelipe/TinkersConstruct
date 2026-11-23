@@ -42,7 +42,7 @@ public class TankInventoryBlockEntityRenderer<T extends BlockEntity & ITankInven
       // render items
       // TODO: can we show count somehow?
       for (int i = 0; i < renderItems.size(); i++) {
-        RenderingHelper.renderItem(matrices, buffer, melter.getItemHandler().getStackInSlot(i), renderItems.get(i), light);
+        RenderingHelper.renderItem(matrices, buffer, melter.getDisplayInventory().getStackInSlot(i), renderItems.get(i), light);
       }
 
       // pop back rotation

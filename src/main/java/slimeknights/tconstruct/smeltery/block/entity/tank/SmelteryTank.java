@@ -8,6 +8,11 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.TransferPreconditions;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.fluid.IMultitankListChange;
@@ -16,14 +21,20 @@ import slimeknights.tconstruct.smeltery.block.entity.tank.ISmelteryTankHandler.F
 import slimeknights.tconstruct.smeltery.network.SmelteryTankUpdatePacket;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Consumer;
 
 /**
- * Fluid handler implementation for the smeltery
+ * Fluid handler implementation for the smeltery.
+ * <p>
+ * PORT 1.21.10 (transfer step 1): also a native {@link ResourceHandler}, the form exposed through drains and ducts. Native changes to the
+ * fluid list are journaled and the parent and list listeners are notified once the root transaction commits, never on a simulation.
+ * The legacy methods stay for internal use (melting, alloying, faucets, GUI) and notify right away, as before.
  */
-public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> implements IFluidHandler, IMultitankListChange {
+@SuppressWarnings("removal")  // legacy IFluidHandler for internal use until phase 6
+public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> implements IFluidHandler, ResourceHandler<FluidResource>, IMultitankListChange {
   private final T parent;
   /** Fluids actually contained in the tank */
   @Getter
@@ -266,6 +277,135 @@ public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> im
 
     // nothing drained
     return FluidStack.EMPTY;
+  }
+
+  /* Native transfer */
+
+  /** Snapshot of the native state */
+  private record State(List<FluidStack> fluids, int contained) {}
+
+  /** Journal of the fluid list for native transfers */
+  private final SnapshotJournal<State> journal = new SnapshotJournal<>() {
+    @Override
+    protected State createSnapshot() {
+      List<FluidStack> copy = new ArrayList<>(fluids.size());
+      for (FluidStack fluid : fluids) {
+        copy.add(fluid.copy());
+      }
+      return new State(copy, contained);
+    }
+
+    @Override
+    protected void revertToSnapshot(State snapshot) {
+      fluids.clear();
+      fluids.addAll(snapshot.fluids());
+      contained = snapshot.contained();
+    }
+
+    @Override
+    protected void onRootCommit(State original) {
+      // the parent only cares about the order, which native transfers keep; list listeners need to know about added/removed/full changes
+      parent.notifyFluidsChanged(FluidChange.CHANGED, getFluidInTank(0));
+      tankListChange.run();
+    }
+  };
+
+  @Override
+  public int size() {
+    return getTanks();
+  }
+
+  @Override
+  public FluidResource getResource(int index) {
+    return FluidResource.of(getFluidInTank(index));
+  }
+
+  @Override
+  public long getAmountAsLong(int index) {
+    return getFluidInTank(index).getAmount();
+  }
+
+  @Override
+  public long getCapacityAsLong(int index, FluidResource resource) {
+    // a stale index (e.g. a cached mapping during a transaction) has no capacity rather than throwing
+    if (index < 0 || index > fluids.size()) {
+      return 0;
+    }
+    return Math.max(0, getTankCapacity(index));
+  }
+
+  @Override
+  public boolean isValid(int index, FluidResource resource) {
+    return !resource.isEmpty();
+  }
+
+  /** Finds the index of the given fluid in the list, -1 if missing */
+  private int indexOf(FluidResource resource) {
+    for (int i = 0; i < fluids.size(); i++) {
+      if (resource.matches(fluids.get(i))) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Inserts into the tank. Like the legacy fill, any fluid fits as long as there is space: the index must hold the same fluid, or be the
+   * "empty" segment after the fluids, in which case the fluid merges into its existing entry if present.
+   */
+  @Override
+  public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
+    TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+    if (index < 0 || index > fluids.size() || (index < fluids.size() && !resource.matches(fluids.get(index)))) {
+      return 0;
+    }
+    int usable = Math.min(capacity - contained, amount);
+    // could be negative if the smeltery size changes then you try filling it
+    if (usable <= 0) {
+      return 0;
+    }
+    journal.updateSnapshots(transaction);
+    contained += usable;
+    int existing = indexOf(resource);
+    if (existing >= 0) {
+      fluids.get(existing).grow(usable);
+    } else {
+      fluids.add(resource.toStack(usable));
+    }
+    return usable;
+  }
+
+  @Override
+  public int insert(FluidResource resource, int amount, TransactionContext transaction) {
+    TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+    // the empty segment index merges into the existing entry, so a single call fills like the legacy fill
+    int existing = indexOf(resource);
+    return insert(existing >= 0 ? existing : fluids.size(), resource, amount, transaction);
+  }
+
+  @Override
+  public int extract(int index, FluidResource resource, int amount, TransactionContext transaction) {
+    TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+    if (index < 0 || index >= fluids.size()) {
+      return 0;
+    }
+    FluidStack fluid = fluids.get(index);
+    if (!resource.matches(fluid)) {
+      return 0;
+    }
+    int drained = Math.min(amount, fluid.getAmount());
+    if (drained <= 0) {
+      return 0;
+    }
+    journal.updateSnapshots(transaction);
+    // the snapshot copied the list entries, so the entry may change in place
+    fluid = fluids.get(index);
+    fluid.shrink(drained);
+    contained -= drained;
+    if (fluid.isEmpty()) {
+      fluids.remove(index);
+    }
+    return drained;
   }
 
   /* Saving and loading */

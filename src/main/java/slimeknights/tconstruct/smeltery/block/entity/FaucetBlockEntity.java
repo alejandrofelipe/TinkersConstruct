@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import slimeknights.mantle.transfer.TransferHelper;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
@@ -70,7 +70,8 @@ public class FaucetBlockEntity extends MantleBlockEntity {
   @Nullable
   private IFluidHandler findFluidHandler(Direction side) {
     assert level != null;
-    return level.getCapability(Capabilities.FluidHandler.BLOCK, worldPosition.relative(side), side.getOpposite());
+    // ticking and interaction, never inside a transaction
+    return TransferHelper.getLegacyFluidHandler(level, worldPosition.relative(side), side.getOpposite());
   }
 
   /**

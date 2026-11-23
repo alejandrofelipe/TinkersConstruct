@@ -6,7 +6,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
 import net.neoforged.neoforge.items.IItemHandler;
 import slimeknights.mantle.client.screen.MultiModuleScreen;
 import slimeknights.mantle.inventory.BaseContainerMenu;
@@ -22,7 +22,7 @@ public class ScalingChestScreen<T extends BlockEntity> extends DynamicContainerS
     if (tile != null) {
       Level level = tile.getLevel();
       if (level != null) {
-        handler = level.getCapability(Capabilities.ItemHandler.BLOCK, tile.getBlockPos(), null);
+        handler = ILegacyItemHandlerProvider.find(level, tile.getBlockPos(), null);
       }
     }
     if (handler == null) {

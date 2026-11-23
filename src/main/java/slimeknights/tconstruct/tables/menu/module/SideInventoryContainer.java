@@ -7,7 +7,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.wrapper.EmptyItemHandler;
 import slimeknights.mantle.inventory.BaseContainerMenu;
@@ -35,7 +35,8 @@ public class SideInventoryContainer<TILE extends BlockEntity> extends BaseContai
     if (tile != null) {
       Level level = tile.getLevel();
       if (level != null) {
-        handler = level.getCapability(Capabilities.ItemHandler.BLOCK, tile.getBlockPos(), inventoryDirection);
+        // PORT 1.21.10: menu slots need the real stacks, which the native capability's legacy bridge does not give
+        handler = ILegacyItemHandlerProvider.find(level, tile.getBlockPos(), inventoryDirection);
       }
     }
     if (handler == null) {

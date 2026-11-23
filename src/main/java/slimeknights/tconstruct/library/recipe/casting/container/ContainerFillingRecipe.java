@@ -16,11 +16,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidUtil;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.mantle.data.loadable.field.ContextKey;
 import slimeknights.mantle.data.loadable.primitive.IntLoadable;
@@ -31,6 +27,7 @@ import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
 import slimeknights.tconstruct.library.recipe.casting.DisplayCastingRecipe;
 import slimeknights.tconstruct.library.recipe.casting.ICastingContainer;
 import slimeknights.tconstruct.library.recipe.casting.ICastingRecipe;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -70,11 +67,8 @@ public class ContainerFillingRecipe implements ICastingRecipe, IMultiRecipe<Disp
   @Override
   public int getFluidAmount(ICastingContainer inv) {
     Fluid fluid = inv.getFluid();
-    IFluidHandlerItem handler = inv.getStack().getCapability(Capabilities.FluidHandler.ITEM);
-    if (handler == null) {
-      return 0;
-    }
-    return handler.fill(new FluidStack(fluid, this.fluidAmount), FluidAction.SIMULATE);
+    // PORT 1.21.10: transaction safe, as a casting table sizes its tank from this during a native fill
+    return TransferUtil.simulateFill(inv.getStack(), new FluidStack(fluid, this.fluidAmount));
   }
 
   @Override
@@ -99,8 +93,8 @@ public class ContainerFillingRecipe implements ICastingRecipe, IMultiRecipe<Disp
     if (stack.getItem() != this.container.asItem()) {
       return false;
     }
-    IFluidHandlerItem handler = stack.getCapability(Capabilities.FluidHandler.ITEM);
-    return handler != null && handler.fill(new FluidStack(fluid, this.fluidAmount), FluidAction.SIMULATE) > 0;
+    // PORT 1.21.10: transaction safe, as a casting table matches recipes during a native fill
+    return TransferUtil.simulateFill(stack, new FluidStack(fluid, this.fluidAmount)) > 0;
   }
 
   /** @deprecated use {@link ICastingRecipe#assemble(Container, HolderLookup.Provider)} */
@@ -112,18 +106,17 @@ public class ContainerFillingRecipe implements ICastingRecipe, IMultiRecipe<Disp
 
   @Override
   public ItemStack assemble(ICastingContainer inv, HolderLookup.Provider access) {
-    ItemStack stack = inv.getStack().copy();
-    IFluidHandlerItem handler = stack.getCapability(Capabilities.FluidHandler.ITEM);
-    if (handler == null) {
-      return stack;
+    ItemStack stack = inv.getStack();
+    if (!TransferUtil.hasFluidHandler(stack)) {
+      return stack.copy();
     }
     FluidStack fluidStack = new FluidStack(inv.getFluid(), this.fluidAmount);
     DataComponentPatch components = inv.getFluidComponents();
     if (!components.isEmpty()) {
       fluidStack.applyComponents(components);
     }
-    handler.fill(fluidStack, FluidAction.EXECUTE);
-    return handler.getContainer();
+    // fills a single container, like the legacy capability on the one item in the casting slot
+    return TransferUtil.fill(stack, fluidStack);
   }
 
   /* Display */
@@ -138,11 +131,7 @@ public class ContainerFillingRecipe implements ICastingRecipe, IMultiRecipe<Disp
                                              .filter(fluid -> fluid.getBucket() != Items.AIR && fluid.isSource(fluid.defaultFluidState()))
                                              .map(fluid -> {
                                                FluidStack fluidStack = new FluidStack(fluid, fluidAmount);
-                                               ItemStack stack = new ItemStack(container);
-                                               stack = FluidUtil.getFluidHandler(stack).map(handler -> {
-                                                 handler.fill(fluidStack, FluidAction.EXECUTE);
-                                                 return handler.getContainer();
-                                               }).orElse(stack);
+                                               ItemStack stack = TransferUtil.fill(new ItemStack(container), fluidStack);
                                                return new DisplayCastingRecipe(getId(), getType(), casts, Collections.singletonList(fluidStack), stack, 5, true);
                                              })
                                              .toList();

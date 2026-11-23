@@ -6,7 +6,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import slimeknights.mantle.transfer.TransferHelper;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
@@ -28,7 +28,7 @@ public class GaugeBlockEntity extends BlockEntity {
     }
     // fetch the neighbor handler directly
     Direction side = getBlockState().getValue(BlockStateProperties.FACING);
-    IFluidHandler handler = level.getCapability(Capabilities.FluidHandler.BLOCK, getBlockPos().relative(side.getOpposite()), side);
+    IFluidHandler handler = TransferHelper.getLegacyFluidHandler(level, getBlockPos().relative(side.getOpposite()), side);
     // return tank or empty tank
     return handler != null ? handler : EmptyFluidHandler.INSTANCE;
   }

@@ -30,7 +30,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import slimeknights.mantle.transfer.TransferHelper;
 import slimeknights.mantle.datagen.MantleTags;
 import slimeknights.mantle.util.BlockEntityHelper;
 import slimeknights.mantle.util.RegistryHelper;
@@ -167,7 +167,7 @@ public class ChannelBlock extends Block implements EntityBlock {
 	private static boolean isFluidHandler(LevelAccessor world, Direction side, BlockPos pos) {
 		// capability lookups require a full Level; during placement/update the accessor is normally a Level
 		if (world instanceof Level level) {
-			return level.getCapability(Capabilities.FluidHandler.BLOCK, pos, side) != null;
+			return TransferHelper.hasFluidHandler(level, pos, side);
 		}
 		return false;
 	}

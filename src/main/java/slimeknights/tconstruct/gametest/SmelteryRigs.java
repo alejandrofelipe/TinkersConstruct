@@ -9,8 +9,10 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
@@ -67,11 +69,14 @@ public final class SmelteryRigs {
    */
   public static void insertMeltable(ServerLevel level, BlockPos controller, ItemStack stack) {
     if (level.getBlockEntity(controller) instanceof SmelteryBlockEntity smeltery) {
-      IItemHandler inventory = smeltery.getItemCapability();
-      ItemStack remainder = inventory.insertItem(0, stack, false);
-      if (!remainder.isEmpty()) {
-        throw new IllegalStateException("Melting inventory rejected " + stack + " at " + controller
-                                        + " (slots=" + inventory.getSlots() + " - structure not formed yet?)");
+      ResourceHandler<ItemResource> inventory = smeltery.getItemCapability();
+      try (Transaction tx = Transaction.openRoot()) {
+        int inserted = inventory.size() == 0 ? 0 : inventory.insert(0, ItemResource.of(stack), stack.getCount(), tx);
+        if (inserted != stack.getCount()) {
+          throw new IllegalStateException("Melting inventory rejected " + stack + " at " + controller
+                                          + " (slots=" + inventory.size() + " - structure not formed yet?)");
+        }
+        tx.commit();
       }
     } else {
       throw new IllegalStateException("Expected smeltery controller at " + controller + ", found " + level.getBlockEntity(controller));
@@ -101,7 +106,11 @@ public final class SmelteryRigs {
    */
   public static void fillTank(ServerLevel level, BlockPos pos, FluidStack fluid) {
     if (level.getBlockEntity(pos) instanceof TankBlockEntity tank) {
-      int filled = tank.getFluidHandler(null).fill(fluid, FluidAction.EXECUTE);
+      int filled;
+      try (Transaction tx = Transaction.openRoot()) {
+        filled = tank.getFluidHandler(null).insert(FluidResource.of(fluid), fluid.getAmount(), tx);
+        tx.commit();
+      }
       if (filled != fluid.getAmount()) {
         throw new IllegalStateException("Tank at " + pos + " accepted only " + filled + "/" + fluid.getAmount() + "mb of " + BuiltInRegistries.FLUID.getKey(fluid.getFluid()));
       }

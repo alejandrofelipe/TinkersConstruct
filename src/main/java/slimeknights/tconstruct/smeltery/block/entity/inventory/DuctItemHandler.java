@@ -3,14 +3,12 @@ package slimeknights.tconstruct.smeltery.block.entity.inventory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidUtil;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import slimeknights.mantle.inventory.SingleItemHandler;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.network.InventorySlotSyncPacket;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.library.utils.WeakListenerList;
 import slimeknights.tconstruct.smeltery.block.entity.component.DuctBlockEntity;
 
@@ -44,6 +42,15 @@ public class DuctItemHandler extends SingleItemHandler<DuctBlockEntity> {
    * Sets the stack in this duct
    * @param newStack  New stack
    */
+  /**
+   * Sets the stack without syncing to the client, for the native item handler inside transactions and their reverts.
+   * Still clears the fluid caches (ours and the listening tank wrappers), which are no side effects.
+   */
+  public void setStackSilently(ItemStack newStack) {
+    super.setStack(newStack);
+    updateFluid();
+  }
+
   @Override
   public void setStack(ItemStack newStack) {
     Level world = parent.getLevel();
@@ -74,8 +81,8 @@ public class DuctItemHandler extends SingleItemHandler<DuctBlockEntity> {
       }
     }
     // the item must contain fluid (no empty cans or buckets)
-    IFluidHandlerItem handler = stack.getCapability(Capabilities.FluidHandler.ITEM);
-    return handler != null && !handler.getFluidInTank(0).isEmpty();
+    // transaction safe: called by the native item handler while inserting
+    return !TransferUtil.getFirstFluid(stack).isEmpty();
   }
 
   /**
@@ -88,9 +95,7 @@ public class DuctItemHandler extends SingleItemHandler<DuctBlockEntity> {
       if (stack.isEmpty()) {
         fluid = FluidStack.EMPTY;
       } else {
-        fluid = FluidUtil.getFluidHandler(stack)
-          .map(handler -> handler.getFluidInTank(0))
-          .orElse(FluidStack.EMPTY);
+        fluid = TransferUtil.getFirstFluid(stack);
       }
     }
     return fluid;

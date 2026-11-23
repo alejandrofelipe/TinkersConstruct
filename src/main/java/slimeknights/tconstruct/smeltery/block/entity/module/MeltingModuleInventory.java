@@ -10,9 +10,12 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer.IOreRate;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
+import slimeknights.tconstruct.library.transfer.SlotStorageItemHandler;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -43,6 +46,56 @@ public class MeltingModuleInventory implements IItemHandlerModifiable {
   private final boolean strictSize;
   /** Number of nuggets to produce when melting an ore */
   private final IOreRate oreRate;
+  /** Native view of this inventory, registered as the item capability. Lazy as subclasses may not be ready in the constructor */
+  private ResourceHandler<ItemResource> itemCapability;
+
+  /**
+   * Gets the native item handler of this inventory, registered as the block's item capability.
+   * PORT 1.21.10 (transfer step 1): slots change silently inside transactions and replay through {@link #setStackInSlot(int, ItemStack)}
+   * on commit, so simulated inserts never sync, look up recipes or reset melting progress.
+   */
+  public ResourceHandler<ItemResource> getItemCapability() {
+    if (itemCapability == null) {
+      itemCapability = new SlotStorageItemHandler() {
+        @Override
+        public int size() {
+          return getSlots();
+        }
+
+        @Override
+        protected ItemStack getStack(int slot) {
+          return getStackInSlot(slot);
+        }
+
+        @Override
+        protected void setStackSilently(int slot, ItemStack stack) {
+          if (stack.isEmpty()) {
+            if (modules[slot] != null) {
+              modules[slot].setStackSilently(ItemStack.EMPTY);
+            }
+          } else {
+            getModule(slot).setStackSilently(stack);
+          }
+        }
+
+        @Override
+        protected void setStackWithSideEffects(int slot, ItemStack stack) {
+          setStackInSlot(slot, stack);
+        }
+
+        @Override
+        protected int getSlotCapacity(int slot, ItemResource resource) {
+          return getSlotLimit(slot);
+        }
+
+        @Override
+        protected boolean isItemValid(int slot, ItemResource resource) {
+          return MeltingModuleInventory.this.isItemValid(slot, resource.toStack());
+        }
+      };
+    }
+    return itemCapability;
+  }
 
   /**
    * Creates a new inventory with a fixed size

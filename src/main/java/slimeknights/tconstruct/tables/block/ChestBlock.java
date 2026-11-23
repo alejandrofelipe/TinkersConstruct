@@ -96,6 +96,23 @@ public class ChestBlock extends TabbedTableBlock {
   }
 
   @Override
+  public void preRemoveSideEffects(BlockState state, Level level, BlockPos pos, BlockEntity blockEntity) {
+    // PORT 1.21.10: drop the real stacks rather than going through the item capability, whose legacy bridge hands out copies and would
+    // leave the items in the chest; dropping splits each stack, and the slot is cleared, so the chest ends up empty
+    if (blockEntity instanceof AbstractChestBlockEntity chest) {
+      if (dropsItems) {
+        IItemHandlerModifiable inventory = chest.getItemHandler();
+        dropInventoryItems(level, pos, inventory);
+        for (int i = 0; i < inventory.getSlots(); i++) {
+          inventory.setStackInSlot(i, ItemStack.EMPTY);
+        }
+      }
+      return;
+    }
+    super.preRemoveSideEffects(state, level, pos, blockEntity);
+  }
+
+  @Override
   protected void dropInventoryItems(BlockState state, Level worldIn, BlockPos pos, IItemHandler inventory) {
     if (dropsItems) {
       dropInventoryItems(worldIn, pos, inventory);

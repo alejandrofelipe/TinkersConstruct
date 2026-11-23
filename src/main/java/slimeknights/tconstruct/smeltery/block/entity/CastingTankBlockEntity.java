@@ -20,12 +20,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
-import net.neoforged.neoforge.items.wrapper.SidedInvWrapper;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import net.neoforged.neoforge.model.data.ModelData;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.mantle.fluid.transfer.FluidContainerTransferManager;
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer;
@@ -35,7 +36,9 @@ import slimeknights.tconstruct.common.Sounds;
 import slimeknights.tconstruct.library.client.model.ModelProperties;
 import slimeknights.tconstruct.library.fluid.FluidTankAnimated;
 import slimeknights.tconstruct.library.utils.NBTTags;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.shared.block.entity.TableBlockEntity;
+import slimeknights.tconstruct.shared.block.entity.TableItemHandler;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.CastingTankBlock;
 import slimeknights.tconstruct.smeltery.block.entity.component.TankBlockEntity;
@@ -96,7 +99,7 @@ public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlo
   protected CastingTankBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, ITankBlock block) {
     super(type, pos, state, NAME, 2, 1);
     tank = new FluidTankAnimated(block.getCapacity(), this);
-    itemHandler = new SidedInvWrapper(this, Direction.DOWN);
+    itemHandler = new TableItemHandler<>(this, Direction.DOWN);
   }
 
   /**
@@ -154,7 +157,7 @@ public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlo
       return getItem(INPUT).isEmpty() && getItem(OUTPUT).isEmpty() && !pStack.isEmpty() && (
         // check the various options for some sort of fluid-containing stack
         FluidContainerTransferManager.INSTANCE.mayHaveTransfer(pStack)
-          || pStack.getCapability(Capabilities.FluidHandler.ITEM) != null
+          || TransferUtil.hasFluidHandler(pStack)
       );
     }
     return false;
@@ -231,8 +234,18 @@ public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlo
    */
 
   /** Gets the fluid handler for this tank; registered centrally on {@code RegisterCapabilitiesEvent}. */
-  public IFluidHandler getFluidHandler() {
+  public ResourceHandler<FluidResource> getFluidHandler() {
     return tank;
+  }
+
+  /** Legacy view of this inventory for the renderer */
+  @SuppressWarnings("removal")
+  private final IItemHandler displayInventory = new InvWrapper(this);
+
+  @SuppressWarnings("removal")
+  @Override
+  public IItemHandler getDisplayInventory() {
+    return displayInventory;
   }
 
   @Nonnull

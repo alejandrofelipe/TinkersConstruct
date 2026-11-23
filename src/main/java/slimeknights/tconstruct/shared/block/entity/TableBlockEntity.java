@@ -50,6 +50,15 @@ public abstract class TableBlockEntity extends InventoryBlockEntity {
     super.setItem(slot, itemstack);
   }
 
+  /**
+   * Sets the stack in the slot without the side effects of {@link #setItem(int, ItemStack)} overrides (packets, block updates, recipe
+   * processing). Used by native item handlers ({@link TableItemHandler}) inside transactions, which replay the final stack through
+   * {@link #setItem(int, ItemStack)} once the transaction commits.
+   */
+  protected void setItemSilently(int slot, ItemStack stack) {
+    super.setItem(slot, stack);
+  }
+
   @Override
   protected boolean shouldSyncOnUpdate() {
     return true;

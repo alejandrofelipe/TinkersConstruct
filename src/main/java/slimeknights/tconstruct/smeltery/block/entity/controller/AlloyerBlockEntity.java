@@ -13,7 +13,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import slimeknights.mantle.block.entity.NameableBlockEntity;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -78,7 +79,7 @@ public class AlloyerBlockEntity extends NameableBlockEntity implements ITankBloc
    */
 
   /** Gets the fluid handler for this alloyer's tank; registered centrally on {@code RegisterCapabilitiesEvent}. */
-  public IFluidHandler getFluidHandler() {
+  public ResourceHandler<FluidResource> getFluidHandler() {
     return tank;
   }
 

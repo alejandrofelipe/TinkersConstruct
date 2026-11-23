@@ -118,7 +118,11 @@ public interface ITankBlockEntity extends IFluidTankUpdater, FluidUpdatePacket.I
 
   /** Represents a  tank block entity with an inventory */
   interface ITankInventoryBlockEntity extends ITankBlockEntity {
-    /** Gets the associated item handler for this tank with an inventory */
-    IItemHandler getItemHandler();
+    /**
+     * Gets the inventory of this tank, as displayed by its renderer.
+     * PORT 1.21.10: was {@code getItemHandler()}, renamed as {@code InventoryBlockEntity#getItemHandler()} returns the native handler now.
+     */
+    @SuppressWarnings("removal")  // legacy item handler for rendering until phase 6
+    IItemHandler getDisplayInventory();
   }
 }

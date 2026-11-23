@@ -11,12 +11,17 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.minecraft.core.Direction;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.model.data.ModelData;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.model.ModelProperties;
+import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.SingleItemResourceHandler;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.component.SmelteryInputOutputBlockEntity.SmelteryFluidIO;
@@ -30,12 +35,14 @@ import javax.annotation.Nullable;
 /**
  * Filtered drain tile entity
  */
-public class DuctBlockEntity extends SmelteryFluidIO implements MenuProvider {
+public class DuctBlockEntity extends SmelteryFluidIO implements MenuProvider, ILegacyItemHandlerProvider {
   private static final String TAG_ITEM = "item";
   private static final Component TITLE = TConstruct.makeTranslation("gui", "duct");
 
   @Getter
   private final DuctItemHandler itemHandler = new DuctItemHandler(this);
+  /** Native view of {@link #itemHandler}, registered as the item capability */
+  private final SingleItemResourceHandler itemCapability = new SingleItemResourceHandler(itemHandler, itemHandler::setStackSilently);
 
   public DuctBlockEntity(BlockPos pos, BlockState state) {
     this(TinkerSmeltery.duct.get(), pos, state);
@@ -63,12 +70,17 @@ public class DuctBlockEntity extends SmelteryFluidIO implements MenuProvider {
   /* Capability */
 
   /** Gets the item handler for this duct; registered centrally on {@code RegisterCapabilitiesEvent}. */
-  public IItemHandler getItemCapability() {
+  public ResourceHandler<ItemResource> getItemCapability() {
+    return itemCapability;
+  }
+
+  @Override
+  public IItemHandlerModifiable getLegacyItemHandler(@Nullable Direction side) {
     return itemHandler;
   }
 
   @Override
-  protected IFluidHandler makeWrapper(IFluidHandler capability) {
+  protected ResourceHandler<FluidResource> makeWrapper(ResourceHandler<FluidResource> capability) {
     return new DuctTankWrapper(capability, itemHandler);
   }
 

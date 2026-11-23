@@ -11,14 +11,30 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.TransferPreconditions;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Fluid handler of casting tables and basins, whose capacity comes from the casting recipe started by the first fill.
+ * <p>
+ * PORT 1.21.10 (transfer step 1): also a native {@link ResourceHandler}, the form registered as the block's fluid capability. A native
+ * fill only <em>simulates</em> starting the recipe ({@link CastingBlockEntity#initNewCasting(FluidStack, FluidAction)} with
+ * {@code SIMULATE}) to size the tank, and changes the fluid, capacity and filter silently, journaled. Once the root transaction commits,
+ * the recipe is started for real and the block entity notified (cooling timer, comparators, client sync); draining to empty resets the
+ * block entity on commit. Simulations (aborted transactions) therefore never start a recipe or touch the block entity.
+ * The legacy methods stay for internal use and react right away, as before.
+ */
+@SuppressWarnings("removal")  // legacy IFluidHandler for internal use until phase 6
 @RequiredArgsConstructor
-public class CastingFluidHandler implements IFluidHandler {
+public class CastingFluidHandler implements IFluidHandler, ResourceHandler<FluidResource> {
   private final CastingBlockEntity tile;
   @Getter @Setter
   private FluidStack fluid = FluidStack.EMPTY;
@@ -139,6 +155,130 @@ public class CastingFluidHandler implements IFluidHandler {
       }
     }
     return stack;
+  }
+
+  /* Native transfer */
+
+  /** Snapshot of the native state */
+  private record State(FluidStack fluid, int capacity, Fluid filter) {}
+
+  /** Journal of the tank state for native transfers */
+  private final SnapshotJournal<State> journal = new SnapshotJournal<>() {
+    @Override
+    protected State createSnapshot() {
+      return new State(fluid.copy(), capacity, filter);
+    }
+
+    @Override
+    protected void revertToSnapshot(State snapshot) {
+      fluid = snapshot.fluid();
+      capacity = snapshot.capacity();
+      filter = snapshot.filter();
+    }
+
+    @Override
+    protected void onRootCommit(State original) {
+      if (fluid.isEmpty()) {
+        // drained to empty: like the legacy drain, assume the current recipe is invalid now
+        if (!original.fluid().isEmpty()) {
+          tile.reset();
+        }
+        return;
+      }
+      // a new casting was sized by a simulation, start it for real now
+      if (original.capacity() == 0 && capacity != 0) {
+        int newCapacity = tile.initNewCasting(fluid, FluidAction.EXECUTE);
+        if (newCapacity > 0) {
+          capacity = newCapacity;
+        }
+      }
+      tile.onContentsChanged();
+    }
+  };
+
+  @Override
+  public int size() {
+    return 1;
+  }
+
+  @Override
+  public FluidResource getResource(int index) {
+    Objects.checkIndex(index, 1);
+    return FluidResource.of(fluid);
+  }
+
+  @Override
+  public long getAmountAsLong(int index) {
+    Objects.checkIndex(index, 1);
+    return fluid.getAmount();
+  }
+
+  @Override
+  public long getCapacityAsLong(int index, FluidResource resource) {
+    Objects.checkIndex(index, 1);
+    return resource.isEmpty() || isFluidValid(resource.toStack(1)) ? getCapacity() : 0;
+  }
+
+  @Override
+  public boolean isValid(int index, FluidResource resource) {
+    Objects.checkIndex(index, 1);
+    return isFluidValid(resource.toStack(1));
+  }
+
+  @Override
+  public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
+    Objects.checkIndex(index, 1);
+    TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+    if (!isFluidValid(resource.toStack(1))) {
+      return 0;
+    }
+    // size a new casting by simulating the recipe start, the real start happens on commit
+    int capacity = this.capacity;
+    boolean newCasting = this.capacity == 0;
+    if (newCasting) {
+      capacity = tile.initNewCasting(resource.toStack(amount), FluidAction.SIMULATE);
+      if (capacity <= 0) {
+        return 0;
+      }
+    }
+    // safety: should never be false, but good to check
+    if (!fluid.isEmpty() && !resource.matches(fluid)) {
+      return 0;
+    }
+    int inserted = Math.min(amount, capacity - fluid.getAmount());
+    if (inserted <= 0) {
+      return 0;
+    }
+    journal.updateSnapshots(transaction);
+    if (newCasting) {
+      this.capacity = capacity;
+      this.filter = resource.getFluid();
+    }
+    fluid = resource.toStack(fluid.getAmount() + inserted);
+    return inserted;
+  }
+
+  @Override
+  public int extract(int index, FluidResource resource, int amount, TransactionContext transaction) {
+    Objects.checkIndex(index, 1);
+    TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+    if (fluid.isEmpty() || !resource.matches(fluid)) {
+      return 0;
+    }
+    int drained = Math.min(amount, fluid.getAmount());
+    if (drained <= 0) {
+      return 0;
+    }
+    journal.updateSnapshots(transaction);
+    if (drained == fluid.getAmount()) {
+      // like the legacy drain, emptying clears the tank's recipe state; the block entity resets on commit
+      fluid = FluidStack.EMPTY;
+      capacity = 0;
+      filter = Fluids.EMPTY;
+    } else {
+      fluid = fluid.copyWithAmount(fluid.getAmount() - drained);
+    }
+    return drained;
   }
 
   /* Required */

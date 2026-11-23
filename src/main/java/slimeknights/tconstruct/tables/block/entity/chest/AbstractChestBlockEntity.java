@@ -2,6 +2,7 @@ package slimeknights.tconstruct.tables.block.entity.chest;
 
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -15,7 +16,12 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.mantle.block.entity.NameableBlockEntity;
+import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.ItemHandlerResourceHandler;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.tables.block.entity.inventory.IChestItemHandler;
 import slimeknights.tconstruct.tables.menu.TinkerChestContainerMenu;
@@ -23,15 +29,27 @@ import slimeknights.tconstruct.tables.menu.TinkerChestContainerMenu;
 import javax.annotation.Nullable;
 
 /** Shared base logic for all Tinkers' chest tile entities */
-public abstract class AbstractChestBlockEntity extends NameableBlockEntity {
+public abstract class AbstractChestBlockEntity extends NameableBlockEntity implements ILegacyItemHandlerProvider {
   private static final String KEY_ITEMS = "Items";
 
   @Getter
   private final IChestItemHandler itemHandler;
+  /**
+   * Native view of {@link #itemHandler}, registered as the item capability.
+   * PORT 1.21.10 (transfer step 1): changes are silent until the root transaction commits, then replayed through the legacy handler.
+   */
+  @Getter
+  private final ResourceHandler<ItemResource> itemCapability;
   protected AbstractChestBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, Component name, IChestItemHandler itemHandler) {
     super(type, pos, state, name);
     itemHandler.setParent(this);
     this.itemHandler = itemHandler;
+    this.itemCapability = new ItemHandlerResourceHandler(itemHandler, itemHandler::setStackSilently);
+  }
+
+  @Override
+  public IItemHandlerModifiable getLegacyItemHandler(@Nullable Direction side) {
+    return itemHandler;
   }
 
   @Nullable

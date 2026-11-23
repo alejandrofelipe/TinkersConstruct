@@ -12,12 +12,12 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.model.data.ModelData;
+import net.neoforged.neoforge.transfer.EmptyResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
-import slimeknights.mantle.inventory.EmptyItemHandler;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.common.multiblock.IMasterLogic;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
@@ -173,22 +173,22 @@ public abstract class SmelteryInputOutputBlockEntity<T> extends SmelteryComponen
 
 
   /** Fluid implementation of smeltery IO */
-  public static abstract class SmelteryFluidIO extends SmelteryInputOutputBlockEntity<IFluidHandler> {
+  public static abstract class SmelteryFluidIO extends SmelteryInputOutputBlockEntity<ResourceHandler<FluidResource>> {
     protected SmelteryFluidIO(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-      super(type, pos, state, Capabilities.FluidHandler.BLOCK, EmptyFluidHandler.INSTANCE);
+      super(type, pos, state, Capabilities.Fluid.BLOCK, EmptyResourceHandler.instance());
     }
 
     /** Wraps the given handler; subclasses may override to add extra behavior */
-    protected IFluidHandler makeWrapper(IFluidHandler capability) {
+    protected ResourceHandler<FluidResource> makeWrapper(ResourceHandler<FluidResource> capability) {
       return capability;
     }
 
     @Nullable
     @Override
-    protected IFluidHandler getCapability(BlockEntity parent) {
+    protected ResourceHandler<FluidResource> getCapability(BlockEntity parent) {
       // fluid capability is not exposed directly in the smeltery
       if (parent instanceof ISmelteryTankHandler tankHandler) {
-        IFluidHandler capability = tankHandler.getFluidCapability();
+        ResourceHandler<FluidResource> capability = tankHandler.getFluidCapability();
         if (capability != null) {
           return makeWrapper(capability);
         }
@@ -198,13 +198,13 @@ public abstract class SmelteryInputOutputBlockEntity<T> extends SmelteryComponen
   }
 
   /** Item implementation of smeltery IO */
-  public static class ChuteBlockEntity extends SmelteryInputOutputBlockEntity<IItemHandler> {
+  public static class ChuteBlockEntity extends SmelteryInputOutputBlockEntity<ResourceHandler<ItemResource>> {
     public ChuteBlockEntity(BlockPos pos, BlockState state) {
       this(TinkerSmeltery.chute.get(), pos, state);
     }
 
     protected ChuteBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-      super(type, pos, state, Capabilities.ItemHandler.BLOCK, EmptyItemHandler.INSTANCE);
+      super(type, pos, state, Capabilities.Item.BLOCK, EmptyResourceHandler.instance());
     }
   }
 

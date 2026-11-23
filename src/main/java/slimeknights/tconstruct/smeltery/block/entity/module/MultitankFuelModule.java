@@ -5,7 +5,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import slimeknights.mantle.transfer.TransferHelper;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
@@ -57,7 +57,7 @@ public class MultitankFuelModule extends FuelModule implements IFluidHandler {
     BlockPos pos = be.getBlockPos();
     if (tankHandlers != null && !tankHandlers.containsKey(pos)) {
       Level world = getLevel();
-      IFluidHandler handler = world.getCapability(Capabilities.FluidHandler.BLOCK, pos, null);
+      IFluidHandler handler = TransferHelper.getLegacyFluidHandler(world, pos, null);
       if (handler != null) {
         tankHandlers.put(pos, handler);
       }
@@ -70,7 +70,7 @@ public class MultitankFuelModule extends FuelModule implements IFluidHandler {
       tankHandlers = new LinkedHashMap<>();
       Level world = getLevel();
       for (BlockPos pos : tankSupplier.get()) {
-        IFluidHandler handler = world.getCapability(Capabilities.FluidHandler.BLOCK, pos, null);
+        IFluidHandler handler = TransferHelper.getLegacyFluidHandler(world, pos, null);
         if (handler != null) {
           tankHandlers.put(pos, handler);
         }

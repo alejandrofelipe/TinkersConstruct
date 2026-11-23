@@ -10,7 +10,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
@@ -284,9 +285,9 @@ public class SmelteryGameTests {
   }
 
   private static boolean contains(AlloyerBlockEntity be, Fluid fluid) {
-    IFluidHandler handler = be.getFluidHandler();
-    for (int i = 0; i < handler.getTanks(); i++) {
-      if (handler.getFluidInTank(i).getFluid() == fluid) return true;
+    ResourceHandler<FluidResource> handler = be.getFluidHandler();
+    for (int i = 0; i < handler.size(); i++) {
+      if (handler.getResource(i).getFluid() == fluid) return true;
     }
     return false;
   }

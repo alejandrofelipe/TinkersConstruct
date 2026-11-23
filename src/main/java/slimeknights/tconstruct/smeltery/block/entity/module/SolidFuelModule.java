@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import slimeknights.mantle.transfer.TransferHelper;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -96,8 +96,8 @@ public class SolidFuelModule extends FuelModule {
     Level level = getLevel();
     // first, identify a capability that has what we need
     // on the chance both are present, we prioritize fluid; we don't expect that to change
-    fluidHandler = level.getCapability(Capabilities.FluidHandler.BLOCK, fuelPos, null);
-    itemHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, fuelPos, null);
+    fluidHandler = TransferHelper.getLegacyFluidHandler(level, fuelPos, null);
+    itemHandler = TransferHelper.getLegacyItemHandler(level, fuelPos, null);
   }
 
   @Override

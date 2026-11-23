@@ -8,12 +8,11 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import slimeknights.mantle.network.packet.IThreadsafePacket;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
 
 public record InventorySlotSyncPacket(ItemStack itemStack, int slot, BlockPos pos) implements IThreadsafePacket {
   public static final CustomPacketPayload.Type<InventorySlotSyncPacket> TYPE = new CustomPacketPayload.Type<>(TConstruct.getResource("inventory_slot_sync"));
@@ -38,8 +37,9 @@ public record InventorySlotSyncPacket(ItemStack itemStack, int slot, BlockPos po
     private static void handle(InventorySlotSyncPacket packet) {
       Level world = Minecraft.getInstance().level;
       if (world != null) {
-        IItemHandler handler = world.getCapability(Capabilities.ItemHandler.BLOCK, packet.pos, null);
-        if (handler instanceof IItemHandlerModifiable modifiable) {
+        // PORT 1.21.10: the capability is native now and its legacy bridge is not modifiable, so update the real stacks of the block
+        IItemHandlerModifiable modifiable = ILegacyItemHandlerProvider.find(world, packet.pos, null);
+        if (modifiable != null) {
           modifiable.setStackInSlot(packet.slot, packet.itemStack);
           //noinspection ConstantConditions
           Minecraft.getInstance().levelRenderer.blockChanged(null, packet.pos, null, null, 0);

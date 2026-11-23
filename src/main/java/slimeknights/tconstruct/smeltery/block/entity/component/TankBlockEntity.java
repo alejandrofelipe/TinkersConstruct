@@ -17,7 +17,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.IFluidTank;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.model.data.ModelData;
 import slimeknights.tconstruct.common.multiblock.IMasterLogic;
@@ -93,7 +94,7 @@ public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITa
 
   /** Exposes the fluid handler capability; registered centrally in RegisterCapabilitiesEvent */
   @Nullable
-  public IFluidHandler getFluidHandler(@Nullable Direction side) {
+  public ResourceHandler<FluidResource> getFluidHandler(@Nullable Direction side) {
     return tank;
   }
 

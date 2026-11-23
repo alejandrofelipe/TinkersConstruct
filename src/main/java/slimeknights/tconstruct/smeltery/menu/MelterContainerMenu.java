@@ -10,7 +10,7 @@ import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import slimeknights.mantle.fluid.FluidTransferHelper;
@@ -51,7 +51,8 @@ public class MelterContainerMenu extends TriggeringBaseContainerMenu<MelterBlock
       Level world = melter.getLevel();
       BlockPos down = melter.getBlockPos().below();
       if (world != null && world.getBlockState(down).is(TinkerTags.Blocks.FUEL_TANKS)) {
-        IItemHandler handler = world.getCapability(Capabilities.ItemHandler.BLOCK, down, null);
+        // PORT 1.21.10: menu slots need the real stacks, which the native capability's legacy bridge does not give
+        IItemHandler handler = ILegacyItemHandlerProvider.find(world, down, null);
         if (handler != null) {
           this.addSlot(new SmartItemHandlerSlot(handler, 0, 151, 32));
           hasFuelSlot = true;
