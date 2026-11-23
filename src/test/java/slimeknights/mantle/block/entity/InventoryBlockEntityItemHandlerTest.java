@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.test.BaseMcTest;
@@ -24,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * The native item handler {@link InventoryBlockEntity} exposes as its capability (M5 transfer step 1, D-T1/D-T3):
  * NeoForge's transactional container wrapper by default.
+ * Runs in the Gradle {@code test} task once Tinkers compiles on 1.21.10 (phase 2E); verified earlier in a scratch harness.
  */
 class InventoryBlockEntityItemHandlerTest extends BaseMcTest {
   // instance field: registries are only bootstrapped by BaseMcTest's @BeforeAll
@@ -31,8 +33,17 @@ class InventoryBlockEntityItemHandlerTest extends BaseMcTest {
 
   /** Minimal concrete inventory, no level */
   private static class TestInventory extends InventoryBlockEntity {
+    /** Number of {@link #setChanged()} calls, which the container wrapper makes once per root commit */
+    int changes = 0;
+
     TestInventory(int size, int maxStackSize) {
       super(BlockEntityType.CHEST, BlockPos.ZERO, Blocks.CHEST.defaultBlockState(), Component.empty(), false, size, maxStackSize);
+    }
+
+    @Override
+    public void setChanged() {
+      changes++;
+      super.setChanged();
     }
 
     @Override
@@ -54,6 +65,16 @@ class InventoryBlockEntityItemHandlerTest extends BaseMcTest {
     assertThat(handler.size()).isEqualTo(3);
     assertThat(inventory.getItemHandler(Direction.UP)).isSameAs(handler);
     assertThat(inventory.getItemHandler(null)).isSameAs(handler);
+  }
+
+  @Test
+  void getItemHandler_assignedHandlerTakesPrecedence() {
+    ItemStacksResourceHandler custom = new ItemStacksResourceHandler(2);
+    TestInventory inventory = new TestInventory(3, 64);
+    inventory.itemHandler = custom;
+    assertThat(inventory.getItemHandler()).isSameAs(custom);
+    assertThat(inventory.getItemHandler(Direction.DOWN)).isSameAs(custom);
+    assertThat(inventory.getItemHandler(null)).isSameAs(custom);
   }
 
   @Test
@@ -83,6 +104,32 @@ class InventoryBlockEntityItemHandlerTest extends BaseMcTest {
       tx.commit();
     }
     assertThat(inventory.getItem(0).getCount()).isEqualTo(16);
+  }
+
+  @Test
+  void insert_mergesIntoNearlyFullSlot() {
+    TestInventory inventory = new TestInventory(1, 64);
+    inventory.setItem(0, new ItemStack(Items.DIAMOND, 62));
+    try (Transaction tx = Transaction.openRoot()) {
+      assertThat(inventory.getItemHandler().insert(0, DIAMOND, 5, tx)).isEqualTo(2);
+      tx.commit();
+    }
+    assertThat(inventory.getItem(0).getCount()).isEqualTo(64);
+  }
+
+  @Test
+  void setChanged_onlyOnCommit() {
+    TestInventory inventory = new TestInventory(1, 64);
+    try (Transaction tx = Transaction.openRoot()) {
+      assertThat(inventory.getItemHandler().insert(0, DIAMOND, 5, tx)).isEqualTo(5);
+    }
+    assertThat(inventory.changes).isZero();
+    try (Transaction tx = Transaction.openRoot()) {
+      assertThat(inventory.getItemHandler().insert(0, DIAMOND, 5, tx)).isEqualTo(5);
+      assertThat(inventory.changes).isZero();
+      tx.commit();
+    }
+    assertThat(inventory.changes).isEqualTo(1);
   }
 
   @Test
