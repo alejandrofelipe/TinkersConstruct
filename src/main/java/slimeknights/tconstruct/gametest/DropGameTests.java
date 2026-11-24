@@ -40,7 +40,7 @@ import slimeknights.tconstruct.world.TinkerWorld;
 import java.util.List;
 import java.util.function.Consumer;
 
-/** Gametests for block and mob drops: Tinkers heads from charged creepers. */
+/** Gametests for block and mob drops: Tinkers heads from charged creepers and the cast chest keeping its inventory. */
 public class DropGameTests {
   /* Heads */
 
@@ -112,6 +112,84 @@ public class DropGameTests {
     }
     int heads = countHuskHeads(helper);
     helper.assertTrue(heads == 0, Component.literal("expected no husk head after cancelling the drops, got " + heads));
+    helper.succeed();
+  }
+
+
+  /* Cast chest */
+
+  /** Places the given cast chest item on top of the floor at the relative position, the way a player would */
+  private static CastChestBlockEntity placeChest(GameTestHelper helper, ItemStack stack, BlockPos relative) {
+    ServerLevel level = helper.getLevel();
+    BlockPos floor = helper.absolutePos(relative.below());
+    BlockPlaceContext context = new BlockPlaceContext(level, null, InteractionHand.MAIN_HAND, stack, new BlockHitResult(Vec3.atCenterOf(floor), Direction.UP, floor, false));
+    BlockPos placed = context.getClickedPos();
+    InteractionResult result = ((BlockItem) stack.getItem()).place(context);
+    helper.assertTrue(result.consumesAction(), Component.literal("cast chest was not placed: " + result));
+    if (!(level.getBlockEntity(placed) instanceof CastChestBlockEntity chest)) {
+      throw new IllegalStateException("no cast chest block entity at " + placed);
+    }
+    return chest;
+  }
+
+  /** Asserts the chest holds exactly the given stacks in its first slots, and nothing else */
+  private static void assertContents(GameTestHelper helper, CastChestBlockEntity chest, ItemStack... expected) {
+    IItemHandlerModifiable inventory = chest.getItemHandler();
+    for (int i = 0; i < inventory.getSlots(); i++) {
+      ItemStack actual = inventory.getStackInSlot(i);
+      ItemStack wanted = i < expected.length ? expected[i] : ItemStack.EMPTY;
+      helper.assertTrue(ItemStack.matches(actual, wanted), Component.literal("slot " + i + ": expected " + wanted + ", got " + actual));
+    }
+  }
+
+  /** Breaking a filled cast chest drops it with its inventory, and placing the dropped item restores it */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void cast_chest_keeps_inventory_when_broken(GameTestHelper helper) {
+    ServerLevel level = helper.getLevel();
+    BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
+    BlockState state = TinkerTables.castChest.get().defaultBlockState();
+    level.setBlockAndUpdate(pos, state);
+    if (!(level.getBlockEntity(pos) instanceof CastChestBlockEntity chest)) {
+      throw new IllegalStateException("no cast chest block entity");
+    }
+    ItemStack ingots = new ItemStack(TinkerSmeltery.ingotCast.get(), 3);
+    ItemStack nuggets = new ItemStack(TinkerSmeltery.nuggetCast.get(), 1);
+    chest.getItemHandler().setStackInSlot(0, ingots.copy());
+    chest.getItemHandler().setStackInSlot(1, nuggets.copy());
+
+    // loot table drop
+    List<ItemStack> drops = Block.getDrops(state, level, pos, chest);
+    helper.assertTrue(drops.size() == 1 && drops.getFirst().is(TinkerTables.castChest.asItem()), Component.literal("expected a single cast chest drop, got " + drops));
+    ItemStack drop = drops.getFirst();
+    helper.assertTrue(drop.has(DataComponents.BLOCK_ENTITY_DATA), Component.literal("dropped cast chest has no block entity data: " + drop.getComponentsPatch()));
+    level.removeBlock(pos, false);
+
+    // place it again
+    assertContents(helper, placeChest(helper, drop, new BlockPos(3, 1, 3)), ingots, nuggets);
+
+    // an empty chest drops a plain item, which stacks with crafted ones
+    BlockPos emptyPos = helper.absolutePos(new BlockPos(1, 1, 3));
+    level.setBlockAndUpdate(emptyPos, state);
+    List<ItemStack> emptyDrops = Block.getDrops(state, level, emptyPos, level.getBlockEntity(emptyPos));
+    helper.assertTrue(emptyDrops.size() == 1 && ItemStack.isSameItemSameComponents(emptyDrops.getFirst(), new ItemStack(TinkerTables.castChest)),
+                      Component.literal("expected a plain cast chest from an empty chest, got " + emptyDrops + " " + emptyDrops.stream().map(ItemStack::getComponentsPatch).toList()));
+    helper.succeed();
+  }
+
+  /** Cast chests dropped before 1.21.10 hold the inventory in custom data ({@code TinkerData.Items}); placing one still restores it */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void cast_chest_reads_legacy_item_inventory(GameTestHelper helper) {
+    ItemStack ingots = new ItemStack(TinkerSmeltery.ingotCast.get(), 2);
+    ListTag items = new ListTag();
+    items.add(ItemStackWithSlot.CODEC.encodeStart(helper.getLevel().registryAccess().createSerializationContext(NbtOps.INSTANCE), new ItemStackWithSlot(0, ingots)).getOrThrow());
+    CompoundTag tinkerData = new CompoundTag();
+    tinkerData.put("Items", items);
+    CompoundTag custom = new CompoundTag();
+    custom.put("TinkerData", tinkerData);
+    ItemStack legacy = new ItemStack(TinkerTables.castChest);
+    legacy.set(DataComponents.CUSTOM_DATA, CustomData.of(custom));
+
+    assertContents(helper, placeChest(helper, legacy, new BlockPos(2, 1, 2)), ingots);
     helper.succeed();
   }
 }

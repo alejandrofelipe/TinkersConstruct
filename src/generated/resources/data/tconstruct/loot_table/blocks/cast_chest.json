@@ -17,15 +17,10 @@
               "source": "block_entity"
             },
             {
-              "function": "minecraft:copy_custom_data",
-              "ops": [
-                {
-                  "op": "replace",
-                  "source": "Items",
-                  "target": "TinkerData.Items"
-                }
-              ],
-              "source": "block_entity"
+              "function": "tconstruct:copy_block_entity_data",
+              "keys": [
+                "Items"
+              ]
             }
           ],
           "name": "tconstruct:cast_chest"

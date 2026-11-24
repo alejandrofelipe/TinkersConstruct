@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -28,6 +29,7 @@ import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerModule;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.library.json.loot.CopyBlockEntityDataFunction;
 import slimeknights.tconstruct.library.recipe.material.MaterialRecipe;
 import slimeknights.tconstruct.library.recipe.material.ShapedMaterialRecipe;
 import slimeknights.tconstruct.library.recipe.material.ShapedMaterialsRecipe;
@@ -133,6 +135,12 @@ public final class TinkerTables extends TinkerModule {
   public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TinkersChestBlockEntity>> tinkersChestTile = BLOCK_ENTITIES.register("modifier_chest", TinkersChestBlockEntity::new, tinkersChest);
   public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PartChestBlockEntity>> partChestTile = BLOCK_ENTITIES.register("part_chest", PartChestBlockEntity::new, partChest);
   public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CastChestBlockEntity>> castChestTile = BLOCK_ENTITIES.register("cast_chest", CastChestBlockEntity::new, castChest);
+
+  /*
+   * Loot
+   */
+  /** Keeps the cast chest inventory on the dropped item, see {@link CopyBlockEntityDataFunction} */
+  public static final DeferredHolder<LootItemFunctionType<?>, LootItemFunctionType<CopyBlockEntityDataFunction>> lootCopyBlockEntityData = LOOT_FUNCTIONS.register("copy_block_entity_data", () -> new LootItemFunctionType<>(CopyBlockEntityDataFunction.CODEC));
 
   /*
    * Containers

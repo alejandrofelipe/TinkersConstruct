@@ -9,12 +9,11 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.TypedEntityData;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.BlockEntityType.BlockEntitySupplier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -42,6 +41,9 @@ public class ChestBlock extends TabbedTableBlock {
     Block.box(0.5D, 0.0D, 13.5D, 2.5D, 15.0D, 15.5D) //leg
                                                         );
 
+  /** Custom data key holding the inventory on items dropped before 1.21.10 */
+  private static final String LEGACY_DATA = "TinkerData";
+
   private final BlockEntitySupplier<? extends BlockEntity> blockEntity;
   private final boolean dropsItems;
   public ChestBlock(Properties builder, BlockEntitySupplier<? extends BlockEntity> blockEntity, boolean dropsItems) {
@@ -59,16 +61,13 @@ public class ChestBlock extends TabbedTableBlock {
   @Override
   public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
     super.setPlacedBy(worldIn, pos, state, placer, stack);
-    // check if we also have an inventory
-    TypedEntityData<BlockEntityType<?>> blockEntityData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
-    if (blockEntityData != null) {
-      CompoundTag tag = blockEntityData.copyTagWithoutId();
-      if (TagUtil.contains(tag, "TinkerData", Tag.TAG_COMPOUND)) {
-        CompoundTag tinkerData = tag.getCompoundOrEmpty("TinkerData");
-        BlockEntity te = worldIn.getBlockEntity(pos);
-        if (te instanceof AbstractChestBlockEntity chest) {
-          chest.readInventory(tinkerData, worldIn.registryAccess());
-        }
+    // the inventory is block entity data (the cast chest loot copies it there), which BlockItem already loaded
+    // items dropped before 1.21.10 hold it in custom data instead (1.20 root tag, moved by the data fixer, and the 1.21.1 - 1.21.8 loot table)
+    CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+    if (customData != null) {
+      CompoundTag tag = customData.copyTag();
+      if (TagUtil.contains(tag, LEGACY_DATA, Tag.TAG_COMPOUND) && worldIn.getBlockEntity(pos) instanceof AbstractChestBlockEntity chest) {
+        chest.readInventory(tag.getCompoundOrEmpty(LEGACY_DATA), worldIn.registryAccess());
       }
     }
   }

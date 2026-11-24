@@ -49,6 +49,7 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.registration.GeodeItemObject;
 import slimeknights.tconstruct.common.registration.GeodeItemObject.BudSize;
 import slimeknights.tconstruct.gadgets.TinkerGadgets;
+import slimeknights.tconstruct.library.json.loot.CopyBlockEntityDataFunction;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 import slimeknights.tconstruct.library.utils.NBTTags;
 import slimeknights.tconstruct.shared.TinkerCommons;
@@ -151,9 +152,9 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
     this.add(TinkerTables.partChest.get(), block ->
       droppingWithFunctions(block, builder ->
         builder.apply(COPY_NAME)));
-    // cast chest - name and inventory
+    // cast chest - name and inventory, the inventory as block entity data so placing the item restores it
     this.add(TinkerTables.castChest.get(), block -> droppingWithFunctions(block, builder ->
-      builder.apply(COPY_NAME).apply(CopyCustomDataFunction.copyData(BLOCK_ENTITY_NBT).copy("Items", "TinkerData.Items"))));
+      builder.apply(COPY_NAME).apply(CopyBlockEntityDataFunction.copy("Items"))));
 
     // tables with legs
     this.dropTable(TinkerTables.craftingStation.get());
