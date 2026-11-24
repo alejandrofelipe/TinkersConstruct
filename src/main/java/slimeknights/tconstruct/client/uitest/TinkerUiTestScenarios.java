@@ -6,15 +6,20 @@ import mezz.jei.api.runtime.IJeiRuntime;
 import mezz.jei.api.runtime.IRecipesGui;
 import net.blay09.mods.craftingtweaks.client.GuiTweakButton;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -23,13 +28,20 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
@@ -41,6 +53,7 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
@@ -64,14 +77,21 @@ import slimeknights.tconstruct.plugin.jei.JEIPlugin;
 import slimeknights.tconstruct.plugin.jei.TConstructJEIConstants;
 import slimeknights.tconstruct.plugin.jei.entity.DefaultEntityMeltingRecipe;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
+import slimeknights.tconstruct.smeltery.block.ChannelBlock;
+import slimeknights.tconstruct.smeltery.block.FaucetBlock;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
+import slimeknights.tconstruct.smeltery.block.controller.ControllerBlock;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
+import slimeknights.tconstruct.smeltery.block.entity.FaucetBlockEntity;
+import slimeknights.tconstruct.smeltery.block.entity.controller.AlloyerBlockEntity;
+import slimeknights.tconstruct.smeltery.block.entity.controller.MelterBlockEntity;
 import slimeknights.tconstruct.smeltery.item.CopperCanItem;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.entity.table.CraftingStationBlockEntity;
 import slimeknights.tconstruct.tables.menu.CraftingStationContainerMenu;
 import slimeknights.tconstruct.tables.client.inventory.TinkerStationScreen;
 import slimeknights.tconstruct.tables.client.inventory.ToolTableScreen;
+import slimeknights.tconstruct.tables.client.inventory.widget.TinkerTabsWidget;
 import slimeknights.tconstruct.tools.TinkerModifiers;
 import slimeknights.tconstruct.tools.TinkerToolParts;
 import slimeknights.tconstruct.tools.TinkerTools;
@@ -81,6 +101,7 @@ import slimeknights.tconstruct.tools.data.material.MaterialIds;
 import slimeknights.tconstruct.world.TinkerHeadType;
 import slimeknights.tconstruct.world.TinkerWorld;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -134,6 +155,11 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new JeiCategoryScenario<>("part_builder", TConstructJEIConstants.PART_BUILDER));
     UiTestScenarios.register(new JeiCategoryScenario<>("worktable", TConstructJEIConstants.MODIFIER_WORKTABLE));
     UiTestScenarios.register(new BookStructureScenario());
+    UiTestScenarios.register(new FluidBlocksScenario());
+    UiTestScenarios.register(new CastingCoolingScenario());
+    UiTestScenarios.register(new AoeOutlineScenario("aoe_outline", SITE.offset(130, 0, 0), false, true));
+    UiTestScenarios.register(new AoeOutlineScenario("aoe_outline_high_contrast", SITE.offset(136, 0, 0), true, false));
+    UiTestScenarios.register(new StationCarriedClicksScenario());
     if (ModList.get().isLoaded("craftingtweaks")) {
       UiTestScenarios.register(new CraftingTweaksRotateScenario());
     }
@@ -1060,6 +1086,8 @@ public class TinkerUiTestScenarios {
     public void cleanup(UiTestContext ctx) {
       ctx.mc().setScreen(null);
       ctx.sendCommand("clear @s");
+      // look ahead again: the following screen captures show the world behind them
+      ctx.sendCommand("tp @s ~ ~ ~ 0 0");
     }
   }
 
@@ -1092,5 +1120,483 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) { /* nothing open */ }
+  }
+
+  /** Fills the fluid handler of the block at the position through its capability in one committed transaction, failing unless all of it fits. */
+  private static void fillFluid(ServerLevel level, BlockPos pos, @Nullable Direction side, FluidStack fluid) {
+    ResourceHandler<FluidResource> handler = level.getCapability(Capabilities.Fluid.BLOCK, pos, side);
+    if (handler == null) {
+      throw new IllegalStateException("No fluid handler at " + pos + ", found " + level.getBlockState(pos));
+    }
+    int filled;
+    try (Transaction tx = Transaction.openRoot()) {
+      filled = handler.insert(FluidResource.of(fluid), fluid.getAmount(), tx);
+      tx.commit();
+    }
+    if (filled != fluid.getAmount()) {
+      throw new IllegalStateException(level.getBlockState(pos) + " at " + pos + " accepted only " + filled + "/" + fluid.getAmount() + " mB");
+    }
+  }
+
+  /** Gets the client side block entity at the position as the given type, failing with a scenario specific message otherwise. */
+  private static <T> T clientBlockEntity(UiTestContext ctx, BlockPos pos, Class<T> type, String scenario) {
+    BlockEntity be = Objects.requireNonNull(ctx.mc().level).getBlockEntity(pos);
+    if (!type.isInstance(be)) {
+      throw new IllegalStateException(scenario + " expected a " + type.getSimpleName() + " at " + pos + " on the client, found " + be);
+    }
+    return type.cast(be);
+  }
+
+  /**
+   * No menu: the fluid holding block entity renderers in the world, which 1.21.9 moved to extracted render states. From left to right: a melter
+   * on a fuel tank holding molten gold, an alloyer holding molten cobalt, a gauge on a half full tank of molten copper, and a tank pouring molten
+   * iron through a faucet into a channel, which flows sideways into a second channel and down into a casting basin. The capture is taken mid
+   * pour, so the faucet stream, both channel flows and the partially filled basin show.
+   */
+  private static class FluidBlocksScenario implements UiTestScenario {
+    private static final String NAME = "fluid_blocks";
+    private final BlockPos origin = SITE.offset(110, 0, 0);
+    private final BlockPos melter = origin.offset(0, 1, -3);
+    private final BlockPos alloyer = origin.offset(0, 1, -1);
+    private final BlockPos gauge = origin.offset(0, 1, 1);
+    private final BlockPos faucet = origin.offset(0, 2, 3);
+    private final BlockPos basin = origin.offset(0, 0, 4);
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      ctx.sendCommand("tp @s " + (origin.getX() - 5) + " " + origin.getY() + " " + origin.getZ());
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        // the saved world persists across runs: clear the site first so every block entity starts empty
+        for (int y = 0; y <= 2; y++) {
+          for (int z = -3; z <= 4; z++) {
+            level.setBlockAndUpdate(origin.offset(0, y, z), Blocks.AIR.defaultBlockState());
+            level.setBlockAndUpdate(origin.offset(1, y, z), Blocks.AIR.defaultBlockState());
+          }
+        }
+        // melter facing the camera; the fuel tank goes in after it so its shape update forms the melter (see MelterScenario)
+        level.setBlockAndUpdate(melter, TinkerSmeltery.searedMelter.get().defaultBlockState().setValue(ControllerBlock.FACING, Direction.WEST));
+        level.setBlockAndUpdate(melter.below(), TinkerSmeltery.searedTank.get(TankType.FUEL_TANK).defaultBlockState());
+        SmelteryRigs.fillTank(level, melter.below(), new FluidStack(Fluids.LAVA, 2000));
+        fillFluid(level, melter, null, new FluidStack(TinkerFluids.moltenGold.get(), FluidValues.INGOT * 12));
+        // alloyer facing the camera, half full
+        level.setBlockAndUpdate(alloyer, TinkerSmeltery.scorchedAlloyer.get().defaultBlockState().setValue(ControllerBlock.FACING, Direction.WEST));
+        level.setBlockAndUpdate(alloyer.below(), TinkerSmeltery.scorchedTank.get(TankType.FUEL_TANK).defaultBlockState());
+        fillFluid(level, alloyer, null, new FluidStack(TinkerFluids.moltenCobalt.get(), FluidValues.INGOT * 24));
+        // gauge on the camera side of a half full ingot tank
+        BlockPos gaugeTank = gauge.east();
+        level.setBlockAndUpdate(gaugeTank, TinkerSmeltery.searedTank.get(TankType.INGOT_TANK).defaultBlockState());
+        SmelteryRigs.fillTank(level, gaugeTank, new FluidStack(TinkerFluids.moltenCopper.get(), FluidValues.INGOT * 24));
+        level.setBlockAndUpdate(gauge, TinkerSmeltery.obsidianGauge.get().defaultBlockState().setValue(BlockStateProperties.FACING, Direction.WEST));
+        // pour rig, built bottom up: basin, the channel above it flowing down, the channel feeding it, the source tank and its faucet.
+        // 7 ingots never fill the 9 ingot block cast, so the basin stays partially filled. Channels unpowered like an unpowered placement:
+        // the default state is powered, and losing power clears the down connection
+        level.setBlockAndUpdate(basin, TinkerSmeltery.searedBasin.get().defaultBlockState());
+        level.setBlockAndUpdate(basin.above(), TinkerSmeltery.searedChannel.get().defaultBlockState().setValue(ChannelBlock.POWERED, false)
+          .setValue(ChannelBlock.DOWN, true).setValue(ChannelBlock.NORTH, ChannelBlock.ChannelConnection.IN));
+        level.setBlockAndUpdate(faucet.below(), TinkerSmeltery.searedChannel.get().defaultBlockState().setValue(ChannelBlock.POWERED, false)
+          .setValue(ChannelBlock.SOUTH, ChannelBlock.ChannelConnection.OUT));
+        BlockPos source = faucet.east();
+        level.setBlockAndUpdate(source, TinkerSmeltery.searedTank.get(TankType.INGOT_TANK).defaultBlockState());
+        SmelteryRigs.fillTank(level, source, new FluidStack(TinkerFluids.moltenIron.get(), FluidValues.INGOT * 7));
+        level.setBlockAndUpdate(faucet, TinkerSmeltery.searedFaucet.get().defaultBlockState().setValue(FaucetBlock.FACING, Direction.WEST));
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 30; // block entity data sync + chunk remesh
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.useBlock(faucet); // opens the tap
+      ctx.lookAt(origin.offset(0, 1, 1));
+    }
+
+    @Override
+    public int settleTicks() {
+      return 40; // the 630 mB source pours at 10 mB per tick, so this is mid pour
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      // every renderer must have something to draw, else the capture says nothing
+      if (clientBlockEntity(ctx, melter, MelterBlockEntity.class, NAME).getTank().getFluid().isEmpty()) {
+        throw new IllegalStateException(NAME + ": the melter tank is empty on the client");
+      }
+      if (clientBlockEntity(ctx, alloyer, AlloyerBlockEntity.class, NAME).getTank().getFluid().isEmpty()) {
+        throw new IllegalStateException(NAME + ": the alloyer tank is empty on the client");
+      }
+      if (!clientBlockEntity(ctx, faucet, FaucetBlockEntity.class, NAME).isPouring()) {
+        throw new IllegalStateException(NAME + ": the faucet is not pouring at capture");
+      }
+      int basinFluid = clientBlockEntity(ctx, basin, CastingBlockEntity.class, NAME).getTank().getFluid().getAmount();
+      if (basinFluid <= 0 || basinFluid >= FluidValues.INGOT * 7) {
+        throw new IllegalStateException(NAME + ": expected the basin partially filled through the channels at capture, found " + basinFluid + " mB");
+      }
+    }
+  }
+
+  /**
+   * No menu: a casting table (ingot cast) and a casting basin filled with molten gold through their fluid capability, captured while the
+   * recipe output fades in tinted orange to white. The game is frozen with {@code /tick freeze} once the table is past half its cooling
+   * time, so the capture always shows the table mid fade (and the slower basin earlier in its fade).
+   */
+  private static class CastingCoolingScenario implements UiTestScenario {
+    private static final String NAME = "casting_cooling";
+    private final BlockPos origin = SITE.offset(120, 0, 0);
+    private final BlockPos table = origin.offset(0, 0, -1);
+    private final BlockPos basin = origin.offset(0, 0, 1);
+    private final Consumer<ClientTickEvent.Post> freezer = this::freezeWhenHalfCooled;
+    private boolean frozen = false;
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      frozen = false;
+      ctx.sendCommand("tp @s " + (origin.getX() - 3) + " " + origin.getY() + " " + origin.getZ());
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        // replace both blocks so leftovers of a previous run (outputs, casts) are gone
+        level.setBlockAndUpdate(table, Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(basin, Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(table, TinkerSmeltery.searedTable.get().defaultBlockState());
+        level.setBlockAndUpdate(basin, TinkerSmeltery.searedBasin.get().defaultBlockState());
+        if (level.getBlockEntity(table) instanceof CastingBlockEntity casting) {
+          casting.setItem(CastingBlockEntity.INPUT, new ItemStack(TinkerSmeltery.ingotCast.get()));
+        } else {
+          throw new IllegalStateException("Expected casting table at " + table + ", found " + level.getBlockEntity(table));
+        }
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        // a full fill starts the recipe on commit
+        fillFluid(level, table, Direction.UP, new FluidStack(TinkerFluids.moltenGold.get(), FluidValues.INGOT));
+        fillFluid(level, basin, Direction.UP, new FluidStack(TinkerFluids.moltenGold.get(), FluidValues.METAL_BLOCK));
+      });
+      ctx.lookAt(origin);
+      NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, freezer);
+    }
+
+    /** Freezes the game once the client table is past 55% of its cooling time; the renderer fades from the client timer. */
+    private void freezeWhenHalfCooled(ClientTickEvent.Post event) {
+      Minecraft mc = Minecraft.getInstance();
+      if (frozen || mc.level == null || !(mc.level.getBlockEntity(table) instanceof CastingBlockEntity casting)) {
+        return;
+      }
+      int coolingTime = casting.getCoolingTime();
+      if (coolingTime > 0 && casting.getTimer() * 100 >= coolingTime * 55) {
+        new UiTestContext(mc).sendCommand("tick freeze");
+        frozen = true;
+        NeoForge.EVENT_BUS.unregister(freezer);
+      }
+    }
+
+    @Override
+    public int settleTicks() {
+      return 80; // the gold ingot cools in about 65 ticks, the freeze lands past half of it
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      if (!frozen) {
+        throw new IllegalStateException(NAME + ": the casting table never got past half its cooling time");
+      }
+      for (BlockPos pos : List.of(table, basin)) {
+        CastingBlockEntity casting = clientBlockEntity(ctx, pos, CastingBlockEntity.class, NAME);
+        if (casting.getCoolingTime() <= 0 || casting.getTimer() <= 0 || casting.getTimer() >= casting.getCoolingTime()
+            || !casting.getItem(CastingBlockEntity.OUTPUT).isEmpty() || casting.getRecipeOutput().isEmpty()) {
+          throw new IllegalStateException(NAME + ": expected the casting at " + pos + " mid cooling, found timer " + casting.getTimer() + "/" + casting.getCoolingTime()
+                                          + ", output " + casting.getItem(CastingBlockEntity.OUTPUT) + ", recipe output " + casting.getRecipeOutput());
+        }
+      }
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(freezer);
+      ctx.sendCommand("tick unfreeze");
+    }
+  }
+
+  /** Screen that draws nothing and does not pause the game, so the world keeps running behind it without the vanilla attack key handling. */
+  private static class PassThroughScreen extends Screen {
+    private PassThroughScreen() {
+      super(Component.empty());
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+      return false;
+    }
+
+    @Override
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {}
+  }
+
+  /**
+   * No menu: the player holds a sledge hammer (3x3) and looks at the center of a 3x3 stone wall, so the extra block outlines from
+   * {@code ToolRenderEvents} (1.21.9: a custom block outline renderer) draw around the 8 neighbors next to the vanilla outline, black or with the
+   * high contrast outline option. With {@code breaking}, the center block is mined to half progress in survival, so the extra block breaking
+   * overlay shows too. Mining runs behind a {@link PassThroughScreen}: with no screen, vanilla stops any mining every tick the attack key is up.
+   */
+  private static class AoeOutlineScenario implements UiTestScenario {
+    private final String name;
+    private final BlockPos center;
+    private final boolean highContrast;
+    private final boolean breaking;
+    private final Consumer<ClientTickEvent.Post> miner = this::mineTick;
+    private boolean previousHighContrast;
+    private boolean started;
+
+    private AoeOutlineScenario(String name, BlockPos center, boolean highContrast, boolean breaking) {
+      this.name = name;
+      this.center = center.above();
+      this.highContrast = highContrast;
+      this.breaking = breaking;
+    }
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource(name);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      started = false;
+      previousHighContrast = ctx.mc().options.highContrastBlockOutline().get();
+      ctx.mc().options.highContrastBlockOutline().set(highContrast);
+      // survival: creative breaks blocks instantly
+      ctx.sendCommand("gamemode survival");
+      ctx.sendCommand("tp @s " + (center.getX() - 3) + " " + (center.getY() - 1) + " " + center.getZ());
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        for (int y = -1; y <= 1; y++) {
+          for (int z = -1; z <= 1; z++) {
+            level.setBlockAndUpdate(center.offset(0, y, z), Blocks.STONE.defaultBlockState());
+          }
+        }
+        ToolStack hammer = ToolStack.createTool(TinkerTools.sledgeHammer.get(), TinkerTools.sledgeHammer.get().getToolDefinition(), MaterialNBT.of(
+          MaterialVariant.of(MaterialIds.iron, ""), MaterialVariant.of(MaterialIds.wood, ""), MaterialVariant.of(MaterialIds.iron, ""), MaterialVariant.of(MaterialIds.iron, "")));
+        Inventory inventory = level.getServer().getPlayerList().getPlayers().getFirst().getInventory();
+        inventory.clearContent();
+        inventory.setItem(0, hammer.createStack());
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.player().getInventory().setSelectedSlot(0);
+      ctx.lookAt(center);
+      if (breaking) {
+        ctx.mc().setScreen(new PassThroughScreen());
+        NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, miner);
+      }
+    }
+
+    /** Starts mining the center block, then keeps mining until half way and stops there, leaving the progress in place. */
+    private void mineTick(ClientTickEvent.Post event) {
+      Minecraft mc = Minecraft.getInstance();
+      MultiPlayerGameMode gameMode = mc.gameMode;
+      if (gameMode == null || !(mc.screen instanceof PassThroughScreen)) {
+        return;
+      }
+      if (!started) {
+        gameMode.startDestroyBlock(center, Direction.WEST);
+        started = true;
+      } else if (gameMode.getDestroyStage() >= 5) {
+        NeoForge.EVENT_BUS.unregister(miner);
+      } else {
+        gameMode.continueDestroyBlock(center, Direction.WEST);
+      }
+    }
+
+    @Override
+    public int settleTicks() {
+      return breaking ? 60 : 20;
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      if (!(ctx.mc().hitResult instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK || !hit.getBlockPos().equals(center)) {
+        throw new IllegalStateException(name + " expected the crosshair on " + center + ", found " + ctx.mc().hitResult);
+      }
+      if (!ctx.player().getMainHandItem().is(TinkerTools.sledgeHammer.get())) {
+        throw new IllegalStateException(name + " expected a sledge hammer in the main hand, found " + ctx.player().getMainHandItem());
+      }
+      if (breaking) {
+        MultiPlayerGameMode gameMode = Objects.requireNonNull(ctx.mc().gameMode);
+        if (!gameMode.isDestroying() || gameMode.getDestroyStage() < 1) {
+          throw new IllegalStateException(name + " expected the center block partially mined, found stage " + gameMode.getDestroyStage());
+        }
+      }
+      ctx.mc().setScreen(null);
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(miner);
+      ctx.mc().setScreen(null);
+      ctx.mc().options.highContrastBlockOutline().set(previousHighContrast);
+      ctx.sendCommand("clear @s");
+      ctx.sendCommand("gamemode creative");
+    }
+  }
+
+  /**
+   * Input checks on the tinker station with synthetic events (1.21.9 event based input): picks up a stack from the player inventory,
+   * double-clicks the emptied slot to gather the matching stacks (vanilla takes the double click from the event since 1.21.9, the
+   * Tinkers screens forward it), then clicks the station tab with the stack still carried, which must not drop it ({@code hasClickedOutside}).
+   * Captures the screen with the gathered stack on the cursor.
+   */
+  private static class StationCarriedClicksScenario implements UiTestScenario {
+    private static final String NAME = "station_carried_clicks";
+    /** Cobblestone stacks placed in the first main inventory slots, gathered into one stack */
+    private static final int[] COUNTS = {10, 20, 5};
+    /** First main inventory slot, after the hotbar */
+    private static final int FIRST_SLOT = 9;
+    private final BlockPos pos = SITE.offset(140, 0, 0);
+    private final Consumer<ClientTickEvent.Post> clicker = this::clickTick;
+    private int step = 0;
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      step = 0;
+      ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + pos.getY() + " " + pos.getZ());
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        level.setBlockAndUpdate(pos, TinkerTables.tinkerStation.get().defaultBlockState());
+        Inventory inventory = level.getServer().getPlayerList().getPlayers().getFirst().getInventory();
+        inventory.clearContent();
+        for (int i = 0; i < COUNTS.length; i++) {
+          inventory.setItem(FIRST_SLOT + i, new ItemStack(Items.COBBLESTONE, COUNTS[i]));
+        }
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.useBlock(pos);
+      NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, clicker);
+    }
+
+    /** Finds the menu slot showing the given player inventory slot */
+    @Nullable
+    private static Slot playerSlot(AbstractContainerMenu menu, int index) {
+      for (Slot slot : menu.slots) {
+        if (slot.container instanceof Inventory && slot.getContainerSlot() == index) {
+          return slot;
+        }
+      }
+      return null;
+    }
+
+    /** Presses and releases the left mouse button at the GUI position */
+    private static void click(AbstractContainerScreen<?> screen, double x, double y, boolean doubleClick) {
+      MouseButtonEvent event = new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0));
+      screen.mouseClicked(event, doubleClick);
+      screen.mouseReleased(event);
+    }
+
+    /** One click per tick once the menu is synced, so each click's slot change is applied before the next */
+    private void clickTick(ClientTickEvent.Post event) {
+      if (!(Minecraft.getInstance().screen instanceof TinkerStationScreen screen)) {
+        return;
+      }
+      Slot first = playerSlot(screen.getMenu(), FIRST_SLOT);
+      switch (step) {
+        case 0 -> {
+          if (first == null || !first.getItem().is(Items.COBBLESTONE) || first.getItem().getCount() != COUNTS[0]) {
+            return; // menu contents not synced yet
+          }
+          click(screen, screen.getGuiLeft() + first.x + 8, screen.getGuiTop() + first.y + 8, false);
+          step = 1;
+        }
+        case 1 -> {
+          Objects.requireNonNull(first);
+          click(screen, screen.getGuiLeft() + first.x + 8, screen.getGuiTop() + first.y + 8, true);
+          step = 2;
+        }
+        default -> {
+          TinkerTabsWidget tabs = screen.children().stream().filter(TinkerTabsWidget.class::isInstance).map(TinkerTabsWidget.class::cast)
+            .findFirst().orElseThrow(() -> new IllegalStateException(NAME + ": the station has no tabs widget"));
+          Rect2i area = tabs.getArea();
+          click(screen, area.getX() + area.getWidth() / 2.0, area.getY() + area.getHeight() / 2.0, false);
+          step = 3;
+          NeoForge.EVENT_BUS.unregister(clicker);
+        }
+      }
+    }
+
+    @Override
+    public int settleTicks() {
+      return 30; // menu round trip + three clicks + slot sync
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      if (!(ctx.mc().screen instanceof TinkerStationScreen screen)) {
+        throw new IllegalStateException(NAME + " expected TinkerStationScreen at capture, found " + ctx.mc().screen);
+      }
+      if (step != 3) {
+        throw new IllegalStateException(NAME + " stopped at click step " + step);
+      }
+      int total = COUNTS[0] + COUNTS[1] + COUNTS[2];
+      ItemStack carried = screen.getMenu().getCarried();
+      if (!carried.is(Items.COBBLESTONE) || carried.getCount() != total) {
+        throw new IllegalStateException(NAME + " expected " + total + " gathered cobblestone on the cursor, found " + carried);
+      }
+      for (Slot slot : screen.getMenu().slots) {
+        if (slot.container instanceof Inventory && slot.getItem().is(Items.COBBLESTONE)) {
+          throw new IllegalStateException(NAME + ": the double click left " + slot.getItem() + " in inventory slot " + slot.getContainerSlot());
+        }
+      }
+      List<ItemEntity> dropped = ctx.player().level().getEntitiesOfClass(ItemEntity.class, ctx.player().getBoundingBox().inflate(16));
+      if (!dropped.isEmpty()) {
+        throw new IllegalStateException(NAME + ": the tab click dropped " + dropped.getFirst().getItem());
+      }
+      ctx.mc().setScreen(null);
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(clicker);
+      ctx.mc().setScreen(null);
+      ctx.sendCommand("clear @s");
+    }
   }
 }
