@@ -80,7 +80,8 @@ public class MeltingModuleInventory implements IItemHandlerModifiable {
 
         @Override
         protected void setStackWithSideEffects(int slot, ItemStack stack) {
-          setStackInSlot(slot, stack);
+          // qualified: the unqualified call resolves to SlotStorageItemHandler#setStackInSlot, which calls back here forever
+          MeltingModuleInventory.this.setStackInSlot(slot, stack);
         }
 
         @Override
