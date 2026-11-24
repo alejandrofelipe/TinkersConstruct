@@ -2,20 +2,25 @@ package slimeknights.tconstruct.gametest;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
@@ -24,11 +29,16 @@ import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+import slimeknights.mantle.recipe.helper.ItemOutput;
+import slimeknights.mantle.recipe.ingredient.FluidContainerIngredient;
+import slimeknights.mantle.recipe.ingredient.FluidIngredient;
 import slimeknights.mantle.transfer.TransferHelper;
+import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.gadgets.capability.PiggybackCapability;
 import slimeknights.tconstruct.gadgets.capability.PiggybackHandler;
 import slimeknights.tconstruct.library.recipe.FluidValues;
+import slimeknights.tconstruct.library.recipe.casting.ItemCastingRecipe;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.AbstractCastingBlock;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock;
@@ -40,6 +50,7 @@ import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.entity.chest.TinkersChestBlockEntity;
 import slimeknights.tconstruct.tables.block.entity.inventory.IChestItemHandler;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 /**
@@ -242,6 +253,51 @@ public class CapabilityGameTests {
     helper.assertTrue(table.getCoolingTime() >= 0, Component.literal("committed fill did not start the cooling timer"));
     helper.succeedWhen(() -> helper.assertTrue(table.getItem(CastingBlockEntity.OUTPUT).is(Items.IRON_INGOT),
       Component.literal("expected the cast iron ingot in the output")));
+  }
+
+  /**
+   * A casting recipe whose cast is a Mantle {@code fluid_container} ingredient is matched from inside the native fill's transaction
+   * (fill → {@code initNewCasting(SIMULATE)} → recipe lookup → cast {@code test}). The ingredient used to look up a legacy bridge there,
+   * which throws inside a transaction, so pouring onto such a cast crashed the server. No shipped recipe uses one, so the recipe is
+   * built here and primed as the table's last matched recipe, which the lookup tries first.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void casting_table_fluid_container_cast_in_transaction(GameTestHelper helper) {
+    BlockPos pos = new BlockPos(2, 1, 2);
+    CastingBlockEntity table = placeTable(helper, pos);
+    table.setItem(CastingBlockEntity.INPUT, new ItemStack(Items.WATER_BUCKET));
+    Ingredient waterBucketCast = FluidContainerIngredient.fromIngredient(FluidIngredient.of(new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME))).toVanilla();
+    ResourceLocation id = TConstruct.getResource("gametest/fluid_container_cast");
+    ItemCastingRecipe recipe = new ItemCastingRecipe(TinkerSmeltery.tableRecipeSerializer.get(), id, "", waterBucketCast,
+                                                     FluidIngredient.of(new FluidStack(TinkerFluids.moltenIron.get(), FluidValues.INGOT)),
+                                                     ItemOutput.fromItem(Items.IRON_INGOT), 20, false, false);
+    try {
+      Field last = CastingBlockEntity.class.getDeclaredField("lastCastingRecipe");
+      last.setAccessible(true);
+      last.set(table, recipe);
+      Field lastName = CastingBlockEntity.class.getDeclaredField("lastCastingRecipeName");
+      lastName.setAccessible(true);
+      lastName.set(table, ResourceKey.create(Registries.RECIPE, id));
+    } catch (ReflectiveOperationException e) {
+      helper.fail(Component.literal("could not prime the casting recipe: " + e));
+      return;
+    }
+    ResourceHandler<FluidResource> fluids = fluidCapability(helper, pos);
+    FluidResource iron = FluidResource.of(TinkerFluids.moltenIron.get());
+    // simulate: the fluid_container cast is tested inside the transaction, sizing the tank to the recipe
+    try (Transaction tx = Transaction.openRoot()) {
+      helper.assertTrue(fluids.insert(iron, FluidValues.METAL_BLOCK, tx) == FluidValues.INGOT,
+        Component.literal("casting table did not match the fluid_container cast inside the transaction"));
+    }
+    helper.assertTrue(table.getTank().isEmpty() && table.getRecipeOutput().isEmpty(), Component.literal("aborted fill changed the casting table"));
+    // commit: the recipe starts, and testing the cast never drained the bucket
+    try (Transaction tx = Transaction.openRoot()) {
+      fluids.insert(iron, FluidValues.INGOT, tx);
+      tx.commit();
+    }
+    helper.assertTrue(table.getRecipeOutput().is(Items.IRON_INGOT), Component.literal("committed fill did not start the fluid_container cast recipe"));
+    helper.assertTrue(table.getItem(CastingBlockEntity.INPUT).is(Items.WATER_BUCKET), Component.literal("testing the fluid_container cast changed the bucket"));
+    helper.succeed();
   }
 
   /** Simulating an item insert into a melter must not reach the melting module; committing does, once. */

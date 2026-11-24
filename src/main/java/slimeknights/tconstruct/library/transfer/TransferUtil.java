@@ -12,6 +12,7 @@ import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+import slimeknights.mantle.transfer.TransferHelper;
 
 import javax.annotation.Nullable;
 
@@ -29,13 +30,10 @@ public final class TransferUtil {
    * Opens a transaction nested in the currently open transaction, or a root transaction if none is open.
    * Only use it for changes to isolated copies (such as the slot of {@link #isolate(ItemStack)}), as committing a nested transaction
    * leaves the final outcome to the outer transaction.
+   * @see TransferHelper#openNestedOrRoot()
    */
-  @SuppressWarnings("deprecation")  // getCurrentOpenedTransaction is the only way to nest into a transaction we were not handed
   public static Transaction openNestedOrRoot() {
-    if (Transaction.getLifecycle() == Transaction.Lifecycle.OPEN) {
-      return Transaction.open(Transaction.getCurrentOpenedTransaction());
-    }
-    return Transaction.openRoot();
+    return TransferHelper.openNestedOrRoot();
   }
 
   /** Puts a one item copy of the stack in a new single slot handler, giving it an isolated item access */
