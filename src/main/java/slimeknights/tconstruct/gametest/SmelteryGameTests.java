@@ -15,10 +15,12 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
+import slimeknights.tconstruct.smeltery.block.ChannelBlock;
 import slimeknights.tconstruct.smeltery.block.FaucetBlock;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
 import slimeknights.tconstruct.smeltery.block.controller.ControllerBlock;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
+import slimeknights.tconstruct.smeltery.block.entity.ChannelBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.FaucetBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.AlloyerBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.SmelteryBlockEntity;
@@ -133,6 +135,52 @@ public class SmelteryGameTests {
       helper.assertTrue(table.getItem(CastingBlockEntity.OUTPUT).is(Items.IRON_INGOT),
         Component.literal("expected iron ingot in casting output"));
     });
+  }
+
+  /**
+   * A faucet pours molten iron into a channel, which flows sideways into a second channel and down into a casting basin (the channel
+   * flow through the native capabilities and the legacy bridges the channels look their neighbors up with).
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 400)
+  public static void faucet_pours_through_channels_into_basin(GameTestHelper helper) {
+    ServerLevel level = helper.getLevel();
+    BlockPos basin = helper.absolutePos(new BlockPos(1, 1, 3));
+    BlockPos lowerChannel = basin.above();
+    BlockPos upperChannel = lowerChannel.north();
+    BlockPos faucet = upperChannel.above();
+    BlockPos tank = faucet.east();
+    // built bottom up, like a player would. The channel default state is powered (the boolean property's first value; placement
+    // computes it), and a channel losing power clears its down connection, so set it unpowered like an unpowered placement
+    level.setBlockAndUpdate(basin, TinkerSmeltery.searedBasin.get().defaultBlockState());
+    level.setBlockAndUpdate(lowerChannel, TinkerSmeltery.searedChannel.get().defaultBlockState().setValue(ChannelBlock.POWERED, false)
+      .setValue(ChannelBlock.DOWN, true).setValue(ChannelBlock.NORTH, ChannelBlock.ChannelConnection.IN));
+    level.setBlockAndUpdate(upperChannel, TinkerSmeltery.searedChannel.get().defaultBlockState().setValue(ChannelBlock.POWERED, false)
+      .setValue(ChannelBlock.SOUTH, ChannelBlock.ChannelConnection.OUT));
+    level.setBlockAndUpdate(tank, TinkerSmeltery.searedTank.get(TankType.INGOT_TANK).defaultBlockState());
+    SmelteryRigs.fillTank(level, tank, new FluidStack(TinkerFluids.moltenIron.get(), FluidValues.INGOT * 2));
+    level.setBlockAndUpdate(faucet, TinkerSmeltery.searedFaucet.get().defaultBlockState().setValue(FaucetBlock.FACING, Direction.WEST));
+    helper.runAfterDelay(10, () -> {
+      if (level.getBlockEntity(faucet) instanceof FaucetBlockEntity faucetBE) {
+        faucetBE.activate();
+      } else {
+        helper.fail(Component.literal("no faucet BE"), helper.relativePos(faucet));
+      }
+    });
+    helper.succeedWhen(() -> {
+      if (!(level.getBlockEntity(basin) instanceof CastingBlockEntity basinBE)) {
+        helper.fail(Component.literal("no casting basin BE"), helper.relativePos(basin));
+        return;
+      }
+      int amount = basinBE.getTank().getFluid().getAmount();
+      helper.assertTrue(amount == FluidValues.INGOT * 2, Component.literal("expected both ingots of molten iron in the basin, got " + amount + " mB; faucet pouring: "
+        + (level.getBlockEntity(faucet) instanceof FaucetBlockEntity faucetBE && faucetBE.isPouring())
+        + ", upper channel: " + channelFluid(level, upperChannel) + " mB, lower channel: " + channelFluid(level, lowerChannel) + " mB"));
+    });
+  }
+
+  /** Fluid amount in the channel at the position, -1 without a channel */
+  private static int channelFluid(ServerLevel level, BlockPos pos) {
+    return level.getBlockEntity(pos) instanceof ChannelBlockEntity channel ? channel.getFluid().getAmount() : -1;
   }
 
   /**
