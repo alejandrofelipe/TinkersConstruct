@@ -19,6 +19,7 @@ import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.tools.helper.TooltipUtil;
+import slimeknights.tconstruct.library.tools.nbt.ToolDataVerifier;
 import slimeknights.tconstruct.library.utils.DomainDisplayName;
 import slimeknights.tconstruct.library.utils.Util;
 
@@ -52,10 +53,25 @@ public class MaterialItem extends Item implements IMaterialItem {
     return IMaterial.UNKNOWN_ID;
   }
 
-  /** Gets the material ID stored in the stack's custom-data component */
+  /**
+   * Gets the material ID stored in the stack's custom-data component.
+   * On the logical server thread, a redirected material is resolved and written back to the stack, replacing {@code Item#verifyComponentsAfterLoad}
+   * (removed in 1.21.9, see {@link ToolDataVerifier}). Resolving is a single map lookup, so unlike tools parts need no verified generation.
+   */
   public static MaterialVariantId getMaterialFromData(ItemStack stack) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-    return getMaterialId(data == null ? null : data.tag);
+    MaterialVariantId id = getMaterialId(data == null ? null : data.tag);
+    if (data != null && !id.equals(IMaterial.UNKNOWN_ID) && MaterialRegistry.isFullyLoaded() && ToolDataVerifier.canVerify()) {
+      MaterialId original = id.getId();
+      MaterialId resolved = MaterialRegistry.getInstance().resolve(original);
+      if (original != resolved) {
+        id = MaterialVariantId.create(resolved, id.getVariant());
+        CompoundTag tag = data.copyTag();
+        tag.putString(MATERIAL_TAG, id.toString());
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+      }
+    }
+    return id;
   }
 
   @Override
@@ -180,13 +196,5 @@ public class MaterialItem extends Item implements IMaterialItem {
     }
   }
 
-  @Override
-  public void verifyComponentsAfterLoad(ItemStack stack) {
-    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-    if (data != null) {
-      CompoundTag nbt = data.copyTag();
-      verifyTag(nbt);
-      stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
-    }
-  }
+  // 1.21.9 removed Item#verifyComponentsAfterLoad: material redirects are resolved on read in getMaterialFromData
 }

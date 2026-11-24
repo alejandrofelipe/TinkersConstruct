@@ -167,7 +167,32 @@ public class ToolStack implements IToolStackView {
 
   /** Writes the given tag back onto the stack's {@link DataComponents#CUSTOM_DATA} component. */
   private static void setStackTag(ItemStack stack, CompoundTag tag) {
-    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    CustomData data = CustomData.of(tag);
+    stack.set(DataComponents.CUSTOM_DATA, data);
+    // written from the current data, no need to verify it again on the next read
+    ToolDataVerifier.markVerified(data);
+  }
+
+  /**
+   * Verifies the stack's tool data once per server data load: resolves material redirects, rebuilds the stats and syncs the derived components.
+   * 1.21.9 removed {@code Item#verifyComponentsAfterLoad}, which did this whenever a stack was decoded; see {@link ToolDataVerifier}.
+   * Only runs on the logical server thread. Replaces the custom data component when the data changed, so other copies sharing the old instance
+   * are left alone and menus see the change.
+   */
+  private static void verifyAfterLoad(ItemStack stack, Item item, ToolDefinition definition) {
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    // like the old hook, a stack without data has nothing to verify
+    if (data != null && ToolDataVerifier.needsVerification(data)) {
+      ToolDataVerifier.verify(data, () -> {
+        CompoundTag tag = data.copyTag();
+        verifyTag(item, tag, definition);
+        if (!tag.equals(data.tag)) {
+          setStackTag(stack, tag);
+        }
+        // 1.21.5: sync the components derived from the tool (shield blocking/disabling) for stacks saved before they existed
+        from(item, definition, getStackTag(stack)).updateComponents(stack);
+      });
+    }
   }
 
   /**
@@ -181,6 +206,9 @@ public class ToolStack implements IToolStackView {
     ToolDefinition definition = item instanceof IModifiable mod
                                 ? mod.getToolDefinition()
                                 : ToolDefinition.EMPTY;
+    if (definition != ToolDefinition.EMPTY) {
+      verifyAfterLoad(stack, item, definition);
+    }
     CompoundTag nbt = getStackTag(stack);
     if (nbt == null) {
       nbt = new CompoundTag();

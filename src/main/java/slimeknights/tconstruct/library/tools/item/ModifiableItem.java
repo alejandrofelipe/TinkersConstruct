@@ -6,8 +6,6 @@ import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -145,17 +143,7 @@ public class ModifiableItem extends Item implements IModifiableDisplay {
   // RegisterCapabilitiesEvent, delegating to ToolCapabilityProvider.getCapability(stack, cap). The old
   // initCapabilities/ICapabilityProvider override is removed.
 
-  @Override
-  public void verifyComponentsAfterLoad(ItemStack stack) {
-    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-    if (data != null) {
-      CompoundTag nbt = data.copyTag();
-      ToolStack.verifyTag(this, nbt, getToolDefinition());
-      stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
-      // 1.21.5: sync the components derived from the tool (shield blocking/disabling) for stacks saved before they existed
-      ToolStack.from(stack).updateComponents(stack);
-    }
-  }
+  // 1.21.9 removed Item#verifyComponentsAfterLoad: tool data is verified on its first server read after each data load, see ToolDataVerifier
 
   @Override
   public void onCraftedBy(ItemStack stack, Player playerIn) {

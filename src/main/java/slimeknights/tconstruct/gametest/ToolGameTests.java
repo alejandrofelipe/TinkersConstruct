@@ -1,26 +1,42 @@
 package slimeknights.tconstruct.gametest;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
+import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
+import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
+import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
+import slimeknights.tconstruct.library.tools.helper.ToolBuildHandler;
+import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
+import slimeknights.tconstruct.library.tools.nbt.ToolDataVerifier;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 import slimeknights.tconstruct.library.tools.part.IToolPart;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
+import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.entity.table.PartBuilderBlockEntity;
 import slimeknights.tconstruct.tables.block.entity.table.TinkerStationBlockEntity;
 import slimeknights.tconstruct.tools.TinkerToolParts;
 import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
+
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Gametests for the tool crafting subsystem: assembling parts into a working tool at a tinker station. */
 public class ToolGameTests {
@@ -264,6 +280,140 @@ public class ToolGameTests {
     helper.assertTrue(result.is(TinkerToolParts.toolHandle.get()), Component.literal("expected a tool handle, got " + result));
     helper.assertTrue(MaterialIds.wood.equals(IMaterialItem.getMaterialFromStack(result)), Component.literal("expected wood material, got " + IMaterialItem.getMaterialFromStack(result)));
 
+    helper.succeed();
+  }
+
+  /* Lazy verification (1.21.9 removed Item#verifyComponentsAfterLoad, see ToolDataVerifier) */
+
+  /** Material redirected to rose gold by the Tinkers data ({@code tinkering/materials/definition/chain.json}) */
+  private static final MaterialId REDIRECTED_CHAIN = new MaterialId(TConstruct.MOD_ID, "chain");
+  /** Stats key in the tool data, see {@code ToolStack.TAG_STATS} */
+  private static final String TAG_STATS = "tic_stats";
+
+  /** Builds a rock/wood/wood pickaxe through the normal tool building path */
+  private static ItemStack buildPickaxe() {
+    return ToolBuildHandler.buildItemFromMaterials(TinkerTools.pickaxe.get(), MaterialNBT.of(MaterialVariant.of(MaterialIds.rock, ""), MaterialVariant.of(MaterialIds.wood, ""), MaterialVariant.of(MaterialIds.wood, "")));
+  }
+
+  /** Simulates a pickaxe saved before a data change: a fresh custom data instance (as decoding gives) with a redirected head material and no stats */
+  private static ItemStack staleLoadedPickaxe() {
+    ItemStack built = buildPickaxe();
+    CompoundTag tag = Objects.requireNonNull(built.get(DataComponents.CUSTOM_DATA)).copyTag();
+    ListTag materials = TagUtil.getList(tag, ToolStack.TAG_MATERIALS, Tag.TAG_STRING);
+    materials.set(0, StringTag.valueOf(REDIRECTED_CHAIN.toString()));
+    tag.remove(TAG_STATS);
+    ItemStack loaded = built.copy();
+    loaded.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    return loaded;
+  }
+
+  /** Live tool tag of the stack */
+  private static CompoundTag liveTag(ItemStack stack) {
+    return Objects.requireNonNull(stack.get(DataComponents.CUSTOM_DATA)).tag;
+  }
+
+  /**
+   * A tool loaded with stale data is verified on its first server read: the redirected material is resolved and the stats are rebuilt, like the
+   * removed {@code verifyComponentsAfterLoad} did on decode. The second read does not verify again (stats removed in place stay removed), until
+   * the next data load starts a new generation.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tool_verified_once_on_server_read(GameTestHelper helper) {
+    ItemStack loaded = staleLoadedPickaxe();
+    helper.assertFalse(liveTag(loaded).contains(TAG_STATS), Component.literal("stale pickaxe should start without stats"));
+
+    // first read: verified
+    ToolStack tool = ToolStack.from(loaded);
+    helper.assertTrue(MaterialIds.roseGold.equals(tool.getMaterials().get(0).getId()), Component.literal("expected the chain head redirected to rose gold, got " + tool.getMaterials().get(0).getVariant()));
+    helper.assertTrue(liveTag(loaded).contains(TAG_STATS), Component.literal("expected the stats rebuilt on the first server read"));
+    helper.assertTrue(tool.isSameStack(loaded), Component.literal("tool from the verified stack should be bound to its live tag"));
+    helper.assertTrue(tool.getStats().getInt(ToolStats.DURABILITY) > 0, Component.literal("expected positive durability after the rebuild"));
+
+    // second read: not verified again
+    CustomData verified = loaded.get(DataComponents.CUSTOM_DATA);
+    liveTag(loaded).remove(TAG_STATS);
+    ToolStack.from(loaded);
+    helper.assertTrue(loaded.get(DataComponents.CUSTOM_DATA) == verified, Component.literal("second read replaced the custom data"));
+    helper.assertFalse(liveTag(loaded).contains(TAG_STATS), Component.literal("second read verified the stack again"));
+    // copies share the verification
+    ItemStack copy = loaded.copy();
+    ToolStack.from(copy);
+    helper.assertFalse(liveTag(copy).contains(TAG_STATS), Component.literal("a copy of a verified stack was verified again"));
+
+    // next data load: verified again
+    ToolDataVerifier.startGeneration();
+    ToolStack.from(loaded);
+    helper.assertTrue(liveTag(loaded).contains(TAG_STATS), Component.literal("expected the stats rebuilt after a new data generation"));
+    helper.succeed();
+  }
+
+  /** A freshly built tool is already verified: its first read does not rebuild it. */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void fresh_tool_not_verified_again(GameTestHelper helper) {
+    ItemStack built = buildPickaxe();
+    CustomData data = built.get(DataComponents.CUSTOM_DATA);
+    helper.assertTrue(data != null && data.tag.contains(TAG_STATS), Component.literal("built pickaxe has no stats"));
+    liveTag(built).remove(TAG_STATS);
+    ToolStack.from(built);
+    helper.assertTrue(built.get(DataComponents.CUSTOM_DATA) == data, Component.literal("reading a fresh tool replaced its custom data"));
+    helper.assertFalse(liveTag(built).contains(TAG_STATS), Component.literal("reading a fresh tool rebuilt it"));
+    helper.succeed();
+  }
+
+  /** Reads off the logical server thread (client, render or worker threads) never change the stack. */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tool_not_verified_off_server_thread(GameTestHelper helper) throws InterruptedException {
+    ItemStack loaded = staleLoadedPickaxe();
+    CustomData data = loaded.get(DataComponents.CUSTOM_DATA);
+    ItemStack part = TinkerToolParts.pickHead.get().getDefaultInstance();
+    CompoundTag partTag = new CompoundTag();
+    partTag.putString(IMaterialItem.MATERIAL_TAG, REDIRECTED_CHAIN.toString());
+    part.set(DataComponents.CUSTOM_DATA, CustomData.of(partTag));
+    CustomData partData = part.get(DataComponents.CUSTOM_DATA);
+
+    AtomicReference<Object> partMaterial = new AtomicReference<>();
+    AtomicReference<Throwable> error = new AtomicReference<>();
+    Thread thread = new Thread(() -> {
+      try {
+        ToolStack.from(loaded).getMaterials();
+        ToolStack.copyFrom(loaded);
+        partMaterial.set(IMaterialItem.getMaterialFromStack(part));
+      } catch (Throwable e) {
+        error.set(e);
+      }
+    }, "tconstruct-gametest-off-thread-read");
+    thread.start();
+    thread.join(5000);
+    if (error.get() != null) {
+      throw new IllegalStateException("off thread read failed", error.get());
+    }
+    helper.assertTrue(loaded.get(DataComponents.CUSTOM_DATA) == data && !data.tag.contains(TAG_STATS), Component.literal("off thread tool read changed the stack"));
+    helper.assertTrue(REDIRECTED_CHAIN.equals(partMaterial.get()), Component.literal("off thread part read should see the stored material, got " + partMaterial.get()));
+    helper.assertTrue(part.get(DataComponents.CUSTOM_DATA) == partData, Component.literal("off thread part read changed the stack"));
+
+    // the server read still verifies afterwards
+    ToolStack.from(loaded);
+    helper.assertTrue(liveTag(loaded).contains(TAG_STATS), Component.literal("server read after the off thread read did not verify"));
+    helper.succeed();
+  }
+
+  /** Parts and material blocks resolve a redirected material on a server read and store the resolved one. */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void part_material_redirected_on_server_read(GameTestHelper helper) {
+    ItemStack part = TinkerToolParts.pickHead.get().getDefaultInstance();
+    CompoundTag tag = new CompoundTag();
+    tag.putString(IMaterialItem.MATERIAL_TAG, REDIRECTED_CHAIN.toString());
+    part.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+
+    MaterialVariantId material = IMaterialItem.getMaterialFromStack(part);
+    helper.assertTrue(MaterialIds.roseGold.equals(material), Component.literal("expected chain redirected to rose gold, got " + material));
+    String stored = liveTag(part).getStringOr(IMaterialItem.MATERIAL_TAG, "");
+    helper.assertTrue(MaterialIds.roseGold.toString().equals(stored), Component.literal("expected rose gold stored on the part, got " + stored));
+    // an unredirected part is left alone
+    ItemStack iron = TinkerToolParts.pickHead.get().withMaterial(MaterialIds.iron);
+    CustomData ironData = iron.get(DataComponents.CUSTOM_DATA);
+    IMaterialItem.getMaterialFromStack(iron);
+    helper.assertTrue(iron.get(DataComponents.CUSTOM_DATA) == ironData, Component.literal("reading an unredirected part replaced its data"));
     helper.succeed();
   }
 
