@@ -55,20 +55,23 @@ public class MaterialItem extends Item implements IMaterialItem {
 
   /**
    * Gets the material ID stored in the stack's custom-data component.
-   * On the logical server thread, a redirected material is resolved and written back to the stack, replacing {@code Item#verifyComponentsAfterLoad}
-   * (removed in 1.21.9, see {@link ToolDataVerifier}). Resolving is a single map lookup, so unlike tools parts need no verified generation.
+   * A redirected material is resolved, replacing {@code Item#verifyComponentsAfterLoad} (removed in 1.21.9, see {@link ToolDataVerifier}): on the
+   * logical server thread the resolved material is also written back to the stack, elsewhere (client) it is resolved in memory only. Resolving
+   * is a single map lookup, so unlike tools parts need no verified generation.
    */
   public static MaterialVariantId getMaterialFromData(ItemStack stack) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
     MaterialVariantId id = getMaterialId(data == null ? null : data.tag);
-    if (data != null && !id.equals(IMaterial.UNKNOWN_ID) && MaterialRegistry.isFullyLoaded() && ToolDataVerifier.canVerify()) {
+    if (data != null && !id.equals(IMaterial.UNKNOWN_ID) && MaterialRegistry.isFullyLoaded()) {
       MaterialId original = id.getId();
       MaterialId resolved = MaterialRegistry.getInstance().resolve(original);
       if (original != resolved) {
         id = MaterialVariantId.create(resolved, id.getVariant());
-        CompoundTag tag = data.copyTag();
-        tag.putString(MATERIAL_TAG, id.toString());
-        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        if (ToolDataVerifier.canVerify()) {
+          CompoundTag tag = data.copyTag();
+          tag.putString(MATERIAL_TAG, id.toString());
+          stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        }
       }
     }
     return id;

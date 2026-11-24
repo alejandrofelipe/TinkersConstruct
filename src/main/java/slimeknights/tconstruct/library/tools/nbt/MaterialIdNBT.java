@@ -108,14 +108,16 @@ public class MaterialIdNBT {
   }
 
   /**
-   * Parses the material list from a stack
+   * Parses the material list from a stack, with material redirects resolved in memory (1.21.9: stacks the server never read, e.g. on the client, are
+   * not verified, see {@link ToolDataVerifier})
    * @param stack  Tool stack instance
    * @return  MaterialNBT instance
    */
   public static MaterialIdNBT from(ItemStack stack) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
     if (data != null) {
-      return readFromNBT(TagUtil.getList(data.tag, ToolStack.TAG_MATERIALS, Tag.TAG_STRING));
+      MaterialIdNBT materials = readFromNBT(TagUtil.getList(data.tag, ToolStack.TAG_MATERIALS, Tag.TAG_STRING));
+      return MaterialRegistry.isFullyLoaded() ? materials.resolveRedirects() : materials;
     }
     return EMPTY;
   }

@@ -18,7 +18,9 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.config.Config;
+import slimeknights.tconstruct.library.materials.IMaterialRegistry;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
+import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -44,6 +46,7 @@ import slimeknights.tconstruct.tools.TinkerToolActions;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -165,34 +168,68 @@ public class ToolStack implements IToolStackView {
     return data == null ? null : data.tag;
   }
 
-  /** Writes the given tag back onto the stack's {@link DataComponents#CUSTOM_DATA} component. */
+  /** Writes the given tag back onto the stack's {@link DataComponents#CUSTOM_DATA} component, as a fresh instance the stack owns. */
   private static void setStackTag(ItemStack stack, CompoundTag tag) {
     CustomData data = CustomData.of(tag);
     stack.set(DataComponents.CUSTOM_DATA, data);
+    ToolDataOwnership.claim(stack, data);
     // written from the current data, no need to verify it again on the next read
     ToolDataVerifier.markVerified(data);
   }
 
   /**
+   * Gets the live tag of the stack for a tool that will read and write it in place. If the stack does not own its custom data instance, which other
+   * stacks may share since 1.21.9 copies share components, it first gets its own copy, so changes never leak into other stacks. See {@link ToolDataOwnership}.
+   */
+  @Nullable
+  private static CompoundTag getOwnedStackTag(ItemStack stack) {
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    if (data == null) {
+      return null;
+    }
+    if (!ToolDataOwnership.owns(stack, data)) {
+      CustomData owned = CustomData.of(data.tag);
+      stack.set(DataComponents.CUSTOM_DATA, owned);
+      ToolDataOwnership.claim(stack, owned);
+      ToolDataVerifier.inheritVerification(data, owned);
+      data = owned;
+    }
+    return data.tag;
+  }
+
+  /**
    * Verifies the stack's tool data once per server data load: resolves material redirects, rebuilds the stats and syncs the derived components.
-   * 1.21.9 removed {@code Item#verifyComponentsAfterLoad}, which did this whenever a stack was decoded; see {@link ToolDataVerifier}.
-   * Only runs on the logical server thread. Replaces the custom data component when the data changed, so other copies sharing the old instance
-   * are left alone and menus see the change.
+   * 1.21.9 removed {@code Item#verifyComponentsAfterLoad}, which did this whenever a stack was decoded or copied; see {@link ToolDataVerifier}.
+   * Only runs on the logical server thread. Replaces the custom data component when the data changed, so other holders of the old instance are left
+   * alone (they take the result on their own next read) and menus see the change.
    */
   private static void verifyAfterLoad(ItemStack stack, Item item, ToolDefinition definition) {
     CustomData data = stack.get(DataComponents.CUSTOM_DATA);
     // like the old hook, a stack without data has nothing to verify
-    if (data != null && ToolDataVerifier.needsVerification(data)) {
-      ToolDataVerifier.verify(data, () -> {
-        CompoundTag tag = data.copyTag();
-        verifyTag(item, tag, definition);
-        if (!tag.equals(data.tag)) {
-          setStackTag(stack, tag);
-        }
-        // 1.21.5: sync the components derived from the tool (shield blocking/disabling) for stacks saved before they existed
-        from(item, definition, getStackTag(stack)).updateComponents(stack);
-      });
+    if (data == null || !ToolDataVerifier.canVerify()) {
+      return;
     }
+    CustomData verified = ToolDataVerifier.getVerified(data);
+    if (verified != null) {
+      // another holder of this instance was verified and got new data: take the result instead of verifying again
+      if (verified != data) {
+        stack.set(DataComponents.CUSTOM_DATA, verified);
+        from(item, definition, verified.tag).updateComponents(stack);
+      }
+      return;
+    }
+    ToolDataVerifier.verify(data, () -> {
+      CompoundTag tag = data.copyTag();
+      verifyTag(item, tag, definition);
+      CustomData result = data;
+      if (!tag.equals(data.tag)) {
+        setStackTag(stack, tag);
+        result = Objects.requireNonNull(stack.get(DataComponents.CUSTOM_DATA));
+      }
+      // 1.21.5: sync the components derived from the tool (shield blocking/disabling) for stacks saved before they existed
+      from(item, definition, result.tag).updateComponents(stack);
+      return result;
+    });
   }
 
   /**
@@ -209,7 +246,8 @@ public class ToolStack implements IToolStackView {
     if (definition != ToolDefinition.EMPTY) {
       verifyAfterLoad(stack, item, definition);
     }
-    CompoundTag nbt = getStackTag(stack);
+    // a bound tool changes the tag in place, so the stack must own it; ownership is only tracked for modifiable items, see ItemStackMixin
+    CompoundTag nbt = !copyNbt && definition != ToolDefinition.EMPTY ? getOwnedStackTag(stack) : getStackTag(stack);
     if (nbt == null) {
       nbt = new CompoundTag();
       if (!copyNbt) {
@@ -218,6 +256,8 @@ public class ToolStack implements IToolStackView {
           // store the tag on the component so future reads share the same data; the tool will fill it later
           // no need to set the damage value, if the tool wanted it set the stack would have had a tag already
           setStackTag(stack, nbt);
+          // the component holds a copy, bind to it so changes reach the stack
+          nbt = Objects.requireNonNull(getStackTag(stack));
         } else {
           switch (Config.COMMON.logInvalidToolStack.get()) {
             case STACKTRACE ->
@@ -307,10 +347,10 @@ public class ToolStack implements IToolStackView {
   /** Updates the tool stack instance to match the given item stack */
   @Internal
   public void refreshTag(ItemStack stack) {
-    CompoundTag tag = getStackTag(stack);
+    CompoundTag tag = stack.getItem() instanceof IModifiable ? getOwnedStackTag(stack) : getStackTag(stack);
     if (tag == null) {
-      tag = new CompoundTag();
-      setStackTag(stack, tag);
+      setStackTag(stack, new CompoundTag());
+      tag = Objects.requireNonNull(getStackTag(stack));
     }
     this.nbt = tag;
     clearCache();
@@ -572,13 +612,32 @@ public class ToolStack implements IToolStackView {
 
   /* Materials */
 
+  /**
+   * Resolves material redirects in memory. The server stores them when it verifies the stack (see {@link ToolDataVerifier}), but stacks it never
+   * read, such as on the client, still hold the old IDs, which would read as unknown materials.
+   */
+  private static MaterialNBT resolveRedirects(MaterialNBT materials) {
+    if (materials.isEmpty() || !MaterialRegistry.isFullyLoaded()) {
+      return materials;
+    }
+    IMaterialRegistry registry = MaterialRegistry.getInstance();
+    for (int i = 0; i < materials.size(); i++) {
+      MaterialVariantId variant = materials.get(i).getVariant();
+      MaterialId resolved = registry.resolve(variant.getId());
+      if (resolved != variant.getId()) {
+        materials = materials.replaceMaterial(i, MaterialVariantId.create(resolved, variant.getVariant()));
+      }
+    }
+    return materials;
+  }
+
   @Override
   public MaterialNBT getMaterials() {
     if (!getDefinition().hasMaterials()) {
       return MaterialNBT.EMPTY;
     }
     if (materials == null) {
-      materials = MaterialNBT.readFromNBT(nbt.get(TAG_MATERIALS));
+      materials = resolveRedirects(MaterialNBT.readFromNBT(nbt.get(TAG_MATERIALS)));
     }
     return materials;
   }

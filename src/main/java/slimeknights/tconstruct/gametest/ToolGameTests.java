@@ -9,9 +9,13 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.GameType;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
@@ -20,6 +24,7 @@ import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
+import slimeknights.tconstruct.library.tools.helper.ToolDamageUtil;
 import slimeknights.tconstruct.library.tools.helper.ToolBuildHandler;
 import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolDataVerifier;
@@ -33,8 +38,11 @@ import slimeknights.tconstruct.tables.block.entity.table.PartBuilderBlockEntity;
 import slimeknights.tconstruct.tables.block.entity.table.TinkerStationBlockEntity;
 import slimeknights.tconstruct.tools.TinkerToolParts;
 import slimeknights.tconstruct.tools.TinkerTools;
+import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
 
+import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -360,22 +368,25 @@ public class ToolGameTests {
     helper.succeed();
   }
 
-  /** Reads off the logical server thread (client, render or worker threads) never change the stack. */
+  /**
+   * Reads off the logical server thread (client, render or worker threads) never verify the stack: the tool data keeps its stale content (a bound
+   * tool may give the stack its own copy of the data, see ToolDataOwnership), but redirected materials read resolved, in memory only.
+   */
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void tool_not_verified_off_server_thread(GameTestHelper helper) throws InterruptedException {
     ItemStack loaded = staleLoadedPickaxe();
-    CustomData data = loaded.get(DataComponents.CUSTOM_DATA);
     ItemStack part = TinkerToolParts.pickHead.get().getDefaultInstance();
     CompoundTag partTag = new CompoundTag();
     partTag.putString(IMaterialItem.MATERIAL_TAG, REDIRECTED_CHAIN.toString());
     part.set(DataComponents.CUSTOM_DATA, CustomData.of(partTag));
     CustomData partData = part.get(DataComponents.CUSTOM_DATA);
 
+    AtomicReference<Object> toolMaterial = new AtomicReference<>();
     AtomicReference<Object> partMaterial = new AtomicReference<>();
     AtomicReference<Throwable> error = new AtomicReference<>();
     Thread thread = new Thread(() -> {
       try {
-        ToolStack.from(loaded).getMaterials();
+        toolMaterial.set(ToolStack.from(loaded).getMaterials().get(0).getVariant());
         ToolStack.copyFrom(loaded);
         partMaterial.set(IMaterialItem.getMaterialFromStack(part));
       } catch (Throwable e) {
@@ -384,16 +395,75 @@ public class ToolGameTests {
     }, "tconstruct-gametest-off-thread-read");
     thread.start();
     thread.join(5000);
+    helper.assertFalse(thread.isAlive(), Component.literal("off thread read did not finish within 5 seconds"));
     if (error.get() != null) {
       throw new IllegalStateException("off thread read failed", error.get());
     }
-    helper.assertTrue(loaded.get(DataComponents.CUSTOM_DATA) == data && !data.tag.contains(TAG_STATS), Component.literal("off thread tool read changed the stack"));
-    helper.assertTrue(REDIRECTED_CHAIN.equals(partMaterial.get()), Component.literal("off thread part read should see the stored material, got " + partMaterial.get()));
+    String storedHead = TagUtil.getList(liveTag(loaded), ToolStack.TAG_MATERIALS, Tag.TAG_STRING).getString(0).orElse("");
+    helper.assertTrue(!liveTag(loaded).contains(TAG_STATS) && REDIRECTED_CHAIN.toString().equals(storedHead), Component.literal("off thread tool read verified the stack"));
+    helper.assertTrue(MaterialIds.roseGold.equals(toolMaterial.get()), Component.literal("off thread tool read should resolve the redirect in memory, got " + toolMaterial.get()));
+    helper.assertTrue(MaterialIds.roseGold.equals(partMaterial.get()), Component.literal("off thread part read should resolve the redirect in memory, got " + partMaterial.get()));
     helper.assertTrue(part.get(DataComponents.CUSTOM_DATA) == partData, Component.literal("off thread part read changed the stack"));
 
     // the server read still verifies afterwards
     ToolStack.from(loaded);
     helper.assertTrue(liveTag(loaded).contains(TAG_STATS), Component.literal("server read after the off thread read did not verify"));
+    helper.succeed();
+  }
+
+  /**
+   * A copy made before the verification shares the old data; on its own read it takes the verified result of the first stack instead of verifying
+   * again (same instance), so both end up with equal data and keep stacking.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void copy_takes_verified_result(GameTestHelper helper) {
+    ItemStack loaded = staleLoadedPickaxe();
+    ItemStack early = loaded.copy();
+    ToolStack.from(loaded);
+    CustomData verified = loaded.get(DataComponents.CUSTOM_DATA);
+    helper.assertTrue(verified != null && verified.tag.contains(TAG_STATS), Component.literal("first stack was not verified"));
+    ToolStack.copyFrom(early);
+    helper.assertTrue(early.get(DataComponents.CUSTOM_DATA) == verified, Component.literal("early copy did not take the verified data of the first stack"));
+    helper.assertTrue(ItemStack.isSameItemSameComponents(loaded, early), Component.literal("early copy does not match the verified stack"));
+    helper.succeed();
+  }
+
+  /**
+   * 1.21.9 copies share the custom data instance: changing a tool in place must not change its copies (1.21.8 gave each copy its own tag through
+   * the removed verifyComponentsAfterLoad), see ToolDataOwnership. Covers a copy taken after the original was bound and owns its data.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tool_changes_do_not_leak_into_copies(GameTestHelper helper) {
+    ItemStack original = buildPickaxe();
+    ToolStack.from(original).getStats();
+    ItemStack copy = original.copy();
+    ToolStack tool = ToolStack.from(original);
+    tool.addModifier(ModifierIds.reinforced, 1);
+    tool.setDamage(tool.getStats().getInt(ToolStats.DURABILITY));
+    helper.assertTrue(ToolDamageUtil.isBroken(original), Component.literal("original did not break"));
+    helper.assertFalse(ToolDamageUtil.isBroken(copy), Component.literal("breaking the original broke its copy"));
+    helper.assertTrue(ToolStack.copyFrom(copy).getModifierLevel(ModifierIds.reinforced) == 0, Component.literal("modifying the original modified its copy"));
+    helper.assertFalse(ItemStack.matches(original, copy), Component.literal("changed original still matches its copy"));
+    helper.succeed();
+  }
+
+  /** The equipment snapshot of an entity is a copy: breaking the held tool in place must count as an equipment change (event, attributes). */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void breaking_held_tool_is_an_equipment_change(GameTestHelper helper) throws ReflectiveOperationException {
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    ItemStack held = buildPickaxe();
+    player.setItemSlot(EquipmentSlot.MAINHAND, held);
+    Method detect = LivingEntity.class.getDeclaredMethod("detectEquipmentUpdates");
+    Method collect = LivingEntity.class.getDeclaredMethod("collectEquipmentChanges");
+    detect.setAccessible(true);
+    collect.setAccessible(true);
+    detect.invoke(player);
+    helper.assertTrue(collect.invoke(player) == null, Component.literal("equipment changed without a change"));
+    ToolStack tool = ToolStack.from(held);
+    tool.setDamage(tool.getStats().getInt(ToolStats.DURABILITY));
+    helper.assertTrue(ToolDamageUtil.isBroken(held), Component.literal("held tool did not break"));
+    Object changes = collect.invoke(player);
+    helper.assertTrue(changes instanceof Map<?,?> map && map.containsKey(EquipmentSlot.MAINHAND), Component.literal("breaking the held tool in place was not seen as an equipment change"));
     helper.succeed();
   }
 
