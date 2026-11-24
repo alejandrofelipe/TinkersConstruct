@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.test;
 
-import cpw.mods.jarhandling.SecureJar;
 import lombok.Getter;
+import net.neoforged.fml.jarcontents.JarContents;
 import net.neoforged.neoforgespi.language.IConfigurable;
 import net.neoforged.neoforgespi.language.IModFileInfo;
 import net.neoforged.neoforgespi.language.IModInfo;
@@ -146,11 +146,6 @@ public enum TestModInfo implements IModInfo {
     }
 
     @Override
-    public String moduleName() {
-      return "test";
-    }
-
-    @Override
     public String versionString() {
       return "0.0.0";
     }
@@ -174,9 +169,15 @@ public enum TestModInfo implements IModInfo {
   private enum ModFile implements IModFile {
     INSTANCE;
 
+    // PORT 1.21.10 (FML 10): findResource/getSecureJar were replaced by getId/getContents; not exercised by tests
     @Override
-    public Path findResource(String... pathName) {
-      return Path.of(".");
+    public String getId() {
+      return "test";
+    }
+
+    @Override
+    public JarContents getContents() {
+      return null;
     }
 
     @Override
@@ -192,12 +193,6 @@ public enum TestModInfo implements IModInfo {
     @Override
     public Path getFilePath() {
       return Path.of(".");
-    }
-
-    @Override
-    public SecureJar getSecureJar() {
-      // yeah, I gave up here, if we ever got this far in my fake mod info I'd be surprised
-      return null;
     }
 
     @Override

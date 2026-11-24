@@ -5,7 +5,10 @@ import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.config.IConfigSpec.ILoadedConfig;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,12 +33,22 @@ public class BaseMcTest {
   // is cached by the JVM, every later test in the same fork then sees a NoClassDefFoundError instead.
   // Same mockStatic-around-bootstrap shape as the old NetworkHooks guard: stub LoadingModList.get() to a
   // Mockito mock whose getModFiles() returns Mockito's default empty list, so the modded-flags scan is a no-op.
+  //
+  // PORT 1.21.10 (FML 10): LoadingModList.get() is gone, FeatureFlagLoader now reads
+  // FMLLoader.getCurrent().getLoadingModList(), and SharedConstants.<clinit> calls FMLEnvironment.isProduction(), which also
+  // needs a running FMLLoader. Mock both around the version setup and bootstrap: FMLLoader.getCurrent() returns a mock whose
+  // getLoadingModList() is a mock (empty mod files), FMLEnvironment is a dev server.
   @SuppressWarnings({"ResultOfMethodCallIgnored", "unused"})
   @BeforeAll
   static void setUpRegistries() {
-    SharedConstants.setVersion(TestWorldVersion.INSTANCE);
-    try (MockedStatic<LoadingModList> mockLoadingModList = Mockito.mockStatic(LoadingModList.class)) {
-      mockLoadingModList.when(LoadingModList::get).thenReturn(Mockito.mock(LoadingModList.class));
+    try (MockedStatic<FMLEnvironment> environment = Mockito.mockStatic(FMLEnvironment.class);
+         MockedStatic<FMLLoader> loader = Mockito.mockStatic(FMLLoader.class)) {
+      environment.when(FMLEnvironment::isProduction).thenReturn(false);
+      environment.when(FMLEnvironment::getDist).thenReturn(Dist.DEDICATED_SERVER);
+      FMLLoader current = Mockito.mock(FMLLoader.class);
+      Mockito.when(current.getLoadingModList()).thenReturn(Mockito.mock(LoadingModList.class));
+      loader.when(FMLLoader::getCurrent).thenReturn(current);
+      SharedConstants.setVersion(TestWorldVersion.INSTANCE);
       Bootstrap.bootStrap();
     }
     ModLoadingContext.get().setActiveContainer(new TestModContainer(TestModInfo.INSTANCE));

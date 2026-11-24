@@ -3,6 +3,7 @@ package slimeknights.tconstruct.test;
 import net.minecraft.SharedConstants;
 import net.minecraft.WorldVersion;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.metadata.pack.PackFormat;
 import net.minecraft.world.level.storage.DataVersion;
 
 import java.util.Date;
@@ -31,9 +32,10 @@ public class TestWorldVersion implements WorldVersion {
     return SharedConstants.getProtocolVersion();
   }
 
+  /** 1.21.9: pack versions are major.minor {@link PackFormat}s */
   @Override
-  public int packVersion(PackType pPackType) {
-    return 0;
+  public PackFormat packVersion(PackType pPackType) {
+    return PackFormat.of(0);
   }
 
   @Override
