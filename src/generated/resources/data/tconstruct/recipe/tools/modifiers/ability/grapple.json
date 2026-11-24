@@ -4,10 +4,10 @@
   "check_trait_level": true,
   "inputs": [
     {
-      "ingredient": "minecraft:chain"
+      "ingredient": "minecraft:iron_chain"
     },
     {
-      "ingredient": "minecraft:chain"
+      "ingredient": "minecraft:iron_chain"
     },
     {
       "ingredient": "#c:ingots/slimesteel"
