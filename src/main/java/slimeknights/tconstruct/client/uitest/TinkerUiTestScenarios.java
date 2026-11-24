@@ -9,6 +9,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
@@ -538,7 +540,8 @@ public class TinkerUiTestScenarios {
       }
       for (GuiEventListener child : screen.children()) {
         if (child instanceof GuiTweakButton button && button.getTooltipComponents().stream().anyMatch(CraftingTweaksRotateScenario::isRotateTooltip)) {
-          button.onClick(button.getX(), button.getY());
+          // 1.21.9: event based input; a plain left click at the button's corner, no modifiers
+          button.onClick(new MouseButtonEvent(button.getX(), button.getY(), new MouseButtonInfo(0, 0)), false);
           rotated = true;
           NeoForge.EVENT_BUS.unregister(poller);
           return;

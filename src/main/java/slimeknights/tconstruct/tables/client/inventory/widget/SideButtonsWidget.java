@@ -5,6 +5,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.renderer.Rect2i;
 import org.apache.commons.compress.utils.Lists;
 import slimeknights.mantle.client.screen.MultiModuleScreen;
@@ -66,10 +68,19 @@ public class SideButtonsWidget<T extends Button> implements Renderable, GuiEvent
     return this.leftPos <= mouseX && mouseX < this.guiRight() && this.topPos <= mouseY && mouseY < this.guiBottom();
   }
 
+  /**
+   * Builds the vanilla event for the module style (x, y, button) callbacks.
+   * Modifiers are not forwarded by the module API; vanilla buttons ignore them when pressed.
+   */
+  protected static MouseButtonEvent toEvent(double mouseX, double mouseY, int mouseButton) {
+    return new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(mouseButton, 0));
+  }
+
   public boolean handleMouseClicked(double mouseX, double mouseY, int mouseButton) {
     if (mouseButton == 0) {
+      MouseButtonEvent event = toEvent(mouseX, mouseY, mouseButton);
       for (T button : this.buttons) {
-        if (button.mouseClicked(mouseX, mouseY, mouseButton)) {
+        if (button.mouseClicked(event, false)) {
           this.clickedButton = button;
           return true;
         }
@@ -81,7 +92,7 @@ public class SideButtonsWidget<T extends Button> implements Renderable, GuiEvent
 
   public boolean handleMouseReleased(double mouseX, double mouseY, int state) {
     if (clickedButton != null) {
-      clickedButton.mouseReleased(mouseX, mouseY, state);
+      clickedButton.mouseReleased(toEvent(mouseX, mouseY, state));
       clickedButton = null;
       return true;
     }

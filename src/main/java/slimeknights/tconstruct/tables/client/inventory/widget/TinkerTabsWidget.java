@@ -7,6 +7,7 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
@@ -125,9 +126,11 @@ public class TinkerTabsWidget implements Renderable, GuiEventListener, Narratabl
   }
 
   @Override
-  public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+  public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    double mouseX = event.x();
+    double mouseY = event.y();
     if (isMouseOver(mouseX, mouseY)) {
-      this.tabs.handleMouseClicked((int) mouseX, (int) mouseY, mouseButton);
+      this.tabs.handleMouseClicked((int) mouseX, (int) mouseY, event.button());
       return true;
     }
 
@@ -135,7 +138,7 @@ public class TinkerTabsWidget implements Renderable, GuiEventListener, Narratabl
   }
 
   @Override
-  public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
+  public boolean mouseReleased(MouseButtonEvent event) {
     this.tabs.handleMouseReleased();
 
     return true;

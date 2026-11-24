@@ -3,6 +3,7 @@ package slimeknights.tconstruct.tables.client.inventory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.RegistryAccess;
@@ -192,11 +193,11 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
   }
 
   @Override
-  protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop, int mouseButton) {
+  protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop) {
     if (this.isOverPanelTab(mouseX, mouseY)) {
       return false; // edge tabs sit outside imageWidth; a click on one must not drop the carried stack
     }
-    return super.hasClickedOutside(mouseX, mouseY, guiLeft, guiTop, mouseButton);
+    return super.hasClickedOutside(mouseX, mouseY, guiLeft, guiTop);
   }
 
   @Override
@@ -299,7 +300,9 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
     List<Component> modifierTooltip = new ArrayList<>();
     Component title;
     // control displays just traits, bit trickier to do
-    if (hasControlDown()) {
+    // 1.21.9: Screen.hasControlDown/hasShiftDown moved to Minecraft
+    Minecraft mc = Minecraft.getInstance();
+    if (mc.hasControlDown()) {
       title = TRAITS_TEXT;
       Map<Modifier,Integer> upgrades = tool.getUpgrades().getModifiers().stream()
                                            .collect(Collectors.toMap(ModifierEntry::getModifier, ModifierEntry::getLevel, Integer::sum));
@@ -317,7 +320,7 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
     } else {
       // shift is just upgrades/abilities, otherwise all
       List<ModifierEntry> modifiers;
-      if (hasShiftDown()) {
+      if (mc.hasShiftDown()) {
         modifiers = tool.getUpgrades().getModifiers();
         title = UPGRADES_TEXT;
       } else {
@@ -338,7 +341,9 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
   }
 
   @Override
-  public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+  public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    double mouseX = event.x();
+    double mouseY = event.y();
     // COLLAPSED tier: the open info overlay is modal. The subclass already offered this click to the panel slider
     // before calling super; here, swallow clicks over the overlay and dismiss it on a true outside (non-tab) click.
     InfoPanelScreen<?,?> overlay = this.activeInfoOverlay();
@@ -357,7 +362,7 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
     int armorStandBoxY = this.armorStandY - armorStandBoxH + 5;
     this.clickedOnArmorStand = this.enableArmorStandPreview && GuiUtil.isHovered((int) mouseX, (int) mouseY, armorStandBoxX, armorStandBoxY, armorStandBoxW, armorStandBoxH);
 
-    return super.mouseClicked(mouseX, mouseY, mouseButton);
+    return super.mouseClicked(event, doubleClick);
   }
 
   @Override
@@ -372,20 +377,21 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
   }
 
   @Override
-  public boolean mouseReleased(double mouseX, double mouseY, int state) {
+  public boolean mouseReleased(MouseButtonEvent event) {
     this.clickedOnArmorStand = false;
     this.armorStandLastMouseX = -1;
 
-    return super.mouseReleased(mouseX, mouseY, state);
+    return super.mouseReleased(event);
   }
 
   @Override
-  public boolean mouseDragged(double mouseX, double mouseY, int clickedMouseButton, double timeSinceLastClick, double unkowwn) {
+  public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+    double mouseX = event.x();
     if (this.enableArmorStandPreview && this.clickedOnArmorStand && this.armorStandLastMouseX != -1) {
       this.armorStandAngle += (float) (mouseX - this.armorStandLastMouseX) / 10f;
     }
     this.armorStandLastMouseX = mouseX;
 
-    return super.mouseDragged(mouseX, mouseY, clickedMouseButton, timeSinceLastClick, unkowwn);
+    return super.mouseDragged(event, dragX, dragY);
   }
 }

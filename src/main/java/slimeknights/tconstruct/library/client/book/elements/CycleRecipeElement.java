@@ -3,6 +3,7 @@ package slimeknights.tconstruct.library.client.book.elements;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
@@ -26,7 +27,8 @@ public class CycleRecipeElement extends ArrowElement {
   public void mouseClicked(double mouseX, double mouseY, int mouseButton) {
     if (this.button != null && this.isHovered(mouseX, mouseY)) {
       this.playDownSound(Minecraft.getInstance().getSoundManager());
-      this.button.onPress();
+      // 1.21.9: onPress takes the input; Button ignores it, so pass the clicked button without modifiers (as Mantle's ArrowElement)
+      this.button.onPress(new MouseButtonInfo(mouseButton, 0));
     }
   }
 

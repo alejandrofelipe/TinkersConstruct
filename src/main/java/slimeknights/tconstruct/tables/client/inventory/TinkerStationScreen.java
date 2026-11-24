@@ -6,6 +6,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.input.InputQuirks;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -525,7 +528,10 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
 
 
   @Override
-  public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+  public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    double mouseX = event.x();
+    double mouseY = event.y();
+    int mouseButton = event.button();
     // COLLAPSED tier: the selector overlay is modal — route clicks to it, dismiss on a true outside (non-tab) click
     if (this.overlayOpen == OverlayPanel.SELECTOR) {
       if (this.buttonsScreen.isMouseOver(mouseX, mouseY)) {
@@ -549,11 +555,16 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
       return false;
     }
 
-    return super.mouseClicked(mouseX, mouseY, mouseButton);
+    return super.mouseClicked(event, doubleClick);
   }
 
   @Override
-  public boolean mouseDragged(double mouseX, double mouseY, int clickedMouseButton, double timeSinceLastClick, double unkowwn) {
+  public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+    double mouseX = event.x();
+    double mouseY = event.y();
+    int clickedMouseButton = event.button();
+    // the info panels' timeSinceLastClick parameter always received the horizontal drag
+    double timeSinceLastClick = dragX;
     if (this.tinkerInfo.handleMouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick)) {
       return false;
     }
@@ -562,7 +573,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
       return false;
     }
 
-    return super.mouseDragged(mouseX, mouseY, clickedMouseButton, timeSinceLastClick, unkowwn);
+    return super.mouseDragged(event, dragX, dragY);
   }
 
   @Override
@@ -579,7 +590,10 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   }
 
   @Override
-  public boolean mouseReleased(double mouseX, double mouseY, int state) {
+  public boolean mouseReleased(MouseButtonEvent event) {
+    double mouseX = event.x();
+    double mouseY = event.y();
+    int state = event.button();
     if (this.tinkerInfo.handleMouseReleased(mouseX, mouseY, state)) {
       return false;
     }
@@ -592,7 +606,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
       return false;
     }
 
-    return super.mouseReleased(mouseX, mouseY, state);
+    return super.mouseReleased(event);
   }
 
   /** Returns true if a key changed that requires a display update */
@@ -600,14 +614,15 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
     if (keyCode == GLFW.GLFW_KEY_LEFT_SHIFT || keyCode == GLFW.GLFW_KEY_RIGHT_SHIFT) {
       return true;
     }
-    if (Minecraft.ON_OSX) {
+    if (InputQuirks.ON_OSX) {
       return keyCode == GLFW.GLFW_KEY_LEFT_SUPER || keyCode == GLFW.GLFW_KEY_RIGHT_SUPER;
     }
     return keyCode == GLFW.GLFW_KEY_LEFT_CONTROL || keyCode == GLFW.GLFW_KEY_RIGHT_CONTROL;
   }
 
   @Override
-  public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+  public boolean keyPressed(KeyEvent event) {
+    int keyCode = event.key();
     if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
       this.onClose();
       return true;
@@ -616,18 +631,19 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
       updateDisplay();
     }
     if (textField.canConsumeInput()) {
-      textField.keyPressed(keyCode, scanCode, modifiers);
+      textField.keyPressed(event);
       return true;
     }
-    return super.keyPressed(keyCode, scanCode, modifiers);
+    return super.keyPressed(event);
   }
 
   @Override
-  public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+  public boolean keyReleased(KeyEvent event) {
+    int keyCode = event.key();
     if (needsDisplayUpdate(keyCode)) {
       updateDisplay();
     }
-    return super.keyReleased(keyCode, scanCode, modifiers);
+    return super.keyReleased(event);
   }
 
   @Override
@@ -718,8 +734,8 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   }
 
   @Override
-  protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop, int mouseButton) {
-    return super.hasClickedOutside(mouseX, mouseY, guiLeft, guiTop, mouseButton)
+  protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop) {
+    return super.hasClickedOutside(mouseX, mouseY, guiLeft, guiTop)
       && !this.buttonsScreen.isMouseOver(mouseX, mouseY);
   }
 
