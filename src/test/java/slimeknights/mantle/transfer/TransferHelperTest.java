@@ -14,15 +14,19 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.junit.jupiter.api.Test;
 import slimeknights.mantle.item.ConstantFluidContainerWrapper;
 import slimeknights.tconstruct.test.BaseMcTest;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.fail;
 
 /**
@@ -157,5 +161,41 @@ class TransferHelperTest extends BaseMcTest {
     }
     // fine again once the transaction is closed
     assertThat(TransferHelper.asLegacyFluidHandler(tank)).isNotNull();
+  }
+
+  @Test
+  void insideClosingTransaction_reportsNotOpen_andThrowsDescriptively() {
+    FluidStacksResourceHandler tank = new FluidStacksResourceHandler(1, 1000);
+    List<Object> seen = new ArrayList<>();
+    // a journal's revert callback runs while its transaction is closing
+    SnapshotJournal<Integer> journal = new SnapshotJournal<>() {
+      @Override
+      protected Integer createSnapshot() {
+        return 0;
+      }
+
+      @Override
+      protected void revertToSnapshot(Integer snapshot) {
+        seen.add(Transaction.getLifecycle());
+        seen.add(TransferHelper.isTransactionOpen());
+        seen.add(catchThrowable(TransferHelper::openNestedOrRoot));
+        seen.add(catchThrowable(() -> TransferHelper.asLegacyFluidHandler(tank)));
+      }
+    };
+    try (Transaction tx = Transaction.openRoot()) {
+      journal.updateSnapshots(tx);
+      // closing without commit reverts the journal
+    }
+    assertThat(seen).hasSize(4);
+    assertThat(seen.get(0)).isEqualTo(Transaction.Lifecycle.CLOSING);
+    assertThat(seen.get(1)).isEqualTo(false);
+    for (Object thrown : seen.subList(2, 4)) {
+      assertThat(thrown).isInstanceOf(IllegalStateException.class);
+      assertThat(((Throwable) thrown).getMessage()).contains("while a transaction is closing");
+    }
+    // a root transaction can be opened again afterwards
+    try (Transaction tx = TransferHelper.openNestedOrRoot()) {
+      assertThat(TransferHelper.isTransactionOpen()).isTrue();
+    }
   }
 }
