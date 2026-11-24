@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.BlockDestructionProgress;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -48,6 +49,8 @@ import java.util.List;
 public class ToolRenderEvents {
   /** Maximum number of blocks from the iterator to render */
   private static final int MAX_BLOCKS = 60;
+  /** Outline color vanilla uses with the high contrast block outline option (light blue) */
+  private static final int HIGH_CONTRAST_OUTLINE = -11010079;
 
   /**
    * Adds the outline on the extra blocks.
@@ -107,16 +110,24 @@ public class ToolRenderEvents {
     // draw in the same pass as the vanilla outline, without replacing it
     event.addCustomRenderer((outlineState, buffers, matrices, translucent, levelState) -> {
       if (outlineState.isTranslucent() == translucent) {
-        VertexConsumer vertexBuilder = buffers.getBuffer(RenderType.lines());
         Vec3 camera = levelState.cameraRenderState.pos;
-        for (ExtraOutline outline : outlines) {
-          BlockPos pos = outline.pos;
-          // same as the vanilla outline (semi-transparent black)
-          ShapeRenderer.renderShape(matrices, vertexBuilder, outline.shape, pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z, 0x66000000);
+        // same as the vanilla outline: with the high contrast option, a black secondary outline under a light blue one, else semi-transparent black
+        boolean highContrast = outlineState.highContrast();
+        if (highContrast) {
+          renderOutlines(outlines, matrices, buffers.getBuffer(RenderType.secondaryBlockOutline()), camera, 0xFF000000);
         }
+        renderOutlines(outlines, matrices, buffers.getBuffer(RenderType.lines()), camera, highContrast ? HIGH_CONTRAST_OUTLINE : ARGB.color(102, 0xFF000000));
       }
       return false;
     });
+  }
+
+  /** Draws the extra block outlines camera-relative in the given color */
+  private static void renderOutlines(List<ExtraOutline> outlines, PoseStack matrices, VertexConsumer vertexBuilder, Vec3 camera, int color) {
+    for (ExtraOutline outline : outlines) {
+      BlockPos pos = outline.pos;
+      ShapeRenderer.renderShape(matrices, vertexBuilder, outline.shape, pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z, color);
+    }
   }
 
   /** Extra block outline extracted for {@link #extractBlockHighlights} */
