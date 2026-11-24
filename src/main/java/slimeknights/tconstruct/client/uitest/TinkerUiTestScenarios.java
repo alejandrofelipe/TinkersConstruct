@@ -37,7 +37,13 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
 import slimeknights.mantle.client.screen.book.BookScreen;
 import slimeknights.mantle.client.screen.book.element.StructureElement;
@@ -47,8 +53,10 @@ import slimeknights.mantle.client.uitest.UiTestScenarios;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.fluids.TinkerFluids;
+import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.tools.nbt.MaterialIdNBT;
+import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.gametest.SmelteryRigs;
@@ -67,6 +75,7 @@ import slimeknights.tconstruct.tables.client.inventory.ToolTableScreen;
 import slimeknights.tconstruct.tools.TinkerModifiers;
 import slimeknights.tconstruct.tools.TinkerToolParts;
 import slimeknights.tconstruct.tools.TinkerTools;
+import slimeknights.tconstruct.tools.client.ToolContainerScreen;
 import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
 import slimeknights.tconstruct.world.TinkerHeadType;
@@ -109,6 +118,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new DynamicBlockModelsScenario());
     UiTestScenarios.register(new HeadItemsScenario());
     UiTestScenarios.register(new DynamicItemIconsScenario());
+    UiTestScenarios.register(new ToolInventoryScenario());
     // every other Tinkers JEI category (JEIPlugin#registerCategories), melting is registered above
     UiTestScenarios.register(new JeiCategoryScenario<>("casting_table", TConstructJEIConstants.CASTING_TABLE));
     UiTestScenarios.register(new JeiCategoryScenario<>("casting_basin", TConstructJEIConstants.CASTING_BASIN));
@@ -974,6 +984,82 @@ public class TinkerUiTestScenarios {
       ctx.mc().setScreen(null);
       ctx.sendCommand("clear @s");
       ctx.sendCommand("gamemode creative");
+    }
+  }
+
+  /**
+   * Gives the player a pickaxe with the pocket modifier holding a few items, filled through the tool's item capability, and uses it in the air:
+   * the use opens the tool inventory menu through the server, which needs the tool's {@code Capabilities.Item.ITEM} (never registered from the
+   * 1.21.1 port until 1.21.10, M5 decision D-C1). Captures the opened tool inventory screen with its 3 pocket slots.
+   */
+  private static class ToolInventoryScenario implements UiTestScenario {
+    private final BlockPos pos = SITE.offset(80, 0, 0);
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("tool_inventory");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      // look straight up so the use hits the air, not a block
+      ctx.sendCommand("tp @s " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " 0 -90");
+      ctx.runOnServer(() -> {
+        ToolStack tool = ToolStack.createTool(TinkerTools.pickaxe.get(), TinkerTools.pickaxe.get().getToolDefinition(),
+          MaterialNBT.of(MaterialVariant.of(MaterialIds.cobalt, ""), MaterialVariant.of(MaterialIds.wood, ""), MaterialVariant.of(MaterialIds.iron, "")));
+        tool.addModifier(ModifierIds.pocket, 1);
+        ItemStacksResourceHandler slot = new ItemStacksResourceHandler(1);
+        slot.set(0, ItemResource.of(tool.createStack()), 1);
+        ResourceHandler<ItemResource> pockets = ItemAccess.forHandlerIndex(slot, 0).getCapability(Capabilities.Item.ITEM);
+        if (pockets == null) {
+          throw new IllegalStateException("tool_inventory: pickaxe with pockets exposes no item capability");
+        }
+        try (Transaction tx = Transaction.openRoot()) {
+          pockets.insert(0, ItemResource.of(Items.DIAMOND), 5, tx);
+          pockets.insert(1, ItemResource.of(Items.TORCH), 32, tx);
+          tx.commit();
+        }
+        Inventory inventory = ctx.serverLevel().getServer().getPlayerList().getPlayers().getFirst().getInventory();
+        inventory.clearContent();
+        inventory.setItem(0, slot.getResource(0).toStack());
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      LocalPlayer player = ctx.player();
+      player.getInventory().setSelectedSlot(0);
+      // the client side use also sees the capability and sends the use to the server, which opens the menu
+      Objects.requireNonNull(ctx.mc().gameMode).useItem(player, InteractionHand.MAIN_HAND);
+    }
+
+    @Override
+    public int settleTicks() {
+      return 20; // server round trip for the menu
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      // the menu opens through the server, so assert after the settle: fail loudly instead of shipping a world screenshot
+      if (!(ctx.mc().screen instanceof ToolContainerScreen screen)) {
+        throw new IllegalStateException("tool_inventory expected ToolContainerScreen at capture, found " + ctx.mc().screen);
+      }
+      int slots = screen.getMenu().getItemHandler().getSlots();
+      if (slots != 3) {
+        throw new IllegalStateException("tool_inventory expected 3 pocket slots, found " + slots);
+      }
+      ctx.mc().setScreen(null);
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      ctx.mc().setScreen(null);
+      ctx.sendCommand("clear @s");
     }
   }
 

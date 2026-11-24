@@ -607,8 +607,8 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
 
   /**
    * Gets the legacy handler over the real stacks of the given tool, for menus, when the tool exposes the native item capability.
-   * PORT 1.21.10: menus need the real stacks, which the native capability's legacy bridge does not give. Note no tool item registers the
-   * capability yet, as in 1.21.8, so this is empty for now.
+   * PORT 1.21.10: menus need the real stacks, which the native capability's legacy bridge does not give. The capability is registered for
+   * every modifiable item by {@link slimeknights.tconstruct.library.tools.capability.ToolCapabilityProvider#register}.
    */
   public static IItemHandler getMenuHandler(ItemStack stack) {
     if (!TransferUtil.hasItemHandler(stack)) {

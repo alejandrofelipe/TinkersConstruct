@@ -9,6 +9,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -37,8 +39,13 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.gadgets.capability.PiggybackCapability;
 import slimeknights.tconstruct.gadgets.capability.PiggybackHandler;
+import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
+import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.recipe.casting.ItemCastingRecipe;
+import slimeknights.tconstruct.library.tools.capability.inventory.ToolInventoryCapability;
+import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
+import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.AbstractCastingBlock;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock;
@@ -49,6 +56,10 @@ import slimeknights.tconstruct.smeltery.block.entity.controller.MelterBlockEntit
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.entity.chest.TinkersChestBlockEntity;
 import slimeknights.tconstruct.tables.block.entity.inventory.IChestItemHandler;
+import slimeknights.tconstruct.tools.TinkerTools;
+import slimeknights.tconstruct.tools.data.ModifierIds;
+import slimeknights.tconstruct.tools.data.material.MaterialIds;
+import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -152,6 +163,102 @@ public class CapabilityGameTests {
       helper.fail(Component.literal("piggyback handler is rebuilt per lookup; carried-passenger sync would spam every tick"));
       return;
     }
+    helper.succeed();
+  }
+
+
+  /* Tool capabilities (M5 decision D-C1: never registered since the 1.21.1 port) */
+
+  /** Builds a rock/wood/wood pickaxe with the given modifiers */
+  private static ItemStack pickaxe(ModifierId... modifiers) {
+    ToolStack tool = ToolStack.createTool(TinkerTools.pickaxe.get(), TinkerTools.pickaxe.get().getToolDefinition(),
+      MaterialNBT.of(MaterialVariant.of(MaterialIds.rock, ""), MaterialVariant.of(MaterialIds.wood, ""), MaterialVariant.of(MaterialIds.wood, "")));
+    for (ModifierId modifier : modifiers) {
+      tool.addModifier(modifier, 1);
+    }
+    return tool.createStack();
+  }
+
+  /** Puts the stack in a one slot handler, standing in for a pipe or machine inventory */
+  private static ItemStacksResourceHandler slotWith(ItemStack stack) {
+    ItemStacksResourceHandler slot = new ItemStacksResourceHandler(1);
+    slot.set(0, ItemResource.of(stack), stack.getCount());
+    return slot;
+  }
+
+  /** A tool without a tank, inventory or energy modifier exposes none of the transfer capabilities. */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tool_without_modifiers_has_no_capabilities(GameTestHelper helper) {
+    ItemAccess access = ItemAccess.forHandlerIndex(slotWith(pickaxe()), 0);
+    helper.assertTrue(access.getCapability(Capabilities.Fluid.ITEM) == null, Component.literal("plain pickaxe exposes a fluid handler"));
+    helper.assertTrue(access.getCapability(Capabilities.Item.ITEM) == null, Component.literal("plain pickaxe exposes an item handler"));
+    helper.assertTrue(access.getCapability(Capabilities.Energy.ITEM) == null, Component.literal("plain pickaxe exposes an energy handler"));
+    helper.succeed();
+  }
+
+  /** A tool with the tank modifier exposes a fluid handler that pipes can fill through the access: a simulation leaves it empty, a commit fills it. */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tool_tank_fluid_capability(GameTestHelper helper) {
+    ItemStacksResourceHandler slot = slotWith(pickaxe(ModifierIds.tank));
+    ResourceHandler<FluidResource> handler = ItemAccess.forHandlerIndex(slot, 0).getCapability(Capabilities.Fluid.ITEM);
+    if (handler == null) {
+      helper.fail(Component.literal("pickaxe with a tank exposes no fluid handler"));
+      return;
+    }
+    helper.assertTrue(handler.size() > 0, Component.literal("tool fluid handler has no tanks"));
+    FluidResource water = FluidResource.of(Fluids.WATER);
+    try (Transaction tx = Transaction.openRoot()) {
+      helper.assertTrue(handler.insert(0, water, FluidType.BUCKET_VOLUME, tx) == FluidType.BUCKET_VOLUME, Component.literal("tool tank did not accept a bucket of water"));
+    }
+    helper.assertTrue(handler.getAmountAsLong(0) == 0, Component.literal("simulated fill changed the tool tank"));
+    try (Transaction tx = Transaction.openRoot()) {
+      handler.insert(0, water, FluidType.BUCKET_VOLUME, tx);
+      tx.commit();
+    }
+    helper.assertTrue(handler.getResource(0).equals(water) && handler.getAmountAsLong(0) == FluidType.BUCKET_VOLUME,
+      Component.literal("committed fill did not store a bucket of water, found " + handler.getAmountAsLong(0) + " of " + handler.getResource(0)));
+    // the slot holds the updated tool, readable through the tool's own tank
+    ItemStack filled = slot.getResource(0).toStack();
+    ResourceHandler<FluidResource> again = ItemAccess.forStack(filled).getCapability(Capabilities.Fluid.ITEM);
+    helper.assertTrue(again != null && again.getAmountAsLong(0) == FluidType.BUCKET_VOLUME, Component.literal("filled tool stack does not hold the water"));
+    helper.succeed();
+  }
+
+  /**
+   * A tool with an inventory modifier exposes an item handler with its slots, accepts items through it, and its inventory opens, both through
+   * {@link ToolInventoryCapability#tryOpenContainer} and when used, on a menu showing the real slots. Uses a mock (non network) player:
+   * {@code makeMockServerPlayerInLevel} has no negotiated payload channels, so the datapack sync on join and the menu open packet are refused;
+   * the client round trip is covered by the {@code tconstruct:tool_inventory} uitest.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tool_inventory_item_capability(GameTestHelper helper) {
+    ItemStacksResourceHandler slot = slotWith(pickaxe(ModifierIds.pocket));
+    ResourceHandler<ItemResource> handler = ItemAccess.forHandlerIndex(slot, 0).getCapability(Capabilities.Item.ITEM);
+    if (handler == null) {
+      helper.fail(Component.literal("pickaxe with pockets exposes no item handler"));
+      return;
+    }
+    helper.assertTrue(handler.size() == 3, Component.literal("expected 3 pocket slots, got " + handler.size()));
+    try (Transaction tx = Transaction.openRoot()) {
+      helper.assertTrue(handler.insert(0, ItemResource.of(Items.COBBLESTONE), 16, tx) == 16, Component.literal("tool inventory did not accept cobblestone"));
+      tx.commit();
+    }
+    helper.assertTrue(handler.getResource(0).is(Items.COBBLESTONE) && handler.getAmountAsLong(0) == 16, Component.literal("tool inventory does not hold the inserted cobblestone"));
+    ItemStack tool = slot.getResource(0).toStack();
+
+    // the menu sees the real slots
+    helper.assertTrue(ToolInventoryCapability.getMenuHandler(tool).getSlots() == 3, Component.literal("menu handler does not see the pocket slots"));
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    player.setItemInHand(InteractionHand.MAIN_HAND, tool);
+    InteractionResult opened = ToolInventoryCapability.tryOpenContainer(tool, ToolStack.from(tool), player, EquipmentSlot.MAINHAND);
+    helper.assertTrue(opened.consumesAction(), Component.literal("tryOpenContainer did not open the tool inventory: " + opened));
+    // using the tool opens it too (pocket opens on any key)
+    InteractionResult used = tool.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+    helper.assertTrue(used.consumesAction(), Component.literal("using the tool did not open its inventory: " + used));
+    // the menu the server opens, see tryOpenContainer
+    ToolContainerMenu menu = new ToolContainerMenu(0, player.getInventory(), tool, ToolInventoryCapability.getMenuHandler(tool), player.getInventory().getSelectedSlot());
+    helper.assertTrue(menu.getItemHandler().getSlots() == 3 && menu.getItemHandler().getStackInSlot(0).is(Items.COBBLESTONE),
+      Component.literal("tool container menu does not show the tool inventory"));
     helper.succeed();
   }
 

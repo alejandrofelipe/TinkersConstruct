@@ -25,6 +25,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.component.BlocksAttacks;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
@@ -320,6 +321,12 @@ public final class TinkerTools extends TinkerModule {
     });
     ModifierHooks.init();
     ToolHooks.init();
+  }
+
+  /** Transfer capabilities of the tools, see {@link ToolCapabilityProvider#register(RegisterCapabilitiesEvent)} */
+  @SubscribeEvent
+  void registerCapabilities(RegisterCapabilitiesEvent event) {
+    ToolCapabilityProvider.register(event);
   }
 
   /** 1.21.5: trim material ingredients provide their material through a component */

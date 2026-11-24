@@ -1,8 +1,13 @@
 package slimeknights.tconstruct.library.tools.capability;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ItemCapability;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
+import slimeknights.tconstruct.library.tools.item.IModifiable;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 
@@ -77,13 +82,26 @@ public class ToolCapabilityProvider {
   }
 
   /**
-   * Resolves a transfer capability for the tool in the given access, for a central {@code event.registerItem(Capabilities.Fluid.ITEM,
-   * (stack, access) -> ToolCapabilityProvider.getCapability(access, Capabilities.Fluid.ITEM), ...)} registration.
-   * PORT 1.21.10: note no tool item registers these capabilities yet, as in 1.21.8.
+   * Resolves a transfer capability for the tool in the given access, see {@link #register(RegisterCapabilitiesEvent)}.
    */
   @Nullable
   public static <T> T getCapability(ItemAccess access, ItemCapability<T, ItemAccess> cap) {
     return new ToolCapabilityProvider(access.getResource().toStack(access.getAmount())).getCapability(cap, access);
+  }
+
+  /**
+   * Registers the transfer capabilities ({@code Capabilities.Fluid/Item/Energy.ITEM}) of every modifiable item, served by the tool's modifiers
+   * through the registered providers; each is null when the tool lacks a modifier providing it.
+   * PORT 1.21.10: no tool registered these since the 1.21.1 port (the removed {@code initCapabilities} was never replaced), so tool inventories
+   * did not open and automation could not see tool tanks or energy.
+   */
+  public static void register(RegisterCapabilitiesEvent event) {
+    Item[] tools = BuiltInRegistries.ITEM.stream().filter(item -> item instanceof IModifiable).toArray(Item[]::new);
+    if (tools.length > 0) {
+      event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> getCapability(access, Capabilities.Fluid.ITEM), tools);
+      event.registerItem(Capabilities.Item.ITEM, (stack, access) -> getCapability(access, Capabilities.Item.ITEM), tools);
+      event.registerItem(Capabilities.Energy.ITEM, (stack, access) -> getCapability(access, Capabilities.Energy.ITEM), tools);
+    }
   }
 
   /** Registers a tool capability provider constructor. Every new tool will call this constructor to create your provider.
