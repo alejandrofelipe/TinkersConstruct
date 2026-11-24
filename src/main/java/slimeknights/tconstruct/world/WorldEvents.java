@@ -4,6 +4,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -53,7 +54,11 @@ public class WorldEvents {
           TinkerHeadType headType = TinkerHeadType.fromEntityType(dying.getType());
           if (headType != null && Config.COMMON.headDrops.get(headType).get()) {
             creeper.droppedSkulls = true;
-            event.getDrops().add(dying.spawnAtLocation((net.minecraft.server.level.ServerLevel) dying.level(), TinkerWorld.heads.get(headType)));
+            // only add the entity to the drops: vanilla adds the drops to the level unless another listener cancels the event
+            // (spawnAtLocation would also add it to the level right away, as nothing captures drops while the event runs)
+            ItemEntity head = new ItemEntity(dying.level(), dying.getX(), dying.getY(), dying.getZ(), new ItemStack(TinkerWorld.heads.get(headType)));
+            head.setDefaultPickUpDelay();
+            event.getDrops().add(head);
           }
         }
       }
