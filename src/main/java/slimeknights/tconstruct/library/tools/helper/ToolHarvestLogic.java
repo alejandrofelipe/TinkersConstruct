@@ -96,7 +96,8 @@ public class ToolHarvestLogic {
     ServerLevel world = context.getWorld();
     BlockPos pos = context.getPos();
     if (removed == null) {
-      removed = state.onDestroyedByPlayer(world, pos, context.getPlayer(), stack, context.canHarvest(), world.getFluidState(pos));
+      // pass a copy like vanilla ServerPlayerGameMode#removeBlock, so a block mutating the stack can't change the real tool
+      removed = state.onDestroyedByPlayer(world, pos, context.getPlayer(), stack.copy(), context.canHarvest(), world.getFluidState(pos));
     }
     // if removed by anything, finally destroy it
     if (removed) {
