@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.renderer.entity.ItemEntityRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
@@ -257,7 +257,7 @@ public class ToolClientEvents extends ClientEventBase {
 
   @SubscribeEvent
   static void registerParticleFactories(RegisterParticleProvidersEvent event) {
-    ParticleEngine.SpriteParticleRegistration<SimpleParticleType> factory = AttackParticle.Factory::new;
+    ParticleResources.SpriteParticleRegistration<SimpleParticleType> factory = AttackParticle.Factory::new;
     event.registerSpriteSet(TinkerTools.hammerAttackParticle.get(), factory);
     event.registerSpriteSet(TinkerTools.axeAttackParticle.get(), factory);
     event.registerSpriteSet(TinkerTools.bonkAttackParticle.get(), factory);

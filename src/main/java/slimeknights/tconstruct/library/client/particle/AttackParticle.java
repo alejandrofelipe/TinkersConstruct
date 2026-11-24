@@ -3,18 +3,19 @@ package slimeknights.tconstruct.library.client.particle;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
 /** Simple particle used on attack */
-public class AttackParticle extends TextureSheetParticle {
+public class AttackParticle extends SingleQuadParticle {
 
   private final SpriteSet spriteList;
 
   public AttackParticle(ClientLevel world, double x, double y, double z, double pQuadSizeMultiplier, SpriteSet spriteList) {
-    super(world, x, y, z, 0, 0, 0);
+    // 1.21.9: SingleQuadParticle takes an initial sprite, replaced right away by the age sprite
+    super(world, x, y, z, 0, 0, 0, spriteList.first());
     this.spriteList = spriteList;
     float f = this.random.nextFloat() * 0.6F + 0.4F;
     this.rCol = f;
@@ -26,8 +27,8 @@ public class AttackParticle extends TextureSheetParticle {
   }
 
   @Override
-  public ParticleRenderType getRenderType() {
-    return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+  protected Layer getLayer() {
+    return Layer.OPAQUE;
   }
 
   @Override
@@ -58,7 +59,7 @@ public class AttackParticle extends TextureSheetParticle {
     }
 
     @Override
-    public Particle createParticle(SimpleParticleType typeIn, ClientLevel worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+    public Particle createParticle(SimpleParticleType typeIn, ClientLevel worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
       return new AttackParticle(worldIn, x, y, z, xSpeed, this.spriteSet);
     }
   }
