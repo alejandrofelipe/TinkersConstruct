@@ -11,7 +11,6 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.resources.ResourceLocation;
 import slimeknights.tconstruct.library.client.armor.AbstractArmorModel;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.ArmorTexture;
@@ -47,7 +46,7 @@ public class TintedArmorTexture implements ArmorTexture {
 
   @Override
   public void renderTexture(Model model, PoseStack matrices, MultiBufferSource bufferSource, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean hasGlint) {
-    VertexConsumer buffer = ItemRenderer.getArmorFoilBuffer(bufferSource, RenderType.armorCutoutNoCull(texture), hasGlint);
+    VertexConsumer buffer = AbstractArmorModel.getArmorFoilBuffer(bufferSource, RenderType.armorCutoutNoCull(texture), hasGlint);
     if (luminosity > 0) {
       packedLight = applyLuminosity(packedLight, luminosity);
     }

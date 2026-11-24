@@ -6,19 +6,18 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MapRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemFrameRenderer;
 import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.event.RenderItemInFrameEvent;
-import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.neoforged.neoforge.common.NeoForge;
 import slimeknights.tconstruct.TConstruct;
@@ -85,16 +84,12 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
 
   @SuppressWarnings({"UnstableApiUsage", "deprecation"})  // matching vanilla behavior, so calling the vanilla hooks
   @Override
-  public void render(ItemFrameRenderState state, PoseStack matrices, MultiBufferSource bufferIn, int packedLight) {
+  public void submit(ItemFrameRenderState state, PoseStack matrices, SubmitNodeCollector collector, CameraRenderState camera) {
     FrameType frameType = ((FancyItemFrameRenderState) state).frameType;
 
-    // base entity rendering logic (nameplate); calling super would draw the vanilla item frame we are replacing
-    if (state.nameTag != null) {
-      RenderNameTagEvent.DoRender renderNameplate = new RenderNameTagEvent.DoRender(state, state.nameTag, this, matrices, bufferIn, packedLight, state.partialTick);
-      if (!NeoForge.EVENT_BUS.post(renderNameplate).isCanceled()) {
-        this.renderNameTag(state, state.nameTag, matrices, bufferIn, packedLight);
-      }
-    }
+    // base entity rendering logic (nameplate, fires RenderNameTagEvent); calling super would draw the vanilla item frame we are replacing
+    this.submitNameTag(state, matrices, collector, camera);
+    int packedLight = state.lightCoords;
 
     // orient the renderer
     matrices.pushPose();
@@ -121,7 +116,7 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
       matrices.translate(-0.5D, -0.5D, -0.5D);
       BlockStateModel model = Minecraft.getInstance().getModelManager().getStandaloneModel(isMap ? LOCATIONS_MODEL_MAP.get(frameType) : LOCATIONS_MODEL.get(frameType));
       if (model != null) {
-        ModelBlockRenderer.renderModel(matrices.last(), bufferIn.getBuffer(Sheets.cutoutBlockSheet()), model, 1.0F, 1.0F, 1.0F, packedLight, OverlayTexture.NO_OVERLAY);
+        collector.submitBlockModel(matrices, Sheets.cutoutBlockSheet(), model, 1.0F, 1.0F, 1.0F, packedLight, OverlayTexture.NO_OVERLAY, state.outlineColor);
       }
       matrices.popPose();
     }
@@ -140,17 +135,17 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
         int rotation = isMap ? (frameRotation + 2) % 4 * 2 : frameRotation;
         matrices.mulPose(Axis.ZP.rotationDegrees(rotation * 360f / 8f));
       }
-      if (!NeoForge.EVENT_BUS.post(new RenderItemInFrameEvent(state, this, matrices, bufferIn, packedLight)).isCanceled()) {
+      if (!NeoForge.EVENT_BUS.post(new RenderItemInFrameEvent(state, this, matrices, collector)).isCanceled()) {
         if (isMap) {
           matrices.scale(0.0078125F, 0.0078125F, 0.0078125F);
           matrices.translate(-64.0D, -64.0D, -1.0D);
           int light = frameType == FrameType.MANYULLYN ? 0x00F000F0 : packedLight;
-          this.mapRenderer.render(state.mapRenderState, matrices, bufferIn, true, light);
+          this.mapRenderer.render(state.mapRenderState, matrices, collector, true, light);
         } else {
           float scale = frameType == FrameType.CLEAR ? 0.75f : 0.5f;
           matrices.scale(scale, scale, scale);
           int light = frameType == FrameType.MANYULLYN ? 0x00F000F0 : packedLight;
-          state.item.render(matrices, bufferIn, light, OverlayTexture.NO_OVERLAY);
+          state.item.submit(matrices, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
         }
       }
     }

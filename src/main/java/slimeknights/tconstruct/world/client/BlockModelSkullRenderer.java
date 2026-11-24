@@ -30,7 +30,7 @@ public class BlockModelSkullRenderer extends SkullModelBase {
   }
 
   @Override
-  public void setupAnim(float pMouthAnimation, float yRot, float xRot) {
+  public void setupAnim(SkullModelBase.State state) {
     // PORT 1.21.4: no-op; item-as-skull pose/render deferred to Phase-4 ItemStackRenderState reimplementation
   }
 

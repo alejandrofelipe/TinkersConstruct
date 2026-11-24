@@ -2,16 +2,15 @@ package slimeknights.tconstruct.library.client.armor;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.event.RenderLivingEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.bus.api.EventPriority;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.TextureType;
 
 import javax.annotation.Nullable;
@@ -64,14 +63,22 @@ public abstract class AbstractArmorModel {
 
   /* Helpers */
 
-  /** Buffer from the render living event, stored as we lose access to it later */
+  /**
+   * Buffer from the render living event, stored as we lose access to it later.
+   * 1.21.9: always null, {@code RenderLivingEvent} only exposes a {@code SubmitNodeCollector} now (two-phase rendering);
+   * the unwired armor scaffolding must move to submits when it is re-seated.
+   */
   @Nullable
   public static MultiBufferSource buffer;
 
-  /** Initializes the wrapper */
-  public static void init() {
-    // register listeners to set and clear the buffer
-    NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, RenderLivingEvent.Pre.class, event -> buffer = event.getMultiBufferSource());
-    NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, RenderLivingEvent.Post.class, event -> buffer = null);
+  /**
+   * Initializes the wrapper.
+   * 1.21.9: no-op, the render living event no longer has a buffer source to capture, see {@link #buffer}.
+   */
+  public static void init() {}
+
+  /** Replacement for the removed {@code ItemRenderer#getArmorFoilBuffer}, adding the armor glint when requested */
+  public static VertexConsumer getArmorFoilBuffer(MultiBufferSource bufferSource, RenderType renderType, boolean hasGlint) {
+    return hasGlint ? VertexMultiConsumer.create(bufferSource.getBuffer(RenderType.armorEntityGlint()), bufferSource.getBuffer(renderType)) : bufferSource.getBuffer(renderType);
   }
 }

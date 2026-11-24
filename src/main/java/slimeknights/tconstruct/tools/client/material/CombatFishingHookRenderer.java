@@ -4,13 +4,14 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.client.renderer.entity.FishingHookRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -141,37 +142,55 @@ public class CombatFishingHookRenderer extends EntityRenderer<CombatFishingHook,
   }
 
   @Override
-  public void render(CombatFishingHookRenderState state, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+  public void submit(CombatFishingHookRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
     // setup rendering
     poseStack.pushPose();
     poseStack.pushPose();
     poseStack.scale(0.5F, 0.5F, 0.5F);
-    poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
+    poseStack.mulPose(camera.orientation);
     poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
 
     // render bobber using the material texture
     MaterialTexture texture = state.texture;
-    VertexConsumer consumer = buffer.getBuffer(texture.texture);
-    int bobberLight = texture.applyLuminosity(packedLight);
-    PoseStack.Pose lastPose = poseStack.last();
-    texture.vertex(consumer, lastPose, bobberLight, 0f, 0, 0, 1);
-    texture.vertex(consumer, lastPose, bobberLight, 1f, 0, 1, 1);
-    texture.vertex(consumer, lastPose, bobberLight, 1f, 1, 1, 0);
-    texture.vertex(consumer, lastPose, bobberLight, 0f, 1, 0, 0);
+    int bobberLight = texture.applyLuminosity(state.lightCoords);
+    collector.submitCustomGeometry(poseStack, texture.texture, (pose, consumer) -> {
+      texture.vertex(consumer, pose, bobberLight, 0f, 0, 0, 1);
+      texture.vertex(consumer, pose, bobberLight, 1f, 0, 1, 1);
+      texture.vertex(consumer, pose, bobberLight, 1f, 1, 1, 0);
+      texture.vertex(consumer, pose, bobberLight, 0f, 1, 0, 0);
+    });
     poseStack.popPose();
 
-    // render the string from the stored hand-relative origin
+    // render the string from the stored hand-relative origin, like vanilla 1.21.9 as line segments
     float f = (float) state.lineOriginOffset.x;
     float f1 = (float) state.lineOriginOffset.y;
     float f2 = (float) state.lineOriginOffset.z;
-    consumer = buffer.getBuffer(RenderType.lineStrip());
-    lastPose = poseStack.last();
-    for (int i = 0; i <= 16; i++) {
-      FishingHookRenderer.stringVertex(f, f1, f2, consumer, lastPose, i / 16f, (i + 1) / 16f);
-    }
+    collector.submitCustomGeometry(poseStack, RenderType.lines(), (pose, consumer) -> {
+      for (int i = 0; i < 16; i++) {
+        float start = i / 16f;
+        float end = (i + 1) / 16f;
+        stringVertex(f, f1, f2, consumer, pose, start, end);
+        stringVertex(f, f1, f2, consumer, pose, end, start);
+      }
+    });
 
     poseStack.popPose();
-    super.render(state, poseStack, buffer, packedLight);
+    super.submit(state, poseStack, collector, camera);
+  }
+
+  /** Copy of the private {@link FishingHookRenderer} string vertex */
+  private static void stringVertex(float x, float y, float z, VertexConsumer consumer, PoseStack.Pose pose, float stringFraction, float nextStringFraction) {
+    float startX = x * stringFraction;
+    float startY = y * (stringFraction * stringFraction + stringFraction) * 0.5F + 0.25F;
+    float startZ = z * stringFraction;
+    float normalX = x * nextStringFraction - startX;
+    float normalY = y * (nextStringFraction * nextStringFraction + nextStringFraction) * 0.5F + 0.25F - startY;
+    float normalZ = z * nextStringFraction - startZ;
+    float length = Mth.sqrt(normalX * normalX + normalY * normalY + normalZ * normalZ);
+    normalX /= length;
+    normalY /= length;
+    normalZ /= length;
+    consumer.addVertex(pose, startX, startY, startZ).setColor(0xFF000000).setNormal(pose, normalX, normalY, normalZ);
   }
 
   /** Render state carrying the fishing line origin and bobber texture */

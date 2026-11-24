@@ -11,7 +11,6 @@ import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -125,7 +124,7 @@ public class SlimeskullArmorModel extends MultilayerArmorModel {
         matrixStackIn.popPose();
       }
       if (headModel != null && headTexture != null) {
-        VertexConsumer heaadBuffer = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.entityCutoutNoCullZOffset(headTexture), hasGlint);
+        VertexConsumer heaadBuffer = getArmorFoilBuffer(buffer, RenderType.entityCutoutNoCullZOffset(headTexture), hasGlint);
         matrixStackIn.pushPose();
         if (crouching) {
           matrixStackIn.translate(0, base.head.y / 16.0F, 0);
@@ -137,7 +136,9 @@ public class SlimeskullArmorModel extends MultilayerArmorModel {
           matrixStackIn.scale(1.115f, 1.115f, 1.115f);
         }
         matrixStackIn.mulPose((new Quaternionf()).rotationZYX(0, base.head.yRot, base.head.xRot));
-        headModel.setupAnim(walkAnimation, 0, 0);
+        SkullModelBase.State skullState = new SkullModelBase.State();
+        skullState.animationPos = walkAnimation;
+        headModel.setupAnim(skullState);
         renderColored(headModel, matrixStackIn, heaadBuffer, packedLightIn, packedOverlayIn, headColor, red, green, blue, alpha);
         matrixStackIn.popPose();
       }

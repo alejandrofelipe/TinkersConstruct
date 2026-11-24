@@ -18,9 +18,10 @@ public class DragonSkullModel extends SkullModelBase {
   }
 
   @Override
-  public void setupAnim(float pMouthAnimation, float yRot, float xRot) {
-    this.jaw.xRot = (float)(Math.sin(pMouthAnimation * Math.PI * 0.2f) + 1) * 0.2f;
-    this.head.yRot = yRot * ((float)Math.PI / 180);
-    this.head.xRot = xRot * ((float)Math.PI / 180);
+  public void setupAnim(SkullModelBase.State state) {
+    super.setupAnim(state);
+    this.jaw.xRot = (float)(Math.sin(state.animationPos * Math.PI * 0.2f) + 1) * 0.2f;
+    this.head.yRot = state.yRot * ((float)Math.PI / 180);
+    this.head.xRot = state.xRot * ((float)Math.PI / 180);
   }
 }

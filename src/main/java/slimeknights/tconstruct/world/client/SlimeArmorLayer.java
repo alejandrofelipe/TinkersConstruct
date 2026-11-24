@@ -5,7 +5,7 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
@@ -57,7 +57,7 @@ public class SlimeArmorLayer<M extends EntityModel<? super SlimeRenderState>> ex
   }
 
   @Override
-  public void render(PoseStack matrices, MultiBufferSource buffer, int packedLight, SlimeRenderState state, float limbSwing, float limbSwingAmount) {
+  public void submit(PoseStack matrices, SubmitNodeCollector collector, int packedLight, SlimeRenderState state, float yRot, float xRot) {
     // PORT 1.21.4: see class breadcrumb - the helmet/skull/item render path was removed and needs re-seating onto
     // EquipmentLayerRenderer + the worn-head render-state fields in Phase-4 (uitest). No-op for now (compiles clean).
   }

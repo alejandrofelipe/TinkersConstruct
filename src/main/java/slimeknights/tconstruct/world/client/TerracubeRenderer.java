@@ -18,7 +18,7 @@ public class TerracubeRenderer extends MobRenderer<Slime, SlimeRenderState, Lava
     // PORT 1.21.4: LavaSlimeModel is no longer generic (typed to SlimeRenderState internally); MobRenderer gained the
     // render-state type parameter.
     super(context, new LavaSlimeModel(context.bakeLayer(ModelLayers.MAGMA_CUBE)), 0.25F);
-    addLayer(new SlimeArmorLayer<>(this, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR)), context.getModelSet(), true));
+    addLayer(new SlimeArmorLayer<>(this, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_ARMOR.head())), context.getModelSet(), true));
   }
 
   @Override

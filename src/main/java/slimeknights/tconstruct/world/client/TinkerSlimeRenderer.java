@@ -20,7 +20,7 @@ public class TinkerSlimeRenderer extends SlimeRenderer {
     super(context);
     this.slime = slime;
     this.metal = metal;
-    addLayer(new SlimeArmorLayer<>(this, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR)), context.getModelSet(), false));
+    addLayer(new SlimeArmorLayer<>(this, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_ARMOR.head())), context.getModelSet(), false));
   }
 
   // PORT 1.21.4: getTextureLocation now receives the extracted render state, not the entity. The metal flag is captured
