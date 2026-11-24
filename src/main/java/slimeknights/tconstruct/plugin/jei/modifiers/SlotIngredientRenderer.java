@@ -1,13 +1,13 @@
 package slimeknights.tconstruct.plugin.jei.modifiers;
 
 import mezz.jei.api.ingredients.IIngredientRenderer;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelManager;
@@ -88,10 +88,10 @@ public enum SlotIngredientRenderer implements IIngredientRenderer<SlotCount> {
     if (modelManager.getItemModel(TinkerModifiers.creativeSlotItem.getId()) instanceof NBTKeyModel.Baked nbtKey) {
       Material texture = nbtKey.getTexture(slotType.getName());
       if (texture != null) {
-        return texture.sprite();
+        return Minecraft.getInstance().getAtlasManager().get(texture);
       }
     }
-    return modelManager.getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(MissingTextureAtlasSprite.getLocation());
+    return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(MissingTextureAtlasSprite.getLocation());
   };
 
   @Override

@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemMode
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -86,7 +87,8 @@ public class TinkerItemProperties {
   public record Charging() implements RangeSelectItemModelProperty {
     public static final MapCodec<Charging> MAP_CODEC = MapCodec.unit(new Charging());
     @Override
-    public float get(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity holder, int seed) {
+    public float get(ItemStack stack, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
+      LivingEntity holder = owner == null ? null : owner.asLivingEntity();
       if (holder != null && holder.isUsingItem() && holder.getUseItem() == stack) {
         ItemUseAnimation anim = stack.getUseAnimation();
         if (anim == ItemUseAnimation.BLOCK) {
@@ -111,7 +113,8 @@ public class TinkerItemProperties {
   public record Charge() implements RangeSelectItemModelProperty {
     public static final MapCodec<Charge> MAP_CODEC = MapCodec.unit(new Charge());
     @Override
-    public float get(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity holder, int seed) {
+    public float get(ItemStack stack, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
+      LivingEntity holder = owner == null ? null : owner.asLivingEntity();
       if (holder == null || holder.getUseItem() != stack) {
         return 0.0F;
       }
@@ -128,7 +131,7 @@ public class TinkerItemProperties {
   public record Ammo() implements RangeSelectItemModelProperty {
     public static final MapCodec<Ammo> MAP_CODEC = MapCodec.unit(new Ammo());
     @Override
-    public float get(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+    public float get(ItemStack stack, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
       if (!stack.isComponentsPatchEmpty()) {
         CompoundTag ammo = ToolStack.from(stack).getPersistentData().getCompound(ModifiableCrossbowItem.KEY_CROSSBOW_AMMO);
         if (!ammo.isEmpty()) {

@@ -3,8 +3,8 @@ package slimeknights.tconstruct.tools.client;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -189,7 +189,7 @@ public class ToolContainerScreen extends AbstractContainerScreen<ToolContainerMe
 
     // prepare pattern drawing
     assert this.minecraft != null;
-    Function<ResourceLocation,TextureAtlasSprite> spriteGetter = this.minecraft.getTextureAtlas(TextureAtlas.LOCATION_BLOCKS);
+    Function<ResourceLocation,TextureAtlasSprite> spriteGetter = this.minecraft.getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)::getSprite;
 
     // draw slot patterns for all empty slots
     int start = menu.getToolInventoryStart();

@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.library.client.model.tools;
 
+import net.minecraft.client.Minecraft;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
@@ -22,7 +23,7 @@ import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
@@ -159,7 +160,7 @@ public class ToolModel {
                                              List<ToolPart> parts, ModifierModelMap modifierModels, List<FirstModifier> firstModifiers, boolean showTraits,
                                              List<MaterialVariantId> materials, @Nullable IToolStackView tool,
                                              boolean useBlockLight, net.minecraft.client.renderer.block.model.ItemTransforms itemTransforms) {
-    Function<Material,TextureAtlasSprite> spriteGetter = Material::sprite;
+    Function<Material,TextureAtlasSprite> spriteGetter = Minecraft.getInstance().getAtlasManager()::get;
     RenderType renderType = ItemModelUtil.defaultRenderType();
     Transformation smallTransforms = Transformation.identity();
 
@@ -337,7 +338,7 @@ public class ToolModel {
     private final net.minecraft.client.renderer.block.model.ItemTransforms itemTransforms;
     /**
      * Base (no material/modifier) variants.
-     * PORT 1.21.4: baked lazily. {@link #bakeInternal} composites quads via {@code Material::sprite} (the live block
+     * PORT 1.21.4: baked lazily. {@link #bakeInternal} composites quads via {@code Minecraft.getInstance().getAtlasManager()::get} (the live block
      * atlas), but {@code ItemModel.Unbaked#bake} runs during {@code ModelBakery.bakeModels} when that atlas is not yet
      * initialized, so baking the base eagerly in the constructor threw "atlas is not initialized" and the whole tool
      * item model failed to bake (-> missing texture). All bakes now happen on the render thread where the atlas is ready.
@@ -443,7 +444,7 @@ public class ToolModel {
     }
 
     @Override
-    public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+    public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
       BakedToolModel model = resolve(stack);
       ItemModelUtil.renderModel(renderState, stack, displayContext, model.forContext(displayContext));
     }

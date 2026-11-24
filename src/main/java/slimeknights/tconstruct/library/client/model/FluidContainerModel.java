@@ -6,6 +6,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.item.ItemModel;
@@ -17,7 +18,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
@@ -55,6 +56,11 @@ public final class FluidContainerModel {
   /** Builds a block-atlas material */
   private static Material material(ResourceLocation texture) {
     return new Material(TextureAtlas.LOCATION_BLOCKS, texture);
+  }
+
+  /** Looks up a sprite, 1.21.9 replacement for {@code Material#sprite()} */
+  private static TextureAtlasSprite sprite(Material material) {
+    return Minecraft.getInstance().getAtlasManager().get(material);
   }
 
   /** Unbaked fluid container item model */
@@ -114,16 +120,16 @@ public final class FluidContainerModel {
 
     /** Builds the composite model for the given fluid */
     private BakedItem bakeWith(FluidStack fluid) {
-      TextureAtlasSprite baseSprite = base != null ? base.sprite() : null;
-      TextureAtlasSprite maskSprite = fluidMask != null ? fluidMask.sprite() : null;
+      TextureAtlasSprite baseSprite = base != null ? sprite(base) : null;
+      TextureAtlasSprite maskSprite = fluidMask != null ? sprite(fluidMask) : null;
       IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(fluid.getFluid());
-      TextureAtlasSprite fluidSprite = !fluid.isEmpty() ? material(clientFluid.getStillTexture(fluid)).sprite() : null;
+      TextureAtlasSprite fluidSprite = !fluid.isEmpty() ? sprite(material(clientFluid.getStillTexture(fluid))) : null;
 
       // determine particle
-      TextureAtlasSprite particleSprite = particle != null ? particle.sprite() : null;
+      TextureAtlasSprite particleSprite = particle != null ? sprite(particle) : null;
       if (particleSprite == null) particleSprite = fluidSprite;
       if (particleSprite == null) particleSprite = baseSprite;
-      if (particleSprite == null) particleSprite = material(MissingTextureAtlasSprite.getLocation()).sprite();
+      if (particleSprite == null) particleSprite = sprite(material(MissingTextureAtlasSprite.getLocation()));
 
       // container is rendered flat: block light false
       List<BakedQuad> builder = new ArrayList<>();
@@ -157,7 +163,7 @@ public final class FluidContainerModel {
     }
 
     @Override
-    public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+    public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
       FluidStack fluid = staticFluid;
       if (fluid.isEmpty()) {
         fluid = FluidUtil.getFluidContained(stack).orElse(FluidStack.EMPTY);

@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.TextColor;
@@ -95,7 +96,7 @@ public record TrimArmorTextureSupplier(ModifierId modifier, ResourceLocation pat
     /** Gets the texture atlas for trim */
     private static TextureAtlas getTrimAtlas() {
       if (armorTrimAtlas == null) {
-        armorTrimAtlas = Minecraft.getInstance().getModelManager().getAtlas(Sheets.ARMOR_TRIMS_SHEET);
+        armorTrimAtlas = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.ARMOR_TRIMS);
       }
       return armorTrimAtlas;
     }

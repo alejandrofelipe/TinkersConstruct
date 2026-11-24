@@ -10,8 +10,8 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.BlitRenderState;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
@@ -130,7 +130,7 @@ public final class GuiUtil {
   public static void renderTiledFluid(GuiGraphics graphics, AbstractContainerScreen<?> screen, FluidStack stack, int x, int y, int width, int height, int depth) {
     if (!stack.isEmpty()) {
       IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(stack.getFluid());
-      TextureAtlasSprite fluidSprite = screen.getMinecraft().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(clientFluid.getStillTexture(stack));
+      TextureAtlasSprite fluidSprite = screen.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(clientFluid.getStillTexture(stack));
       // 1.21.5: tint is passed as vertex color instead of the shader color
       renderTiledTextureAtlas(graphics, screen, fluidSprite, x, y, width, height, depth, stack.getFluid().getFluidType().isLighterThanAir(), clientFluid.getTintColor(stack));
     }
@@ -278,7 +278,7 @@ public final class GuiUtil {
 
   /** Renders a pattern at the given location */
   public static void renderPattern(GuiGraphics graphics, Pattern pattern, int x, int y) {
-    TextureAtlasSprite sprite = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(pattern.getTexture());
+    TextureAtlasSprite sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(pattern.getTexture());
     graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, 16, 16);
   }
 }

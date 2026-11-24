@@ -1,10 +1,10 @@
 package slimeknights.tconstruct.tables.client.inventory;
 
 import com.google.common.collect.Lists;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
@@ -179,7 +179,7 @@ public class PartBuilderScreen extends BaseTabbedScreen<PartBuilderBlockEntity,P
     // use block texture list
     assert this.minecraft != null;
     assert this.tile != null;
-    Function<ResourceLocation, TextureAtlasSprite> spriteGetter = this.minecraft.getTextureAtlas(TextureAtlas.LOCATION_BLOCKS);
+    Function<ResourceLocation, TextureAtlasSprite> spriteGetter = this.minecraft.getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)::getSprite;
     // iterate all recipes
     List<Pattern> list = this.tile.getSortedButtons();
     int max = Math.min(this.recipeIndexOffset + MAX_PATTERN, this.getPartRecipeCount());

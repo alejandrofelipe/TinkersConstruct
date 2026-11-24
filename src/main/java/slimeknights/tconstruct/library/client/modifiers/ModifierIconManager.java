@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
@@ -117,7 +118,7 @@ public class ModifierIconManager implements IEarlySafeManagerReloadListener {
    * @param size      Size to render, 16 is default
    */
   public static void renderIcon(GuiGraphics graphics, Modifier modifier, int x, int y, int z, int size) {
-    TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
+    TextureAtlas atlas = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS);
 
     // PORT 1.21.4: GuiGraphics.blit(x,y,z,w,h,sprite) -> blitSprite(renderType, sprite, x, y, w, h); depth is handled by the pose stack now
     List<ResourceLocation> icons = modifierIcons.getOrDefault(modifier.getId(), Collections.emptyList());

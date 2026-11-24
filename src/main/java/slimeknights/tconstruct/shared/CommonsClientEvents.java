@@ -3,6 +3,10 @@ package slimeknights.tconstruct.shared;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.FontManager;
+import net.minecraft.client.gui.font.FontSet;
+import net.minecraft.client.gui.GlyphSource;
+import net.minecraft.client.gui.font.glyphs.EffectGlyph;
+import net.minecraft.network.chat.FontDescription;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
@@ -50,10 +54,23 @@ public class CommonsClientEvents extends ClientEventBase {
   /** Gets the unicode font renderer */
   public static Font unicodeFontRender() {
     if (unicodeRenderer == null)
-      unicodeRenderer = new Font(rl -> {
-        FontManager resourceManager = Minecraft.getInstance().fontManager;
-        return resourceManager.fontSets.get(Minecraft.UNIFORM_FONT);
-      }, false);
+      // 1.21.9: fonts take a provider of glyph sources per font description; always use the uniform font set
+      unicodeRenderer = new Font(new Font.Provider() {
+        private FontSet fontSet() {
+          FontManager resourceManager = Minecraft.getInstance().fontManager;
+          return resourceManager.fontSets.get(Minecraft.UNIFORM_FONT);
+        }
+
+        @Override
+        public GlyphSource glyphs(FontDescription fontDescription) {
+          return fontSet().source(false);
+        }
+
+        @Override
+        public EffectGlyph effect() {
+          return fontSet().whiteGlyph();
+        }
+      });
 
     return unicodeRenderer;
   }

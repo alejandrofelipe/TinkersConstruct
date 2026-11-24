@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.library.client.model.tools;
 
+import net.minecraft.client.Minecraft;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -22,7 +23,7 @@ import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
@@ -183,7 +184,7 @@ public class MaterialModel {
       // the base model's particle is the greyscale layer texture we recolor per material
       TextureAtlasSprite baseSprite = base.particle();
       Material texture = new Material(baseSprite.atlasLocation(), baseSprite.contents().name());
-      TintedSprite sprite = getMaterialSprite(Material::sprite, texture, material);
+      TintedSprite sprite = getMaterialSprite(Minecraft.getInstance().getAtlasManager()::get, texture, material);
       // PORT 1.21.4: tint index -1 - material color is baked into the quads rather than resolved via ItemColors
       List<BakedQuad> quads = MantleItemLayerModel.getQuadsForSprite(sprite.color(), -1, sprite.sprite(), transform, sprite.emissivity());
       // 1.21.4 built a composite model without block light, keep that
@@ -199,7 +200,7 @@ public class MaterialModel {
     }
 
     @Override
-    public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+    public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
       MaterialVariantId variant = material != null ? material : IMaterialItem.getMaterialFromStack(stack);
       ItemModelUtil.renderModel(renderState, stack, displayContext, getCachedModel(variant));
     }

@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.library.client.model.tools;
 
+import net.minecraft.client.Minecraft;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -31,7 +32,7 @@ import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -246,7 +247,7 @@ public class MaterialBlockModel extends SimpleBlockModel {
 
       // delegate material fetching
       // PORT 1.21.5: rebaked at runtime through the block atlas (Material#sprite); verify material blocks/anvils in the uitest phase
-      Function<Material,TextureAtlasSprite> spriteGetter = Material::sprite;
+      Function<Material,TextureAtlasSprite> spriteGetter = Minecraft.getInstance().getAtlasManager()::get;
       fetchMaterials(materials, spriteGetter, replacements, tints);
 
       // quick exit in case we found nothing, should never happen
@@ -652,7 +653,7 @@ public class MaterialBlockModel extends SimpleBlockModel {
       }
 
       @Override
-      public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+      public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
         BakedItem resolved = base;
         if (dynamic != null) {
           SimpleModelWrapper part = dynamic.resolveForStack(stack);

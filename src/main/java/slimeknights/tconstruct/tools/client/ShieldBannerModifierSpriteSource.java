@@ -16,7 +16,6 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.ExtraCodecs;
 import net.neoforged.neoforge.client.event.RegisterSpriteSourcesEvent;
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -97,7 +96,7 @@ public record ShieldBannerModifierSpriteSource(int cropX, int cropY, int cropWid
         } else {
           NativeImage generated = new NativeImage(outSize * scale, outSize * scale, true);
           original.copyRect(generated, cropX * scale, cropY * scale, offsetX * scale, offsetY * scale, cropWidth * scale, cropHeight * scale, false, false);
-          return new SpriteContents(this.output, new FrameSize(generated.getWidth(), generated.getHeight()), generated, ResourceMetadata.EMPTY);
+          return new SpriteContents(this.output, new FrameSize(generated.getWidth(), generated.getHeight()), generated);
         }
       } catch (IllegalArgumentException | IOException ex) {
         TConstruct.LOG.warn("Unable to crop {} to produce {}", this.input, this.output, ex);
