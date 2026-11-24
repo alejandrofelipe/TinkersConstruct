@@ -23,6 +23,8 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
@@ -288,6 +290,19 @@ public final class TinkerTools extends TinkerModule {
   /*
    * Events
    */
+
+  /**
+   * Tools serve their item handler, fluid handler and energy capabilities through {@link ToolCapabilityProvider}, depending
+   * on their modifiers (inventory, tank and energy modifiers). Registered for every {@link IModifiable} item, as
+   * {@code ModifiableItem#initCapabilities} did before NeoForge moved item capabilities to {@link RegisterCapabilitiesEvent}.
+   */
+  @SubscribeEvent
+  void registerCapabilities(RegisterCapabilitiesEvent event) {
+    Item[] tools = BuiltInRegistries.ITEM.stream().filter(item -> item instanceof IModifiable).toArray(Item[]::new);
+    event.registerItem(Capabilities.ItemHandler.ITEM, (stack, context) -> ToolCapabilityProvider.getCapability(stack, Capabilities.ItemHandler.ITEM), tools);
+    event.registerItem(Capabilities.FluidHandler.ITEM, (stack, context) -> ToolCapabilityProvider.getCapability(stack, Capabilities.FluidHandler.ITEM), tools);
+    event.registerItem(Capabilities.EnergyStorage.ITEM, (stack, context) -> ToolCapabilityProvider.getCapability(stack, Capabilities.EnergyStorage.ITEM), tools);
+  }
 
   @SubscribeEvent
   void commonSetup(FMLCommonSetupEvent event) {
