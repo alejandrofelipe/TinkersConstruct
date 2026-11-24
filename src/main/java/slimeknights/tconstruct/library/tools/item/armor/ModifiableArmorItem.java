@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +28,7 @@ import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
@@ -166,9 +168,18 @@ public class ModifiableArmorItem extends Item implements IModifiableDisplay {
   // PORT M3: item capabilities now registered centrally on RegisterCapabilitiesEvent via
   // ToolCapabilityProvider.getCapability(stack, cap); the initCapabilities/ICapabilityProvider override is removed.
 
-  // PORT M3: Item#verifyTagAfterLoad(CompoundTag) was removed in 1.21 (NBT -> data components).
-  public void verifyTagAfterLoad(CompoundTag nbt) {
-    ToolStack.verifyTag(this, nbt, getToolDefinition());
+  // copies the tag: tool stacks are edited in place (ToolStack.from), and this runs in the constructor used by copy(), so
+  // without a fresh tag a copy shares it with the original (equipment snapshots then never see armor break)
+  @Override
+  public void verifyComponentsAfterLoad(ItemStack stack) {
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    if (data != null) {
+      CompoundTag nbt = data.copyTag();
+      ToolStack.verifyTag(this, nbt, getToolDefinition());
+      stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+      // 1.21.5: sync the components derived from the tool (shield blocking/disabling) for stacks saved before they existed
+      ToolStack.from(stack).updateComponents(stack);
+    }
   }
 
   @Override
