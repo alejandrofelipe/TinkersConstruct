@@ -16,6 +16,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
@@ -23,6 +26,8 @@ import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
+import slimeknights.tconstruct.library.tools.capability.fluid.ToolTankHelper;
+import slimeknights.tconstruct.library.tools.capability.inventory.ToolInventoryCapability;
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
 import slimeknights.tconstruct.library.tools.helper.ToolDamageUtil;
 import slimeknights.tconstruct.library.tools.helper.ToolBuildHandler;
@@ -40,6 +45,7 @@ import slimeknights.tconstruct.tools.TinkerToolParts;
 import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
+import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -413,7 +419,7 @@ public class ToolGameTests {
 
   /**
    * A copy made before the verification shares the old data; on its own read it takes the verified result of the first stack instead of verifying
-   * again (same instance), so both end up with equal data and keep stacking.
+   * again, as a copy of its own, so both end up with equal data and keep stacking, and later changes to the first stack do not leak into it.
    */
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void copy_takes_verified_result(GameTestHelper helper) {
@@ -422,9 +428,47 @@ public class ToolGameTests {
     ToolStack.from(loaded);
     CustomData verified = loaded.get(DataComponents.CUSTOM_DATA);
     helper.assertTrue(verified != null && verified.tag.contains(TAG_STATS), Component.literal("first stack was not verified"));
+    // marker: a recompute would rebuild the stats, taking the result copies the data as is
+    verified.tag.remove(TAG_STATS);
     ToolStack.copyFrom(early);
-    helper.assertTrue(early.get(DataComponents.CUSTOM_DATA) == verified, Component.literal("early copy did not take the verified data of the first stack"));
+    CustomData taken = early.get(DataComponents.CUSTOM_DATA);
+    helper.assertTrue(taken != null && taken != verified, Component.literal("early copy shares the verified instance owned by the first stack"));
+    helper.assertFalse(taken.tag.contains(TAG_STATS), Component.literal("early copy verified again instead of taking the result"));
     helper.assertTrue(ItemStack.isSameItemSameComponents(loaded, early), Component.literal("early copy does not match the verified stack"));
+    // changing the first stack in place leaves the early copy alone
+    CompoundTag before = taken.tag.copy();
+    ToolStack.from(loaded).setDamage(5);
+    helper.assertTrue(liveTag(early).equals(before), Component.literal("changing the verified stack changed the early copy"));
+    helper.assertFalse(ItemStack.matches(loaded, early), Component.literal("changed stack still matches the early copy"));
+    helper.succeed();
+  }
+
+  /**
+   * The tool container menu keeps a tool bound to the stack for its lifetime. Opening it copies the stack for the remote slots, and the inventory
+   * tick binds the stack again: tank clicks must still reach the real stack (copies used to take the data ownership away, so the menu wrote to a
+   * detached instance, voiding or duping fluid).
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tool_container_tank_keeps_writes(GameTestHelper helper) {
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    ToolStack built = ToolStack.createTool(TinkerTools.pickaxe.get(), TinkerTools.pickaxe.get().getToolDefinition(),
+      MaterialNBT.of(MaterialVariant.of(MaterialIds.rock, ""), MaterialVariant.of(MaterialIds.wood, ""), MaterialVariant.of(MaterialIds.wood, "")));
+    built.addModifier(ModifierIds.tank, 1);
+    ItemStack stack = built.createStack();
+    player.setItemSlot(EquipmentSlot.MAINHAND, stack);
+    int slot = player.getInventory().getSelectedSlot();
+    ToolContainerMenu menu = new ToolContainerMenu(0, player.getInventory(), stack, ToolInventoryCapability.getMenuHandler(stack), slot);
+    // what opening the menu does to the stack: remote slot copies, then the held inventory tick binds it again
+    ItemStack remote = stack.copy();
+    stack.inventoryTick(helper.getLevel(), player, EquipmentSlot.MAINHAND);
+    ToolStack.from(stack);
+
+    menu.setCarried(new ItemStack(Items.WATER_BUCKET));
+    helper.assertTrue(menu.clickMenuButton(player, 1), Component.literal("tank click was not handled"));
+    helper.assertTrue(menu.getCarried().is(Items.BUCKET), Component.literal("water bucket was not emptied into the tool, carried " + menu.getCarried()));
+    FluidStack inTool = ToolTankHelper.TANK_HELPER.getFluid(ToolStack.copyFrom(stack));
+    helper.assertTrue(inTool.is(Fluids.WATER) && inTool.getAmount() == FluidType.BUCKET_VOLUME, Component.literal("the real stack does not hold the water, found " + inTool));
+    helper.assertTrue(ToolTankHelper.TANK_HELPER.getFluid(ToolStack.copyFrom(remote)).isEmpty(), Component.literal("the remote copy was filled too"));
     helper.succeed();
   }
 

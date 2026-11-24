@@ -56,22 +56,23 @@ public class MaterialIdNBT {
 
   /** Resolves all redirects, replacing with material redirects */
   public MaterialIdNBT resolveRedirects() {
-    boolean changed = false;
-    ImmutableList.Builder<MaterialVariantId> builder = ImmutableList.builder();
+    // read every frame by tool models (1.21.9), so only allocate once something redirects
+    ImmutableList.Builder<MaterialVariantId> builder = null;
     IMaterialRegistry registry = MaterialRegistry.getInstance();
-    for (MaterialVariantId id : materials) {
+    for (int i = 0; i < materials.size(); i++) {
+      MaterialVariantId id = materials.get(i);
       MaterialId original = id.getId();
       MaterialId resolved = registry.resolve(original);
-      if (resolved != original) {
-        changed = true;
+      if (builder == null && resolved != original) {
+        builder = ImmutableList.builder();
+        builder.addAll(materials.subList(0, i));
       }
-      builder.add(MaterialVariantId.create(resolved, id.getVariant()));
+      if (builder != null) {
+        builder.add(MaterialVariantId.create(resolved, id.getVariant()));
+      }
     }
     // return a new instance only if things changed
-    if (changed) {
-      return new MaterialIdNBT(builder.build());
-    }
-    return this;
+    return builder == null ? this : new MaterialIdNBT(builder.build());
   }
 
   /**

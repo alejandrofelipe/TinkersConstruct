@@ -66,6 +66,7 @@ import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.modifiers.ModifierManager;
 import slimeknights.tconstruct.library.modifiers.modules.technical.ArmorStatModule;
 import slimeknights.tconstruct.library.tools.capability.TinkerDataKeys;
+import slimeknights.tconstruct.library.tools.nbt.ToolDataOwnership;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import slimeknights.tconstruct.library.utils.HarvestTiers;
@@ -202,6 +203,8 @@ public class ToolClientEvents extends ClientEventBase {
 
     // keybinds
     event.enqueueWork(() -> {
+      // enqueued work runs on the client main thread: the only client thread where tools may give stacks their own data, see ToolDataOwnership
+      ToolDataOwnership.setClientThread(Thread.currentThread());
       // fake ingot showing in the book is a little nicer than the repair kits
       AbstractMaterialContent.registerFallbackPart(TinkerToolParts.fakeIngot);
       AbstractMaterialContent.registerFallbackPart(TinkerToolParts.fakeStorageBlockItem);

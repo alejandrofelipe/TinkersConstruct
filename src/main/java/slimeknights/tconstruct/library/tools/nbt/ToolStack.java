@@ -211,10 +211,11 @@ public class ToolStack implements IToolStackView {
     }
     CustomData verified = ToolDataVerifier.getVerified(data);
     if (verified != null) {
-      // another holder of this instance was verified and got new data: take the result instead of verifying again
+      // another holder of this instance was verified and got new data: take the result instead of verifying again, as a copy of its own,
+      // as the verified stack owns that instance and may change it in place
       if (verified != data) {
-        stack.set(DataComponents.CUSTOM_DATA, verified);
-        from(item, definition, verified.tag).updateComponents(stack);
+        setStackTag(stack, verified.tag);
+        from(item, definition, Objects.requireNonNull(getStackTag(stack))).updateComponents(stack);
       }
       return;
     }
@@ -245,6 +246,10 @@ public class ToolStack implements IToolStackView {
                                 : ToolDefinition.EMPTY;
     if (definition != ToolDefinition.EMPTY) {
       verifyAfterLoad(stack, item, definition);
+      // off the server and client main threads (e.g. background tooltip search trees), never change the stack: read a detached copy
+      if (!copyNbt && !ToolDataOwnership.canOwnOnThisThread()) {
+        copyNbt = true;
+      }
     }
     // a bound tool changes the tag in place, so the stack must own it; ownership is only tracked for modifiable items, see ItemStackMixin
     CompoundTag nbt = !copyNbt && definition != ToolDefinition.EMPTY ? getOwnedStackTag(stack) : getStackTag(stack);
@@ -342,11 +347,20 @@ public class ToolStack implements IToolStackView {
     this.multipliers = null;
     this.volatileModData = null;
     this.persistentModData = null;
+    // refreshTag may bind another tag (the stack may get its own copy, see ToolDataOwnership)
+    this.restrictedNBT = null;
   }
 
   /** Updates the tool stack instance to match the given item stack */
   @Internal
   public void refreshTag(ItemStack stack) {
+    if (stack.getItem() instanceof IModifiable && !ToolDataOwnership.canOwnOnThisThread()) {
+      // off the server and client main threads, never change the stack: read a detached copy
+      CompoundTag tag = getStackTag(stack);
+      this.nbt = tag == null ? new CompoundTag() : tag.copy();
+      clearCache();
+      return;
+    }
     CompoundTag tag = stack.getItem() instanceof IModifiable ? getOwnedStackTag(stack) : getStackTag(stack);
     if (tag == null) {
       setStackTag(stack, new CompoundTag());
