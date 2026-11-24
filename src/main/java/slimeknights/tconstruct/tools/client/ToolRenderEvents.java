@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
@@ -16,7 +15,6 @@ import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.BlockDestructionProgress;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -27,8 +25,9 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.HitResult.Type;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.client.event.RenderHighlightEvent;
+import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -41,7 +40,9 @@ import slimeknights.tconstruct.library.tools.definition.module.mining.IsEffectiv
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.utils.BlockSideHitListener;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 @EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT)
 public class ToolRenderEvents {
@@ -49,15 +50,17 @@ public class ToolRenderEvents {
   private static final int MAX_BLOCKS = 60;
 
   /**
-   * Renders the outline on the extra blocks
+   * Adds the outline on the extra blocks.
+   * 1.21.9: {@code RenderHighlightEvent} is gone; the extra blocks and their shapes are found while the vanilla outline
+   * state is extracted, and drawn by a custom outline renderer next to the vanilla outline.
    *
-   * @param event the highlight event
+   * @param event the outline extraction event
    */
   @SubscribeEvent
-  static void renderBlockHighlights(RenderHighlightEvent.Block event) {
-    Level world = Minecraft.getInstance().level;
+  static void extractBlockHighlights(ExtractBlockOutlineRenderStateEvent event) {
+    Level world = event.getLevel();
     Player player = Minecraft.getInstance().player;
-    if (world == null || player == null) {
+    if (player == null) {
       return;
     }
     // must have the right tags
@@ -65,19 +68,14 @@ public class ToolRenderEvents {
     if (stack.isEmpty() || !stack.is(TinkerTags.Items.MODIFIABLE)) {
       return;
     }
-    // must be targeting a block
-    HitResult result = Minecraft.getInstance().hitResult;
-    if (result == null || result.getType() != Type.BLOCK) {
-      return;
-    }
     // must not be broken, must be right interface
     ToolStack tool = ToolStack.from(stack);
     if (tool.isBroken()) {
       return;
     }
-    BlockHitResult blockTrace = event.getTarget();
-    BlockPos origin = blockTrace.getBlockPos();
-    BlockState state = world.getBlockState(origin);
+    BlockHitResult blockTrace = event.getHitResult();
+    BlockPos origin = event.getBlockPos();
+    BlockState state = event.getBlockState();
     AOEMatchType matchType = AOEMatchType.BREAKING;
     // if we have any modifier that has an AOE interaction, make our match type more liberal
     if (tool.getModifiers().has(TinkerTags.Modifiers.AOE_INTERACTION)) {
@@ -91,33 +89,38 @@ public class ToolRenderEvents {
       return;
     }
 
-    // set up renderer
-    LevelRenderer worldRender = event.getLevelRenderer();
-    PoseStack matrices = event.getPoseStack();
-    MultiBufferSource.BufferSource buffers = worldRender.renderBuffers.bufferSource();
-    VertexConsumer vertexBuilder = buffers.getBuffer(RenderType.lines());
-    matrices.pushPose();
-
-    // start drawing
-    Camera renderInfo = Minecraft.getInstance().gameRenderer.getMainCamera();
-    Entity viewEntity = renderInfo.getEntity();
-    Vec3 vector3d = renderInfo.getPosition();
-    double x = vector3d.x();
-    double y = vector3d.y();
-    double z = vector3d.z();
+    // collect the shapes now, the renderer runs later in the frame; iterators may reuse a mutable position
+    CollisionContext collisionContext = event.getCollisionContext();
+    List<ExtraOutline> outlines = new ArrayList<>();
     int rendered = 0;
     do {
       BlockPos pos = extraBlocks.next();
       if (world.getWorldBorder().isWithinBounds(pos)) {
         rendered++;
-        // 1.21.4: LevelRenderer#renderHitOutline is private, so inline its ShapeRenderer#renderShape body (semi-transparent black outline)
-        ShapeRenderer.renderShape(matrices, vertexBuilder, world.getBlockState(pos).getShape(world, pos, CollisionContext.of(viewEntity)), pos.getX() - x, pos.getY() - y, pos.getZ() - z, 0x66000000);
+        outlines.add(new ExtraOutline(pos.immutable(), world.getBlockState(pos).getShape(world, pos, collisionContext)));
       }
     } while(rendered < MAX_BLOCKS && extraBlocks.hasNext());
-    matrices.popPose();
-    buffers.endBatch();
+    if (outlines.isEmpty()) {
+      return;
+    }
+
+    // draw in the same pass as the vanilla outline, without replacing it
+    event.addCustomRenderer((outlineState, buffers, matrices, translucent, levelState) -> {
+      if (outlineState.isTranslucent() == translucent) {
+        VertexConsumer vertexBuilder = buffers.getBuffer(RenderType.lines());
+        Vec3 camera = levelState.cameraRenderState.pos;
+        for (ExtraOutline outline : outlines) {
+          BlockPos pos = outline.pos;
+          // same as the vanilla outline (semi-transparent black)
+          ShapeRenderer.renderShape(matrices, vertexBuilder, outline.shape, pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z, 0x66000000);
+        }
+      }
+      return false;
+    });
   }
 
+  /** Extra block outline extracted for {@link #extractBlockHighlights} */
+  private record ExtraOutline(BlockPos pos, VoxelShape shape) {}
   /** Renders the block damage process on the extra blocks */
   @SubscribeEvent
   static void renderBlockDamageProgress(RenderLevelStageEvent.AfterTripwireBlocks event) {
