@@ -2,7 +2,6 @@ package slimeknights.tconstruct.shared;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.font.FontManager;
 import net.minecraft.client.gui.font.FontSet;
 import net.minecraft.client.gui.GlyphSource;
 import net.minecraft.client.gui.font.glyphs.EffectGlyph;
@@ -20,6 +19,8 @@ import slimeknights.tconstruct.library.client.book.TinkerBook;
 import slimeknights.tconstruct.library.client.model.UniqueGuiModel;
 import slimeknights.tconstruct.library.utils.DomainDisplayName;
 import slimeknights.tconstruct.shared.client.FluidParticle;
+
+import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT)
 public class CommonsClientEvents extends ClientEventBase {
@@ -54,21 +55,35 @@ public class CommonsClientEvents extends ClientEventBase {
   /** Gets the unicode font renderer */
   public static Font unicodeFontRender() {
     if (unicodeRenderer == null)
-      // 1.21.9: fonts take a provider of glyph sources per font description; always use the uniform font set
+      // 1.21.9: fonts take a provider of glyph sources per font description; the default font is drawn with the uniform font set,
+      // every other description (other fonts, atlas sprites, player heads) resolves like the vanilla font
       unicodeRenderer = new Font(new Font.Provider() {
-        private FontSet fontSet() {
-          FontManager resourceManager = Minecraft.getInstance().fontManager;
-          return resourceManager.fontSets.get(Minecraft.UNIFORM_FONT);
+        /** Provider of the vanilla font, resolves every description */
+        private Font.Provider vanilla() {
+          return Minecraft.getInstance().font.provider;
+        }
+
+        /** Uniform font set, null if the resource packs do not define it */
+        @Nullable
+        private FontSet uniform() {
+          return Minecraft.getInstance().fontManager.fontSets.get(Minecraft.UNIFORM_FONT);
         }
 
         @Override
         public GlyphSource glyphs(FontDescription fontDescription) {
-          return fontSet().source(false);
+          if (FontDescription.DEFAULT.equals(fontDescription)) {
+            FontSet uniform = uniform();
+            if (uniform != null) {
+              return uniform.source(false);
+            }
+          }
+          return vanilla().glyphs(fontDescription);
         }
 
         @Override
         public EffectGlyph effect() {
-          return fontSet().whiteGlyph();
+          FontSet uniform = uniform();
+          return uniform != null ? uniform.whiteGlyph() : vanilla().effect();
         }
       });
 
