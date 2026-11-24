@@ -1,9 +1,11 @@
 package slimeknights.tconstruct.smeltery.block.entity.component;
 
+import com.mojang.serialization.MapCodec;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -126,7 +128,9 @@ public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITa
    * @param input  Tank tag, empty if missing
    */
   public static void updateTank(BlockEntity be, FluidTank tank, ValueInput input) {
-    if (input.keySet().isEmpty()) {
+    // a missing tag (childOrEmpty) is the shared empty input, which has no map: NeoForge's keySet() throws on it,
+    // which disconnected the client on the update packet of an empty tank holding only its master position
+    if (input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).map(CompoundTag::isEmpty).orElse(true)) {
       tank.setFluid(FluidStack.EMPTY);
     } else {
       tank.deserialize(input);
