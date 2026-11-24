@@ -1,64 +1,84 @@
 package slimeknights.tconstruct.smeltery.client.render;
 
-import net.minecraft.world.phys.AABB;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.joml.Quaternionf;
 import slimeknights.tconstruct.common.config.Config;
-import slimeknights.tconstruct.library.client.TinkerRenderTypes;
 import slimeknights.tconstruct.library.TinkerItemDisplays;
+import slimeknights.tconstruct.library.client.TinkerRenderTypes;
 import slimeknights.tconstruct.smeltery.block.controller.ControllerBlock;
 import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModuleInventory;
 import slimeknights.tconstruct.smeltery.block.entity.multiblock.HeatingStructureMultiblock.StructureData;
+import slimeknights.tconstruct.smeltery.client.render.HeatingStructureBlockEntityRenderer.HeatingStructureRenderState;
 
-public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<HeatingStructureBlockEntity> {
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+
+public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<HeatingStructureBlockEntity, HeatingStructureRenderState> {
   private static final float ITEM_SCALE = 15f/16f;
 
-  public HeatingStructureBlockEntityRenderer(Context context) {}
+  private final ItemModelResolver itemModelResolver;
+  public HeatingStructureBlockEntityRenderer(Context context) {
+    this.itemModelResolver = context.itemModelResolver();
+  }
 
   @Override
-  public void render(HeatingStructureBlockEntity smeltery, float partialTicks, PoseStack matrices, MultiBufferSource buffer, int combinedLight, int combinedOverlay, Vec3 cameraPos) {
+  public HeatingStructureRenderState createRenderState() {
+    return new HeatingStructureRenderState();
+  }
+
+  @Override
+  public void extractRenderState(HeatingStructureBlockEntity smeltery, HeatingStructureRenderState renderState, float partialTicks, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
+    BlockEntityRenderer.super.extractRenderState(smeltery, renderState, partialTicks, cameraPos, breakProgress);
+    renderState.errorPos = null;
+    renderState.structureValid = false;
+    renderState.fluids = List.of();
+    renderState.items = List.of();
     Level world = smeltery.getLevel();
     if (world == null) return;
-    BlockState state = smeltery.getBlockState();
     StructureData structure = smeltery.getStructure();
-    boolean structureValid = state.getValue(ControllerBlock.IN_STRUCTURE) && structure != null;
+    boolean structureValid = renderState.blockState.getValue(ControllerBlock.IN_STRUCTURE) && structure != null;
+    renderState.structureValid = structureValid;
 
     // render erroring block, done whether in the structure or not
     BlockPos errorPos = smeltery.getErrorPos();
-    if (errorPos != null && Minecraft.getInstance().player != null) {
+    Minecraft mc = Minecraft.getInstance();
+    if (errorPos != null && mc.player != null) {
       // either we must be holding the book, or the structure must be erroring and it be within 10 seconds of last update
       boolean highlightError = smeltery.isHighlightError();
-      if ((!structureValid && highlightError) || smeltery.showDebugBlockBorder(Minecraft.getInstance().player)) {
+      if ((!structureValid && highlightError) || smeltery.showDebugBlockBorder(mc.player)) {
         // distance check, 512 is the squared length of the diagonal of a max size structure
         BlockPos pos = smeltery.getBlockPos();
-        BlockPos playerPos = Minecraft.getInstance().player.blockPosition();
+        BlockPos playerPos = mc.player.blockPosition();
         int dx = playerPos.getX() - pos.getX();
         int dz = playerPos.getZ() - pos.getZ();
         if ((dx * dx + dz * dz) < 512) {
-          // color will be yellow if the structure is valid (expanding), red if invalid
-          VertexConsumer vertexBuilder = buffer.getBuffer(highlightError ? TinkerRenderTypes.ERROR_BLOCK : RenderType.LINES);
-          ShapeRenderer.renderShape(matrices, vertexBuilder, Shapes.block(), errorPos.getX() - pos.getX(), errorPos.getY() - pos.getY(), errorPos.getZ() - pos.getZ(), ARGB.colorFromFloat(0.5f, 1f, structureValid ? 1f : 0f, 0f));
+          renderState.errorPos = errorPos;
+          renderState.highlightError = highlightError;
         }
       }
     }
@@ -69,30 +89,24 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
     }
 
     // relevant positions
-    BlockPos pos = smeltery.getBlockPos();
     BlockPos minPos = structure.getMinInside();
     BlockPos maxPos = structure.getMaxInside();
+    renderState.minPos = minPos;
+    renderState.maxPos = maxPos;
+    // tank fluids, use minPos for brightness
+    renderState.fluids = SmelteryTankRenderer.copyFluids(smeltery.getTank());
+    renderState.capacity = smeltery.getTank().getCapacity();
+    renderState.fluidLight = LevelRenderer.getLightColor(world, minPos);
 
-    // offset to make rendering min pos relative
-    matrices.pushPose();
-    matrices.translate(minPos.getX() - pos.getX(), minPos.getY() - pos.getY(), minPos.getZ() - pos.getZ());
-    // render tank fluids, use minPos for brightness
-    SmelteryTankRenderer.renderFluids(matrices, buffer, smeltery.getTank(), minPos, maxPos, LevelRenderer.getLightColor(world, minPos));
-
-    // render items
+    // items
     int xd = 1 + maxPos.getX() - minPos.getX();
     int zd = 1 + maxPos.getZ() - minPos.getZ();
     int layer = xd * zd;
-    Direction facing = state.getValue(ControllerBlock.FACING);
-    Quaternionf itemRotation = Axis.YP.rotationDegrees(-90.0F * (float)facing.get2DDataValue());
+    renderState.facing = renderState.blockState.getValue(ControllerBlock.FACING);
     MeltingModuleInventory inventory = smeltery.getMeltingInventory();
-    Minecraft mc = Minecraft.getInstance();
-    // PORT 1.21.4: item rendering moved from ItemRenderer#getModel/#render(BakedModel) to the ItemStackRenderState
-    // pipeline. We populate a reusable render state per stack via the ItemModelResolver and render it directly.
-    ItemModelResolver itemModelResolver = mc.getItemModelResolver();
-    ItemStackRenderState itemRenderState = new ItemStackRenderState();
     int max = Config.CLIENT.maxSmelteryItemQuads.get();
     if (max != 0) {
+      List<SmelteryItem> items = new ArrayList<>();
       int quadsRendered = 0;
       for (int i = 0; i < inventory.getSlots(); i++) {
         ItemStack stack = inventory.getStackInSlot(i);
@@ -104,15 +118,9 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
           int offsetZ = layerIndex / xd;
           BlockPos itemPos = minPos.offset(offsetX, height, offsetZ);
 
-          // offset to the slot position in the structure, scale, and rotate the item
-          matrices.pushPose();
-          matrices.translate(offsetX + 0.5f, height + 0.5f, offsetZ + 0.5f);
-          matrices.mulPose(itemRotation);
-          matrices.scale(ITEM_SCALE, ITEM_SCALE, ITEM_SCALE);
-          // updateForTopItem clears the state first, so the single instance is safe to reuse across the loop
+          ItemStackRenderState itemRenderState = new ItemStackRenderState();
           itemModelResolver.updateForTopItem(itemRenderState, stack, TinkerItemDisplays.MELTER, world, null, 0);
-          itemRenderState.render(matrices, buffer, LevelRenderer.getLightColor(world, itemPos), OverlayTexture.NO_OVERLAY);
-          matrices.popPose();
+          items.add(new SmelteryItem(itemRenderState, offsetX, height, offsetZ, LevelRenderer.getLightColor(world, itemPos)));
 
           // done as quads rather than items as its not that expensive to draw blocks, items are the problem
           if (max != -1) {
@@ -126,6 +134,52 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
             }
           }
         }
+      }
+      renderState.items = items;
+    }
+  }
+
+  @Override
+  public void submit(HeatingStructureRenderState state, PoseStack matrices, SubmitNodeCollector collector, CameraRenderState camera) {
+    BlockPos pos = state.blockPos;
+    // render erroring block
+    BlockPos errorPos = state.errorPos;
+    if (errorPos != null) {
+      // color will be yellow if the structure is valid (expanding), red if invalid
+      int color = ARGB.colorFromFloat(0.5f, 1f, state.structureValid ? 1f : 0f, 0f);
+      double x = errorPos.getX() - pos.getX();
+      double y = errorPos.getY() - pos.getY();
+      double z = errorPos.getZ() - pos.getZ();
+      collector.submitCustomGeometry(matrices, state.highlightError ? TinkerRenderTypes.ERROR_BLOCK : RenderType.lines(), (pose, buffer) -> {
+        PoseStack poseStack = new PoseStack();
+        poseStack.last().set(pose);
+        ShapeRenderer.renderShape(poseStack, buffer, Shapes.block(), x, y, z, color);
+      });
+    }
+
+    // if no structure, nothing else to do
+    if (!state.structureValid) {
+      return;
+    }
+
+    // offset to make rendering min pos relative
+    BlockPos minPos = state.minPos;
+    matrices.pushPose();
+    matrices.translate(minPos.getX() - pos.getX(), minPos.getY() - pos.getY(), minPos.getZ() - pos.getZ());
+    // render tank fluids
+    SmelteryTankRenderer.submitFluids(matrices, collector, state.fluids, state.capacity, minPos, state.maxPos, state.fluidLight);
+
+    // render items
+    if (!state.items.isEmpty()) {
+      Quaternionf itemRotation = Axis.YP.rotationDegrees(-90.0F * (float)state.facing.get2DDataValue());
+      for (SmelteryItem item : state.items) {
+        // offset to the slot position in the structure, scale, and rotate the item
+        matrices.pushPose();
+        matrices.translate(item.x + 0.5f, item.y + 0.5f, item.z + 0.5f);
+        matrices.mulPose(itemRotation);
+        matrices.scale(ITEM_SCALE, ITEM_SCALE, ITEM_SCALE);
+        item.state.submit(matrices, collector, item.light, OverlayTexture.NO_OVERLAY, 0);
+        matrices.popPose();
       }
     }
 
@@ -148,5 +202,25 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
   @Override
   public AABB getRenderBoundingBox(HeatingStructureBlockEntity be) {
     return be.getRenderBoundingBox();
+  }
+
+  /** Item resolved for display inside the structure, positioned relative to the min inside position */
+  private record SmelteryItem(ItemStackRenderState state, int x, int y, int z, int light) {}
+
+  /** Render state for smelteries and foundries */
+  public static class HeatingStructureRenderState extends BlockEntityRenderState {
+    /** Error block to highlight, null for none */
+    @Nullable
+    public BlockPos errorPos;
+    public boolean highlightError = false;
+    public boolean structureValid = false;
+    public BlockPos minPos = BlockPos.ZERO;
+    public BlockPos maxPos = BlockPos.ZERO;
+    public Direction facing = Direction.NORTH;
+    /** Copies of the tank fluids */
+    public List<FluidStack> fluids = List.of();
+    public int capacity = 0;
+    public int fluidLight = 0;
+    private List<SmelteryItem> items = List.of();
   }
 }

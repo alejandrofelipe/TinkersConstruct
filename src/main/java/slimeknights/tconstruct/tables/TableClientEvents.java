@@ -11,6 +11,7 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import slimeknights.mantle.client.render.InventoryBlockEntityRenderer;
+import slimeknights.mantle.client.render.InventoryRenderState;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.ClientEventBase;
 import slimeknights.tconstruct.shared.block.entity.TableBlockEntity;
@@ -27,7 +28,7 @@ public class TableClientEvents extends ClientEventBase {
   @SubscribeEvent
   static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
     // 1.21.8: the frustum test uses the renderer's box, so delegate to the tall box of retextured tables
-    BlockEntityRendererProvider<TableBlockEntity> tableRenderer = context -> new InventoryBlockEntityRenderer<>(context) {
+    BlockEntityRendererProvider<TableBlockEntity, InventoryRenderState> tableRenderer = context -> new InventoryBlockEntityRenderer<>(context) {
       @Override
       public AABB getRenderBoundingBox(TableBlockEntity be) {
         return be instanceof RetexturedTableBlockEntity retextured ? retextured.getRenderBoundingBox() : super.getRenderBoundingBox(be);

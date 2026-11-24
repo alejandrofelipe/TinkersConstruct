@@ -2,7 +2,7 @@ package slimeknights.tconstruct.smeltery.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,6 +16,7 @@ import slimeknights.tconstruct.library.client.TinkerRenderTypes;
 import slimeknights.tconstruct.smeltery.block.entity.tank.SmelteryTank;
 import slimeknights.tconstruct.smeltery.client.screen.module.GuiSmelteryTank;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** Helper class to render the smeltery tank */
@@ -51,17 +52,51 @@ public class SmelteryTankRenderer {
   }
 
   /**
-   * Renders the smeltery tank fluids, relative to tankMinPos
+   * Copies the smeltery tank fluids for rendering. Call during render state extraction.
+   * @param tank  Smeltery tank
+   * @return  Copies of the fluids in the tank
+   */
+  public static List<FluidStack> copyFluids(SmelteryTank<?> tank) {
+    List<FluidStack> fluids = tank.getFluids();
+    if (fluids.isEmpty()) {
+      return List.of();
+    }
+    List<FluidStack> copies = new ArrayList<>(fluids.size());
+    for (FluidStack fluid : fluids) {
+      copies.add(fluid.copy());
+    }
+    return copies;
+  }
+
+  /**
+   * Submits the smeltery tank fluids, relative to tankMinPos
    * @param matrices    Matrix stack instance
-   * @param buffer      Buffer instance
-   * @param tank        Smeltery tank
+   * @param collector   Node collector
+   * @param fluids      Fluids in the tank, from {@link #copyFluids(SmelteryTank)}
+   * @param capacity    Tank capacity
    * @param brightness  Packed lighting values
    * @param tankMinPos  Min position for fluid rendering
    * @param tankMaxPos  Max position for fluid rendering
    */
-  public static void renderFluids(PoseStack matrices, MultiBufferSource buffer, SmelteryTank<?> tank,
+  public static void submitFluids(PoseStack matrices, SubmitNodeCollector collector, List<FluidStack> fluids, int capacity,
                                   BlockPos tankMinPos, BlockPos tankMaxPos, int brightness) {
-    List<FluidStack> fluids = tank.getFluids();
+    if (!fluids.isEmpty()) {
+      collector.submitCustomGeometry(matrices, TinkerRenderTypes.SMELTERY_FLUID, (pose, builder) -> renderFluids(pose, builder, fluids, capacity, tankMinPos, tankMaxPos, brightness));
+    }
+  }
+
+  /**
+   * Renders the smeltery tank fluids, relative to tankMinPos
+   * @param pose        Pose instance
+   * @param builder     Buffer for {@link TinkerRenderTypes#SMELTERY_FLUID}
+   * @param fluids      Fluids in the tank
+   * @param capacity    Tank capacity
+   * @param brightness  Packed lighting values
+   * @param tankMinPos  Min position for fluid rendering
+   * @param tankMaxPos  Max position for fluid rendering
+   */
+  public static void renderFluids(PoseStack.Pose pose, VertexConsumer builder, List<FluidStack> fluids, int capacity,
+                                  BlockPos tankMinPos, BlockPos tankMaxPos, int brightness) {
     // empty smeltery :(
     if(!fluids.isEmpty()) {
       // determine x and z bounds, constant
@@ -77,14 +112,13 @@ public class SmelteryTankRenderer {
       // calc heights, we use mB capacities and then convert it over to blockheights during rendering
       int yd = 1 + Math.max(0, tankMaxPos.getY() - tankMinPos.getY());
       // one block height = 1000 mb
-      int[] heights = GuiSmelteryTank.calcLiquidHeights(fluids, tank.getCapacity(), yd * 1000 - HEIGHT_OFFSET, 100);
+      int[] heights = GuiSmelteryTank.calcLiquidHeights(fluids, capacity, yd * 1000 - HEIGHT_OFFSET, 100);
 
       // rendering time
-      VertexConsumer builder = buffer.getBuffer(TinkerRenderTypes.SMELTERY_FLUID);
       float curY = FLUID_OFFSET;
       for (int i = 0; i < fluids.size(); i++) {
         float h = (float) heights[i] / 1000f;
-        renderLargeFluidCuboid(matrices, builder, fluids.get(i), brightness, xd, xBounds, zd, zBounds, curY, curY + h);
+        renderLargeFluidCuboid(pose, builder, fluids.get(i), brightness, xd, xBounds, zd, zBounds, curY, curY + h);
         curY += h;
       }
     }
@@ -92,7 +126,7 @@ public class SmelteryTankRenderer {
 
   /**
    * Renders a large fluid cuboid
-   * @param matrices   Matrix stack intance
+   * @param pose       Pose instance
    * @param builder    Builder instance
    * @param fluid      Fluid to render
    * @param brightness Packed lighting values
@@ -103,7 +137,7 @@ public class SmelteryTankRenderer {
    * @param yMin       Min y position
    * @param yMax       Max y position
    */
-  private static void renderLargeFluidCuboid(PoseStack matrices, VertexConsumer builder, FluidStack fluid, int brightness,
+  private static void renderLargeFluidCuboid(PoseStack.Pose pose, VertexConsumer builder, FluidStack fluid, int brightness,
                                              int xd, float[] xBounds, int zd, float[] zBounds, float yMin, float yMax) {
     if(yMin >= yMax || fluid.isEmpty()) {
       return;
@@ -126,7 +160,7 @@ public class SmelteryTankRenderer {
     float[] yBounds = getBlockBounds(yd, yMin, yMax);
 
     // render each side
-    Matrix4f matrix = matrices.last().pose();
+    Matrix4f matrix = pose.pose();
     Vector3f from = new Vector3f();
     Vector3f to = new Vector3f();
     int rotation = upsideDown ? 180 : 0;

@@ -1,9 +1,10 @@
 package slimeknights.tconstruct.library.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -16,15 +17,16 @@ import slimeknights.tconstruct.library.fluid.FluidTankAnimated;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RenderUtils {
   /**
-   * Adds a fluid cuboid with transparency
-   * @param matrices  Matrix stack instance
-   * @param buffer    Render type buffer instance
+   * Adds a fluid cuboid with transparency.
+   * 1.21.9: pose variant for {@link SubmitNodeCollector#submitCustomGeometry}, the fluid must be owned by the render state.
+   * @param pose      Pose instance
+   * @param buffer    Buffer for {@link MantleRenderTypes#FLUID}
    * @param fluid     Fluid to render
    * @param opacity   Fluid opacity to blend in
    * @param light     Quad lighting
    * @param cube      Fluid cuboid instance
    */
-  public static void renderTransparentCuboid(PoseStack matrices, MultiBufferSource buffer, FluidCuboid cube, FluidStack fluid, int opacity, int light) {
+  public static void renderTransparentCuboid(PoseStack.Pose pose, VertexConsumer buffer, FluidCuboid cube, FluidStack fluid, int opacity, int light) {
     // nothing to render? skip
     if (opacity < 0 || fluid.isEmpty()) {
       return;
@@ -45,20 +47,47 @@ public final class RenderUtils {
       // clear bits in color and or in the new alpha
       color = (color & 0xFFFFFF) | (alpha << 24);
     }
-    FluidRenderer.renderCuboid(matrices, buffer.getBuffer(MantleRenderTypes.FLUID), cube, still, flowing, cube.getFromScaled(), cube.getToScaled(), color, light, isGas);
+    FluidRenderer.renderCuboid(pose, buffer, cube, still, flowing, cube.getFromScaled(), cube.getToScaled(), color, light, isGas);
   }
 
   /**
-   * Add textured quads for a fluid tank
-   * @param matrices      Matrix stack instance
-   * @param buffer        Render type buffer instance
-   * @param tank          Fluid tank animated to render=
-   * @param light         Quad lighting
-   * @param cube          Fluid cuboid instance
-   * @param partialTicks  Partial ticks
-   * @param flipGas       If true, flips gas cubes
+   * Submits a fluid cuboid with transparency in a two phase renderer.
+   * @param matrices   Matrix stack instance
+   * @param collector  Node collector
+   * @param cube       Fluid cuboid instance
+   * @param fluid      Fluid to render, must be owned by the render state (copied during extraction)
+   * @param opacity    Fluid opacity to blend in
+   * @param light      Quad lighting
    */
-  public static void renderFluidTank(PoseStack matrices, MultiBufferSource buffer, FluidCuboid cube, FluidTankAnimated tank, int light, float partialTicks, boolean flipGas) {
+  public static void submitTransparentCuboid(PoseStack matrices, SubmitNodeCollector collector, FluidCuboid cube, FluidStack fluid, int opacity, int light) {
+    if (opacity >= 0 && !fluid.isEmpty()) {
+      collector.submitCustomGeometry(matrices, MantleRenderTypes.FLUID, (pose, buffer) -> renderTransparentCuboid(pose, buffer, cube, fluid, opacity, light));
+    }
+  }
+
+  /**
+   * Fluid tank contents copied during render state extraction.
+   * @param fluid     Copy of the tank fluid
+   * @param capacity  Tank capacity
+   * @param offset    Animated render offset for this frame
+   */
+  public record TankRenderData(FluidStack fluid, int capacity, float offset) {
+    public static final TankRenderData EMPTY = new TankRenderData(FluidStack.EMPTY, 0, 0);
+
+    /** Returns true if there is no fluid to render */
+    public boolean isEmpty() {
+      return fluid.isEmpty() || capacity <= 0;
+    }
+  }
+
+  /**
+   * Extracts the fluid of an animated tank for rendering, advancing the tank's render offset animation.
+   * Call during render state extraction.
+   * @param tank          Fluid tank animated to render
+   * @param partialTicks  Partial ticks
+   * @return  Render data with a copy of the fluid
+   */
+  public static TankRenderData extractFluidTank(FluidTankAnimated tank, float partialTicks) {
     // render liquid if present
     FluidStack liquid = tank.getFluid();
     int capacity = tank.getCapacity();
@@ -71,12 +100,25 @@ public final class RenderUtils {
       } else {
         tank.setRenderOffset(0);
       }
+      return new TankRenderData(liquid.copy(), capacity, offset);
+    }
+    // clear render offet if no liquid
+    tank.setRenderOffset(0);
+    return TankRenderData.EMPTY;
+  }
 
-      // fetch fluid information from the model
-      FluidRenderer.renderScaledCuboid(matrices, buffer, cube, liquid, offset, capacity, light, flipGas);
-    } else {
-      // clear render offet if no liquid
-      tank.setRenderOffset(0);
+  /**
+   * Submits textured quads for a fluid tank
+   * @param matrices   Matrix stack instance
+   * @param collector  Node collector
+   * @param cube       Fluid cuboid instance
+   * @param tank       Tank data from {@link #extractFluidTank(FluidTankAnimated, float)}
+   * @param light      Quad lighting
+   * @param flipGas    If true, flips gas cubes
+   */
+  public static void submitFluidTank(PoseStack matrices, SubmitNodeCollector collector, FluidCuboid cube, TankRenderData tank, int light, boolean flipGas) {
+    if (!tank.isEmpty()) {
+      FluidRenderer.submitScaledCuboid(matrices, collector, cube, tank.fluid(), tank.offset(), tank.capacity(), light, flipGas);
     }
   }
 

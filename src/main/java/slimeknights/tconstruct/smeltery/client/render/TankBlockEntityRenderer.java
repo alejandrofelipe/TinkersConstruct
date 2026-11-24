@@ -1,34 +1,52 @@
 package slimeknights.tconstruct.smeltery.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import slimeknights.mantle.client.render.FluidCuboid;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.client.RenderUtils;
-import slimeknights.tconstruct.library.fluid.FluidTankAnimated;
+import slimeknights.tconstruct.library.client.RenderUtils.TankRenderData;
 import slimeknights.tconstruct.smeltery.block.entity.ITankBlockEntity;
+import slimeknights.tconstruct.smeltery.client.render.TankBlockEntityRenderer.TankRenderState;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
-public class TankBlockEntityRenderer<T extends BlockEntity & ITankBlockEntity> implements BlockEntityRenderer<T> {
+public class TankBlockEntityRenderer<T extends BlockEntity & ITankBlockEntity> implements BlockEntityRenderer<T, TankRenderState> {
   public TankBlockEntityRenderer(Context context) {}
 
   @Override
-  public void render(T tile, float partialTicks, PoseStack matrixStack, MultiBufferSource buffer, int combinedLightIn, int combinedOverlayIn, Vec3 cameraPos) {
-    if (Config.CLIENT.tankFluidModel.get()) {
-      return;
-    }
+  public TankRenderState createRenderState() {
+    return new TankRenderState();
+  }
+
+  @Override
+  public void extractRenderState(T tile, TankRenderState state, float partialTicks, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
+    BlockEntityRenderer.super.extractRenderState(tile, state, partialTicks, cameraPos, breakProgress);
+    state.fluids = Config.CLIENT.tankFluidModel.get() ? List.of() : FluidCuboid.REGISTRY.get(state.blockState, List.of());
+    state.tank = state.fluids.isEmpty() ? TankRenderData.EMPTY : RenderUtils.extractFluidTank(tile.getTank(), partialTicks);
+  }
+
+  @Override
+  public void submit(TankRenderState state, PoseStack matrices, SubmitNodeCollector collector, CameraRenderState camera) {
     // render the fluid
-    List<FluidCuboid> fluids = FluidCuboid.REGISTRY.get(tile.getBlockState(), List.of());
-    if (!fluids.isEmpty()) {
-      FluidTankAnimated tank = tile.getTank();
-      for (FluidCuboid fluid : fluids) {
-        RenderUtils.renderFluidTank(matrixStack, buffer, fluid, tank, combinedLightIn, partialTicks, true);
+    if (!state.tank.isEmpty()) {
+      for (FluidCuboid fluid : state.fluids) {
+        RenderUtils.submitFluidTank(matrices, collector, fluid, state.tank, state.lightCoords, true);
       }
     }
+  }
+
+  /** Render state for a block with a single fluid tank */
+  public static class TankRenderState extends BlockEntityRenderState {
+    public List<FluidCuboid> fluids = List.of();
+    public TankRenderData tank = TankRenderData.EMPTY;
   }
 }

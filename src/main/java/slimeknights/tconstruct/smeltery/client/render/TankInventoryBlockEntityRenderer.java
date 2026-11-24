@@ -1,54 +1,81 @@
 package slimeknights.tconstruct.smeltery.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.items.IItemHandler;
 import slimeknights.mantle.client.render.FluidCuboid;
+import slimeknights.mantle.client.render.InventoryRenderState;
 import slimeknights.mantle.client.render.RenderItem;
 import slimeknights.mantle.client.render.RenderingHelper;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.client.RenderUtils;
-import slimeknights.tconstruct.library.fluid.FluidTankAnimated;
+import slimeknights.tconstruct.library.client.RenderUtils.TankRenderData;
 import slimeknights.tconstruct.smeltery.block.entity.ITankBlockEntity.ITankInventoryBlockEntity;
+import slimeknights.tconstruct.smeltery.client.render.TankInventoryBlockEntityRenderer.TankInventoryRenderState;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
-public class TankInventoryBlockEntityRenderer<T extends BlockEntity & ITankInventoryBlockEntity> implements BlockEntityRenderer<T> {
+public class TankInventoryBlockEntityRenderer<T extends BlockEntity & ITankInventoryBlockEntity> implements BlockEntityRenderer<T, TankInventoryRenderState> {
   private final EnumProperty<Direction> directionProperty;
-  public TankInventoryBlockEntityRenderer(EnumProperty<Direction> directionProperty) {
+  private final ItemModelResolver itemModelResolver;
+  public TankInventoryBlockEntityRenderer(Context context, EnumProperty<Direction> directionProperty) {
     this.directionProperty = directionProperty;
+    this.itemModelResolver = context.itemModelResolver();
   }
 
   @Override
-  public void render(T melter, float partialTicks, PoseStack matrices, MultiBufferSource buffer, int light, int combinedOverlayIn, Vec3 cameraPos) {
-    BlockState state = melter.getBlockState();
-    List<FluidCuboid> fluids = Config.CLIENT.tankFluidModel.get() ? List.of() : FluidCuboid.REGISTRY.get(state, List.of());
-    List<RenderItem> renderItems = RenderItem.STATE_REGISTRY.get(state, List.of());
-    if (!fluids.isEmpty() || !renderItems.isEmpty()) {
+  public TankInventoryRenderState createRenderState() {
+    return new TankInventoryRenderState();
+  }
+
+  @Override
+  public void extractRenderState(T melter, TankInventoryRenderState state, float partialTicks, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
+    BlockEntityRenderer.super.extractRenderState(melter, state, partialTicks, cameraPos, breakProgress);
+    state.facing = state.blockState.getValue(directionProperty);
+    state.fluids = Config.CLIENT.tankFluidModel.get() ? List.of() : FluidCuboid.REGISTRY.get(state.blockState, List.of());
+    state.tank = state.fluids.isEmpty() ? TankRenderData.EMPTY : RenderUtils.extractFluidTank(melter.getTank(), partialTicks);
+    // TODO: can we show count somehow?
+    IItemHandler inventory = melter.getDisplayInventory();
+    state.extractItems(itemModelResolver, RenderItem.STATE_REGISTRY.get(state.blockState, List.of()), inventory::getStackInSlot, melter.getLevel());
+  }
+
+  @Override
+  public void submit(TankInventoryRenderState state, PoseStack matrices, SubmitNodeCollector collector, CameraRenderState camera) {
+    if (!state.tank.isEmpty() || !state.isEmpty()) {
       // rotate the matrix
-      boolean isRotated = RenderingHelper.applyRotation(matrices, state.getValue(directionProperty));
+      boolean isRotated = RenderingHelper.applyRotation(matrices, state.facing);
 
       // render fluids
-      FluidTankAnimated tank = melter.getTank();
-      for (FluidCuboid fluid : fluids) {
-        RenderUtils.renderFluidTank(matrices, buffer, fluid, tank, light, partialTicks, true);
+      if (!state.tank.isEmpty()) {
+        for (FluidCuboid fluid : state.fluids) {
+          RenderUtils.submitFluidTank(matrices, collector, fluid, state.tank, state.lightCoords, true);
+        }
       }
 
       // render items
-      // TODO: can we show count somehow?
-      for (int i = 0; i < renderItems.size(); i++) {
-        RenderingHelper.renderItem(matrices, buffer, melter.getDisplayInventory().getStackInSlot(i), renderItems.get(i), light);
-      }
+      state.submitItems(matrices, collector);
 
       // pop back rotation
       if (isRotated) {
         matrices.popPose();
       }
     }
+  }
+
+  /** Render state for a block with a fluid tank and an item display */
+  public static class TankInventoryRenderState extends InventoryRenderState {
+    public Direction facing = Direction.SOUTH;
+    public List<FluidCuboid> fluids = List.of();
+    public TankRenderData tank = TankRenderData.EMPTY;
   }
 }
