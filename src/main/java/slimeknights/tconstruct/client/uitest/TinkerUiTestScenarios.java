@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.client.uitest;
 
 import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.IRecipeLayoutDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.neoforge.NeoForgeTypes;
@@ -72,6 +73,7 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
+import slimeknights.mantle.client.screen.MultiModuleScreen;
 import slimeknights.mantle.client.screen.book.BookScreen;
 import slimeknights.mantle.client.screen.book.element.StructureElement;
 import slimeknights.mantle.client.uitest.UiTestContext;
@@ -98,7 +100,9 @@ import slimeknights.tconstruct.smeltery.block.controller.ControllerBlock;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.FaucetBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.AlloyerBlockEntity;
+import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.MelterBlockEntity;
+import slimeknights.tconstruct.smeltery.client.screen.HeatingStructureScreen;
 import slimeknights.tconstruct.smeltery.client.screen.IScreenWithFluidTank;
 import slimeknights.tconstruct.smeltery.client.screen.MelterScreen;
 import slimeknights.tconstruct.smeltery.item.CopperCanItem;
@@ -122,6 +126,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -179,6 +184,9 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new StationCarriedClicksScenario());
     UiTestScenarios.register(new JeiTankClickableScenario());
     UiTestScenarios.register(new JeiRecipeTransferScenario());
+    UiTestScenarios.register(new JeiCraftingStationSlotScenario());
+    UiTestScenarios.register(new JeiSmelterySlotScenario());
+    UiTestScenarios.register(new JeiSmelteryTankScenario());
     if (ModList.get().isLoaded("craftingtweaks")) {
       UiTestScenarios.register(new CraftingTweaksRotateScenario());
     }
@@ -1898,6 +1906,342 @@ public class TinkerUiTestScenarios {
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
       ctx.mc().setScreen(null);
+    }
+  }
+
+  /** Presses a key on a screen as KeyboardHandler would: screen key events go Pre, the screen, then Post (where JEI handles its hotkeys) */
+  private static void pressScreenKey(Screen screen, int key) {
+    KeyEvent event = new KeyEvent(key, 0, 0);
+    if (!NeoForge.EVENT_BUS.post(new ScreenEvent.KeyPressed.Pre(screen, event)).isCanceled() && !screen.keyPressed(event)) {
+      NeoForge.EVENT_BUS.post(new ScreenEvent.KeyPressed.Post(screen, event));
+    }
+  }
+
+  /**
+   * JEI on a {@link MultiModuleScreen} with a side panel left of its main window, which moves {@code leftPos} away from where the main
+   * window and its slots are drawn ({@link MultiModuleScreen#cornerX}); JEI builds slot areas from {@code getGuiLeft()}, which used to
+   * return that {@code leftPos} (areas shifted left by the panel width). Once the screen shows the target, moves the mouse over it, checks
+   * the clickable ingredient JEI's screen helper finds there (the expected ingredient, with an area containing the mouse in screen
+   * coordinates, which JEI's mouse handling checks) and presses a JEI key over it; the capture is the JEI recipes GUI.
+   */
+  private abstract static class JeiSidePanelScenario implements UiTestScenario {
+    /** Ticks to wait for the screen to render with the mouse over a slot target */
+    private static final int HOVER_TIMEOUT = 40;
+    private final String name;
+    private final int key;
+    private final Consumer<ClientTickEvent.Post> poller = this::tick;
+    /** 0: waiting for the target, 1: hovering it, 2: done (key pressed or failed) */
+    private int stage = 0;
+    private int ticks = 0;
+    @Nullable
+    private Target target = null;
+    @Nullable
+    private String failure = null;
+
+    /** Point to hover in screen coordinates, and for slots the slot vanilla must report as hovered there */
+    protected record Target(int x, int y, @Nullable Slot slot) {
+      static Target slot(MultiModuleScreen<?> screen, Slot slot) {
+        return new Target(screen.cornerX + slot.x + 8, screen.cornerY + slot.y + 8, slot);
+      }
+    }
+
+    protected JeiSidePanelScenario(String name, int key) {
+      this.name = name;
+      this.key = key;
+    }
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource(name);
+    }
+
+    /** Target on the open screen, or null if the screen does not show it (yet) */
+    @Nullable
+    protected abstract Target findTarget(MultiModuleScreen<?> screen);
+
+    /** Checks if the clickable ingredient is the one expected at the target */
+    protected abstract boolean isExpected(IClickableIngredient<?> clickable);
+
+    /** Resets the state, call at the start of {@link #prepare} */
+    protected void reset() {
+      stage = 0;
+      ticks = 0;
+      target = null;
+      failure = null;
+    }
+
+    /** Starts watching the screen, call from {@link #open} */
+    protected void startPolling() {
+      NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, poller);
+    }
+
+    private static String describe(List<Rect2i> areas) {
+      return areas.stream().map(area -> area.getX() + "," + area.getY() + " " + area.getWidth() + "x" + area.getHeight()).toList().toString();
+    }
+
+    private void fail(String message) {
+      failure = message;
+      stage = 2;
+      NeoForge.EVENT_BUS.unregister(poller);
+    }
+
+    private void tick(ClientTickEvent.Post event) {
+      Minecraft mc = Minecraft.getInstance();
+      if (stage == 2 || !(mc.screen instanceof MultiModuleScreen<?> screen)) {
+        return;
+      }
+      ticks++;
+      if (stage == 0) {
+        // let the screen render a few frames first, slot positions of the side panels follow their module on render
+        target = ticks < 5 ? null : findTarget(screen);
+        if (target == null) {
+          return;
+        }
+        if (screen.getModuleAreas().stream().noneMatch(area -> area.getX() < screen.cornerX)) {
+          fail("the screen has no side panel left of its main window (corner " + screen.cornerX + ", modules " + describe(screen.getModuleAreas()) + ")");
+          return;
+        }
+        stage = 1;
+        ticks = 0;
+        new UiTestContext(mc).moveMouse(target.x + 0.5, target.y + 0.5);
+        return;
+      }
+      // wait for a render with the mouse there, which updates vanilla's hovered slot (what JEI reads for slots)
+      assert target != null;
+      if (target.slot != null && screen.getSlotUnderMouse() != target.slot) {
+        if (ticks > HOVER_TIMEOUT) {
+          fail("vanilla hovers " + screen.getSlotUnderMouse() + " instead of slot " + target.slot.index + " with the mouse at " + target.x + "," + target.y);
+        }
+        return;
+      }
+      IJeiRuntime runtime = JEIPlugin.runtime;
+      if (runtime == null) {
+        fail("JEI runtime not captured - onRuntimeAvailable never fired");
+        return;
+      }
+      List<IClickableIngredient<?>> clickables = runtime.getScreenHelper().getClickableIngredientUnderMouse(screen, target.x, target.y).toList();
+      IClickableIngredient<?> clickable = clickables.stream().filter(this::isExpected).findFirst().orElse(null);
+      if (clickable == null) {
+        fail("JEI found no expected ingredient under the mouse at " + target.x + "," + target.y + ", found " + clickables);
+        return;
+      }
+      Rect2i area = clickable.getArea();
+      if (!area.contains(target.x, target.y)) {
+        fail("JEI's clickable area (" + area.getX() + "," + area.getY() + " " + area.getWidth() + "x" + area.getHeight() + ") does not contain the mouse at "
+             + target.x + "," + target.y + " (gui left/top " + screen.getGuiLeft() + "," + screen.getGuiTop() + ", main window corner " + screen.cornerX + "," + screen.cornerY
+             + ", modules " + describe(screen.getModuleAreas()) + ")");
+        return;
+      }
+      stage = 2;
+      NeoForge.EVENT_BUS.unregister(poller);
+      pressScreenKey(screen, key);
+    }
+
+    @Override
+    public int settleTicks() {
+      return 60; // menu round trip + sync + hover + recipes GUI
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      if (failure != null) {
+        throw new IllegalStateException(name + ": " + failure);
+      }
+      if (stage != 2) {
+        throw new IllegalStateException(name + ": the screen never showed the target (stage " + stage + "), found screen " + ctx.mc().screen);
+      }
+      if (!(ctx.mc().screen instanceof IRecipesGui)) {
+        throw new IllegalStateException(name + ": the JEI key over the target did not open the JEI recipes GUI, found " + ctx.mc().screen);
+      }
+      ctx.mc().setScreen(null);
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(poller);
+      ctx.parkMouse();
+      ctx.mc().setScreen(null);
+    }
+  }
+
+  /**
+   * Show recipes (R) over an item in the main crafting grid of a crafting station whose side panel shows the chest next to it: the grid
+   * slot is drawn from the main window corner, while the GUI left JEI reads includes the side panel.
+   */
+  private static class JeiCraftingStationSlotScenario extends JeiSidePanelScenario {
+    private final BlockPos pos = SITE.offset(156, 0, 0);
+
+    JeiCraftingStationSlotScenario() {
+      super("jei_crafting_station_slot", GLFW.GLFW_KEY_R);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      reset();
+      ctx.sendCommand("clear @s");
+      ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + pos.getY() + " " + pos.getZ());
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        level.setBlockAndUpdate(pos, TinkerTables.craftingStation.get().defaultBlockState());
+        if (!(level.getBlockEntity(pos) instanceof CraftingStationBlockEntity station)) {
+          throw new IllegalStateException("Expected crafting station at " + pos + ", found " + level.getBlockEntity(pos));
+        }
+        for (int i = 0; i < 9; i++) {
+          station.setItem(i, ItemStack.EMPTY);
+        }
+        station.setItem(0, new ItemStack(Items.OAK_PLANKS));
+        BlockPos chest = pos.south();
+        level.setBlockAndUpdate(chest, Blocks.CHEST.defaultBlockState());
+        if (!(level.getBlockEntity(chest) instanceof ChestBlockEntity chestBE)) {
+          throw new IllegalStateException("Expected chest at " + chest + ", found " + level.getBlockEntity(chest));
+        }
+        chestBE.clearContent();
+        chestBE.setItem(0, new ItemStack(Items.STICK));
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.useBlock(pos);
+      startPolling();
+    }
+
+    @Nullable
+    @Override
+    protected Target findTarget(MultiModuleScreen<?> screen) {
+      if (screen.getMenu() instanceof CraftingStationContainerMenu menu && menu.getSlot(0).getItem().is(Items.OAK_PLANKS)) {
+        return Target.slot(screen, menu.getSlot(0));
+      }
+      return null;
+    }
+
+    @Override
+    protected boolean isExpected(IClickableIngredient<?> clickable) {
+      return clickable.getTypedIngredient().getIngredient(VanillaTypes.ITEM_STACK).filter(stack -> stack.is(Items.OAK_PLANKS)).isPresent();
+    }
+  }
+
+  /** Builds the smallest smeltery at the origin, standing in front of its controller */
+  private static void buildSmelteryFacingPlayer(UiTestContext ctx, BlockPos origin, AtomicReference<BlockPos> controller) {
+    ctx.sendCommand("tp @s " + (origin.getX() + 1) + " " + origin.getY() + " " + (origin.getZ() + 5));
+    ctx.runOnServer(() -> controller.set(SmelteryRigs.buildSmeltery(ctx.serverLevel(), origin)));
+  }
+
+  /**
+   * Show uses (U) over an item in a melting slot of a smeltery: the melting slots are in the side panel left of the main window, drawn
+   * from the main window corner like every slot. A feather has no melting recipe, so it stays in the slot.
+   */
+  private static class JeiSmelterySlotScenario extends JeiSidePanelScenario {
+    private final AtomicReference<BlockPos> controller = new AtomicReference<>();
+
+    JeiSmelterySlotScenario() {
+      super("jei_smeltery_slot", GLFW.GLFW_KEY_U);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      reset();
+      buildSmelteryFacingPlayer(ctx, SITE.offset(162, 0, 0), controller);
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 100; // structure formation, see SmelteryScenario
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      BlockPos pos = controller.get();
+      ctx.runOnServer(() -> SmelteryRigs.insertMeltable(ctx.serverLevel(), pos, new ItemStack(Items.FEATHER)));
+      ctx.useBlock(pos);
+      startPolling();
+    }
+
+    @Nullable
+    @Override
+    protected Target findTarget(MultiModuleScreen<?> screen) {
+      if (screen instanceof HeatingStructureScreen) {
+        for (Slot slot : screen.getMenu().slots) {
+          if (slot.getItem().is(Items.FEATHER)) {
+            return Target.slot(screen, slot);
+          }
+        }
+      }
+      return null;
+    }
+
+    @Override
+    protected boolean isExpected(IClickableIngredient<?> clickable) {
+      return clickable.getTypedIngredient().getIngredient(VanillaTypes.ITEM_STACK).filter(stack -> stack.is(Items.FEATHER)).isPresent();
+    }
+  }
+
+  /**
+   * Show uses (U) over the molten iron in a smeltery tank, the tank clickable of {@code GuiContainerTankHandler} on the screen with the
+   * most offset coordinates: the main window corner is right of the GUI left because of the melting side panel.
+   */
+  private static class JeiSmelteryTankScenario extends JeiSidePanelScenario {
+    private final AtomicReference<BlockPos> controller = new AtomicReference<>();
+
+    JeiSmelteryTankScenario() {
+      super("jei_smeltery_tank_clickable", GLFW.GLFW_KEY_U);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      reset();
+      buildSmelteryFacingPlayer(ctx, SITE.offset(168, 0, 0), controller);
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 100; // structure formation, see SmelteryScenario
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      BlockPos pos = controller.get();
+      ctx.runOnServer(() -> {
+        if (!(ctx.serverLevel().getBlockEntity(pos) instanceof HeatingStructureBlockEntity smeltery)) {
+          throw new IllegalStateException("Expected smeltery controller at " + pos + ", found " + ctx.serverLevel().getBlockEntity(pos));
+        }
+        int amount = FluidValues.INGOT * 4;
+        try (Transaction tx = Transaction.openRoot()) {
+          int filled = smeltery.getFluidCapability().insert(FluidResource.of(new FluidStack(TinkerFluids.moltenIron.get(), amount)), amount, tx);
+          if (filled != amount) {
+            throw new IllegalStateException("Smeltery at " + pos + " accepted only " + filled + "/" + amount + "mb of molten iron (not formed yet?)");
+          }
+          tx.commit();
+        }
+      });
+      ctx.useBlock(pos);
+      startPolling();
+    }
+
+    @Nullable
+    @Override
+    protected Target findTarget(MultiModuleScreen<?> screen) {
+      if (screen instanceof HeatingStructureScreen smeltery) {
+        for (int y = screen.getGuiTop(); y < screen.getGuiTop() + screen.getYSize(); y++) {
+          for (int x = screen.getGuiLeft(); x < screen.getGuiLeft() + screen.getXSize(); x++) {
+            IScreenWithFluidTank.FluidLocation fluid = smeltery.getFluidUnderMouse(x, y);
+            if (fluid != null && fluid.fluid().is(TinkerFluids.moltenIron.get())) {
+              return new Target(x, y, null);
+            }
+          }
+        }
+      }
+      return null;
+    }
+
+    @Override
+    protected boolean isExpected(IClickableIngredient<?> clickable) {
+      return clickable.getTypedIngredient().getIngredient(NeoForgeTypes.FLUID_STACK).filter(fluid -> fluid.is(TinkerFluids.moltenIron.get())).isPresent();
     }
   }
 }
