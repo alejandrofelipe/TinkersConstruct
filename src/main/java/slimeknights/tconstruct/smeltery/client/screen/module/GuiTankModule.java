@@ -182,6 +182,13 @@ public class GuiTankModule implements IScreenWithFluidTank, ClickableTankModule 
     }
   }
 
+  /**
+   * Gets the fluid under the mouse. Unlike screens, works in GUI relative coordinates: the screen passes the mouse minus its
+   * corner and converts the returned area back with {@link FluidLocation#offset}.
+   * @param mouseX Mouse X relative to the GUI corner
+   * @param mouseY Mouse Y relative to the GUI corner
+   * @return Fluid with its GUI relative area, or null if the mouse is not over the fluid
+   */
   @Override
   public FluidLocation getFluidUnderMouse(int mouseX, int mouseY) {
     if (isHovered(mouseX, mouseY) && isFluidHovered(horizontal ? mouseX : mouseY)) {

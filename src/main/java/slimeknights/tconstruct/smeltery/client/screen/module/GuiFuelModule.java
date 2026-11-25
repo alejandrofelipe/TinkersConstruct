@@ -175,6 +175,13 @@ public class GuiFuelModule implements IScreenWithFluidTank, ClickableTankModule 
     }
   }
 
+  /**
+   * Gets the fuel fluid under the mouse. Unlike screens, works in GUI relative coordinates: the screen passes the mouse minus
+   * its corner and converts the returned area back with {@link FluidLocation#offset}.
+   * @param checkX Mouse X relative to the GUI corner
+   * @param checkY Mouse Y relative to the GUI corner
+   * @return Fuel fluid with its GUI relative area, or null if the mouse is not over a displayed fuel
+   */
   @Override
   @Nullable
   public FluidLocation getFluidUnderMouse(int checkX, int checkY) {

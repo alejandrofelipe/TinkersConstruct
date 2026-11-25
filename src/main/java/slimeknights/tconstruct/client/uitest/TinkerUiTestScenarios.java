@@ -1755,8 +1755,11 @@ public class TinkerUiTestScenarios {
 
   /**
    * JEI recipe transfer into the crafting station from its side inventory: the only planks are in a chest next to the station
-   * (a side inventory slot over the legacy item handler bridge on the chest's resource handler). JEI's transfer handler for the
-   * vanilla stick recipe ({@code CraftingStationTransferInfo}) must accept the recipe and move both planks into the grid.
+   * (a side inventory slot over an {@code InvWrapper} around the chest's {@code Container}, from
+   * {@code ILegacyItemHandlerProvider.find}; the chest's registered {@code ResourceHandler} capability is not involved). JEI's
+   * transfer handler for the vanilla stick recipe ({@code CraftingStationTransferInfo}) must accept the recipe and move both planks
+   * into the grid. A modded inventory exposing only a native {@code ResourceHandler} has no legacy handler, so it gets no side
+   * inventory at all until the full transfer migration (phase 6); there is no bridge path to cover here.
    */
   private static class JeiRecipeTransferScenario implements UiTestScenario {
     private static final String NAME = "jei_recipe_transfer";

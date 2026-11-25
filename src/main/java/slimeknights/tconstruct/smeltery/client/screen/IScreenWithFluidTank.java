@@ -10,10 +10,13 @@ import javax.annotation.Nullable;
  */
 public interface IScreenWithFluidTank {
   /**
-   * Gets the ingredient under the mouse, typically a fluid
-   * @param mouseX Mouse X
-   * @param mouseY Mouse Y
-   * @return Fluid under mouse with its area in screen coordinates (like the mouse position), or null if no fluid.
+   * Gets the ingredient under the mouse, typically a fluid. Screens (what JEI sees) take the mouse and return the area in
+   * screen coordinates. The GUI modules implementing this ({@code GuiTankModule}, {@code GuiFuelModule},
+   * {@code GuiSmelteryTank}) instead take the mouse relative to the GUI corner and return a GUI relative area; the screen
+   * owning them subtracts its corner from the mouse and adds it back to the area with {@link FluidLocation#offset}.
+   * @param mouseX Mouse X, in screen coordinates for screens or GUI relative for modules
+   * @param mouseY Mouse Y, in screen coordinates for screens or GUI relative for modules
+   * @return Fluid under mouse with its area in the same coordinates as the mouse, or null if no fluid.
    */
   @Nullable
   FluidLocation getFluidUnderMouse(int mouseX, int mouseY);
