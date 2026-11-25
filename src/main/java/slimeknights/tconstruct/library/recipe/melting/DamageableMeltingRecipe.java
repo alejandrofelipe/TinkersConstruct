@@ -6,8 +6,9 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.mantle.data.loadable.field.ContextKey;
 import slimeknights.mantle.data.loadable.primitive.IntLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
@@ -69,7 +70,7 @@ public class DamageableMeltingRecipe extends MeltingRecipe {
   }
 
   @Override
-  public void handleByproducts(IMeltingContainer inv, IFluidHandler handler) {
+  public void handleByproducts(IMeltingContainer inv, ResourceHandler<FluidResource> handler) {
     ItemStack input = inv.getStack();
     int maxDamage = input.getMaxDamage();
     if (maxDamage <= 0) {
@@ -79,7 +80,7 @@ public class DamageableMeltingRecipe extends MeltingRecipe {
       int itemDamage = input.getDamageValue();
       for (int i = 0; i < byproducts.size(); i++) {
         FluidOutput fluidStack = byproducts.get(i);
-        handler.fill(scaleOutput(fluidStack.get(), itemDamage, maxDamage, i < byproductSizes.size() ? byproductSizes.get(i) : unitSize), FluidAction.EXECUTE);
+        TransferUtil.fill(handler, scaleOutput(fluidStack.get(), itemDamage, maxDamage, i < byproductSizes.size() ? byproductSizes.get(i) : unitSize), false);
       }
     }
   }

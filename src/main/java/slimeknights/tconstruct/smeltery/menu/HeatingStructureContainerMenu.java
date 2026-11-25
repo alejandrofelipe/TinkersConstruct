@@ -11,7 +11,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import slimeknights.mantle.fluid.FluidTransferHelper;
@@ -46,7 +45,7 @@ public class HeatingStructureContainerMenu extends TriggeringMultiModuleContaine
     if (inv != null && structure != null) {
       // slots for emptying/filling buckets - do first but filtered
       if (!inv.player.level().isClientSide()) {
-        IFluidHandler tank = structure.getTank();
+        ResourceHandler<FluidResource> tank = structure.getTank();
         addSlot(new BucketInputSlot(bucketContainer, 125, 46, tank, this, inv.player));
         bucketResultSlot = addSlot(new BucketResultSlot(bucketContainer, 125, 104, tank, this, inv.player));
       } else {
@@ -85,7 +84,7 @@ public class HeatingStructureContainerMenu extends TriggeringMultiModuleContaine
     if (!player.level().isClientSide() && tile != null) {
       ItemStack bucket = bucketContainer.getItem(0);
       if (!bucket.isEmpty() && bucketContainer.getItem(1).isEmpty()) {
-        TransferResult result = FluidTransferHelper.interactWithStack((ResourceHandler<FluidResource>) tile.getTank(), bucket, transferDirection);
+        TransferResult result = FluidTransferHelper.interactWithStack(tile.getTank(), bucket, transferDirection);
         if (result != null) {
           FluidTransferHelper.playUISound(player, result.getSound());
           bucketContainer.setItem(0, bucket);
@@ -141,7 +140,7 @@ public class HeatingStructureContainerMenu extends TriggeringMultiModuleContaine
           ItemStack held = getCarried();
           if (!held.isEmpty()) {
             // if holding an item, fill it from the fluid
-            TransferResult result = FluidTransferHelper.fillStack((ResourceHandler<FluidResource>) tank, held, fluid);
+            TransferResult result = FluidTransferHelper.fillStack(tank, held, fluid);
             setCarried(FluidTransferHelper.handleUIResult(player, held, result));
           } else {
             // switch fluid order if not holding anything
@@ -194,10 +193,10 @@ public class HeatingStructureContainerMenu extends TriggeringMultiModuleContaine
 
   /** Bucket input slot - used serverside only to handle draining the bucket when placed in the slot */
   public static class BucketInputSlot extends BucketSlot {
-    private final IFluidHandler tank;
+    private final ResourceHandler<FluidResource> tank;
     private final TransferDirectionSupplier directionSupplier;
     private final Player player;
-    public BucketInputSlot(Container pContainer, int pX, int pY, IFluidHandler tank, TransferDirectionSupplier directionSupplier, Player player) {
+    public BucketInputSlot(Container pContainer, int pX, int pY, ResourceHandler<FluidResource> tank, TransferDirectionSupplier directionSupplier, Player player) {
       super(pContainer, 0, pX, pY);
       this.tank = tank;
       this.directionSupplier = directionSupplier;
@@ -231,10 +230,10 @@ public class HeatingStructureContainerMenu extends TriggeringMultiModuleContaine
 
   /** Bucket result slot - used serverside to trigger fluid transfer when the slot is emptied */
   public static class BucketResultSlot extends ResultSlot {
-    private final IFluidHandler tank;
+    private final ResourceHandler<FluidResource> tank;
     private final TransferDirectionSupplier directionSupplier;
     private final Player player;
-    public BucketResultSlot(Container pContainer, int pX, int pY, IFluidHandler tank, TransferDirectionSupplier directionSupplier, Player player) {
+    public BucketResultSlot(Container pContainer, int pX, int pY, ResourceHandler<FluidResource> tank, TransferDirectionSupplier directionSupplier, Player player) {
       super(pContainer, 1, pX, pY);
       this.tank = tank;
       this.directionSupplier = directionSupplier;

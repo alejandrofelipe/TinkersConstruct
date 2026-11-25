@@ -20,7 +20,6 @@ import net.minecraft.world.level.material.Fluid;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.SimpleFluidContent;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.mantle.fluid.tooltip.FluidTooltipHandler;
@@ -29,6 +28,7 @@ import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferDirect
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferResult;
 import slimeknights.mantle.item.BlockTooltipItem;
 import slimeknights.mantle.registration.object.EnumObject;
+import slimeknights.mantle.transfer.SingleFluidTank;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.recipe.FluidValues;
@@ -71,7 +71,7 @@ public class TankItem extends BlockTooltipItem {
   @Override
   public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
     if (isFilled(stack)) {
-      FluidTank tank = getTank(stack, 1);
+      SingleFluidTank tank = getTank(stack, 1);
       if (tank.getFluidAmount() > 0) {
         FluidStack fluid = tank.getFluid();
         tooltip.accept(fluid.getHoverName().plainCopy().withStyle(ChatFormatting.GRAY));
@@ -103,7 +103,7 @@ public class TankItem extends BlockTooltipItem {
         // target must be stack size 1, if not then it's not safe to modify it
         if (slotStack.getCount() == 1) {
           // transfer fluid - but we work with just 1 tank at a time instead of trying to transfer the whole stack
-          FluidTank tank = getTank(held, 1);
+          SingleFluidTank tank = getTank(held, 1);
           TransferResult result = FluidTransferHelper.interactWithStack(tank, slotStack, TransferDirection.REVERSE);
           // update held tank and slot item if something changed
           if (result != null) {
@@ -168,7 +168,7 @@ public class TankItem extends BlockTooltipItem {
       // though our fluid transfer logic does not handle well transferring between two tanks with no 1mb increments
       if (stack.getCount() == 1 || held.getItem() instanceof TankItem) {
         // transfer the fluid
-        FluidTank tank = getTank(stack);
+        SingleFluidTank tank = getTank(stack);
         // if both tanks are empty, just do standard stack operations; makes it nice and easy to move just 1 item at a time
         if (tank.isEmpty() && ItemStack.isSameItemSameComponents(stack, held)) {
           return false;
@@ -201,7 +201,7 @@ public class TankItem extends BlockTooltipItem {
    * @param tank   Tank instance
    * @return  Stack with tank
    */
-  public static ItemStack setTank(ItemStack stack, FluidTank tank) {
+  public static ItemStack setTank(ItemStack stack, SingleFluidTank tank) {
     return setTank(stack, tank.getFluid());
   }
 
@@ -238,9 +238,9 @@ public class TankItem extends BlockTooltipItem {
    * @param stack  Tank stack
    * @return  Tank stored in the stack
    */
-  public FluidTank getTank(ItemStack stack) {
+  public SingleFluidTank getTank(ItemStack stack) {
     int count = stack.getCount();
-    FluidTank tank = getTank(stack, count);
+    SingleFluidTank tank = getTank(stack, count);
     // disallow filling if the current size is larger than 16
     if (limitStackSize && count > 16) {
       tank.setValidator(NO_FILL);
@@ -254,8 +254,8 @@ public class TankItem extends BlockTooltipItem {
    * @param scale  Number of tanks in a stack, being filled or drained together.
    * @return  Tank stored in the stack
    */
-  public static FluidTank getTank(ItemStack stack, int scale) {
-    FluidTank tank = ScaledFluidTank.create(TankBlockEntity.getCapacity(stack.getItem()), scale);
+  public static SingleFluidTank getTank(ItemStack stack, int scale) {
+    SingleFluidTank tank = ScaledFluidTank.create(TankBlockEntity.getCapacity(stack.getItem()), scale);
     // PORT M3: TinkerSmeltery.TANK_FLUID is a DataComponentType<SimpleFluidContent> registered centrally
     SimpleFluidContent content = stack.get(TinkerSmeltery.TANK_FLUID.get());
     if (content != null && !content.isEmpty()) {

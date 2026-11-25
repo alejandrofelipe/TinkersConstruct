@@ -7,7 +7,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.TransferPreconditions;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
@@ -20,21 +19,20 @@ import slimeknights.tconstruct.library.utils.WeakListenerList;
 import slimeknights.tconstruct.smeltery.block.entity.tank.ISmelteryTankHandler.FluidChange;
 import slimeknights.tconstruct.smeltery.network.SmelteryTankUpdatePacket;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.function.Consumer;
 
 /**
  * Fluid handler implementation for the smeltery.
  * <p>
- * PORT 1.21.10 (transfer step 1): also a native {@link ResourceHandler}, the form exposed through drains and ducts. Native changes to the
- * fluid list are journaled and the parent and list listeners are notified once the root transaction commits, never on a simulation.
- * The legacy methods stay for internal use (melting, alloying, faucets, GUI) and notify right away, as before.
+ * PORT 1.21.10 (transfer): a native {@link ResourceHandler}, the form exposed through drains and ducts and used internally (melting,
+ * alloying, faucets, GUI). Changes to the fluid list are journaled and the parent and list listeners are notified once the root transaction
+ * commits, never on a simulation: {@link FluidChange#ADDED} if a new fluid entered the tank (alloying recipes may match now),
+ * {@link FluidChange#REMOVED} if one left, else {@link FluidChange#CHANGED}. Indices are the fluids from the bottom up, followed by an
+ * "empty" segment while the tank has space.
  */
-@SuppressWarnings("removal")  // legacy IFluidHandler for internal use until phase 6
-public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> implements IFluidHandler, ResourceHandler<FluidResource>, IMultitankListChange {
+public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> implements ResourceHandler<FluidResource>, IMultitankListChange {
   private final T parent;
   /** Fluids actually contained in the tank */
   @Getter
@@ -98,21 +96,11 @@ public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> im
 
   /* Fluids */
 
-  @Override
-  public boolean isFluidValid(int tank, FluidStack stack) {
-    return true;
-  }
-
-  @Override
-  public int getTanks() {
-    if (contained < capacity) {
-      return fluids.size() + 1;
-    }
-    return fluids.size();
-  }
-
-  @Nonnull
-  @Override
+  /**
+   * Gets the fluid at the given index, from the bottom up
+   * @param tank  Fluid index
+   * @return  Fluid, empty for the "empty" segment or an invalid index. Do not modify.
+   */
   public FluidStack getFluidInTank(int tank) {
     if (tank < 0 || tank >= fluids.size()) {
       return FluidStack.EMPTY;
@@ -120,7 +108,11 @@ public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> im
     return fluids.get(tank);
   }
 
-  @Override
+  /**
+   * Gets the capacity of the given index: the fluid amount plus the free space, or the free space for the "empty" segment
+   * @param tank  Fluid index
+   * @return  Capacity, may be negative if the smeltery shrunk
+   */
   public int getTankCapacity(int tank) {
     if (tank < 0) {
       return 0;
@@ -149,140 +141,20 @@ public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> im
   }
 
 
-  /* Filling and draining */
-
-  @Override
-  public int fill(FluidStack resource, FluidAction action) {
-    // if full or nothing being filled, do nothing
-    if (contained >= capacity || resource.isEmpty()) {
-      return 0;
-    }
-
-    // determine how much we can fill
-    int usable = Math.min(capacity - contained, resource.getAmount());
-    // could be negative if the smeltery size changes then you try filling it
-    if (usable <= 0) {
-      return 0;
-    }
-
-    // done here if just simulating
-    if (action.simulate()) {
-      return usable;
-    }
-
-    // add contained fluid amount
-    contained += usable;
-
-    // check if we already have the given liquid
-    for (FluidStack fluid : fluids) {
-      if (FluidStack.isSameFluidSameComponents(fluid, resource)) {
-        // yup. add it
-        fluid.grow(usable);
-        parent.notifyFluidsChanged(FluidChange.CHANGED, fluid);
-        // notify as we lost the "empty tank"
-        if (contained >= capacity) {
-          tankListChange.run();
-        }
-        return usable;
-      }
-    }
-
-    // not present yet, add it
-    resource = resource.copy();
-    resource.setAmount(usable);
-    fluids.add(resource);
-    parent.notifyFluidsChanged(FluidChange.ADDED, resource);
-    // notify as we added a new fluid
-    tankListChange.run();
-    return usable;
-  }
-
-  @Nonnull
-  @Override
-  public FluidStack drain(int maxDrain, FluidAction action) {
-    if (fluids.isEmpty()) {
-      return FluidStack.EMPTY;
-    }
-    boolean wasFull = contained >= capacity;
-
-    // simply drain the first one
-    FluidStack fluid = fluids.get(0);
-    int drainable = Math.min(maxDrain, fluid.getAmount());
-
-    // copy contained fluid to return for accuracy
-    FluidStack ret = fluid.copy();
-    ret.setAmount(drainable);
-
-    // remove the fluid from the tank
-    if (action.execute()) {
-      fluid.shrink(drainable);
-      contained -= drainable;
-      // if now empty, remove from the list
-      if (fluid.getAmount() <= 0) {
-        fluids.remove(fluid);
-        parent.notifyFluidsChanged(FluidChange.REMOVED, fluid);
-        tankListChange.run();
-      } else {
-        parent.notifyFluidsChanged(FluidChange.CHANGED, fluid);
-
-        // need to notify if we were full but are no longer as its adds an empty tank
-        if (wasFull && contained < capacity) {
-          tankListChange.run();
-        }
-      }
-    }
-
-    // return drained fluid
-    return ret;
-  }
-
-  @Nonnull
-  @Override
-  public FluidStack drain(FluidStack toDrain, FluidAction action) {
-    boolean wasFull = contained >= capacity;
-    // search for the resource
-    ListIterator<FluidStack> iter = fluids.listIterator();
-    while (iter.hasNext()) {
-      FluidStack fluid = iter.next();
-      if (FluidStack.isSameFluidSameComponents(fluid, toDrain)) {
-        // if found, determine how much we can drain
-        int drainable = Math.min(toDrain.getAmount(), fluid.getAmount());
-
-        // copy contained fluid to return for accuracy
-        FluidStack ret = fluid.copy();
-        ret.setAmount(drainable);
-
-        // update tank if executing
-        if (action.execute()) {
-          fluid.shrink(drainable);
-          contained -= drainable;
-          // if now empty, remove from the list
-          if (fluid.getAmount() <= 0) {
-            iter.remove();
-            parent.notifyFluidsChanged(FluidChange.REMOVED, fluid);
-            tankListChange.run();
-          } else {
-            parent.notifyFluidsChanged(FluidChange.CHANGED, fluid);
-
-            // need to notify if we were full but are no longer as its adds an empty tank
-            if (wasFull && contained < capacity) {
-              tankListChange.run();
-            }
-          }
-        }
-
-        return ret;
-      }
-    }
-
-    // nothing drained
-    return FluidStack.EMPTY;
-  }
-
   /* Native transfer */
 
   /** Snapshot of the native state */
   private record State(List<FluidStack> fluids, int contained) {}
+
+  /** Checks if the list contains the given fluid */
+  private static boolean containsFluid(List<FluidStack> list, FluidStack fluid) {
+    for (FluidStack other : list) {
+      if (FluidStack.isSameFluidSameComponents(other, fluid)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   /** Journal of the fluid list for native transfers */
   private final SnapshotJournal<State> journal = new SnapshotJournal<>() {
@@ -304,15 +176,41 @@ public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> im
 
     @Override
     protected void onRootCommit(State original) {
-      // the parent only cares about the order, which native transfers keep; list listeners need to know about added/removed/full changes
-      parent.notifyFluidsChanged(FluidChange.CHANGED, getFluidInTank(0));
-      tankListChange.run();
+      // notify like the legacy fill and drain: a new fluid means alloy recipes might match now
+      FluidChange change = FluidChange.CHANGED;
+      FluidStack changed = getFluidInTank(0);
+      for (FluidStack fluid : fluids) {
+        if (!containsFluid(original.fluids(), fluid)) {
+          change = FluidChange.ADDED;
+          changed = fluid;
+          break;
+        }
+      }
+      if (change == FluidChange.CHANGED) {
+        for (FluidStack fluid : original.fluids()) {
+          if (!containsFluid(fluids, fluid)) {
+            change = FluidChange.REMOVED;
+            changed = fluid;
+            break;
+          }
+        }
+      }
+      parent.notifyFluidsChanged(change, changed);
+      // list listeners need to know about added/removed fluids and the "empty" segment appearing or disappearing
+      boolean listChanged = change != FluidChange.CHANGED || original.fluids().size() != fluids.size()
+                            || (original.contained() >= capacity) != (contained >= capacity);
+      if (listChanged) {
+        tankListChange.run();
+      }
     }
   };
 
   @Override
   public int size() {
-    return getTanks();
+    if (contained < capacity) {
+      return fluids.size() + 1;
+    }
+    return fluids.size();
   }
 
   @Override
@@ -350,7 +248,7 @@ public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> im
   }
 
   /**
-   * Inserts into the tank. Like the legacy fill, any fluid fits as long as there is space: the index must hold the same fluid, or be the
+   * Inserts into the tank. Any fluid fits as long as there is space: the index must hold the same fluid, or be the
    * "empty" segment after the fluids, in which case the fluid merges into its existing entry if present.
    */
   @Override
@@ -378,7 +276,7 @@ public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> im
   @Override
   public int insert(FluidResource resource, int amount, TransactionContext transaction) {
     TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
-    // the empty segment index merges into the existing entry, so a single call fills like the legacy fill
+    // the empty segment index merges into the existing entry, so a single call fills the whole tank
     int existing = indexOf(resource);
     return insert(existing >= 0 ? existing : fluids.size(), resource, amount, transaction);
   }

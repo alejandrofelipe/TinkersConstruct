@@ -18,11 +18,10 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.model.data.ModelData;
+import slimeknights.mantle.transfer.SingleFluidTank;
 import slimeknights.tconstruct.common.multiblock.IMasterLogic;
 import slimeknights.tconstruct.library.client.model.ModelProperties;
 import slimeknights.tconstruct.library.fluid.FluidTankAnimated;
@@ -109,7 +108,7 @@ public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITa
   }
 
   /** Updates the light for this tank using {@link SearedTankBlock#LIGHT} */
-  public static void updateLight(BlockEntity be, IFluidTank tank) {
+  public static void updateLight(BlockEntity be, SingleFluidTank tank) {
     Level level = be.getLevel();
     if (level != null && !level.isClientSide()) {
       FluidStack fluid = tank.getFluid();
@@ -127,7 +126,7 @@ public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITa
    * @param tank   Tank to update
    * @param input  Tank tag, empty if missing
    */
-  public static void updateTank(BlockEntity be, FluidTank tank, ValueInput input) {
+  public static void updateTank(BlockEntity be, SingleFluidTank tank, ValueInput input) {
     // a missing tag (childOrEmpty) is the shared empty input, which has no map: NeoForge's keySet() throws on it,
     // which disconnected the client on the update packet of an empty tank holding only its master position
     if (input.read(MapCodec.assumeMapUnsafe(CompoundTag.CODEC)).map(CompoundTag::isEmpty).orElse(true)) {

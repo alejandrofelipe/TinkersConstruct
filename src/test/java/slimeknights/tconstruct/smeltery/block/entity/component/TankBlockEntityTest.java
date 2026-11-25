@@ -9,9 +9,9 @@ import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import slimeknights.mantle.transfer.SingleFluidTank;
 import slimeknights.tconstruct.library.utils.NBTTags;
 import slimeknights.tconstruct.test.BaseMcTest;
 
@@ -31,7 +31,7 @@ class TankBlockEntityTest extends BaseMcTest {
     // an empty tank saves no tank tag, e.g. the update packet of an empty fuel tank in a melter, which only holds the master position
     CompoundTag tag = new CompoundTag();
     tag.putString("master", "unrelated");
-    FluidTank tank = new FluidTank(1000);
+    SingleFluidTank tank = new SingleFluidTank(1000);
     tank.setFluid(new FluidStack(Fluids.WATER, 500));
 
     TankBlockEntity.updateTank(blockEntity, tank, tankInput(tag));
@@ -41,11 +41,11 @@ class TankBlockEntityTest extends BaseMcTest {
 
   @Test
   void updateTank_withTankTag_readsFluid() {
-    FluidTank saved = new FluidTank(1000);
+    SingleFluidTank saved = new SingleFluidTank(1000);
     saved.setFluid(new FluidStack(Fluids.LAVA, 250));
     TagValueOutput output = TagValueOutput.createWithoutContext(ProblemReporter.DISCARDING);
     saved.serialize(output.child(NBTTags.TANK));
-    FluidTank tank = new FluidTank(1000);
+    SingleFluidTank tank = new SingleFluidTank(1000);
 
     TankBlockEntity.updateTank(blockEntity, tank, tankInput(output.buildResult()));
 

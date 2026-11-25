@@ -349,7 +349,16 @@ public class ToolContainerMenu extends AbstractContainerMenu {
   }
 
   /** Logic handling the fluid tank in the UI */
-  private record ToolFluidHandler(IToolStackView tool, @Nullable Player player) implements SimpleFluidTank {
+  private static class ToolFluidHandler extends SimpleFluidTank {
+    private final IToolStackView tool;
+    @Nullable
+    private final Player player;
+
+    private ToolFluidHandler(IToolStackView tool, @Nullable Player player) {
+      this.tool = tool;
+      this.player = player;
+    }
+
     @Nonnull
     @Override
     public FluidStack getFluid() {
@@ -362,12 +371,9 @@ public class ToolContainerMenu extends AbstractContainerMenu {
     }
 
     @Override
-    public void updateFluid(FluidStack updated, int change) {
-      if (change != 0) {
-        setFluid(updated);
-        if (player != null) {
-          TinkerNetwork.getInstance().sendTo(new ToolContainerFluidUpdatePacket(updated), player);
-        }
+    protected void onContentsChanged(FluidStack updated) {
+      if (player != null) {
+        TinkerNetwork.getInstance().sendTo(new ToolContainerFluidUpdatePacket(updated), player);
       }
     }
 

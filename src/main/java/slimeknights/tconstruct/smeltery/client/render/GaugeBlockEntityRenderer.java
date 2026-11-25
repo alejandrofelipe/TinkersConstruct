@@ -9,9 +9,9 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import slimeknights.mantle.client.render.FluidCuboid;
 import slimeknights.mantle.client.render.FluidRenderer;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.smeltery.block.entity.GaugeBlockEntity;
 import slimeknights.tconstruct.smeltery.client.render.GaugeBlockEntityRenderer.GaugeRenderState;
 
@@ -33,10 +33,7 @@ public class GaugeBlockEntityRenderer implements BlockEntityRenderer<GaugeBlockE
     state.fluids = FluidCuboid.REGISTRY.get(state.blockState, List.of());
     state.fluid = FluidStack.EMPTY;
     if (!state.fluids.isEmpty()) {
-      IFluidHandler tank = tile.getTank();
-      if (tank.getTanks() > 0) {
-        state.fluid = tank.getFluidInTank(0).copy();
-      }
+      state.fluid = TransferUtil.getFluid(tile.getTank(), 0);
     }
   }
 

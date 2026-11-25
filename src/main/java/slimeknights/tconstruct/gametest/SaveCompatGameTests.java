@@ -29,8 +29,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.fluids.TinkerFluids;
@@ -49,6 +47,8 @@ import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.MelterBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModuleInventory;
 import slimeknights.tconstruct.smeltery.item.ScaledFluidTank;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
+import slimeknights.mantle.transfer.SingleFluidTank;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.entity.chest.PartChestBlockEntity;
 import slimeknights.tconstruct.tables.block.entity.inventory.IChestItemHandler;
@@ -97,7 +97,7 @@ public class SaveCompatGameTests {
     inventory.setStackInSlot(0, new ItemStack(Items.IRON_INGOT));
     inventory.setStackInSlot(2, new ItemStack(Items.GOLD_INGOT));
     FluidStack fluid = new FluidStack(TinkerFluids.moltenIron.get(), FluidValues.INGOT * 3);
-    check(helper, melter.getTank().fill(fluid.copy(), FluidAction.EXECUTE) == fluid.getAmount(), "melter tank did not accept " + fluid.getAmount() + "mb");
+    check(helper, TransferUtil.fill(melter.getTank(), fluid, false) == fluid.getAmount(), "melter tank did not accept " + fluid.getAmount() + "mb");
     melter.setCustomName(Component.literal("Save Compat Melter"));
 
     CompoundTag tag = save(helper, melter);
@@ -134,7 +134,7 @@ public class SaveCompatGameTests {
     CastingBlockEntity table = place(helper, new BlockPos(1, 1, 2), TinkerSmeltery.searedTable.get(), CastingBlockEntity.class);
     table.setItem(CastingBlockEntity.INPUT, new ItemStack(TinkerSmeltery.ingotCast.get()));
     FluidStack tableFluid = new FluidStack(TinkerFluids.moltenIron.get(), FluidValues.INGOT / 2);
-    check(helper, table.getTank().fill(tableFluid.copy(), FluidAction.EXECUTE) == tableFluid.getAmount(), "casting table rejected molten iron over an ingot cast");
+    check(helper, TransferUtil.fill(table.getTank(), tableFluid, false) == tableFluid.getAmount(), "casting table rejected molten iron over an ingot cast");
     int tableCapacity = table.getTank().getCapacity();
 
     CompoundTag tag = save(helper, table);
@@ -152,7 +152,7 @@ public class SaveCompatGameTests {
     // basin: no cast, a partial iron block poured through the real fill path (the recipe lookup must accept a castless input)
     CastingBlockEntity basin = place(helper, new BlockPos(3, 1, 2), TinkerSmeltery.searedBasin.get(), CastingBlockEntity.class);
     FluidStack basinFluid = new FluidStack(TinkerFluids.moltenIron.get(), FluidValues.INGOT * 2);
-    int basinFilled = basin.getTank().fill(basinFluid.copy(), FluidAction.EXECUTE);
+    int basinFilled = TransferUtil.fill(basin.getTank(), basinFluid, false);
     check(helper, basinFilled == basinFluid.getAmount(), "empty seared basin accepted " + basinFilled + "mb of " + basinFluid.getAmount() + "mb molten iron; no castless iron block recipe found");
     int basinCapacity = basin.getTank().getCapacity();
     check(helper, basinCapacity == FluidValues.METAL_BLOCK, "empty basin + molten iron should size the tank to the iron block recipe (" + FluidValues.METAL_BLOCK + "), got " + basinCapacity);
@@ -162,7 +162,7 @@ public class SaveCompatGameTests {
 
     // table without a cast: molten iron casts iron bars (smeltery/casting/metal/iron/bars.json, 30mb)
     CastingBlockEntity castless = place(helper, new BlockPos(2, 1, 4), TinkerSmeltery.searedTable.get(), CastingBlockEntity.class);
-    int castlessFilled = castless.getTank().fill(new FluidStack(TinkerFluids.moltenIron.get(), 20), FluidAction.EXECUTE);
+    int castlessFilled = TransferUtil.fill(castless.getTank(), new FluidStack(TinkerFluids.moltenIron.get(), 20), false);
     check(helper, castlessFilled == 20, "empty casting table accepted " + castlessFilled + "mb of 20mb molten iron; no castless iron bars recipe found");
     check(helper, castless.getTank().getCapacity() == 30, "empty table + molten iron should size the tank to the iron bars recipe (30), got " + castless.getTank().getCapacity());
     helper.succeed();
@@ -376,7 +376,7 @@ public class SaveCompatGameTests {
     check(helper, TagUtil.parseOptionalItem(registries, slotOnly).isEmpty(), "{Slot}-only item tag should parse as empty");
 
     // {} into a scaled (item) tank loads as empty
-    FluidTank scaled = ScaledFluidTank.create(FluidValues.INGOT, 4);
+    SingleFluidTank scaled = ScaledFluidTank.create(FluidValues.INGOT, 4);
     scaled.deserialize(TagValueInput.create(ProblemReporter.DISCARDING, registries, new CompoundTag()));
     check(helper, scaled.getFluid().isEmpty(), "{} scaled tank should load as empty, got " + scaled.getFluid());    helper.succeed();
   }

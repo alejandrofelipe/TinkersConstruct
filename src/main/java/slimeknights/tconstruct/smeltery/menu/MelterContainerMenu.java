@@ -11,7 +11,9 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import net.neoforged.neoforge.items.IItemHandler;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferDirection;
@@ -80,11 +82,11 @@ public class MelterContainerMenu extends TriggeringBaseContainerMenu<MelterBlock
       ItemStack held = getCarried();
       if (!held.isEmpty()) {
         if (!player.level().isClientSide() && tile != null) {
-          IFluidHandler tank = id < 2 ? tile.getTank() : tile.getFuelModule().getTank();
+          ResourceHandler<FluidResource> tank = id < 2 ? tile.getTank() : tile.getFuelModule().getTank();
           TransferResult result;
           // even means drain fluid, odd means fill
           if ((id & 1) == 0) {
-            result = FluidTransferHelper.fillStack(tank, held, tank.getFluidInTank(0));
+            result = FluidTransferHelper.fillStack(tank, held, TransferUtil.getFluid(tank, 0));
           } else {
             result = FluidTransferHelper.interactWithStack(tank, held, TransferDirection.EMPTY_ITEM);
           }

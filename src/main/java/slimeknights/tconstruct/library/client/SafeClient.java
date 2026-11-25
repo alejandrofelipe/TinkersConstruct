@@ -5,8 +5,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.fml.loading.FMLEnvironment;
+import slimeknights.mantle.transfer.SingleFluidTank;
 
 /**
  * This class contains various methods that are safe to call on both sides, which internally call client only code.
@@ -19,7 +19,7 @@ public class SafeClient {
    * @param oldAmount   Old fluid amount
    * @param newAmount   New fluid amount
    */
-  public static void updateFluidModel(BlockEntity be, FluidTank tank, int oldAmount, int newAmount) {
+  public static void updateFluidModel(BlockEntity be, SingleFluidTank tank, int oldAmount, int newAmount) {
     if (FMLEnvironment.getDist() == Dist.CLIENT) {
       ClientOnly.updateFluidModel(be, tank, oldAmount, newAmount);
     }
@@ -27,8 +27,8 @@ public class SafeClient {
 
   /** This class is only ever loaded client side */
   private static class ClientOnly {
-    /** @see SafeClient#updateFluidModel(BlockEntity, FluidTank, int, int)  */
-    public static void updateFluidModel(BlockEntity be, FluidTank tank, int oldAmount, int newAmount) {
+    /** @see SafeClient#updateFluidModel(BlockEntity, SingleFluidTank, int, int)  */
+    public static void updateFluidModel(BlockEntity be, SingleFluidTank tank, int oldAmount, int newAmount) {
       Level level = be.getLevel();
       if (level != null && level.isClientSide()) {
         // if the amount change is bigger than a single increment, or we changed whether we have a fluid, update the world renderer

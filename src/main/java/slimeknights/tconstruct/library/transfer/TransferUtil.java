@@ -17,7 +17,8 @@ import slimeknights.mantle.transfer.TransferHelper;
 import javax.annotation.Nullable;
 
 /**
- * Transaction safe helpers for querying and filling the fluid handler of a single container item.
+ * Transaction safe helpers for querying and filling the fluid handler of a single container item, and for immediate fills and drains of
+ * block and internal fluid handlers (the replacement of the legacy {@code fill}/{@code drain} calls).
  * <p>
  * PORT 1.21.10 (transfer step 1): Mantle's legacy item lookups ({@code TransferHelper.getLegacyFluidHandler(ItemStack)}) open a root
  * transaction on every call, so they throw when used inside a transaction. Code that may run inside one, such as validity checks of our
@@ -34,6 +35,69 @@ public final class TransferUtil {
    */
   public static Transaction openNestedOrRoot() {
     return TransferHelper.openNestedOrRoot();
+  }
+
+  /* Block and internal fluid handlers */
+
+  /** Gets the fluid at the given index of the handler, empty if the index is out of range. Read only, safe anywhere. */
+  public static FluidStack getFluid(ResourceHandler<FluidResource> handler, int index) {
+    if (index < 0 || index >= handler.size()) {
+      return FluidStack.EMPTY;
+    }
+    return FluidUtil.getStack(handler, index);
+  }
+
+  /** Gets the capacity of the given index of the handler for any fluid, like the legacy {@code getTankCapacity}; 0 if the index is out of range */
+  public static int getCapacity(ResourceHandler<FluidResource> handler, int index) {
+    if (index < 0 || index >= handler.size()) {
+      return 0;
+    }
+    return handler.getCapacityAsInt(index, FluidResource.EMPTY);
+  }
+
+  /**
+   * Fills the handler with the given fluid, like the legacy {@code fill(fluid, action)}. Opens a transaction nested in the open one, or a
+   * root transaction if none is open, so it is safe anywhere; inside an open transaction the outer transaction decides the outcome.
+   * @param handler   Handler to fill
+   * @param fluid     Fluid to fill, not modified
+   * @param simulate  If true, nothing changes
+   * @return  Amount filled
+   */
+  public static int fill(ResourceHandler<FluidResource> handler, FluidStack fluid, boolean simulate) {
+    if (fluid.isEmpty()) {
+      return 0;
+    }
+    try (Transaction tx = openNestedOrRoot()) {
+      int filled = handler.insert(FluidResource.of(fluid), fluid.getAmount(), tx);
+      if (!simulate && filled > 0) {
+        tx.commit();
+      }
+      return filled;
+    }
+  }
+
+  /**
+   * Drains the given fluid from the handler, like the legacy {@code drain(fluid, action)}. Same transaction rules as {@link #fill(ResourceHandler, FluidStack, boolean)}.
+   * @param handler   Handler to drain
+   * @param fluid     Fluid to drain, its amount is the maximum; not modified
+   * @param simulate  If true, nothing changes
+   * @return  Fluid drained, empty if none
+   */
+  public static FluidStack drain(ResourceHandler<FluidResource> handler, FluidStack fluid, boolean simulate) {
+    if (fluid.isEmpty()) {
+      return FluidStack.EMPTY;
+    }
+    FluidResource resource = FluidResource.of(fluid);
+    try (Transaction tx = openNestedOrRoot()) {
+      int drained = handler.extract(resource, fluid.getAmount(), tx);
+      if (drained <= 0) {
+        return FluidStack.EMPTY;
+      }
+      if (!simulate) {
+        tx.commit();
+      }
+      return resource.toStack(drained);
+    }
   }
 
   /** Puts a one item copy of the stack in a new single slot handler, giving it an isolated item access */

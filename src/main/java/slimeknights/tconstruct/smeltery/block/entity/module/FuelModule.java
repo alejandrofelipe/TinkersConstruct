@@ -10,12 +10,13 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.recipe.fuel.MeltingFuel;
 import slimeknights.tconstruct.library.recipe.fuel.MeltingFuelLookup;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -34,7 +35,7 @@ public abstract class FuelModule implements ContainerData {
   private MeltingFuel lastRecipe;
   /** Last fluid handler where fluid was extracted */
   @Nullable
-  protected IFluidHandler fluidHandler;
+  protected ResourceHandler<FluidResource> fluidHandler;
 
   /** Current amount of fluid in the TE */
   @Getter
@@ -110,14 +111,14 @@ public abstract class FuelModule implements ContainerData {
    * @param handler  Handler to consume fuel from
    * @return   Temperature of the consumed fuel, 0 if none found
    */
-  protected int tryLiquidFuel(IFluidHandler handler, boolean consume) {
-    FluidStack fluid = handler.getFluidInTank(0);
+  protected int tryLiquidFuel(ResourceHandler<FluidResource> handler, boolean consume) {
+    FluidStack fluid = TransferUtil.getFluid(handler, 0);
     MeltingFuel recipe = findRecipe(fluid.getFluid());
     if (recipe != null) {
       int amount = recipe.getAmount(fluid.getFluid());
       if (fluid.getAmount() >= amount) {
         if (consume) {
-          FluidStack drained = handler.drain(fluid.copyWithAmount(amount), FluidAction.EXECUTE);
+          FluidStack drained = TransferUtil.drain(handler, fluid.copyWithAmount(amount), false);
           if (drained.getAmount() != amount) {
             TConstruct.LOG.error("Invalid amount of fuel drained from tank");
           }
@@ -209,11 +210,11 @@ public abstract class FuelModule implements ContainerData {
    * @return  Fuel info
    */
   public FuelInfo getFuelInfo() {
-    IFluidHandler handler = fluidHandler;
+    ResourceHandler<FluidResource> handler = fluidHandler;
     if (handler == null) {
       return FuelInfo.EMPTY;
     }
-    FluidStack fluid = handler.getFluidInTank(0);
+    FluidStack fluid = TransferUtil.getFluid(handler, 0);
     int temperature = 0;
     if (!fluid.isEmpty()) {
       MeltingFuel fuel = findRecipe(fluid.getFluid());
@@ -221,7 +222,7 @@ public abstract class FuelModule implements ContainerData {
         temperature = fuel.getTemperature();
       }
     }
-    return FuelInfo.of(fluid, handler.getTankCapacity(0), temperature);
+    return FuelInfo.of(fluid, TransferUtil.getCapacity(handler, 0), temperature);
   }
 
   /** Data class to hold information about the current fuel */

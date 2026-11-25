@@ -12,8 +12,10 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import slimeknights.mantle.transfer.TransferHelper;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.recipe.FluidValues;
@@ -68,10 +70,9 @@ public class FaucetBlockEntity extends MantleBlockEntity {
    * @return  Fluid handler, or null if none present
    */
   @Nullable
-  private IFluidHandler findFluidHandler(Direction side) {
+  private ResourceHandler<FluidResource> findFluidHandler(Direction side) {
     assert level != null;
-    // ticking and interaction, never inside a transaction
-    return TransferHelper.getLegacyFluidHandler(level, worldPosition.relative(side), side.getOpposite());
+    return TransferHelper.getFluidResourceHandler(level, worldPosition.relative(side), side.getOpposite());
   }
 
   /**
@@ -79,7 +80,7 @@ public class FaucetBlockEntity extends MantleBlockEntity {
    * @return  Input fluid handler, or null if absent
    */
   @Nullable
-  private IFluidHandler getInputHandler() {
+  private ResourceHandler<FluidResource> getInputHandler() {
     return findFluidHandler(getBlockState().getValue(FACING).getOpposite());
   }
 
@@ -88,7 +89,7 @@ public class FaucetBlockEntity extends MantleBlockEntity {
    * @return  Output fluid handler, or null if absent
    */
   @Nullable
-  private IFluidHandler getOutputHandler() {
+  private ResourceHandler<FluidResource> getOutputHandler() {
     return findFluidHandler(Direction.DOWN);
   }
 
@@ -185,35 +186,26 @@ public class FaucetBlockEntity extends MantleBlockEntity {
    */
   private boolean doTransfer(boolean execute) {
     // still got content left
-    IFluidHandler input = getInputHandler();
-    IFluidHandler output = getOutputHandler();
+    ResourceHandler<FluidResource> input = getInputHandler();
+    ResourceHandler<FluidResource> output = getOutputHandler();
     if (input != null && output != null) {
-      // can we drain?
-      FluidStack drained = input.drain(PACKET_SIZE, FluidAction.SIMULATE);
-      if (!drained.isEmpty()) {
-        // can we fill
-        int filled = output.fill(drained, FluidAction.SIMULATE);
-        if (filled > 0) {
-          // ensure we can actually fill in our min increment, deals with handlers like copper cans
-          // can skip this step if we already received a small enough number
-          drained.setAmount(MB_PER_TICK); // done using this fluid stack's original size, so save some memory and reuse
-          if (filled <= MB_PER_TICK || output.fill(drained, FluidAction.SIMULATE) > 0) {
-            // execute if requested
-            if (execute) {
-              // drain the liquid and transfer it, buffer the amount for delay
-              this.drained = input.drain(filled, FluidAction.EXECUTE);
+      // can we drain and fill? if executing, the liquid is drained into the buffer
+      FluidStack transferred = startTransfer(input, output, execute);
+      if (transferred != null) {
+        // execute if requested
+        if (execute) {
+          // buffer the amount for delay
+          this.drained = transferred;
 
-              // sync to clients if we have changes
-              if (faucetState == FaucetState.OFF || !FluidStack.isSameFluidSameComponents(renderFluid, this.drained)) {
-                syncToClient(this.drained, true);
-              }
-              faucetState = FaucetState.POURING;
-              // pour after initial packet, in case we end up resetting later
-              pour();
-            }
-            return true;
+          // sync to clients if we have changes
+          if (faucetState == FaucetState.OFF || !FluidStack.isSameFluidSameComponents(renderFluid, this.drained)) {
+            syncToClient(this.drained, true);
           }
+          faucetState = FaucetState.POURING;
+          // pour after initial packet, in case we end up resetting later
+          pour();
         }
+        return true;
       }
 
       // if powered, keep faucet running
@@ -234,6 +226,56 @@ public class FaucetBlockEntity extends MantleBlockEntity {
   }
 
   /**
+   * Checks if a packet can move from the input to the output, and drains it from the input if executing.
+   * Ticking and activation never run inside another transaction, so each step is a root transaction.
+   * @param input    Input handler
+   * @param output   Output handler
+   * @param execute  If true, drains the packet from the input
+   * @return  Fluid drained (or that would be drained), null if nothing can move
+   */
+  @Nullable
+  private static FluidStack startTransfer(ResourceHandler<FluidResource> input, ResourceHandler<FluidResource> output, boolean execute) {
+    try (Transaction tx = Transaction.openRoot()) {
+      // can we drain? like the legacy drain(PACKET_SIZE), only the first drainable fluid
+      FluidResource fluid = ResourceHandlerUtil.findExtractableResource(input, resource -> true, tx);
+      if (fluid == null) {
+        return null;
+      }
+      int drainable;
+      try (Transaction simulate = Transaction.open(tx)) {
+        drainable = input.extract(fluid, PACKET_SIZE, simulate);
+      }
+      if (drainable <= 0) {
+        return null;
+      }
+      // can we fill
+      int filled;
+      try (Transaction simulate = Transaction.open(tx)) {
+        filled = output.insert(fluid, drainable, simulate);
+      }
+      if (filled <= 0) {
+        return null;
+      }
+      // ensure we can actually fill in our min increment, deals with handlers like copper cans
+      // can skip this step if we already received a small enough number
+      if (filled > MB_PER_TICK) {
+        try (Transaction simulate = Transaction.open(tx)) {
+          if (output.insert(fluid, MB_PER_TICK, simulate) <= 0) {
+            return null;
+          }
+        }
+      }
+      if (!execute) {
+        return fluid.toStack(filled);
+      }
+      // drain the liquid, the output is filled while pouring
+      int drained = input.extract(fluid, filled, tx);
+      tx.commit();
+      return fluid.toStack(drained);
+    }
+  }
+
+  /**
    * Takes the liquid inside and executes one pouring step.
    */
   private void pour() {
@@ -242,13 +284,16 @@ public class FaucetBlockEntity extends MantleBlockEntity {
     }
 
     // ensure we have an output
-    IFluidHandler output = getOutputHandler();
+    ResourceHandler<FluidResource> output = getOutputHandler();
     if (output != null) {
-      FluidStack fillStack = drained.copy();
-      fillStack.setAmount(Math.min(drained.getAmount(), MB_PER_TICK));
+      FluidResource fluid = FluidResource.of(drained);
+      int amount = Math.min(drained.getAmount(), MB_PER_TICK);
 
       // can we fill?
-      int filled = output.fill(fillStack, IFluidHandler.FluidAction.SIMULATE);
+      int filled;
+      try (Transaction simulate = Transaction.openRoot()) {
+        filled = output.insert(fluid, amount, simulate);
+      }
       if (filled > 0) {
         // update client if they do not think we have fluid
         if (!FluidStack.isSameFluidSameComponents(renderFluid, drained)) {
@@ -257,8 +302,10 @@ public class FaucetBlockEntity extends MantleBlockEntity {
 
         // transfer it
         this.drained.shrink(filled);
-        fillStack.setAmount(filled);
-        output.fill(fillStack, IFluidHandler.FluidAction.EXECUTE);
+        try (Transaction tx = Transaction.openRoot()) {
+          output.insert(fluid, filled, tx);
+          tx.commit();
+        }
       }
     }
     else {

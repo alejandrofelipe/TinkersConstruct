@@ -1,140 +1,127 @@
 package slimeknights.tconstruct.library.fluid;
 
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.IFluidTank;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.TransferPreconditions;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
-import javax.annotation.Nonnull;
+import java.util.Objects;
 
 /**
- * Simple implementation of {@link IFluidTank} and {@link IFluidHandler} for a single tank.
- *
- * Similar to {@link net.neoforged.neoforge.fluids.capability.templates.FluidTank} except with more control over the fluid storage.
+ * Native single tank over fluid storage owned by someone else (e.g. the tank of a tool), with more control over the storage than
+ * Mantle's {@code SingleFluidTank}.
+ * <p>
+ * PORT 1.21.10 (transfer): was an {@code IFluidTank}/{@code IFluidHandler} interface. Inserts and extracts write the new fluid through
+ * {@link #setFluid(FluidStack)} right away (which must have no side effects), journaled: an aborted transaction writes the original
+ * fluid back, and {@link #onContentsChanged(FluidStack)} runs once the root transaction commits with a different fluid.
  */
-public interface SimpleFluidTank extends IFluidTank, IFluidHandler {
-  @Override
-  default int getTanks() {
-    return 1;
-  }
-
-  /** Called to set the fluid after it has changed */
-  void setFluid(FluidStack fluid);
-
-  /**
-   * Used by {@link #fill(FluidStack, FluidAction)}, {@link #drain(int, FluidAction)}, and {@link #drain(FluidStack, FluidAction)} to update the fluid result.
-   * Allows updating the fluid without needing to call {@link #getFluid()} again, in case it has a cost.
-   * @param updated  New fluid stack
-   * @param change   Amount the fluid grew or shrunk by.
-   */
-  default void updateFluid(FluidStack updated, int change) {
-    if (change != 0) {
-      setFluid(updated);
+public abstract class SimpleFluidTank implements ResourceHandler<FluidResource> {
+  /** Journal of the fluid for native transfers */
+  private final SnapshotJournal<FluidStack> journal = new SnapshotJournal<>() {
+    @Override
+    protected FluidStack createSnapshot() {
+      return getFluid().copy();
     }
-  }
 
+    @Override
+    protected void revertToSnapshot(FluidStack snapshot) {
+      setFluid(snapshot);
+    }
 
-  /* Redirect duplicate methods */
+    @Override
+    protected void onRootCommit(FluidStack original) {
+      FluidStack fluid = getFluid();
+      if (!FluidStack.matches(original, fluid)) {
+        onContentsChanged(fluid);
+      }
+    }
+  };
 
-  @Override
-  default int getFluidAmount() {
-    return getFluid().getAmount();
-  }
+  /** Gets the contained fluid */
+  public abstract FluidStack getFluid();
 
-  @Nonnull
-  @Override
-  default FluidStack getFluidInTank(int tank) {
-    return getFluid();
-  }
+  /** Stores the fluid, without side effects as it is also called inside transactions and to revert them */
+  public abstract void setFluid(FluidStack fluid);
 
-  @Override
-  default int getTankCapacity(int tank) {
-    return getCapacity();
-  }
+  /** Gets the capacity of the tank */
+  public abstract int getCapacity();
 
-  @Override
-  default boolean isFluidValid(FluidStack stack) {
+  /** Checks if the fluid is valid for the tank */
+  public boolean isFluidValid(FluidStack stack) {
     return true;
   }
 
+  /**
+   * Called once the root transaction of a native change commits, if the fluid changed
+   * @param updated  New fluid
+   */
+  protected void onContentsChanged(FluidStack updated) {}
+
+
+  /* Native transfer */
+
   @Override
-  default boolean isFluidValid(int tank, @Nonnull FluidStack stack) {
-    return isFluidValid(stack);
+  public int size() {
+    return 1;
   }
 
-
-  /* Filling and draining */
+  @Override
+  public FluidResource getResource(int index) {
+    Objects.checkIndex(index, 1);
+    return FluidResource.of(getFluid());
+  }
 
   @Override
-  default int fill(FluidStack resource, FluidAction action) {
-    // if nothing to fill, do nothing
-    if (resource.isEmpty() || !isFluidValid(resource)) {
+  public long getAmountAsLong(int index) {
+    Objects.checkIndex(index, 1);
+    return getFluid().getAmount();
+  }
+
+  @Override
+  public long getCapacityAsLong(int index, FluidResource resource) {
+    Objects.checkIndex(index, 1);
+    return resource.isEmpty() || isFluidValid(resource.toStack(1)) ? getCapacity() : 0;
+  }
+
+  @Override
+  public boolean isValid(int index, FluidResource resource) {
+    Objects.checkIndex(index, 1);
+    return !resource.isEmpty() && isFluidValid(resource.toStack(1));
+  }
+
+  @Override
+  public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
+    Objects.checkIndex(index, 1);
+    TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+    if (amount == 0 || !isFluidValid(resource.toStack(amount))) {
       return 0;
     }
     FluidStack fluid = getFluid();
-
-    // if we have nothing, fill as much as possible
-    if (fluid.isEmpty()) {
-      int amount = Math.min(getCapacity(), resource.getAmount());
-      if (action.execute()) {
-        updateFluid(resource.copyWithAmount(amount), amount);
-      }
-      return amount;
-    }
-
-    // if unable to fill, nothing more to do
-    if (!FluidStack.isSameFluidSameComponents(fluid, resource)) {
+    if (!fluid.isEmpty() && !resource.matches(fluid)) {
       return 0;
     }
-
-    int capacity = getCapacity();
-    int filled = Math.min(capacity - fluid.getAmount(), resource.getAmount());
-    if (action.execute()) {
-      fluid.grow(filled);
-      updateFluid(fluid, filled);
+    int filled = Math.min(getCapacity() - fluid.getAmount(), amount);
+    if (filled <= 0) {
+      return 0;
     }
+    journal.updateSnapshots(transaction);
+    setFluid(resource.toStack(fluid.getAmount() + filled));
     return filled;
   }
 
-  /** Common logic between both drain methods */
-  private FluidStack drain(FluidStack fluid, int maxDrain, FluidAction action) {
-    // preconditions: fluid is not empty, maxDrain > 0
-    // limit max drain to current fluid
-    int drained = maxDrain;
-    if (fluid.getAmount() < drained) {
-      drained = fluid.getAmount();
-    }
-    // build the result
-    FluidStack result = fluid.copyWithAmount(drained);
-    if (action.execute()) {
-      fluid.shrink(drained);
-      updateFluid(fluid, -drained);
-    }
-    return result;
-  }
-
-  @Nonnull
   @Override
-  default FluidStack drain(FluidStack resource, FluidAction action) {
-    if (resource.isEmpty()) {
-      return FluidStack.EMPTY;
-    }
+  public int extract(int index, FluidResource resource, int amount, TransactionContext transaction) {
+    Objects.checkIndex(index, 1);
+    TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
     FluidStack fluid = getFluid();
-    if (fluid.isEmpty() || !FluidStack.isSameFluidSameComponents(fluid, resource)) {
-      return FluidStack.EMPTY;
+    if (amount == 0 || fluid.isEmpty() || !resource.matches(fluid)) {
+      return 0;
     }
-    return drain(fluid, resource.getAmount(), action);
-  }
-
-  @Nonnull
-  @Override
-  default FluidStack drain(int maxDrain, FluidAction action) {
-    if (maxDrain <= 0) {
-      return FluidStack.EMPTY;
-    }
-    FluidStack fluid = getFluid();
-    if (fluid.isEmpty()) {
-      return FluidStack.EMPTY;
-    }
-    return drain(fluid, maxDrain, action);
+    int drained = Math.min(amount, fluid.getAmount());
+    journal.updateSnapshots(transaction);
+    setFluid(drained == fluid.getAmount() ? FluidStack.EMPTY : fluid.copyWithAmount(fluid.getAmount() - drained));
+    return drained;
   }
 }

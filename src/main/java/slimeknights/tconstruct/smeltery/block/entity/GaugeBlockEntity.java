@@ -6,9 +6,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.neoforged.neoforge.transfer.EmptyResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import slimeknights.mantle.transfer.TransferHelper;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
 /** This class exists simply to allow us to have a block entity renderer for obsidian gauges. Though it is useful as a cache for the capability to render. */
@@ -22,14 +23,14 @@ public class GaugeBlockEntity extends BlockEntity {
   }
 
   /** Gets the neighbor fluid handler. Used mainly for rendering client side */
-  public IFluidHandler getTank() {
+  public ResourceHandler<FluidResource> getTank() {
     if (level == null) {
-      return EmptyFluidHandler.INSTANCE;
+      return EmptyResourceHandler.instance();
     }
     // fetch the neighbor handler directly
     Direction side = getBlockState().getValue(BlockStateProperties.FACING);
-    IFluidHandler handler = TransferHelper.getLegacyFluidHandler(level, getBlockPos().relative(side.getOpposite()), side);
+    ResourceHandler<FluidResource> handler = TransferHelper.getFluidResourceHandler(level, getBlockPos().relative(side.getOpposite()), side);
     // return tank or empty tank
-    return handler != null ? handler : EmptyFluidHandler.INSTANCE;
+    return handler != null ? handler : EmptyResourceHandler.instance();
   }
 }

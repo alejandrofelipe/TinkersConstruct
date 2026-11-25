@@ -13,11 +13,10 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 import net.neoforged.neoforge.transfer.EmptyResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.transfer.TransferHelper;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
@@ -112,10 +111,9 @@ public class ChannelBlockEntity extends MantleBlockEntity implements IFluidPacke
 	 * @return  Fluid handler, or null if absent
 	 */
 	@Nullable
-	protected IFluidHandler getNeighborHandler(Direction side) {
+	protected ResourceHandler<FluidResource> getNeighborHandler(Direction side) {
 		assert level != null;
-		// ticking, never inside a transaction
-		return TransferHelper.getLegacyFluidHandler(level, worldPosition.relative(side), side.getOpposite());
+		return TransferHelper.getFluidResourceHandler(level, worldPosition.relative(side), side.getOpposite());
 	}
 
 	/**
@@ -291,7 +289,7 @@ public class ChannelBlockEntity extends MantleBlockEntity implements IFluidPacke
 		}
 
 		// get the handler on the side, try filling
-		IFluidHandler handler = getNeighborHandler(side);
+		ResourceHandler<FluidResource> handler = getNeighborHandler(side);
 		return handler != null && fill(side, handler, flowRate);
 	}
 
@@ -302,18 +300,21 @@ public class ChannelBlockEntity extends MantleBlockEntity implements IFluidPacke
 	 * @param amount   Amount to fill
 	 * @return  True if the side successfully filled something
 	 */
-	protected boolean fill(Direction side, IFluidHandler handler, int amount) {
+	protected boolean fill(Direction side, ResourceHandler<FluidResource> handler, int amount) {
 		// make sure we do not allow more than the fluid allows, should not happen but just in case
 		int usable = Math.min(tank.getMaxUsable(), amount);
 		if (usable > 0) {
-			// see how much works
-			FluidStack fluid = tank.drain(usable, FluidAction.SIMULATE);
-			int filled = handler.fill(fluid, FluidAction.SIMULATE);
-			if (filled > 0) {
-				// drain the amount that worked
-				fluid = tank.drain(filled, FluidAction.EXECUTE);
-				handler.fill(fluid, FluidAction.EXECUTE);
-
+			// move what the handler accepts in one transaction; ticking never runs inside another transaction
+			boolean filled = false;
+			FluidResource fluid = FluidResource.of(tank.getFluid());
+			try (Transaction tx = Transaction.openRoot()) {
+				int inserted = handler.insert(fluid, usable, tx);
+				if (inserted > 0 && tank.extract(fluid, inserted, tx) == inserted) {
+					tx.commit();
+					filled = true;
+				}
+			}
+			if (filled) {
 				// mark that the side is flowing
 				setFlow(side, true);
 				return true;

@@ -43,7 +43,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.apache.commons.lang3.mutable.MutableInt;
 import slimeknights.mantle.command.GeneratePackHelper;
 import slimeknights.mantle.command.MantleCommand;
@@ -56,6 +56,7 @@ import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer;
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferDirection;
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferResult;
 import slimeknights.mantle.recipe.helper.FluidOutput;
+import slimeknights.mantle.transfer.SingleFluidTank;
 import slimeknights.mantle.util.JsonHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
@@ -457,10 +458,13 @@ public class GenerateMeltingRecipesCommand {
       ItemStack stack = new ItemStack(item);
       IFluidContainerTransfer transfer = FluidContainerTransferManager.INSTANCE.getTransfer(stack, FluidStack.EMPTY);
       if (transfer != null) {
-        FluidTank tank = new FluidTank(10000);
-        TransferResult transferResult = transfer.transfer(stack, FluidStack.EMPTY, tank, TransferDirection.EMPTY_ITEM);
-        if (transferResult != null) {
-          return MeltingResult.from(transferResult.fluid());
+        // only the result matters, so the transfer into the scratch tank is never committed
+        SingleFluidTank tank = new SingleFluidTank(10000);
+        try (Transaction tx = Transaction.openRoot()) {
+          TransferResult transferResult = transfer.transfer(stack, FluidStack.EMPTY, tank, TransferDirection.EMPTY_ITEM, tx);
+          if (transferResult != null) {
+            return MeltingResult.from(transferResult.fluid());
+          }
         }
       }
       // handle buckets directly as its faster

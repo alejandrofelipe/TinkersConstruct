@@ -3,15 +3,17 @@ package slimeknights.tconstruct.smeltery.item;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-
-import javax.annotation.Nonnull;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import slimeknights.mantle.transfer.SingleFluidTank;
 
 /**
  * Fluid tank representing a stack of multiple fluid tanks. All operations must affect every tack in the stack at the same time, so must in increments of the scale.
  * Internally works the same as a fluid tank with {@code capacity * scale}, except operations are truncated to the nearest scale (e.g. if scale is 4, we must fill in 4mb increments).
+ * <p>
+ * PORT 1.21.10 (transfer): native, on Mantle's {@link SingleFluidTank}; inserts and extracts are truncated to the scale.
  */
-public class ScaledFluidTank extends FluidTank {
+public class ScaledFluidTank extends SingleFluidTank {
   private final int scale;
   private ScaledFluidTank(int capacity, int scale) {
     super(capacity * scale);
@@ -19,9 +21,9 @@ public class ScaledFluidTank extends FluidTank {
   }
 
   /** Creates a new instance */
-  public static FluidTank create(int capacity, int scale) {
+  public static SingleFluidTank create(int capacity, int scale) {
     if (scale == 1) {
-      return new FluidTank(capacity);
+      return new SingleFluidTank(capacity);
     }
     return new ScaledFluidTank(capacity, scale);
   }
@@ -39,13 +41,10 @@ public class ScaledFluidTank extends FluidTank {
   }
 
   /** enforces the fluid matches the scale */
-  private FluidStack enforceScale(FluidStack stack, boolean copy) {
+  private FluidStack enforceScale(FluidStack stack) {
     // no working with fluids of partial amounts
     int remainder = stack.getAmount() % scale;
     if (remainder != 0) {
-      if (copy) {
-        stack = stack.copy();
-      }
       stack.shrink(remainder);
     }
     return stack;
@@ -55,30 +54,23 @@ public class ScaledFluidTank extends FluidTank {
   /* Fluid tank methods */
 
   @Override
-  public FluidTank setCapacity(int capacity) {
+  public SingleFluidTank setCapacity(int capacity) {
     return super.setCapacity(enforceScale(capacity));
   }
 
   @Override
   public void setFluid(FluidStack stack) {
-    super.setFluid(enforceScale(stack, false));
+    super.setFluid(enforceScale(stack));
   }
 
   @Override
-  public int fill(FluidStack resource, FluidAction action) {
-    return super.fill(enforceScale(resource, true), action);
+  public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
+    return super.insert(index, resource, enforceScale(amount), transaction);
   }
 
-  @Nonnull
   @Override
-  public FluidStack drain(int maxDrain, FluidAction action) {
-    return super.drain(enforceScale(maxDrain), action);
-  }
-
-  @Nonnull
-  @Override
-  public FluidStack drain(FluidStack resource, FluidAction action) {
-    return super.drain(enforceScale(resource, true), action);
+  public int extract(int index, FluidResource resource, int amount, TransactionContext transaction) {
+    return super.extract(index, resource, enforceScale(amount), transaction);
   }
 
 

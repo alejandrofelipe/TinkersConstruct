@@ -4,12 +4,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import slimeknights.mantle.transfer.TransferHelper;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.transfer.EmptyResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
+import slimeknights.mantle.transfer.TransferHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.fuel.MeltingFuel;
@@ -17,7 +18,10 @@ import slimeknights.tconstruct.library.recipe.fuel.MeltingFuelLookup;
 
 import javax.annotation.Nullable;
 
-/** Fuel module variant that supports both item and fluid fuels. Only supports a single fluid position which should not change. */
+/**
+ * Fuel module variant that supports both item and fluid fuels. Only supports a single fluid position which should not change.
+ * PORT 1.21.10 (transfer): native fluid and item handlers; consuming fuel is a root transaction (ticking never runs inside one).
+ */
 public class SolidFuelModule extends FuelModule {
   /** Location of the fuel tank */
   private final BlockPos fuelPos;
@@ -25,7 +29,7 @@ public class SolidFuelModule extends FuelModule {
   private boolean handlersFetched = false;
   /** Last item handler where items were extracted */
   @Nullable
-  private IItemHandler itemHandler;
+  private ResourceHandler<ItemResource> itemHandler;
 
   public SolidFuelModule(MantleBlockEntity parent, BlockPos fuelPos) {
     super(parent);
@@ -47,34 +51,45 @@ public class SolidFuelModule extends FuelModule {
    * @param handler  Handler to consume fuel from
    * @return   Temperature of the consumed fuel, 0 if none found
    */
-  private int trySolidFuel(IItemHandler handler, boolean consume) {
-    for (int i = 0; i < handler.getSlots(); i++) {
-      ItemStack stack = handler.getStackInSlot(i);
+  private int trySolidFuel(ResourceHandler<ItemResource> handler, boolean consume) {
+    for (int i = 0; i < handler.size(); i++) {
+      ItemResource resource = handler.getResource(i);
+      if (resource.isEmpty()) {
+        continue;
+      }
+      ItemStack stack = resource.toStack(handler.getAmountAsInt(i));
       int time = stack.getBurnTime(TinkerRecipeTypes.FUEL.get(), parent.getLevel().fuelValues()) / 4;
       if (time > 0) {
         MeltingFuel solid = MeltingFuelLookup.getSolid();
         if (consume) {
-          ItemStack extracted = handler.extractItem(i, 1, false);
-          if (ItemStack.isSameItem(extracted, stack)) {
+          // extract the item and put back its container in one transaction, anything that does not fit back is dropped
+          boolean extracted = false;
+          ItemStack container = resource.getItem().getCraftingRemainder();
+          int notInserted = 0;
+          try (Transaction tx = Transaction.openRoot()) {
+            if (handler.extract(i, resource, 1, tx) == 1) {
+              extracted = true;
+              if (!container.isEmpty()) {
+                notInserted = container.getCount() - handler.insert(ItemResource.of(container), container.getCount(), tx);
+              }
+              tx.commit();
+            }
+          }
+          if (extracted) {
             fuel += time;
             fuelQuality = time;
             temperature = solid.getTemperature();
             rate = solid.getRate();
             parent.setChangedFast();
-            // return the container
-            ItemStack container = extracted.getItem().getCraftingRemainder();
-            if (!container.isEmpty()) {
-              // if we cannot insert the container back, spit it on the ground
-              ItemStack notInserted = ItemHandlerHelper.insertItem(handler, container, false);
-              if (!notInserted.isEmpty()) {
-                Level world = getLevel();
-                double x = (world.random.nextFloat() * 0.5F) + 0.25D;
-                double y = (world.random.nextFloat() * 0.5F) + 0.25D;
-                double z = (world.random.nextFloat() * 0.5F) + 0.25D;
-                ItemEntity itementity = new ItemEntity(world, fuelPos.getX() + x, fuelPos.getY() + y, fuelPos.getZ() + z, container);
-                itementity.setDefaultPickUpDelay();
-                world.addFreshEntity(itementity);
-              }
+            // if we cannot insert the container back, spit it on the ground
+            if (notInserted > 0) {
+              Level world = getLevel();
+              double x = (world.random.nextFloat() * 0.5F) + 0.25D;
+              double y = (world.random.nextFloat() * 0.5F) + 0.25D;
+              double z = (world.random.nextFloat() * 0.5F) + 0.25D;
+              ItemEntity itementity = new ItemEntity(world, fuelPos.getX() + x, fuelPos.getY() + y, fuelPos.getZ() + z, container.copyWithCount(notInserted));
+              itementity.setDefaultPickUpDelay();
+              world.addFreshEntity(itementity);
             }
           } else {
             TConstruct.LOG.error("Invalid item removed from solid fuel handler");
@@ -96,8 +111,8 @@ public class SolidFuelModule extends FuelModule {
     Level level = getLevel();
     // first, identify a capability that has what we need
     // on the chance both are present, we prioritize fluid; we don't expect that to change
-    fluidHandler = TransferHelper.getLegacyFluidHandler(level, fuelPos, null);
-    itemHandler = TransferHelper.getLegacyItemHandler(level, fuelPos, null);
+    fluidHandler = TransferHelper.getFluidResourceHandler(level, fuelPos, null);
+    itemHandler = TransferHelper.getItemResourceHandler(level, fuelPos, null);
   }
 
   @Override
@@ -139,8 +154,8 @@ public class SolidFuelModule extends FuelModule {
   /* Fluid handler */
 
   /** Gets the fluid handler for proxy */
-  public IFluidHandler getTank() {
+  public ResourceHandler<FluidResource> getTank() {
     fetchHandlers();
-    return fluidHandler != null ? fluidHandler : EmptyFluidHandler.INSTANCE;
+    return fluidHandler != null ? fluidHandler : EmptyResourceHandler.instance();
   }
 }

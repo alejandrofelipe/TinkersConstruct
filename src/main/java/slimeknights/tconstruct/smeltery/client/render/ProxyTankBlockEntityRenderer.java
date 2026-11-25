@@ -10,6 +10,9 @@ import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.mantle.client.render.FluidCuboid;
 import slimeknights.mantle.client.render.FluidRenderer;
 import slimeknights.mantle.client.render.InventoryRenderState;
@@ -47,8 +50,9 @@ public class ProxyTankBlockEntityRenderer implements BlockEntityRenderer<ProxyTa
       state.fluid = FluidStack.EMPTY;
       state.capacity = 0;
     } else {
-      state.fluid = itemTank.getFluidInTank(0).copy();
-      state.capacity = itemTank.getTankCapacity(0);
+      ResourceHandler<FluidResource> fluidHandler = itemTank.getFluidCapability();
+      state.fluid = TransferUtil.getFluid(fluidHandler, 0).copy();
+      state.capacity = TransferUtil.getCapacity(fluidHandler, 0);
     }
     state.extractItems(itemModelResolver, RenderItem.STATE_REGISTRY.get(state.blockState, List.of()), itemTank::getStackInSlot, proxyTank.getLevel());
   }

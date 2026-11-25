@@ -5,29 +5,26 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import net.neoforged.neoforge.transfer.EmptyResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
-import slimeknights.mantle.transfer.TransferHelper;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.mantle.inventory.SingleItemHandler;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.network.InventorySlotSyncPacket;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
-import slimeknights.tconstruct.library.fluid.EmptyFluidHandlerItem;
 import slimeknights.tconstruct.library.fluid.IFluidTankUpdater;
 import slimeknights.tconstruct.library.transfer.SingleItemResourceHandler;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
 
-/** Fluid handler that proxies to an item stack tank */
-public class ProxyItemTank<T extends MantleBlockEntity & IFluidTankUpdater> extends SingleItemHandler<T> implements IFluidHandler {
-  private IFluidHandlerItem itemTank;
+/**
+ * Item slot whose fluid handler proxies to the native fluid handler of the contained item.
+ * PORT 1.21.10 (transfer): the legacy fluid handler view is gone, fluid access goes through {@link #getFluidCapability()} in a transaction.
+ */
+public class ProxyItemTank<T extends MantleBlockEntity & IFluidTankUpdater> extends SingleItemHandler<T> {
   /** Set while the native fluid handler runs, so the contained item may be exchanged for any container (e.g. an emptied bottle) */
   private boolean exchanging = false;
   /**
@@ -100,8 +97,6 @@ public class ProxyItemTank<T extends MantleBlockEntity & IFluidTankUpdater> exte
 
   /** Sets the stack without syncing, for the native handlers inside transactions and their reverts */
   private void setStackSilently(ItemStack newStack) {
-    // discard the legacy handler cache, it is bound to the old stack
-    itemTank = null;
     super.setStack(newStack.isEmpty() ? ItemStack.EMPTY : newStack);
   }
   public ProxyItemTank(T parent) {
@@ -136,8 +131,7 @@ public class ProxyItemTank<T extends MantleBlockEntity & IFluidTankUpdater> exte
     Level world = parent.getLevel();
     boolean needsUpdate = world != null && !world.isClientSide();
     if (oldStack != newStack) {
-      // if the stack instance changed, discard cached cap and sync
-      itemTank = null;
+      // if the stack instance changed, sync
       if (needsUpdate) {
         // both stacks being empty means our stack shrunk by 1 and is being replaced with ItemStack.EMPTY
         needsUpdate = (oldStack.isEmpty() && newStack.isEmpty()) || !ItemStack.isSameItemSameComponents(oldStack, newStack);
@@ -156,68 +150,5 @@ public class ProxyItemTank<T extends MantleBlockEntity & IFluidTankUpdater> exte
   @Override
   public void setStack(ItemStack newStack) {
     setStack(newStack, false);
-  }
-
-  /** Gets the fluid handler for the item */
-  private IFluidHandlerItem getItemTank() {
-    if (itemTank == null) {
-      ItemStack stack = getStack();
-      // legacy handler for internal use outside transactions, works on a copy of the stack returned by getContainer()
-      IFluidHandlerItem handler = TransferHelper.getLegacyFluidHandler(stack);
-      itemTank = handler != null ? handler : new EmptyFluidHandlerItem(stack);
-    }
-    return itemTank;
-  }
-
-  @Override
-  public int getTanks() {
-    return getItemTank().getTanks();
-  }
-
-  @Override
-  public FluidStack getFluidInTank(int tank) {
-    return getItemTank().getFluidInTank(tank);
-  }
-
-  @Override
-  public int getTankCapacity(int tank) {
-    return getItemTank().getTankCapacity(tank);
-  }
-
-  @Override
-  public boolean isFluidValid(int tank, FluidStack stack) {
-    return getItemTank().isFluidValid(tank, stack);
-  }
-
-  @Override
-  public int fill(FluidStack resource, FluidAction action) {
-    IFluidHandlerItem tank = getItemTank();
-    int filled = tank.fill(resource, action);
-    // if something happened, force a sync of the item stack
-    // hopefully it's the same instance, but we still need a client sync likely
-    if (filled > 0 && action.execute()) {
-      setStack(tank.getContainer(), true);
-    }
-    return filled;
-  }
-
-  @Override
-  public FluidStack drain(FluidStack resource, FluidAction action) {
-    IFluidHandlerItem tank = getItemTank();
-    FluidStack drained = tank.drain(resource, action);
-    if (!drained.isEmpty() && action.execute()) {
-      setStack(tank.getContainer(), true);
-    }
-    return drained;
-  }
-
-  @Override
-  public FluidStack drain(int maxDrain, FluidAction action) {
-    IFluidHandlerItem tank = getItemTank();
-    FluidStack drained = tank.drain(maxDrain, action);
-    if (!drained.isEmpty() && action.execute()) {
-      setStack(tank.getContainer(), true);
-    }
-    return drained;
   }
 }

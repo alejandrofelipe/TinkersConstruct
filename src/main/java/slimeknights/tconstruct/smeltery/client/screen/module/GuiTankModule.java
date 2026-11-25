@@ -10,10 +10,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import slimeknights.mantle.Mantle;
 import slimeknights.mantle.fluid.tooltip.FluidTooltipHandler;
 import slimeknights.tconstruct.library.client.GuiUtil;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.smeltery.client.screen.IScreenWithFluidTank;
 
 import javax.annotation.Nullable;
@@ -30,18 +32,18 @@ public class GuiTankModule implements IScreenWithFluidTank, ClickableTankModule 
 
   private static final int TANK_INDEX = 0;
   private final AbstractContainerScreen<?> screen;
-  private final IFluidHandler tank;
+  private final ResourceHandler<FluidResource> tank;
   @Getter
   private final int x, y, width, height;
   private final boolean horizontal;
   private final Rect2i fluidLoc;
   private final BiConsumer<Integer,List<Component>> formatter;
 
-  public GuiTankModule(AbstractContainerScreen<?> screen, IFluidHandler tank, int x, int y, int width, int height, @Nullable ResourceLocation tooltipId) {
+  public GuiTankModule(AbstractContainerScreen<?> screen, ResourceHandler<FluidResource> tank, int x, int y, int width, int height, @Nullable ResourceLocation tooltipId) {
     this(screen, tank, x, y, width, height, false, tooltipId);
   }
 
-  public GuiTankModule(AbstractContainerScreen<?> screen, IFluidHandler tank, int x, int y, int width, int height, boolean horizontal, @Nullable ResourceLocation tooltipId) {
+  public GuiTankModule(AbstractContainerScreen<?> screen, ResourceHandler<FluidResource> tank, int x, int y, int width, int height, boolean horizontal, @Nullable ResourceLocation tooltipId) {
     this.screen = screen;
     this.tank = tank;
     this.x = x;
@@ -76,11 +78,11 @@ public class GuiTankModule implements IScreenWithFluidTank, ClickableTankModule 
    * @return  Scaled max value
    */
   private int scaleFluid(int max) {
-    int capacity = tank.getTankCapacity(TANK_INDEX);
+    int capacity = TransferUtil.getCapacity(tank, TANK_INDEX);
     if (capacity == 0) {
       return max;
     }
-    return max * tank.getFluidInTank(TANK_INDEX).getAmount() / capacity;
+    return max * TransferUtil.getFluid(tank, TANK_INDEX).getAmount() / capacity;
   }
 
   /**
@@ -88,8 +90,8 @@ public class GuiTankModule implements IScreenWithFluidTank, ClickableTankModule 
    * @param graphics  GuiGraphics instance
    */
   public void draw(GuiGraphics graphics) {
-    FluidStack stack = tank.getFluidInTank(TANK_INDEX);
-    int capacity = tank.getTankCapacity(TANK_INDEX);
+    FluidStack stack = TransferUtil.getFluid(tank, TANK_INDEX);
+    int capacity = TransferUtil.getCapacity(tank, TANK_INDEX);
     if (horizontal) {
       if(!stack.isEmpty() && capacity > 0) {
         int fluidWidth = Math.min(width * stack.getAmount() / capacity, width);
@@ -146,9 +148,9 @@ public class GuiTankModule implements IScreenWithFluidTank, ClickableTankModule 
     int checkY = mouseY - screen.topPos;
 
     if (isHovered(checkX, checkY)) {
-      FluidStack fluid = tank.getFluidInTank(TANK_INDEX);
+      FluidStack fluid = TransferUtil.getFluid(tank, TANK_INDEX);
       int amount = fluid.getAmount();
-      int capacity = tank.getTankCapacity(TANK_INDEX);
+      int capacity = TransferUtil.getCapacity(tank, TANK_INDEX);
 
       // if hovering over the fluid, display with name
       final List<Component> tooltip;
@@ -192,7 +194,7 @@ public class GuiTankModule implements IScreenWithFluidTank, ClickableTankModule 
   @Override
   public FluidLocation getFluidUnderMouse(int mouseX, int mouseY) {
     if (isHovered(mouseX, mouseY) && isFluidHovered(horizontal ? mouseX : mouseY)) {
-      return new FluidLocation(tank.getFluidInTank(TANK_INDEX), fluidLoc);
+      return new FluidLocation(TransferUtil.getFluid(tank, TANK_INDEX), fluidLoc);
     }
     return null;
   }

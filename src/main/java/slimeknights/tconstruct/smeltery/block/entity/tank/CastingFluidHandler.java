@@ -10,7 +10,6 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.TransferPreconditions;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
@@ -18,22 +17,19 @@ import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 
-import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
  * Fluid handler of casting tables and basins, whose capacity comes from the casting recipe started by the first fill.
  * <p>
- * PORT 1.21.10 (transfer step 1): also a native {@link ResourceHandler}, the form registered as the block's fluid capability. A native
- * fill only <em>simulates</em> starting the recipe ({@link CastingBlockEntity#initNewCasting(FluidStack, FluidAction)} with
- * {@code SIMULATE}) to size the tank, and changes the fluid, capacity and filter silently, journaled. Once the root transaction commits,
- * the recipe is started for real and the block entity notified (cooling timer, comparators, client sync); draining to empty resets the
- * block entity on commit. Simulations (aborted transactions) therefore never start a recipe or touch the block entity.
- * The legacy methods stay for internal use and react right away, as before.
+ * PORT 1.21.10 (transfer): a native {@link ResourceHandler}, the form registered as the block's fluid capability. A fill only
+ * <em>simulates</em> starting the recipe ({@link CastingBlockEntity#initNewCasting(FluidStack, boolean)} with {@code execute = false})
+ * to size the tank, and changes the fluid, capacity and filter silently, journaled. Once the root transaction commits, the recipe is
+ * started for real and the block entity notified (cooling timer, comparators, client sync); draining to empty resets the block entity
+ * on commit. Simulations (aborted transactions) therefore never start a recipe or touch the block entity.
  */
-@SuppressWarnings("removal")  // legacy IFluidHandler for internal use until phase 6
 @RequiredArgsConstructor
-public class CastingFluidHandler implements IFluidHandler, ResourceHandler<FluidResource> {
+public class CastingFluidHandler implements ResourceHandler<FluidResource> {
   private final CastingBlockEntity tile;
   @Getter @Setter
   private FluidStack fluid = FluidStack.EMPTY;
@@ -66,95 +62,6 @@ public class CastingFluidHandler implements IFluidHandler, ResourceHandler<Fluid
     filter = Fluids.EMPTY;
   }
 
-  @Override
-  public int fill(FluidStack resource, FluidAction action) {
-    if (resource.isEmpty() || !isFluidValid(resource)) {
-      return 0;
-    }
-
-    // update filter and capacity
-    int capacity = this.capacity;
-    if (filter == null || this.capacity == 0) {
-      Fluid fluid = resource.getFluid();
-      capacity = tile.initNewCasting(resource, action);
-      if (capacity <= 0) {
-        return 0;
-      }
-      if (action.execute()) {
-        this.capacity = capacity;
-        this.filter = fluid;
-      }
-    }
-
-    // if no fluid yet, copy it in
-    if (fluid.isEmpty()) {
-      int amount = Math.min(capacity, resource.getAmount());
-      if (action.execute()) {
-        fluid = resource.copyWithAmount(amount);
-        tile.onContentsChanged();
-      }
-      return amount;
-    }
-
-    // safety: should never be false, but good to check
-    if (!FluidStack.isSameFluidSameComponents(resource, fluid)) {
-      return 0;
-    }
-
-    // if full, nothing to do
-    int space = capacity - fluid.getAmount();
-    if (space <= 0) {
-      return 0;
-    }
-    // if it fits, it grows
-    int amount = resource.getAmount();
-    if (amount < space) {
-      if (action.execute()) {
-        fluid.grow(amount);
-        tile.onContentsChanged();
-      }
-      return amount;
-    } else {
-      // too much? set to max
-      if (action.execute()) {
-        fluid.setAmount(capacity);
-        tile.onContentsChanged();
-      }
-      return space;
-    }
-  }
-
-  @Nonnull
-  @Override
-  public FluidStack drain(FluidStack resource, FluidAction action) {
-    if (resource.isEmpty() || !FluidStack.isSameFluidSameComponents(resource, fluid)) {
-      return FluidStack.EMPTY;
-    }
-    return this.drain(resource.getAmount(), action);
-  }
-
-  @Nonnull
-  @Override
-  public FluidStack drain(int maxDrain, FluidAction action) {
-    int drained = Math.min(fluid.getAmount(), maxDrain);
-    if (drained <= 0) {
-      return FluidStack.EMPTY;
-    }
-
-    FluidStack stack = fluid.copyWithAmount(drained);
-    if (action.execute()) {
-      fluid.shrink(drained);
-      if (fluid.isEmpty()) {
-        // since empty, assume the current recipe is invalid now
-        // fixes some odd behavior with capacity and recipes going out of sync
-        tile.reset();
-      } else {
-        // called in reset
-        tile.onContentsChanged();
-      }
-    }
-    return stack;
-  }
 
   /* Native transfer */
 
@@ -186,7 +93,7 @@ public class CastingFluidHandler implements IFluidHandler, ResourceHandler<Fluid
       }
       // a new casting was sized by a simulation, start it for real now
       if (original.capacity() == 0 && capacity != 0) {
-        int newCapacity = tile.initNewCasting(fluid, FluidAction.EXECUTE);
+        int newCapacity = tile.initNewCasting(fluid, true);
         if (newCapacity > 0) {
           capacity = newCapacity;
         }
@@ -235,7 +142,7 @@ public class CastingFluidHandler implements IFluidHandler, ResourceHandler<Fluid
     int capacity = this.capacity;
     boolean newCasting = this.capacity == 0;
     if (newCasting) {
-      capacity = tile.initNewCasting(resource.toStack(amount), FluidAction.SIMULATE);
+      capacity = tile.initNewCasting(resource.toStack(amount), false);
       if (capacity <= 0) {
         return 0;
       }
@@ -278,32 +185,6 @@ public class CastingFluidHandler implements IFluidHandler, ResourceHandler<Fluid
       fluid = fluid.copyWithAmount(fluid.getAmount() - drained);
     }
     return drained;
-  }
-
-  /* Required */
-
-  @Nonnull
-  @Override
-  public FluidStack getFluidInTank(int tank) {
-    if (tank == 0) {
-      return fluid;
-    }
-    return FluidStack.EMPTY;
-  }
-
-  @Override
-  public int getTanks() {
-    return 1;
-  }
-
-  @Override
-  public int getTankCapacity(int tank) {
-    return getCapacity();
-  }
-
-  @Override
-  public boolean isFluidValid(int tank, FluidStack stack) {
-    return tank == 0 && isFluidValid(stack);
   }
 
   /* Tag */

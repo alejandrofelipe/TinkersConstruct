@@ -28,8 +28,6 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
@@ -381,12 +379,12 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
 
 
   /**
-   * Called from CastingFluidHandler.fill()
-   * @param fluid   Fluid used in casting
-   * @param action  EXECUTE or SIMULATE
+   * Called from CastingFluidHandler.insert() (simulated) and once the insert commits (executed)
+   * @param fluid    Fluid used in casting
+   * @param execute  If true, starts the recipe, else only finds it
    * @return        Amount of fluid needed for recipe, used to resize the tank.
    */
-  public int initNewCasting(FluidStack fluid, IFluidHandler.FluidAction action) {
+  public int initNewCasting(FluidStack fluid, boolean execute) {
     if (this.currentRecipe != null || this.recipeName != null) {
       return 0;
     }
@@ -409,7 +407,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
       castingInventory.useInput();
       RecipeHolder<ICastingRecipe> castingRecipe = findCastingRecipe();
       if (castingRecipe != null) {
-        if (action == FluidAction.EXECUTE) {
+        if (execute) {
           this.currentRecipe = castingRecipe.value();
           this.currentRecipeName = castingRecipe.id().location();
           this.recipeName = null;
@@ -422,7 +420,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
       castingInventory.useOutput();
       RecipeHolder<ICastingRecipe> castingRecipe = findCastingRecipe();
       if (castingRecipe != null) {
-        if (action == FluidAction.EXECUTE) {
+        if (execute) {
           this.currentRecipe = castingRecipe.value();
           this.currentRecipeName = castingRecipe.id().location();
           this.recipeName = null;
@@ -478,7 +476,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
     if (fluid.isEmpty()) {
       reset();
     } else {
-      int capacity = initNewCasting(fluid, FluidAction.EXECUTE);
+      int capacity = initNewCasting(fluid, true);
       if (capacity > 0) {
         tank.setCapacity(capacity);
       }

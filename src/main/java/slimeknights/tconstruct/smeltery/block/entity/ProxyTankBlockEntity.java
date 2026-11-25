@@ -11,11 +11,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import slimeknights.mantle.block.InventoryBlock;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.tconstruct.library.fluid.IFluidTankUpdater;
 import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.tank.ProxyItemTank;
@@ -67,11 +70,12 @@ public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTan
    * @return  Tank comparator strength
    */
   private int calculateComparatorStrength() {
-    int capacity = itemTank.getTankCapacity(0);
+    ResourceHandler<FluidResource> fluidHandler = itemTank.getFluidCapability();
+    int capacity = TransferUtil.getCapacity(fluidHandler, 0);
     if (capacity == 0) {
       return 0;
     }
-    return 1 + 14 * itemTank.getFluidInTank(0).getAmount() / capacity;
+    return 1 + 14 * TransferUtil.getFluid(fluidHandler, 0).getAmount() / capacity;
   }
 
   /** Gets the current comparator strength */
@@ -109,8 +113,8 @@ public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTan
     // if we have an active tank, try interacting
     if (!inventory.isEmpty()) {
       // must have a held item to interact
-      if (!held.isEmpty() && FluidTransferHelper.interactWithContainer(level, worldPosition, itemTank, player, hand).didTransfer()
-        || FluidTransferHelper.interactWithFilledBucket(level, worldPosition, itemTank, player, hand, getBlockState().getValue(HORIZONTAL_FACING)).didTransfer()) {
+      if (!held.isEmpty() && FluidTransferHelper.interactWithContainer(level, worldPosition, itemTank.getFluidCapability(), player, hand).didTransfer()
+        || FluidTransferHelper.interactWithFilledBucket(level, worldPosition, itemTank.getFluidCapability(), player, hand, getBlockState().getValue(HORIZONTAL_FACING)).didTransfer()) {
         return;
       }
       // if we clicked the tank, don't try and swap items unless we have no tank

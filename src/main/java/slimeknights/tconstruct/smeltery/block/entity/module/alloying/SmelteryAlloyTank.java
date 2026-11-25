@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 import slimeknights.tconstruct.library.recipe.alloying.IMutableAlloyTank;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.smeltery.block.entity.tank.SmelteryTank;
 
 /**
@@ -16,14 +16,14 @@ public class SmelteryAlloyTank implements IMutableAlloyTank {
   /**
    * Handler parent
    */
-  private final SmelteryTank handler;
+  private final SmelteryTank<?> handler;
   /** Current temperature. Provided as a getter and setter as there are a few contexts with different source for temperature */
   @Getter @Setter
   private int temperature = 0;
 
   @Override
   public int getTanks() {
-    return handler.getTanks();
+    return handler.size();
   }
 
   @Override
@@ -39,11 +39,11 @@ public class SmelteryAlloyTank implements IMutableAlloyTank {
 
   @Override
   public FluidStack drain(int tank, FluidStack fluidStack) {
-    return handler.drain(fluidStack, FluidAction.EXECUTE);
+    return TransferUtil.drain(handler, fluidStack, false);
   }
 
   @Override
   public int fill(FluidStack fluidStack) {
-    return handler.fill(fluidStack, FluidAction.EXECUTE);
+    return TransferUtil.fill(handler, fluidStack, false);
   }
 }

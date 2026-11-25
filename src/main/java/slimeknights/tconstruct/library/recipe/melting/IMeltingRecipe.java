@@ -4,7 +4,8 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import slimeknights.mantle.recipe.ICustomOutputRecipe;
 import slimeknights.mantle.registration.object.FluidObject;
 import slimeknights.tconstruct.library.recipe.FluidValues;
@@ -38,9 +39,9 @@ public interface IMeltingRecipe extends ICustomOutputRecipe<IMeltingContainer> {
   /**
    * Adds recipe byproducts into the given inventory, used in the foundry, but not all smelteries
    * @param inv      Input inventory
-   * @param handler  Fluid handler to fill with the byproduct
+   * @param handler  Fluid handler to fill with the byproduct, each byproduct fills right away (e.g. {@code TransferUtil.fill}), whatever does not fit is lost
    */
-  default void handleByproducts(IMeltingContainer inv, IFluidHandler handler) {}
+  default void handleByproducts(IMeltingContainer inv, ResourceHandler<FluidResource> handler) {}
 
   /* Recipe data */
 
