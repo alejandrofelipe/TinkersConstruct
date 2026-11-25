@@ -175,6 +175,33 @@ tasks.register('prepareUiTestWorld', Copy) {
 }
 tasks.matching { it.name == 'runClientUiTest' }.configureEach { dependsOn 'prepareUiTestWorld' }
 
+// the uitest client always exits 0 (UiTestSuite stops it normally after writing the results), so the task reads
+// uitest-results.json itself: it fails when the file is missing or older than this run (the client died before the
+// suite finished) or when any result, mantle:suite_setup included, is not "ok"
+def uiTestResultsFile = file('run/clientUiTest/uitest-results.json')
+tasks.matching { it.name == 'runClientUiTest' }.configureEach {
+    def startedAt = 0L
+    doFirst {
+        startedAt = System.currentTimeMillis()
+        delete uiTestResultsFile
+    }
+    doLast {
+        if (!uiTestResultsFile.isFile() || uiTestResultsFile.lastModified() < startedAt) {
+            throw new GradleException("uitest: ${uiTestResultsFile} was not written by this run; the suite did not finish (see run/clientUiTest/logs/latest.log)")
+        }
+        Map<String, Object> results = new groovy.json.JsonSlurper().parse(uiTestResultsFile, 'UTF-8') as Map<String, Object>
+        Map<String, Object> failed = results.findAll { id, result -> result != 'ok' }
+        if (!results.containsKey('mantle:suite_setup')) {
+            failed['mantle:suite_setup'] = 'missing'
+        }
+        if (!failed.isEmpty()) {
+            throw new GradleException("uitest: ${failed.size()} of ${results.size()} result(s) not ok (${uiTestResultsFile}):\n"
+                + failed.collect { id, result -> "  ${id}: ${result}" }.join('\n'))
+        }
+        logger.lifecycle("uitest: all ${results.size()} result(s) ok")
+    }
+}
+
 // the gametest server reuses run/gameTestServer/world across runs (vanilla never deletes it), so leftovers
 // from a previous run (placed structures, datapack state, generated chunks) leak into the next one. Wipe it
 // so every run generates a fresh flat world.
