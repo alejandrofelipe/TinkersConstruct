@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.fail;
  * Null safety, semantics and transaction guard of Mantle's legacy bridges over the NeoForge transfer API (M5 transfer step 1, D-T1).
  * Runs in the Gradle {@code test} task once Tinkers compiles on 1.21.10 (phase 2E); verified earlier in a scratch harness.
  */
-@SuppressWarnings("removal")  // the legacy interfaces are what the bridges return
+@SuppressWarnings({"removal", "deprecation"})  // the legacy interfaces are what the (deprecated) bridges return
 class TransferHelperTest extends BaseMcTest {
   private static final int AMOUNT = 250;
   /** Honey bottles hold a constant 250 water and become glass bottles */
@@ -149,6 +149,33 @@ class TransferHelperTest extends BaseMcTest {
     assertThat(stack.getCount()).isEqualTo(3);
   }
 
+  @Test
+  void isolate_copiesWithoutTouchingTheStack() {
+    ItemStack stack = new ItemStack(Items.HONEY_BOTTLE, 3);
+    ItemStacksResourceHandler one = TransferHelper.isolate(stack);
+    assertThat(TransferHelper.getStack(one).is(Items.HONEY_BOTTLE)).isTrue();
+    assertThat(TransferHelper.getStack(one).getCount()).isEqualTo(1);
+    ItemStacksResourceHandler two = TransferHelper.isolate(stack, 2);
+    assertThat(TransferHelper.getStack(two).getCount()).isEqualTo(2);
+    // exchanging through the access changes the copy only
+    ResourceHandler<FluidResource> handler = HONEY_WATER.apply(TransferHelper.access(one));
+    try (Transaction tx = Transaction.openRoot()) {
+      assertThat(handler.extract(FluidResource.of(Fluids.WATER), AMOUNT, tx)).isEqualTo(AMOUNT);
+      tx.commit();
+    }
+    assertThat(TransferHelper.getStack(one).is(Items.GLASS_BOTTLE)).isTrue();
+    assertThat(stack.is(Items.HONEY_BOTTLE)).isTrue();
+    assertThat(stack.getCount()).isEqualTo(3);
+  }
+
+  @Test
+  void isolate_emptyStack_hasNoHandler() {
+    ItemStacksResourceHandler slot = TransferHelper.isolate(ItemStack.EMPTY);
+    assertThat(TransferHelper.getStack(slot).isEmpty()).isTrue();
+    assertThat(TransferHelper.getFluidResourceHandler(slot)).isNull();
+    // no capability registered for sticks
+    assertThat(TransferHelper.getFluidResourceHandler(TransferHelper.isolate(new ItemStack(Items.STICK)))).isNull();
+  }
   @Test
   void legacyLookups_insideOpenTransaction_throw() {
     ItemStack stack = new ItemStack(Items.HONEY_BOTTLE);
