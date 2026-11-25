@@ -3,6 +3,7 @@ package slimeknights.tconstruct.gametest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
@@ -27,6 +28,7 @@ import slimeknights.tconstruct.library.tools.capability.fluid.ToolTankHelper;
 import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
 import slimeknights.tconstruct.smeltery.item.TankItem;
@@ -485,6 +487,28 @@ public class MenuSlotGameTests {
     assertStack(helper, carried, new ItemStack(Items.LAVA_BUCKET), "carried after picking up");
     helper.assertTrue(duct.getItemHandler().getStack().isEmpty() && duct.getItemHandler().getFluid().isEmpty(),
       Component.literal("duct kept " + duct.getItemHandler().getStack() + " / " + duct.getItemHandler().getFluid()));
+    helper.succeed();
+  }
+
+  /**
+   * {@link TransferUtil#trySetSlot} succeeds only if the slot ends up holding exactly the requested stack: a slot storing something else
+   * (here a container capping every stack at 4) is put back as it was, so the caller never changes the held stack for a set that did not happen.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_try_set_slot_exact(GameTestHelper helper) {
+    SimpleContainer container = new SimpleContainer(1) {
+      @Override
+      public void setItem(int index, ItemStack stack) {
+        super.setItem(index, stack.copyWithCount(Math.min(stack.getCount(), 4)));
+      }
+    };
+    Slot slot = new Slot(container, 0, 0, 0);
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    helper.assertFalse(TransferUtil.trySetSlot(slot, player, new ItemStack(Items.APPLE, 8)), Component.literal("trySetSlot reported success for a capped set"));
+    assertStack(helper, container.getItem(0), ItemStack.EMPTY, "slot after the capped set");
+    // an exact set still succeeds
+    helper.assertTrue(TransferUtil.trySetSlot(slot, player, new ItemStack(Items.APPLE, 3)), Component.literal("trySetSlot refused an exact set"));
+    assertStack(helper, container.getItem(0), new ItemStack(Items.APPLE, 3), "slot after the exact set");
     helper.succeed();
   }
 

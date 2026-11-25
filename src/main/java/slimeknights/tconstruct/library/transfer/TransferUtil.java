@@ -188,10 +188,12 @@ public final class TransferUtil {
    * Replaces the stack in a menu slot as the last step of a slot interaction that also changes something else (a held tank, the cursor).
    * Checks first that the slot lets the player take its stack and place the new one, then verifies the slot took it: menu slots over a
    * native handler ({@link ModifiableItemHandlerSlot}) may refuse a set, and the caller must then leave everything else unchanged.
+   * Only a slot holding exactly the requested stack counts as success; a slot that stored something else (a capped or altered stack) is
+   * put back to its old stack, as the caller's other changes assume the requested stack.
    * @param slot    Slot to change
    * @param player  Player interacting
    * @param stack   New stack for the slot, may be empty
-   * @return  True if the slot now holds the stack, false if it refused (the slot is unchanged)
+   * @return  True if the slot now holds the stack, false if it did not take it (the slot is unchanged)
    */
   public static boolean trySetSlot(Slot slot, Player player, ItemStack stack) {
     if (!slot.mayPickup(player) || (!stack.isEmpty() && (!slot.mayPlace(stack) || stack.getCount() > slot.getMaxStackSize(stack)))) {
@@ -200,8 +202,14 @@ public final class TransferUtil {
     ItemStack before = slot.getItem().copy();
     slot.set(stack);
     ItemStack after = slot.getItem();
-    // a refused set leaves the old stack; anything else means the slot changed
-    return ItemStack.matches(after, stack) || !ItemStack.matches(after, before);
+    if (ItemStack.matches(after, stack)) {
+      return true;
+    }
+    // took something other than the requested stack: put the old one back
+    if (!ItemStack.matches(after, before)) {
+      slot.set(before);
+    }
+    return false;
   }
 
   /** Puts a one item copy of the stack in a new single slot handler, giving it an isolated item access */
