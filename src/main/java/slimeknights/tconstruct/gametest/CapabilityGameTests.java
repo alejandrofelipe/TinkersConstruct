@@ -2,6 +2,7 @@ package slimeknights.tconstruct.gametest;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
@@ -13,9 +14,12 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
@@ -23,6 +27,8 @@ import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
@@ -45,9 +51,12 @@ import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.gadgets.capability.PiggybackCapability;
 import slimeknights.tconstruct.gadgets.capability.PiggybackHandler;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
+import slimeknights.tconstruct.library.modifiers.hook.interaction.InteractionSource;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.recipe.casting.ItemCastingRecipe;
+import slimeknights.tconstruct.library.tools.capability.fluid.ToolTankHelper;
 import slimeknights.tconstruct.library.tools.capability.inventory.ToolInventoryCapability;
 import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
@@ -68,6 +77,7 @@ import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
 import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
+import slimeknights.tconstruct.tools.modules.interaction.TankInteractionModule;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
@@ -268,6 +278,153 @@ public class CapabilityGameTests {
     ToolContainerMenu menu = new ToolContainerMenu(0, player.getInventory(), tool, ToolInventoryCapability.getMenuHandler(tool), player.getInventory().getSelectedSlot());
     helper.assertTrue(menu.getItemHandler().size() == 3 && menu.getItemHandler().getStack(0).is(Items.COBBLESTONE),
       Component.literal("tool container menu does not show the tool inventory"));
+    helper.succeed();
+  }
+
+
+  /**
+   * Draining a tool tank through its native fluid handler: a simulation or abort leaves the tool full, a commit takes only the requested
+   * amount of the matching fluid, another fluid drains nothing.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tool_tank_fluid_capability_extract(GameTestHelper helper) {
+    ItemStacksResourceHandler slot = slotWith(pickaxe(ModifierIds.tank));
+    ResourceHandler<FluidResource> handler = ItemAccess.forHandlerIndex(slot, 0).getCapability(Capabilities.Fluid.ITEM);
+    if (handler == null) {
+      helper.fail(Component.literal("pickaxe with a tank exposes no fluid handler"));
+      return;
+    }
+    FluidResource water = FluidResource.of(Fluids.WATER);
+    try (Transaction tx = Transaction.openRoot()) {
+      handler.insert(0, water, FluidType.BUCKET_VOLUME, tx);
+      tx.commit();
+    }
+    try (Transaction tx = Transaction.openRoot()) {
+      helper.assertTrue(handler.extract(0, FluidResource.of(Fluids.LAVA), 100, tx) == 0, Component.literal("tool tank drained lava it does not hold"));
+      helper.assertTrue(handler.extract(0, water, 300, tx) == 300, Component.literal("tool tank did not drain 300 mB of water"));
+    }
+    helper.assertTrue(handler.getAmountAsLong(0) == FluidType.BUCKET_VOLUME, Component.literal("aborted drain changed the tool tank: " + handler.getAmountAsLong(0)));
+    try (Transaction tx = Transaction.openRoot()) {
+      helper.assertTrue(handler.extract(0, water, 300, tx) == 300, Component.literal("tool tank did not drain 300 mB of water"));
+      tx.commit();
+    }
+    helper.assertTrue(handler.getAmountAsLong(0) == 700, Component.literal("committed drain left " + handler.getAmountAsLong(0)));
+    ToolStack tool = ToolStack.from(slot.getResource(0).toStack());
+    helper.assertTrue(FluidStack.matches(ToolTankHelper.TANK_HELPER.getFluid(tool), new FluidStack(Fluids.WATER, 700)),
+      Component.literal("tool data holds " + ToolTankHelper.TANK_HELPER.getFluid(tool)));
+    helper.succeed();
+  }
+
+  /**
+   * Taking from and putting into a tool inventory through its native item handler: aborts change nothing, extracts take exactly the stored
+   * item, items with their own item handler are refused (no nesting), and a stack only merges with the exact same item and components.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tool_inventory_item_capability_rules(GameTestHelper helper) {
+    ItemStacksResourceHandler slot = slotWith(pickaxe(ModifierIds.pocket));
+    ResourceHandler<ItemResource> handler = ItemAccess.forHandlerIndex(slot, 0).getCapability(Capabilities.Item.ITEM);
+    if (handler == null) {
+      helper.fail(Component.literal("pickaxe with pockets exposes no item handler"));
+      return;
+    }
+    ItemResource cobblestone = ItemResource.of(Items.COBBLESTONE);
+    try (Transaction tx = Transaction.openRoot()) {
+      handler.insert(0, cobblestone, 20, tx);
+      tx.commit();
+    }
+    // aborted extract: nothing changes
+    try (Transaction tx = Transaction.openRoot()) {
+      helper.assertTrue(handler.extract(0, cobblestone, 5, tx) == 5, Component.literal("could not extract 5 cobblestone"));
+    }
+    helper.assertTrue(handler.getAmountAsLong(0) == 20, Component.literal("aborted extract changed the slot: " + handler.getAmountAsLong(0)));
+    // wrong item, then a committed extract
+    try (Transaction tx = Transaction.openRoot()) {
+      helper.assertTrue(handler.extract(0, ItemResource.of(Items.DIRT), 5, tx) == 0, Component.literal("extracted dirt from a cobblestone slot"));
+      helper.assertTrue(handler.extract(0, cobblestone, 64, tx) == 20, Component.literal("did not extract all 20 cobblestone"));
+      tx.commit();
+    }
+    helper.assertTrue(handler.getResource(0).isEmpty(), Component.literal("slot not empty after extracting everything: " + handler.getResource(0)));
+
+    // no nesting: another tool with an inventory is refused
+    try (Transaction tx = Transaction.openRoot()) {
+      helper.assertTrue(handler.insert(1, ItemResource.of(pickaxe(ModifierIds.pocket)), 1, tx) == 0, Component.literal("tool inventory took a tool with an inventory"));
+    }
+    // same item but other components does not merge
+    ItemStack named = new ItemStack(Items.COBBLESTONE, 4);
+    named.set(DataComponents.CUSTOM_NAME, Component.literal("named"));
+    try (Transaction tx = Transaction.openRoot()) {
+      helper.assertTrue(handler.insert(2, cobblestone, 4, tx) == 4, Component.literal("could not insert cobblestone"));
+      helper.assertTrue(handler.insert(2, ItemResource.of(named), 4, tx) == 0, Component.literal("named cobblestone merged into plain cobblestone"));
+      helper.assertTrue(handler.insert(2, cobblestone, 4, tx) == 4, Component.literal("could not add more cobblestone"));
+      tx.commit();
+    }
+    helper.assertTrue(handler.getResource(2).equals(cobblestone) && handler.getAmountAsLong(2) == 8, Component.literal("slot 2 holds " + handler.getAmountAsLong(2) + " " + handler.getResource(2)));
+    helper.succeed();
+  }
+
+  /**
+   * Tank modifier slot interactions (right click in an inventory): a water bucket clicked onto a tool in a slot empties into the tool's tank,
+   * and the tool held on a slot with a water bucket drains it, leaving the empty bucket in the slot.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tool_tank_slot_interactions(GameTestHelper helper) {
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    InventoryMenu menu = player.inventoryMenu;
+    // inventory index 9 is menu slot 9
+    player.getInventory().setItem(9, pickaxe(ModifierIds.tank));
+    menu.setCarried(new ItemStack(Items.WATER_BUCKET));
+    menu.clicked(9, 1, ClickType.PICKUP, player);
+    helper.assertTrue(menu.getCarried().is(Items.BUCKET), Component.literal("carried bucket was not emptied: " + menu.getCarried()));
+    FluidStack inTool = ToolTankHelper.TANK_HELPER.getFluid(ToolStack.from(player.getInventory().getItem(9)));
+    helper.assertTrue(FluidStack.matches(inTool, new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME)), Component.literal("tool in the slot holds " + inTool));
+
+    // empty tool held over a water bucket in a slot
+    player.getInventory().setItem(10, new ItemStack(Items.WATER_BUCKET));
+    menu.setCarried(pickaxe(ModifierIds.tank));
+    menu.clicked(10, 1, ClickType.PICKUP, player);
+    helper.assertTrue(player.getInventory().getItem(10).is(Items.BUCKET), Component.literal("slot bucket was not emptied: " + player.getInventory().getItem(10)));
+    FluidStack held = ToolTankHelper.TANK_HELPER.getFluid(ToolStack.from(menu.getCarried()));
+    helper.assertTrue(FluidStack.matches(held, new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME)), Component.literal("held tool holds " + held));
+    helper.succeed();
+  }
+
+  /**
+   * Tank interaction module on a block with a fluid handler: using the tool drains the block into the empty tool tank (the first fluid it
+   * gives, up to the tank capacity), tops up a tank holding the same fluid, and sneaking empties the tool back into the block.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tank_interaction_module_fills_and_drains(GameTestHelper helper) {
+    BlockPos relative = new BlockPos(2, 1, 2);
+    TankBlockEntity tank = placeTank(helper, relative);
+    BlockPos pos = helper.absolutePos(relative);
+    SmelteryRigs.fillTank(helper.getLevel(), pos, new FluidStack(Fluids.LAVA, 1500));
+    ItemStack stack = pickaxe(ModifierIds.tank);
+    ToolStack tool = ToolStack.from(stack);
+    ModifierEntry entry = tool.getModifiers().getEntry(ModifierIds.tank);
+    TankInteractionModule module = new TankInteractionModule(null);
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+    UseOnContext context = new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false));
+    int capacity = ToolTankHelper.TANK_HELPER.getCapacity(tool);
+
+    // empty tool: drains up to its capacity
+    helper.assertTrue(module.beforeBlockUse(tool, entry, context, InteractionSource.RIGHT_CLICK).consumesAction(), Component.literal("tank interaction was not handled"));
+    helper.assertTrue(FluidStack.matches(ToolTankHelper.TANK_HELPER.getFluid(tool), new FluidStack(Fluids.LAVA, capacity)),
+      Component.literal("tool holds " + ToolTankHelper.TANK_HELPER.getFluid(tool) + " after draining, capacity " + capacity));
+    helper.assertTrue(tank.getTank().getFluidAmount() == 1500 - capacity, Component.literal("tank holds " + tank.getTank().getFluidAmount()));
+
+    // sneaking: empties the tool into the tank
+    player.setShiftKeyDown(true);
+    module.beforeBlockUse(tool, entry, context, InteractionSource.RIGHT_CLICK);
+    helper.assertTrue(ToolTankHelper.TANK_HELPER.getFluid(tool).isEmpty(), Component.literal("tool still holds " + ToolTankHelper.TANK_HELPER.getFluid(tool)));
+    helper.assertTrue(tank.getTank().getFluidAmount() == 1500, Component.literal("tank holds " + tank.getTank().getFluidAmount() + " after filling"));
+
+    // partially filled with the same fluid: tops up to the capacity
+    ToolTankHelper.TANK_HELPER.setFluid(tool, new FluidStack(Fluids.LAVA, 100));
+    player.setShiftKeyDown(false);
+    module.beforeBlockUse(tool, entry, context, InteractionSource.RIGHT_CLICK);
+    helper.assertTrue(ToolTankHelper.TANK_HELPER.getFluid(tool).getAmount() == capacity, Component.literal("tool holds " + ToolTankHelper.TANK_HELPER.getFluid(tool) + " after topping up"));
+    helper.assertTrue(tank.getTank().getFluidAmount() == 1500 - (capacity - 100), Component.literal("tank holds " + tank.getTank().getFluidAmount() + " after topping up"));
     helper.succeed();
   }
 
