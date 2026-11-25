@@ -7,6 +7,7 @@ import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.TransferPreconditions;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import slimeknights.mantle.transfer.TransferHelper;
 import slimeknights.tconstruct.library.fluid.IMultitankListChange;
 
 import java.util.function.Consumer;
@@ -16,7 +17,8 @@ import java.util.function.Consumer;
  * <p>
  * PORT 1.21.10 (transfer step 1): native {@link ResourceHandler} over the smeltery's native handler; inserts and extracts are forwarded
  * with the caller's transaction, so the smeltery journals them. Like the legacy wrapper they go to the whole tank (the smeltery merges by
- * fluid), so the index is only used to read; the index mapping is refreshed by the tank list listeners, which run on commit.
+ * fluid), so the index is only used to read; the index mapping is refreshed by the tank list listeners, which run when a commit or a revert
+ * changes the list layout, and is never cached while a transaction is open.
  */
 public class DuctTankWrapper implements ResourceHandler<FluidResource> {
   private final ResourceHandler<FluidResource> parent;
@@ -34,29 +36,38 @@ public class DuctTankWrapper implements ResourceHandler<FluidResource> {
     }
   }
 
-  /** Gets the mapping from index to matching tank */
+  /**
+   * Gets the mapping from index to matching tank. While a transaction is open the parent's list may hold uncommitted changes that are
+   * reverted later, so the mapping is computed fresh and not cached; outside transactions it is cached until the tank list changes.
+   */
   private int[] getTankMapping() {
+    if (TransferHelper.isTransactionOpen()) {
+      return computeTankMapping();
+    }
     if (tankMapping == null) {
-      FluidStack filter = itemHandler.getFluid();
-      int count = parent.size();
-      if (filter.isEmpty()) {
-        if (count > 0 && parent.getResource(count - 1).isEmpty()) {
-          tankMapping = new int[] { count - 1 };
-        } else {
-          tankMapping = new int[0];
-        }
-      } else {
-        IntList list = new IntArrayList(count);
-        for (int i = 0; i < count; i++) {
-          FluidResource contained = parent.getResource(i);
-          if (contained.isEmpty() || contained.matches(filter)) {
-            list.add(i);
-          }
-        }
-        tankMapping = list.toIntArray();
-      }
+      tankMapping = computeTankMapping();
     }
     return tankMapping;
+  }
+
+  /** Computes the mapping from index to matching tank */
+  private int[] computeTankMapping() {
+    FluidStack filter = itemHandler.getFluid();
+    int count = parent.size();
+    if (filter.isEmpty()) {
+      if (count > 0 && parent.getResource(count - 1).isEmpty()) {
+        return new int[] { count - 1 };
+      }
+      return new int[0];
+    }
+    IntList list = new IntArrayList(count);
+    for (int i = 0; i < count; i++) {
+      FluidResource contained = parent.getResource(i);
+      if (contained.isEmpty() || contained.matches(filter)) {
+        list.add(i);
+      }
+    }
+    return list.toIntArray();
   }
 
   /** Maps the index to a parent index, -1 if out of range or stale */

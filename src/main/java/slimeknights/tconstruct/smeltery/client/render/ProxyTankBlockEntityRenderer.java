@@ -11,9 +11,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.mantle.client.render.FluidCuboid;
 import slimeknights.mantle.client.render.FluidRenderer;
 import slimeknights.mantle.client.render.InventoryRenderState;
@@ -22,6 +19,7 @@ import slimeknights.mantle.client.render.RenderingHelper;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.smeltery.block.entity.ProxyTankBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.tank.ProxyItemTank;
+import slimeknights.tconstruct.smeltery.block.entity.tank.ProxyItemTank.TankContents;
 import slimeknights.tconstruct.smeltery.client.render.ProxyTankBlockEntityRenderer.ProxyTankRenderState;
 
 import javax.annotation.Nullable;
@@ -51,9 +49,10 @@ public class ProxyTankBlockEntityRenderer implements BlockEntityRenderer<ProxyTa
       state.fluid = FluidStack.EMPTY;
       state.capacity = 0;
     } else {
-      ResourceHandler<FluidResource> fluidHandler = itemTank.getFluidCapability();
-      state.fluid = TransferUtil.getFluid(fluidHandler, 0).copy();
-      state.capacity = TransferUtil.getCapacity(fluidHandler, 0);
+      // resolves the item's fluid handler once; the fluid is already a copy
+      TankContents contents = itemTank.getContents();
+      state.fluid = contents.fluid();
+      state.capacity = contents.capacity();
     }
     state.extractItems(itemModelResolver, RenderItem.STATE_REGISTRY.get(state.blockState, List.of()), index -> index == 0 ? itemTank.getStack() : ItemStack.EMPTY, proxyTank.getLevel());
   }

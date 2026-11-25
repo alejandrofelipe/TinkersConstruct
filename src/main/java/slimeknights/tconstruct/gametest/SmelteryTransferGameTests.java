@@ -31,6 +31,8 @@ import slimeknights.tconstruct.smeltery.block.controller.ControllerBlock;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.FaucetBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.ProxyTankBlockEntity;
+import slimeknights.tconstruct.smeltery.block.entity.component.DuctBlockEntity;
+import slimeknights.tconstruct.smeltery.block.entity.component.TankBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.MelterBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.tank.SmelteryTank;
@@ -177,6 +179,51 @@ public class SmelteryTransferGameTests {
         helper.assertTrue(FluidStack.matches(poured, new FluidStack(TinkerFluids.moltenGold.get(), FluidValues.INGOT)), Component.literal("basin holds " + poured));
       })
       .thenExecute(() -> assertFluids(helper, structure(helper, controller).getTank(), List.of(new FluidStack(Fluids.WATER, 500)), "after pouring"))
+      .thenSucceed();
+  }
+
+  /**
+   * A duct's index mapping must not survive an aborted transaction: reading the duct while a transaction drained its filtered fluid used to
+   * cache a mapping of the uncommitted list, and once the transaction reverted the duct pointed at the wrong fluid (the faucet stopped pouring)
+   * until the next list changing commit.
+   */
+  @TinkerGameTest(template = "gametest/empty_9x9x9", timeoutTicks = 400)
+  public static void duct_mapping_survives_aborted_drain(GameTestHelper helper) {
+    ServerLevel level = helper.getLevel();
+    BlockPos controller = SmelteryRigs.buildSearedHeatingStructure(level, helper.absolutePos(new BlockPos(1, 1, 1)));
+    BlockPos duct = helper.absolutePos(new BlockPos(3, 2, 2));
+    BlockPos faucet = duct.east();
+    BlockPos target = faucet.below();
+    level.setBlockAndUpdate(target, TinkerSmeltery.searedTank.get(TankType.FUEL_TANK).defaultBlockState());
+    level.setBlockAndUpdate(faucet, TinkerSmeltery.searedFaucet.get().defaultBlockState().setValue(FaucetBlock.FACING, Direction.EAST));
+    helper.startSequence()
+      .thenWaitUntil(() -> assertFormed(helper, controller))
+      .thenExecute(() -> {
+        if (!(level.getBlockEntity(duct) instanceof DuctBlockEntity ductBE)) {
+          throw new IllegalStateException("No duct at " + duct);
+        }
+        ductBE.getItemHandler().setStack(new ItemStack(Items.LAVA_BUCKET));
+        // lava at the bottom, copper above: the duct sees index 0 (lava) and the empty segment
+        insert(helper, structure(helper, controller).getTank(), new FluidStack(Fluids.LAVA, 500), new FluidStack(TinkerFluids.moltenCopper.get(), FluidValues.INGOT));
+        ResourceHandler<FluidResource> handler = level.getCapability(Capabilities.Fluid.BLOCK, duct, Direction.EAST);
+        helper.assertTrue(handler != null, Component.literal("duct has no fluid capability"));
+        try (Transaction tx = Transaction.openRoot()) {
+          helper.assertTrue(handler.extract(FluidResource.of(Fluids.LAVA), 500, tx) == 500, Component.literal("duct did not drain the lava"));
+          // read while the lava is gone: copper moved to index 0
+          helper.assertTrue(handler.size() == 1 && handler.getResource(0).isEmpty(), Component.literal("duct should only see the empty segment while drained, sees " + handler.size()));
+        }
+        helper.assertTrue(handler.getResource(0).getFluid() == Fluids.LAVA && handler.getAmountAsLong(0) == 500,
+          Component.literal("after the abort the duct exposes " + handler.getAmountAsLong(0) + " of " + handler.getResource(0).getFluid()));
+        if (level.getBlockEntity(faucet) instanceof FaucetBlockEntity faucetBE) {
+          faucetBE.activate();
+        } else {
+          helper.fail(Component.literal("no faucet BE"), helper.relativePos(faucet));
+        }
+      })
+      .thenWaitUntil(() -> {
+        FluidStack poured = level.getBlockEntity(target) instanceof TankBlockEntity tank ? tank.getTank().getFluid() : FluidStack.EMPTY;
+        helper.assertTrue(poured.getFluid() == Fluids.LAVA && poured.getAmount() == 500, Component.literal("tank below the faucet holds " + poured));
+      })
       .thenSucceed();
   }
 

@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.EmptyResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
@@ -33,8 +34,7 @@ public class ProxyItemTank<T extends MantleBlockEntity & IFluidTankUpdater> exte
   @Getter
   private final ResourceHandler<FluidResource> fluidCapability = new ResourceHandler<>() {
     private ResourceHandler<FluidResource> handler() {
-      ResourceHandler<FluidResource> handler = getStack().isEmpty() ? null : ItemAccess.forHandlerIndex(ProxyItemTank.this, 0).getCapability(Capabilities.Fluid.ITEM);
-      return handler != null ? handler : EmptyResourceHandler.instance();
+      return itemFluidHandler();
     }
 
     @Override
@@ -82,6 +82,25 @@ public class ProxyItemTank<T extends MantleBlockEntity & IFluidTankUpdater> exte
       }
     }
   };
+
+  /** Resolves the native fluid handler of the contained item, accessed through this item handler; empty if there is none */
+  private ResourceHandler<FluidResource> itemFluidHandler() {
+    ResourceHandler<FluidResource> handler = getStack().isEmpty() ? null : ItemAccess.forHandlerIndex(this, 0).getCapability(Capabilities.Fluid.ITEM);
+    return handler != null ? handler : EmptyResourceHandler.instance();
+  }
+
+  /**
+   * Reads the fluid and capacity of the first tank of the contained item, resolving its fluid handler once (renderers call this every frame).
+   * Read only, safe anywhere.
+   * @return  Copy of the fluid and the capacity for any fluid, empty and 0 without a tank
+   */
+  public TankContents getContents() {
+    ResourceHandler<FluidResource> handler = itemFluidHandler();
+    return new TankContents(TransferUtil.getFluid(handler, 0), TransferUtil.getCapacity(handler, 0));
+  }
+
+  /** Fluid and capacity of the first tank of the contained item, see {@link #getContents()} */
+  public record TankContents(FluidStack fluid, int capacity) {}
 
   /** Sets the stack without syncing, for the native handlers inside transactions and their reverts */
   @Override

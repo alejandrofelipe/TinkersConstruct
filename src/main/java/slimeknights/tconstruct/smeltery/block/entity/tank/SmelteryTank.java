@@ -156,6 +156,35 @@ public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> im
     return false;
   }
 
+  /** Checks if both lists hold the same fluids with the same amounts, in the same order */
+  private static boolean sameContents(List<FluidStack> first, List<FluidStack> second) {
+    if (first.size() != second.size()) {
+      return false;
+    }
+    for (int i = 0; i < first.size(); i++) {
+      if (!FluidStack.matches(first.get(i), second.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Checks if the index layout differs between two states: a different fluid at any index, or the "empty" segment appearing or
+   * disappearing. Amount changes alone keep the layout.
+   */
+  private boolean layoutChanged(List<FluidStack> firstFluids, int firstContained, List<FluidStack> secondFluids, int secondContained) {
+    if (firstFluids.size() != secondFluids.size() || (firstContained >= capacity) != (secondContained >= capacity)) {
+      return true;
+    }
+    for (int i = 0; i < firstFluids.size(); i++) {
+      if (!FluidStack.isSameFluidSameComponents(firstFluids.get(i), secondFluids.get(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** Journal of the fluid list for native transfers */
   private final SnapshotJournal<State> journal = new SnapshotJournal<>() {
     @Override
@@ -169,13 +198,22 @@ public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> im
 
     @Override
     protected void revertToSnapshot(State snapshot) {
+      // a list listener (duct index mapping) may have cached the layout we are reverting from while the transaction was open
+      boolean layoutChanged = layoutChanged(fluids, contained, snapshot.fluids(), snapshot.contained());
       fluids.clear();
       fluids.addAll(snapshot.fluids());
       contained = snapshot.contained();
+      if (layoutChanged) {
+        tankListChange.run();
+      }
     }
 
     @Override
     protected void onRootCommit(State original) {
+      // no net change (e.g. inserted and extracted the same amount): nothing to notify
+      if (original.contained() == contained && sameContents(original.fluids(), fluids)) {
+        return;
+      }
       // notify like the legacy fill and drain: a new fluid means alloy recipes might match now
       FluidChange change = FluidChange.CHANGED;
       FluidStack changed = getFluidInTank(0);
@@ -197,9 +235,7 @@ public class SmelteryTank<T extends MantleBlockEntity & ISmelteryTankHandler> im
       }
       parent.notifyFluidsChanged(change, changed);
       // list listeners need to know about added/removed fluids and the "empty" segment appearing or disappearing
-      boolean listChanged = change != FluidChange.CHANGED || original.fluids().size() != fluids.size()
-                            || (original.contained() >= capacity) != (contained >= capacity);
-      if (listChanged) {
+      if (change != FluidChange.CHANGED || layoutChanged(original.fluids(), original.contained(), fluids, contained)) {
         tankListChange.run();
       }
     }
