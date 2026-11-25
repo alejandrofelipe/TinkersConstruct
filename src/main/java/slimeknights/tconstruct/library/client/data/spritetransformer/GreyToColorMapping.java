@@ -231,13 +231,16 @@ public class GreyToColorMapping implements IColorMapping {
 
     // grey is based on largest, so scale down as needed
     // if any of RGB are lower than the max, scale it down
-    // PORT 1.21.4: ARGB byte order - red is 0x00FF0000, blue is 0x000000FF (swapped from the old ABGR layout)
+    // PORT 1.21.4: ARGB byte order - red is 0x00FF0000, blue is 0x000000FF (swapped from the old ABGR layout).
+    // The math must stay exactly as it was in the ABGR layout, where red was the low byte and blue was 0x00FF0000:
+    // there the blue product overflowed int (when blue(newColor) * blue > 32767), and the committed upstream textures
+    // carry that rounding. Just swapping the masks moved the overflow onto red, drifting the generated textures.
     int red = red(original);
-    if (red   < grey) newColor = (newColor & 0xFF00FFFF) | (((newColor & 0x00FF0000) * red   / grey) & 0x00FF0000);
+    if (red   < grey) newColor = (newColor & 0xFF00FFFF) | ((red(newColor) * red / grey) << 16);
     int green = green(original);
     if (green < grey) newColor = (newColor & 0xFFFF00FF) | (((newColor & 0x0000FF00) * green / grey) & 0x0000FF00);
     int blue = blue(original);
-    if (blue  < grey) newColor = (newColor & 0xFFFFFF00) | (((newColor & 0x000000FF) * blue  / grey) & 0x000000FF);
+    if (blue  < grey) newColor = (newColor & 0xFFFFFF00) | (((((newColor & 0x000000FF) << 16) * blue / grey) & 0x00FF0000) >>> 16);
 
     // final color
     return newColor;
