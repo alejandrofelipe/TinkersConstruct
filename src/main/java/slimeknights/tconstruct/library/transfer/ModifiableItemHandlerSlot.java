@@ -21,7 +21,8 @@ import java.util.Optional;
  *   size reads as empty, takes nothing and gives nothing, like the legacy slot's {@code validSlot} guard, instead of throwing.</li>
  *   <li>Over a {@linkplain ModifiableItemHandler#transactional transactional setter} (inventories exposing only a native handler) a set can be
  *   refused, while vanilla menu logic takes the items from the cursor or source slot before setting. So placing is bounded by what a
- *   simulated transfer accepts ({@link #mayPlace}, {@link #getMaxStackSize(ItemStack)}, like the legacy slot's simulated insert) and taking
+ *   simulated transfer accepts ({@link #getMaxStackSize(ItemStack)}, like the legacy slot's simulated insert; {@link #mayPlace} also
+ *   accepts the item a full slot already holds, like a chest slot) and taking
  *   by what a simulated extract gives ({@link #mayPickup} needs the whole stack to be extractable, as swaps and quick moves clear the slot;
  *   {@link #tryRemove} is clamped), so every set vanilla then makes is one the handler accepts.</li>
  * </ul>
@@ -77,12 +78,35 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
 
   /* Placing */
 
+  /**
+   * Over a transactional setter, the slot accepts the item if a simulated transfer puts some of it in, or, when it already holds that item,
+   * if its whole stack could be taken out and put back. Like a full chest slot, a full slot still accepts its own item, so vanilla does not
+   * treat clicking it with more as picking up ({@code doClick} pulls the stack onto the cursor when {@code mayPlace} fails), and
+   * {@link #allowModification} ({@code mayPickup && mayPlace(getItem())}) holds for a full slot whose contents can be replaced, such as a
+   * tool, which stacks to 1. How much goes in is bounded by {@link #getMaxStackSize(ItemStack)}.
+   */
   @Override
   public boolean mayPlace(ItemStack stack) {
     if (!inRange() || !super.mayPlace(stack)) {
       return false;
     }
-    return !transactional || simulateInsert(stack) > 0;
+    return !transactional || simulateInsert(stack) > 0 || simulateReplace(stack);
+  }
+
+  /** Simulates taking out the slot's whole stack and putting the same item back, true if the stack's item is the slot's item and some goes back in */
+  private boolean simulateReplace(ItemStack stack) {
+    ItemResource resource = ItemResource.of(stack);
+    ItemResource current = handler.getResource(index);
+    if (current.isEmpty() || !current.equals(resource)) {
+      return false;
+    }
+    try (Transaction tx = TransferUtil.openNestedOrRoot()) {
+      int amount = handler.getAmountAsInt(index);
+      if (handler.extract(index, current, amount, tx) != amount || amountInSlot(current) != 0) {
+        return false;
+      }
+      return handler.insert(index, resource, amount, tx) > 0 && amountInSlot(resource) > 0;
+    }
   }
 
   @Override

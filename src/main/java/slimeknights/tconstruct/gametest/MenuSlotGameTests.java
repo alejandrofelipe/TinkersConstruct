@@ -512,6 +512,66 @@ public class MenuSlotGameTests {
     helper.succeed();
   }
 
+  /**
+   * A full slot of a native-only side inventory clicked with the same item behaves like a full chest slot: nothing moves (before, the slot
+   * counted as not accepting the item, so vanilla pulled the stack onto the cursor). A slot refusing extracts but with room still takes more.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_full_slot_same_item(GameTestHelper helper) {
+    // at most 16 per slot, slot 1 gives nothing back
+    ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(2) {
+      @Override
+      protected int getCapacity(int index, ItemResource resource) {
+        return 16;
+      }
+
+      @Override
+      public int extract(int index, ItemResource resource, int amount, TransactionContext transaction) {
+        return index == 1 ? 0 : super.extract(index, resource, amount, transaction);
+      }
+    };
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    MovingSideInventory menu = new MovingSideInventory(player, ModifiableItemHandler.transactional(inventory));
+
+    inventory.set(0, ItemResource.of(Items.APPLE), 16);
+    for (int button = 0; button <= 1; button++) {
+      ItemStack carried = click(menu, player, 0, button, new ItemStack(Items.APPLE, 5));
+      assertStack(helper, carried, new ItemStack(Items.APPLE, 5), "carried after clicking the full slot with button " + button);
+      assertStack(helper, inventory.copyToList().get(0), new ItemStack(Items.APPLE, 16), "full slot after clicking with button " + button);
+    }
+
+    // no extracts, but room: a shift click still refills it
+    inventory.set(1, ItemResource.of(Items.APPLE), 5);
+    ItemStack moved = new ItemStack(Items.APPLE, 3);
+    menu.moveIn(moved);
+    helper.assertTrue(moved.isEmpty(), Component.literal("shift clicked stack after refilling the insert only slot: " + moved));
+    assertStack(helper, inventory.copyToList().get(1), new ItemStack(Items.APPLE, 8), "insert only slot after the shift click");
+    helper.succeed();
+  }
+
+  /**
+   * A tank tool sitting in a native-only side inventory slot (full, as tools stack to 1) is still modifiable: right clicking it with a water
+   * bucket fills the tool instead of swapping the bucket in.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_tank_tool_in_native_slot(GameTestHelper helper) {
+    ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(1);
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    MovingSideInventory menu = new MovingSideInventory(player, ModifiableItemHandler.transactional(inventory));
+    // the interactions update the cursor of the open menu
+    player.containerMenu = menu;
+    FluidStack water = new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME);
+
+    inventory.set(0, ItemResource.of(tankPickaxe(FluidStack.EMPTY)), 1);
+    helper.assertTrue(menu.getSlot(0).allowModification(player), Component.literal("tool slot does not allow modification"));
+    ItemStack carried = click(menu, player, 0, 1, new ItemStack(Items.WATER_BUCKET));
+    assertStack(helper, carried, new ItemStack(Items.BUCKET), "carried after emptying into the tool");
+    ItemStack tool = inventory.copyToList().get(0);
+    helper.assertTrue(tool.is(TinkerTools.pickaxe.get()) && FluidStack.matches(toolFluid(tool), water),
+      Component.literal("slot holds " + tool + " with " + (tool.is(TinkerTools.pickaxe.get()) ? toolFluid(tool) : "no tank")));
+    helper.succeed();
+  }
+
   /** Tinkers chest menu: slots report their chest index, respect the slot limit, and shift clicking moves stacks out of the chest. */
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void chest_menu_slots(GameTestHelper helper) {
