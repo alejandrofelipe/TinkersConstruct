@@ -16,6 +16,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FenceBlock;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -50,6 +54,7 @@ import slimeknights.tconstruct.tools.TinkerToolParts;
 import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -66,7 +71,8 @@ import java.util.function.Supplier;
  * update packet), and the client copy must produce the same update tag. Any exception or serialization problem fails the test.
  * <p>
  * Covers both empty block entities (an empty tank once threw while loading and disconnected clients) and filled ones, filled
- * through the registered item/fluid capabilities plus custom names, textures and materials where the block entity has them. The
+ * through the registered item/fluid capabilities plus custom names, textures and materials where the block entity has them. A client
+ * copy holding the filled data must also go back to the empty update tag when it receives the empty data (both client paths). The
  * client copies have no level, so client-only side effects ({@code level.isClientSide()} branches) are not exercised.
  */
 public class BlockEntityRoundTripGameTests {
@@ -74,6 +80,11 @@ public class BlockEntityRoundTripGameTests {
   private static final Component NAME = Component.literal("Round Trip");
   /** Texture set on retextured block entities when filling */
   private static final String TEXTURE = "minecraft:stone_bricks";
+  /**
+   * Valid blocks of a {@code tconstruct} block entity type that are intended to never have a block entity, beyond the slabs, stairs,
+   * fences and walls of the smeltery component building sets. Any other such block fails the test.
+   */
+  private static final Set<ResourceLocation> NO_BLOCK_ENTITY = Set.of();
 
   /**
    * Places every block of every {@code tconstruct} block entity type on its own and round-trips its block entity, empty and filled.
@@ -82,6 +93,7 @@ public class BlockEntityRoundTripGameTests {
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void block_entity_round_trip_every_type(GameTestHelper helper) {
     ServerLevel level = helper.getLevel();
+    HolderLookup.Provider registries = level.registryAccess();
     BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
     List<String> failures = new ArrayList<>();
     List<String> skipped = new ArrayList<>();
@@ -106,7 +118,12 @@ public class BlockEntityRoundTripGameTests {
         }
         // the smeltery component type lists whole building block sets, whose slabs, stairs, fences and walls never have one
         if (!state.hasBlockEntity()) {
-          skipped.add(BuiltInRegistries.BLOCK.getKey(block).toString());
+          ResourceLocation key = BuiltInRegistries.BLOCK.getKey(block);
+          if (block instanceof SlabBlock || block instanceof StairBlock || block instanceof FenceBlock || block instanceof WallBlock || NO_BLOCK_ENTITY.contains(key)) {
+            skipped.add(key.toString());
+          } else {
+            failures.add(label + ": " + state + " has no block entity (allow-list it in NO_BLOCK_ENTITY if intended)");
+          }
           continue;
         }
         level.setBlockAndUpdate(pos, state);
@@ -115,8 +132,14 @@ public class BlockEntityRoundTripGameTests {
           failures.add(label + ": placing the block created " + (be == null ? "no block entity" : "a " + BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(be.getType())) + ", block is now " + level.getBlockState(pos));
         } else {
           check(failures, label + " (empty)", () -> roundTrip(helper, be));
-          if (fill(be)) {
+          // update data of the empty block entity, applied below to a client copy that already holds the filled data
+          ClientData empty = check(failures, label + " (empty update data)", () -> ClientData.of(be, registries));
+          Boolean filled = check(failures, label + " (fill)", () -> fill(be));
+          if (Boolean.TRUE.equals(filled)) {
             check(failures, label + " (filled)", () -> roundTrip(helper, be));
+            if (empty != null) {
+              check(failures, label + " (filled, then emptied on the client)", () -> emptyAfterFilled(helper, be, empty));
+            }
           }
         }
         level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
@@ -241,6 +264,51 @@ public class BlockEntityRoundTripGameTests {
     }
   }
 
+  /** Update data a client receives for a block entity: the update tag (chunk packet) and the block update packet's tag, if it sends one */
+  private record ClientData(CompoundTag updateTag, @Nullable CompoundTag packetTag) {
+    static ClientData of(BlockEntity be, HolderLookup.Provider registries) {
+      return new ClientData(be.getUpdateTag(registries), be.getUpdatePacket() instanceof ClientboundBlockEntityDataPacket packet ? packet.getTag() : null);
+    }
+  }
+
+  /**
+   * Applies the empty block entity's update data to client copies that already received the filled data, through both client paths,
+   * and requires each copy to end up with the empty update tag. Catches a load that only reads a key if present while the save
+   * leaves the key out when empty, which would keep the old contents on the client.
+   * @param be     Filled block entity
+   * @param empty  Update data of the same block entity before filling
+   */
+  private static void emptyAfterFilled(GameTestHelper helper, BlockEntity be, ClientData empty) {
+    HolderLookup.Provider registries = helper.getLevel().registryAccess();
+    CompoundTag filled = be.getUpdateTag(registries);
+    // chunk resent: handleUpdateTag on the existing client block entity
+    BlockEntity client = clientWith(be, filled, registries);
+    ProblemReporter.Collector problems = new ProblemReporter.Collector();
+    client.handleUpdateTag(TagValueInput.create(problems, registries, empty.updateTag()));
+    checkProblems(problems, "handleUpdateTag of the empty data");
+    compare(empty.updateTag(), client.getUpdateTag(registries), "update tag after handleUpdateTag of the empty data over the filled data");
+    // block update: onDataPacket on the existing client block entity
+    if (empty.packetTag() != null) {
+      client = clientWith(be, filled, registries);
+      problems = new ProblemReporter.Collector();
+      client.onDataPacket(null, TagValueInput.create(problems, registries, empty.packetTag()));
+      checkProblems(problems, "onDataPacket of the empty data");
+      compare(empty.updateTag(), client.getUpdateTag(registries), "update tag after onDataPacket of the empty data over the filled data");
+    }
+  }
+
+  /** Creates a fresh client copy of the block entity holding the given update tag */
+  private static BlockEntity clientWith(BlockEntity be, CompoundTag update, HolderLookup.Provider registries) {
+    BlockEntity client = be.getType().create(be.getBlockPos(), be.getBlockState());
+    if (client == null) {
+      throw new IllegalStateException("could not create a fresh client block entity");
+    }
+    ProblemReporter.Collector problems = new ProblemReporter.Collector();
+    client.handleUpdateTag(TagValueInput.create(problems, registries, update));
+    checkProblems(problems, "handleUpdateTag of the filled data");
+    return client;
+  }
+
   /** Saves the block entity with full metadata like chunk saving does */
   private static CompoundTag save(BlockEntity be, HolderLookup.Provider registries, String action) {
     ProblemReporter.Collector problems = new ProblemReporter.Collector();
@@ -273,11 +341,21 @@ public class BlockEntityRoundTripGameTests {
 
   /** Runs the check, recording any exception as a failure with the label */
   private static void check(List<String> failures, String label, Runnable check) {
-    try {
+    check(failures, label, () -> {
       check.run();
+      return null;
+    });
+  }
+
+  /** Runs the check, recording any exception as a failure with the label; returns its result, or null if it failed */
+  @Nullable
+  private static <T> T check(List<String> failures, String label, Supplier<T> check) {
+    try {
+      return check.get();
     } catch (RuntimeException e) {
       failures.add(label + ": " + e);
       TConstruct.LOG.error("Block entity round trip failed for {}", label, e);
+      return null;
     }
   }
 
