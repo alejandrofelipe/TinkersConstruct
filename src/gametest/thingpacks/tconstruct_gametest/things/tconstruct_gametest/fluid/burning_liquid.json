@@ -1,0 +1,15 @@
+{
+  "type": "flowing",
+  "fluid_type": {
+    "still_texture": "minecraft:block/lava_still",
+    "flowing_texture": "minecraft:block/lava_flow",
+    "temperature": 1300,
+    "density": 3000,
+    "viscosity": 6000
+  },
+  "block": {
+    "type": "tconstruct:burning_liquid",
+    "burn_time": 7,
+    "damage": 2
+  }
+}

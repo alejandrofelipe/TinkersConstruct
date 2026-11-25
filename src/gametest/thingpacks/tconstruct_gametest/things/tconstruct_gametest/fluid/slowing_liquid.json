@@ -1,0 +1,12 @@
+{
+  "type": "flowing",
+  "fluid_type": {
+    "still_texture": "minecraft:block/water_still",
+    "flowing_texture": "minecraft:block/water_flow"
+  },
+  "block": {
+    "type": "tconstruct:mob_effect_liquid",
+    "effect": "minecraft:slowness",
+    "burn_time": 3
+  }
+}

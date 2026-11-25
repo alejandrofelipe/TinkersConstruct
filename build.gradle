@@ -17,8 +17,8 @@ repositories {
     maven { name "Prog's Maven"; url 'https://dvs1.progwml6.com/files/maven' }
     maven { name "Jared's maven"; url 'https://maven.blamejared.com/' }
     maven { name "TwelveIterations"; url 'https://maven.twelveiterations.com/repository/maven-public/'; content { includeGroup 'net.blay09.mods' } }
-    // (JSON Things excluded on 1.21.4 — maven unreachable; re-enable with the dep in the compat phase)
-    // maven { name "Dogforce Games"; url 'https://www.dogforce-games.com/maven/'; content { includeGroupByRegex 'dev\\.gigaherz.*' } }
+    // JSON Things; the regex (not just dev.gigaherz.jsonthings) also covers its transitive runtime dep dev.gigaherz.rhinolib:rhino-lib
+    maven { name "Dogforce Games"; url 'https://www.dogforce-games.com/maven/'; content { includeGroupByRegex 'dev\\.gigaherz.*' } }
     // Mojang's download host, objects addressed by SHA-1; only serves the 1.21.4 client jar for the spawn egg templates (see below)
     exclusiveContent {
         forRepository {
@@ -69,9 +69,8 @@ subsystems {
 sourceSets {
     main {
         java {
-            // EXCLUDED on 1.21.4 (no IE build / JSON Things maven down) — re-add in compat phase
+            // EXCLUDED since 1.21.4: no Immersive Engineering build for the current MC version
             exclude 'slimeknights/tconstruct/plugin/ImmersiveEngineeringPlugin.java'
-            exclude 'slimeknights/tconstruct/plugin/jsonthings/**'
         }
         resources {
             srcDirs "src/generated/resources"
@@ -184,6 +183,14 @@ tasks.register('cleanGameTestWorld', Delete) {
 }
 tasks.matching { it.name == 'runGameTestServer' }.configureEach { dependsOn 'cleanGameTestWorld' }
 
+// JSON Things reads thingpacks from <game dir>/thingpacks only, so the gametest server gets a fresh copy of the test pack
+// (JsonThingsGameTests) on every run
+tasks.register('prepareGameTestThingpacks', Sync) {
+    from file('src/gametest/thingpacks')
+    into file('run/gameTestServer/thingpacks')
+}
+tasks.matching { it.name == 'runGameTestServer' }.configureEach { dependsOn 'prepareGameTestThingpacks' }
+
 // SpawnEggTextureProvider tints Mojang's spawn egg template layers (assets/minecraft/textures/item/spawn_egg.png and
 // spawn_egg_overlay.png), removed from the game in 1.21.5. They are not committed: they are read from the 1.21.4 client jar
 // (-PspawnEggTemplateJar=<path> points at it directly), found by its SHA-1 in the NeoGradle/ForgeGradle caches or a launcher's
@@ -278,12 +285,13 @@ dependencies {
     runtimeOnly "net.blay09.mods:craftingtweaks-neoforge:${craftingtweaks_version}"
     runtimeOnly "net.blay09.mods:balm-neoforge:${balm_version}"
 
-    // EXCLUDED on 1.21.4 (JSON Things: dogforce-games maven unreachable; Immersive Engineering: no 1.21.4 build).
-    // Plugin sources are excluded in sourceSets above — re-add both deps + sources in the compat phase.
     // JSON Things compat (optional, standalone). Artifact name embeds the MC version.
-    // compileOnly "dev.gigaherz.jsonthings:JsonThings-${minecraft_version}:${jsonthings_version}"
-    // runtimeOnly "dev.gigaherz.jsonthings:JsonThings-${minecraft_version}:${jsonthings_version}"
+    // runtimeOnly so the plugin loads in dev runs (the gametest server loads the thingpack under src/gametest/thingpacks)
+    compileOnly "dev.gigaherz.jsonthings:JsonThings-${minecraft_version}:${jsonthings_version}"
+    runtimeOnly "dev.gigaherz.jsonthings:JsonThings-${minecraft_version}:${jsonthings_version}"
 
+    // EXCLUDED since 1.21.4 (no Immersive Engineering build for the current MC version); the plugin source is excluded
+    // in sourceSets above — re-add the deps + source when one exists.
     // Immersive Engineering compat (optional, standalone; Jared's maven).
     // compileOnly "blusunrize.immersiveengineering:ImmersiveEngineering:${ie_version}"
     // runtimeOnly "blusunrize.immersiveengineering:ImmersiveEngineering:${ie_version}"

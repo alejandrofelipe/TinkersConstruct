@@ -4,6 +4,8 @@ import dev.gigaherz.jsonthings.things.blocks.FlexLiquidBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.InsideBlockEffectType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -23,12 +25,15 @@ public class FlexBurningLiquidBlock extends FlexLiquidBlock {
   }
 
   @Override
-  public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+  public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean intersects) {
     if (!entity.fireImmune() && entity.getFluidTypeHeight(this.fluid.getFluidType()) > 0) {
-      entity.igniteForSeconds(burnTime);
-      if (entity.hurtOrSimulate(level.damageSources().lava(), damage)) {
-        entity.playSound(SoundEvents.GENERIC_BURN, 0.4F, 2.0F + level.random.nextFloat() * 0.4F);
-      }
+      // same as BurningLiquidBlock: queued on the applier so it runs in vanilla order (before any extinguish), like lava
+      effectApplier.runAfter(InsideBlockEffectType.LAVA_IGNITE, target -> {
+        target.igniteForSeconds(burnTime);
+        if (target.hurtOrSimulate(target.damageSources().lava(), damage)) {
+          target.playSound(SoundEvents.GENERIC_BURN, 0.4F, 2.0F + level.random.nextFloat() * 0.4F);
+        }
+      });
     }
   }
 }

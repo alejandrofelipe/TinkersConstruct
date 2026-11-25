@@ -4,6 +4,7 @@ import dev.gigaherz.jsonthings.things.blocks.FlexLiquidBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -13,7 +14,7 @@ import net.minecraft.world.level.material.FlowingFluid;
 import java.util.Map;
 import java.util.function.Supplier;
 
-/** Json Things version of {@link slimeknights.tconstruct.fluids.block.BurningLiquidBlock} */
+/** Json Things version of {@link slimeknights.tconstruct.fluids.block.MobEffectLiquidBlock} */
 public class FlexMobEffectLiquidBlock extends FlexLiquidBlock {
   private final Supplier<MobEffectInstance> effect;
   public FlexMobEffectLiquidBlock(Properties properties, Map<Property<?>,Comparable<?>> propertyDefaultValues, Supplier<FlowingFluid> fluidSupplier, Supplier<MobEffectInstance> effect) {
@@ -22,12 +23,10 @@ public class FlexMobEffectLiquidBlock extends FlexLiquidBlock {
   }
 
   @Override
-  public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+  public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean intersects) {
     if (entity.getFluidTypeHeight(this.fluid.getFluidType()) > 0 && entity instanceof LivingEntity living) {
-      MobEffectInstance effect = this.effect.get();
-      // clear cures so the effect cannot be removed (replaces Forge's setCurativeItems(emptyList))
-      effect.getCures().clear();
-      living.addEffect(effect);
+      // like MobEffectLiquidBlock: the curative-items API (MobEffectInstance#getCures) is gone since 1.21.4, so the effect stays curable
+      living.addEffect(this.effect.get());
     }
   }
 }

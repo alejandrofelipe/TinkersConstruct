@@ -8,6 +8,7 @@ import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.ResourceKey;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.gametest.GameTestHooks;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -43,7 +44,12 @@ public final class TinkerGameTestRegistration {
     if (!GameTestHooks.isGametestEnabled()) {
       return;
     }
-    for (Class<?> clazz : TEST_CLASSES) {
+    List<Class<?>> testClasses = new ArrayList<>(TEST_CLASSES);
+    // links against the JSON Things plugin, which only loads with the mod
+    if (ModList.get().isLoaded("jsonthings")) {
+      testClasses.add(JsonThingsGameTests.class);
+    }
+    for (Class<?> clazz : testClasses) {
       for (Method method : clazz.getDeclaredMethods()) {
         TinkerGameTest test = method.getAnnotation(TinkerGameTest.class);
         if (test != null) {
