@@ -22,7 +22,7 @@ public class SingleItemContainerMenu extends TriggeringBaseContainerMenu<BlockEn
       // PORT 1.21.10: menu slots need a setter for the real stacks, not just the native capability
       ModifiableItemHandler handler = level == null ? null : IModifiableItemHandlerProvider.find(level, te.getBlockPos(), null);
       if (handler != null && handler.size() > 0) {
-        this.addSlot(handler.createSlot(0, 80, 20));
+        this.addSlot(handler.createSlot(inv == null ? null : inv.player, 0, 80, 20));
       }
       this.addInventorySlots();
     }

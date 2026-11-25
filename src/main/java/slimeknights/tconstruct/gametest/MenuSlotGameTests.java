@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -166,8 +167,11 @@ public class MenuSlotGameTests {
 
   /** Side inventory container exposing the menu's stack moving logic, as used by shift clicks from the player inventory */
   private static class MovingSideInventory extends SideInventoryContainer<BlockEntity> {
+    final Player player;
+
     MovingSideInventory(Player player, ModifiableItemHandler handler) {
       super(TinkerTables.craftingStationContainer.get(), 0, player.getInventory(), null, handler, 0, 0, 1);
+      this.player = player;
     }
 
     /** Moves the stack into the side inventory slots like a shift click from the player inventory */
@@ -569,6 +573,134 @@ public class MenuSlotGameTests {
     ItemStack tool = inventory.copyToList().get(0);
     helper.assertTrue(tool.is(TinkerTools.pickaxe.get()) && FluidStack.matches(toolFluid(tool), water),
       Component.literal("slot holds " + tool + " with " + (tool.is(TinkerTools.pickaxe.get()) ? toolFluid(tool) : "no tank")));
+    helper.succeed();
+  }
+
+  /**
+   * Native handler spreading inserts non-linearly: an insert into slot 0 or 1 puts half of it (rounded down) there and the rest into the
+   * next slot, slot 2 keeps all. Simulating a large insert into slot 0 shows half of it arriving, but no set of slot 0 or 1 ever ends with
+   * exactly the requested stack, so the transactional setter refuses every one of them.
+   */
+  private static ItemStacksResourceHandler spreadingInventory() {
+    return new ItemStacksResourceHandler(3) {
+      @Override
+      protected int getCapacity(int index, ItemResource resource) {
+        return 16;
+      }
+
+      @Override
+      public int insert(int index, ItemResource resource, int amount, TransactionContext transaction) {
+        if (index >= 2) {
+          return super.insert(index, resource, amount, transaction);
+        }
+        int here = amount / 2;
+        int inserted = super.insert(index, resource, here, transaction);
+        return inserted + super.insert(index + 1, resource, amount - here, transaction);
+      }
+    };
+  }
+
+  /** Counts the given item in the handler, the cursor and the player inventory */
+  private static int countEverywhere(ItemStacksResourceHandler inventory, AbstractContainerMenu menu, Player player, Item item) {
+    int count = player.getInventory().countItem(item);
+    if (menu.getCarried().is(item)) {
+      count += menu.getCarried().getCount();
+    }
+    for (ItemStack stack : inventory.copyToList()) {
+      if (stack.is(item)) {
+        count += stack.getCount();
+      }
+    }
+    return count;
+  }
+
+  /** Sets up a spreading side inventory menu for a fresh mock player, with the player's menu set so cursor updates apply */
+  private static MovingSideInventory spreadingMenu(GameTestHelper helper, ItemStacksResourceHandler inventory) {
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    MovingSideInventory menu = new MovingSideInventory(player, ModifiableItemHandler.transactional(inventory));
+    player.containerMenu = menu;
+    return menu;
+  }
+
+  private static void assertCount(GameTestHelper helper, ItemStacksResourceHandler inventory, MovingSideInventory menu, Item item, int expected, String what) {
+    int actual = countEverywhere(inventory, menu, menu.player, item);
+    helper.assertTrue(actual == expected, Component.literal(what + ": expected " + expected + " " + item + " in total, found " + actual
+                                                            + " (cursor " + menu.getCarried() + ", handler " + inventory.copyToList() + ")"));
+  }
+
+  /** Clicking and right clicking a spreading slot: the slot refuses the set, and the cursor keeps everything */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_spreading_click(GameTestHelper helper) {
+    ItemStacksResourceHandler inventory = spreadingInventory();
+    MovingSideInventory menu = spreadingMenu(helper, inventory);
+    for (int button = 0; button <= 1; button++) {
+      ItemStack carried = click(menu, menu.player, 0, button, new ItemStack(Items.APPLE, 10));
+      assertStack(helper, carried, new ItemStack(Items.APPLE, 10), "carried after clicking the spreading slot with button " + button);
+      assertCount(helper, inventory, menu, Items.APPLE, 10, "after clicking with button " + button);
+    }
+    helper.succeed();
+  }
+
+  /** Swapping a stack into a spreading slot holding another item: no item is lost or duplicated */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_spreading_swap(GameTestHelper helper) {
+    ItemStacksResourceHandler inventory = spreadingInventory();
+    MovingSideInventory menu = spreadingMenu(helper, inventory);
+    inventory.set(0, ItemResource.of(Items.DIRT), 3);
+    click(menu, menu.player, 0, 0, new ItemStack(Items.APPLE, 6));
+    assertCount(helper, inventory, menu, Items.APPLE, 6, "after swapping");
+    assertCount(helper, inventory, menu, Items.DIRT, 3, "after swapping");
+    helper.succeed();
+  }
+
+  /** Dragging a stack over a spreading slot and a regular one: the share the spreading slot refuses goes back to the player */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_spreading_drag(GameTestHelper helper) {
+    ItemStacksResourceHandler inventory = spreadingInventory();
+    MovingSideInventory menu = spreadingMenu(helper, inventory);
+    Player player = menu.player;
+    menu.setCarried(new ItemStack(Items.APPLE, 10));
+    menu.clicked(-999, AbstractContainerMenu.getQuickcraftMask(0, 0), ClickType.QUICK_CRAFT, player);
+    menu.clicked(0, AbstractContainerMenu.getQuickcraftMask(1, 0), ClickType.QUICK_CRAFT, player);
+    menu.clicked(2, AbstractContainerMenu.getQuickcraftMask(1, 0), ClickType.QUICK_CRAFT, player);
+    menu.clicked(-999, AbstractContainerMenu.getQuickcraftMask(2, 0), ClickType.QUICK_CRAFT, player);
+    assertStack(helper, inventory.copyToList().get(2), new ItemStack(Items.APPLE, 5), "regular slot after the drag");
+    assertCount(helper, inventory, menu, Items.APPLE, 10, "after the drag");
+    helper.succeed();
+  }
+
+  /** Shift clicking into spreading slots: the source keeps what they refuse, the rest lands in the regular slot */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_spreading_shift_click(GameTestHelper helper) {
+    ItemStacksResourceHandler inventory = spreadingInventory();
+    MovingSideInventory menu = spreadingMenu(helper, inventory);
+    ItemStack moved = new ItemStack(Items.APPLE, 10);
+    menu.moveIn(moved);
+    int inHandler = inventory.copyToList().stream().filter(stack -> stack.is(Items.APPLE)).mapToInt(ItemStack::getCount).sum();
+    helper.assertTrue(moved.getCount() + inHandler == 10, Component.literal("shift click left " + moved + ", handler holds " + inventory.copyToList()));
+    assertStack(helper, inventory.copyToList().get(2), new ItemStack(Items.APPLE, 10), "regular slot after the shift click");
+    helper.succeed();
+  }
+
+  /** Number key swap from the hotbar into a spreading slot: the refused stack goes back to the player */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_spreading_hotbar_swap(GameTestHelper helper) {
+    ItemStacksResourceHandler inventory = spreadingInventory();
+    MovingSideInventory menu = spreadingMenu(helper, inventory);
+    Player player = menu.player;
+    player.getInventory().setItem(0, new ItemStack(Items.APPLE, 6));
+    menu.clicked(0, 0, ClickType.SWAP, player);
+    assertCount(helper, inventory, menu, Items.APPLE, 6, "after the hotbar swap");
+    helper.succeed();
+  }
+
+  /** A plain set of a spreading slot (not a player placing items taken from somewhere) is refused without giving anything back */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_spreading_plain_set(GameTestHelper helper) {
+    ItemStacksResourceHandler inventory = spreadingInventory();
+    MovingSideInventory menu = spreadingMenu(helper, inventory);
+    menu.getSlot(0).set(new ItemStack(Items.APPLE, 4));
+    assertCount(helper, inventory, menu, Items.APPLE, 0, "after a plain set");
     helper.succeed();
   }
 

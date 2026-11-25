@@ -46,7 +46,7 @@ public class MelterContainerMenu extends TriggeringBaseContainerMenu<MelterBlock
       ModifiableItemHandler inputHandler = melter.getModifiableItemHandler(null);
       inputs = new Slot[inventory.getSlots()];
       for (int i = 0; i < inputs.length; i++) {
-        inputs[i] = this.addSlot(inputHandler.createSlot(i, 22, 16 + (i * 18)));
+        inputs[i] = this.addSlot(inputHandler.createSlot(inv == null ? null : inv.player, i, 22, 16 + (i * 18)));
       }
 
       // add fuel slot if present, we only add for the melter though
@@ -56,7 +56,7 @@ public class MelterContainerMenu extends TriggeringBaseContainerMenu<MelterBlock
         // PORT 1.21.10: menu slots need a setter for the real stacks, not just the native capability
         ModifiableItemHandler handler = IModifiableItemHandlerProvider.find(world, down, null);
         if (handler != null && handler.size() > 0) {
-          this.addSlot(handler.createSlot(0, 151, 32));
+          this.addSlot(handler.createSlot(inv == null ? null : inv.player, 0, 151, 32));
           hasFuelSlot = true;
         }
       }

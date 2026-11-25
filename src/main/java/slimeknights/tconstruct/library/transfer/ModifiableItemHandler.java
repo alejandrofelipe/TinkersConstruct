@@ -3,6 +3,7 @@ package slimeknights.tconstruct.library.transfer;
 import net.minecraft.core.Direction;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.EmptyResourceHandler;
@@ -48,9 +49,13 @@ public record ModifiableItemHandler(ResourceHandler<ItemResource> handler, Index
     }
   }
 
-  /** Creates a menu slot for the given index */
-  public Slot createSlot(int index, int x, int y) {
-    return new ModifiableItemHandlerSlot(handler, modifier, index, x, y);
+  /**
+   * Creates a menu slot for the given index
+   * @param player  Player using the menu, receives items a {@linkplain #transactional transactional} slot refuses after vanilla took them
+   *                from the cursor or another slot; null if unknown
+   */
+  public Slot createSlot(@Nullable Player player, int index, int x, int y) {
+    return new ModifiableItemHandlerSlot(handler, modifier, player, index, x, y);
   }
 
 
@@ -103,8 +108,8 @@ public record ModifiableItemHandler(ResourceHandler<ItemResource> handler, Index
    * Creates a handler over any native handler, for inventories that only expose the native capability. The setter moves the
    * difference through the handler in a root transaction, committed only if every move went through completely and the slot then holds
    * exactly the given stack, so it is subject to the handler's validation and may refuse a set. Menu slots created from it
-   * ({@link ModifiableItemHandlerSlot}) bound what vanilla places and takes by simulated transfers, so vanilla never takes items from the
-   * cursor for a set the handler would refuse.
+   * ({@link ModifiableItemHandlerSlot}) bound what vanilla places and takes by simulated transfers, and give back to the player whatever
+   * vanilla already took from the cursor or another slot for a set the handler still refuses (simulations cannot predict every handler).
    */
   public static ModifiableItemHandler transactional(ResourceHandler<ItemResource> handler) {
     return new ModifiableItemHandler(handler, new TransactionalModifier(handler));
@@ -114,6 +119,14 @@ public record ModifiableItemHandler(ResourceHandler<ItemResource> handler, Index
   record TransactionalModifier(ResourceHandler<ItemResource> handler) implements IndexModifier<ItemResource> {
     @Override
     public void set(int index, ItemResource resource, int amount) {
+      trySet(index, resource, amount);
+    }
+
+    /**
+     * Sets the slot, all or nothing.
+     * @return  True if the slot now holds exactly the given stack, false if the set was refused and nothing changed
+     */
+    boolean trySet(int index, ItemResource resource, int amount) {
       ItemResource current = handler.getResource(index);
       int currentAmount = current.isEmpty() ? 0 : handler.getAmountAsInt(index);
       try (Transaction tx = Transaction.openRoot()) {
@@ -144,6 +157,7 @@ public record ModifiableItemHandler(ResourceHandler<ItemResource> handler, Index
         if (success) {
           tx.commit();
         }
+        return success;
       }
     }
   }

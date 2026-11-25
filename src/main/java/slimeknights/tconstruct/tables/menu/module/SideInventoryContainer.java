@@ -83,6 +83,6 @@ public class SideInventoryContainer<TILE extends BlockEntity> extends BaseContai
    * @return  Inventory slot
    */
   protected Slot createSlot(ModifiableItemHandler itemHandler, int index, int x, int y) {
-    return itemHandler.createSlot(index, x, y);
+    return itemHandler.createSlot(inv == null ? null : inv.player, index, x, y);
   }
 }

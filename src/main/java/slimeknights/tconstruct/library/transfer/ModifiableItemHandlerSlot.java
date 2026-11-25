@@ -7,7 +7,9 @@ import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler.TransactionalModifier;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -15,7 +17,7 @@ import java.util.Optional;
  * {@link ResourceHandlerSlot} sits on an empty dummy container at index 0, but our screens ({@code SideInventoryScreen},
  * {@code ScalingChestScreen}, {@code GuiMeltingModule}) and Mantle's {@code WrapperSlot} read the inventory index from the slot.
  * <p>
- * Two safety nets on top of NeoForge's slot:
+ * Safety nets on top of NeoForge's slot:
  * <ul>
  *   <li>The handler may shrink while the menu is open (a smeltery re-forming smaller, a tool losing slots): an index past the handler's
  *   size reads as empty, takes nothing and gives nothing, like the legacy slot's {@code validSlot} guard, instead of throwing.</li>
@@ -24,20 +26,29 @@ import java.util.Optional;
  *   simulated transfer accepts ({@link #getMaxStackSize(ItemStack)}, like the legacy slot's simulated insert; {@link #mayPlace} also
  *   accepts the item a full slot already holds, like a chest slot) and taking
  *   by what a simulated extract gives ({@link #mayPickup} needs the whole stack to be extractable, as swaps and quick moves clear the slot;
- *   {@link #tryRemove} is clamped), so every set vanilla then makes is one the handler accepts.</li>
+ *   {@link #tryRemove} is clamped), so the sets vanilla then makes are ones the handler normally accepts.</li>
+ *   <li>Simulations cannot predict every handler (one spreading an insert over several slots non-linearly accepts a large simulated insert
+ *   but no exact set), so the final write is checked too: {@link #safeInsert(ItemStack, int)} sets the slot before shrinking the cursor,
+ *   and a refused {@link #setByPlayer(ItemStack, ItemStack)} (swaps, drags, number key swaps: vanilla already took the new stack) gives the
+ *   items the slot did not take back to the player. The set is all or nothing, so the handler keeps none of what is given back.</li>
  * </ul>
  */
 public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
   private final ResourceHandler<ItemResource> handler;
   private final int index;
-  /** If true, sets go through the handler and may be refused */
-  private final boolean transactional;
+  /** Setter that may refuse a set, null if sets always apply */
+  @Nullable
+  private final TransactionalModifier transactional;
+  /** Player receiving the items of refused player sets, null if unknown */
+  @Nullable
+  private final Player player;
 
-  public ModifiableItemHandlerSlot(ResourceHandler<ItemResource> handler, IndexModifier<ItemResource> modifier, int index, int x, int y) {
+  public ModifiableItemHandlerSlot(ResourceHandler<ItemResource> handler, IndexModifier<ItemResource> modifier, @Nullable Player player, int index, int x, int y) {
     super(handler, modifier, index, x, y);
     this.handler = handler;
     this.index = index;
-    this.transactional = modifier instanceof ModifiableItemHandler.TransactionalModifier;
+    this.transactional = modifier instanceof TransactionalModifier setter ? setter : null;
+    this.player = player;
   }
 
   @Override
@@ -90,7 +101,7 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
     if (!inRange() || !super.mayPlace(stack)) {
       return false;
     }
-    return !transactional || simulateInsert(stack) > 0 || simulateReplace(stack);
+    return transactional == null || simulateInsert(stack) > 0 || simulateReplace(stack);
   }
 
   /** Simulates taking out the slot's whole stack and putting the same item back, true if the stack's item is the slot's item and some goes back in */
@@ -114,7 +125,7 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
     if (!inRange()) {
       return 0;
     }
-    if (!transactional) {
+    if (transactional == null) {
       return super.getMaxStackSize(stack);
     }
     ItemStack current = super.getStackCopy();
@@ -161,6 +172,69 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
   }
 
 
+  /* Final write */
+
+  /**
+   * Same amounts as vanilla, but over a transactional setter the slot is set first and the stack only shrinks if the set went through, so
+   * a refused set leaves everything on the cursor.
+   */
+  @Override
+  public ItemStack safeInsert(ItemStack stack, int increment) {
+    if (transactional == null || !inRange()) {
+      return super.safeInsert(stack, increment);
+    }
+    if (stack.isEmpty() || !mayPlace(stack)) {
+      return stack;
+    }
+    ItemStack current = super.getStackCopy();
+    int amount = Math.min(Math.min(increment, stack.getCount()), getMaxStackSize(stack) - current.getCount());
+    if (amount > 0 && (current.isEmpty() || ItemStack.isSameItemSameComponents(current, stack))) {
+      if (transactional.trySet(index, ItemResource.of(stack), current.getCount() + amount)) {
+        stack.shrink(amount);
+      }
+      // the menu may write back the last stack handed out by getItem, so refresh it to the real contents
+      getItem();
+    }
+    return stack;
+  }
+
+  /**
+   * Over a transactional setter, vanilla calls this after already taking the new stack from the cursor or another slot (and, for a swap,
+   * handing out the old one), so a refused set would lose those items: the part of the new stack the slot did not take goes back to the
+   * player instead (server side; the client's prediction is corrected by the server). For a swap, whose old stack vanilla already handed
+   * out, the slot is still emptied when the handler allows it, so the old stack is not duplicated.
+   * <p>
+   * Programmatic {@link #set(ItemStack)} calls (client sync, {@link TransferUtil#trySetSlot}, Mantle's stack merging, which all check the
+   * result themselves) never give anything back.
+   */
+  @Override
+  public void setByPlayer(ItemStack newStack, ItemStack oldStack) {
+    if (transactional == null || !inRange()) {
+      super.setByPlayer(newStack, oldStack);
+      return;
+    }
+    ItemStack current = super.getStackCopy();
+    if (!transactional.trySet(index, ItemResource.of(newStack), newStack.getCount()) && !newStack.isEmpty()) {
+      int refused;
+      if (ItemStack.isSameItemSameComponents(current, newStack)) {
+        // vanilla took just the difference
+        refused = newStack.getCount() - current.getCount();
+      } else {
+        refused = newStack.getCount();
+        // a swap: vanilla already handed out the old stack
+        if (!current.isEmpty()) {
+          transactional.trySet(index, ItemResource.EMPTY, 0);
+        }
+      }
+      if (refused > 0 && player != null && !player.level().isClientSide()) {
+        TransferUtil.giveItemToPlayer(player, newStack.copyWithCount(refused));
+      }
+    }
+    // the menu may write back the last stack handed out by getItem, so refresh it to the real contents
+    getItem();
+  }
+
+
   /* Taking */
 
   /**
@@ -189,7 +263,7 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
     if (!inRange()) {
       return false;
     }
-    if (!transactional) {
+    if (transactional == null) {
       return super.mayPickup(player);
     }
     int amount = handler.getAmountAsInt(index);
@@ -201,7 +275,7 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
     if (!inRange()) {
       return Optional.empty();
     }
-    if (transactional) {
+    if (transactional != null) {
       // remove(count) sets the remainder, so only take what the handler gives
       count = simulateExtract(Math.min(count, decrement));
       if (count <= 0) {

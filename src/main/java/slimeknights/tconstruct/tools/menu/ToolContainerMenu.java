@@ -324,7 +324,8 @@ public class ToolContainerMenu extends AbstractContainerMenu {
   /** Tool inventory slot: sets go straight to the tool through the handler's setter, {@code setChanged} sets the stack back if it was changed */
   private static class ToolContainerSlot extends ModifiableItemHandlerSlot {
     public ToolContainerSlot(ModifiableItemHandler itemHandler, int index, int xPosition, int yPosition) {
-      super(itemHandler.handler(), itemHandler.modifier(), index, xPosition, yPosition);
+      // sets always apply (not transactional), so there is never anything to give back to a player
+      super(itemHandler.handler(), itemHandler.modifier(), null, index, xPosition, yPosition);
     }
 
     @Override

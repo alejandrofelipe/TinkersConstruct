@@ -56,7 +56,7 @@ public class AlloyerContainerMenu extends TriggeringBaseContainerMenu<AlloyerBlo
         // PORT 1.21.10: menu slots need a setter for the real stacks, not just the native capability
         ModifiableItemHandler handler = IModifiableItemHandlerProvider.find(world, down, null);
         if (handler != null && handler.size() > 0) {
-          this.addSlot(handler.createSlot(0, 151, 32));
+          this.addSlot(handler.createSlot(inv == null ? null : inv.player, 0, 151, 32));
           hasFuelSlot = true;
         }
       }
