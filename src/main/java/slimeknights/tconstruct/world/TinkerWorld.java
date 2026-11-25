@@ -12,6 +12,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacementTypes;
@@ -95,6 +96,7 @@ import slimeknights.tconstruct.world.block.SlimeTallGrassBlock;
 import slimeknights.tconstruct.world.block.SlimeVineBlock;
 import slimeknights.tconstruct.world.block.StickySlimeBlock;
 import slimeknights.tconstruct.world.data.MobEquipmentProvider;
+import slimeknights.tconstruct.world.data.SpawnEggTextureProvider;
 import slimeknights.tconstruct.common.data.BaseRecipeProvider;
 import slimeknights.tconstruct.world.data.WorldRecipeProvider;
 import slimeknights.tconstruct.world.entity.EnderSlimeEntity;
@@ -408,6 +410,11 @@ public final class TinkerWorld extends TinkerModule {
       fireblock.setFlammable(skySlimeVine.get(), 15, 100);
       fireblock.setFlammable(enderSlimeVine.get(), 15, 100);
     });
+  }
+
+  @SubscribeEvent
+  void gatherDataClient(final GatherDataEvent.Client event) {
+    event.addProvider(new SpawnEggTextureProvider(event.getGenerator().getPackOutput(), event.getResourceManager(PackType.CLIENT_RESOURCES)));
   }
 
   @SubscribeEvent

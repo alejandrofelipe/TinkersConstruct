@@ -157,6 +157,10 @@ public class TinkerItemModelProvider implements DataProvider {
     generated(TinkerWorld.knightmetalCluster, "block/geode/knightmetal_cluster");
     // heads
     TinkerWorld.headItems.forEach((type, head) -> head(id(head), type));
+    // spawn eggs, textures from SpawnEggTextureProvider
+    spawnEgg(TinkerWorld.skySlimeEntity);
+    spawnEgg(TinkerWorld.enderSlimeEntity);
+    spawnEgg(TinkerWorld.terracubeEntity);
   }
 
   @Override
@@ -272,6 +276,12 @@ public class TinkerItemModelProvider implements DataProvider {
     def.addProperty("base", "minecraft:item/template_skull");
     def.add("model", special);
     itemDefinition(item, def);
+  }
+
+  /** Spawn egg with its own texture named after the item, like vanilla eggs since 1.21.5 */
+  private void spawnEgg(ItemLike egg) {
+    ResourceLocation item = id(egg);
+    basicItem(item, item.getPath());
   }
 
   /** Creates models for the given cast object (cast, sand cast, red sand cast) */

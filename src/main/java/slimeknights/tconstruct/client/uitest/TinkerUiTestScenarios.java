@@ -35,6 +35,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -868,6 +869,7 @@ public class TinkerUiTestScenarios {
   /**
    * Opens the player inventory with every Tinkers head item in the hotbar/inventory, one held (rendered by the player
    * preview) and one worn, to verify the {@code tconstruct:head} special item model draws the heads instead of nothing.
+   * The Tinkers spawn eggs follow the heads, to check their generated textures (missing since 1.21.5 removed the template).
    */
   private static class HeadItemsScenario implements UiTestScenario {
     @Override
@@ -886,7 +888,14 @@ public class TinkerUiTestScenarios {
         ctx.sendCommand("item replace entity @s " + slot + " with " + BuiltInRegistries.ITEM.getKey(TinkerWorld.headItems.get(types[i])));
       }
       ctx.sendCommand("item replace entity @s armor.head with " + BuiltInRegistries.ITEM.getKey(TinkerWorld.headItems.get(TinkerHeadType.PIGLIN_BRUTE)));
+      // spawn eggs after the heads: their generated textures reproduce the tinted pre 1.21.5 template
+      for (int i = 0; i < SPAWN_EGGS.size(); i++) {
+        ctx.sendCommand("item replace entity @s inventory." + (types.length - 9 + i) + " with " + BuiltInRegistries.ITEM.getKey(SPAWN_EGGS.get(i).asItem()));
+      }
     }
+
+    /** Tinkers spawn eggs shown after the heads */
+    private static final List<ItemLike> SPAWN_EGGS = List.of(TinkerWorld.skySlimeEntity, TinkerWorld.enderSlimeEntity, TinkerWorld.terracubeEntity);
 
     @Override
     public int prepareSettleTicks() {
@@ -895,6 +904,12 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void open(UiTestContext ctx) {
+      for (ItemLike egg : SPAWN_EGGS) {
+        ResourceLocation texture = BuiltInRegistries.ITEM.getKey(egg.asItem()).withPath(path -> "textures/item/" + path + ".png");
+        if (ctx.mc().getResourceManager().getResource(texture).isEmpty()) {
+          throw new IllegalStateException("missing spawn egg texture " + texture);
+        }
+      }
       LocalPlayer player = Objects.requireNonNull(ctx.mc().player);
       player.getInventory().setSelectedSlot(0); // hotbar.0 -> the blaze head is held
       ctx.mc().setScreen(new InventoryScreen(player));

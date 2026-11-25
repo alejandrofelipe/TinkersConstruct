@@ -111,9 +111,11 @@ runs {
         // serverData launch target registers that option (it throws UnrecognizedOptionException). Existing
         // resources are read through the GatherDataEvent ResourceManager instead.
         runType 'clientData'
+        // src/datagen/resources: datagen-only inputs, not shipped (Mojang's 1.21.4 spawn egg template layers, tinted by SpawnEggTextureProvider)
         arguments.addAll '--mod', 'tconstruct', '--all',
             '--output', file('src/generated/resources/').getAbsolutePath(),
-            '--existing', file('src/main/resources/').getAbsolutePath()
+            '--existing', file('src/main/resources/').getAbsolutePath(),
+            '--existing', file('src/datagen/resources/').getAbsolutePath()
     }
     // 1.21.4: the GatherDataEvent.Client/.Server split needs a second run for the data-side providers
     // (recipes/tags/loot/advancements/fluid_transfer). Mirrors `data` but on the `serverData` run type.
