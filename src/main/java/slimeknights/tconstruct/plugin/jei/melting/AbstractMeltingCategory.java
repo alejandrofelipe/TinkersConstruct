@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableAnimated;
 import mezz.jei.api.gui.drawable.IDrawableAnimated.StartDirection;
@@ -30,7 +31,6 @@ import slimeknights.tconstruct.library.recipe.melting.MeltingRecipe;
 import slimeknights.tconstruct.plugin.jei.util.FluidTooltipCallback;
 
 import java.awt.Color;
-import java.util.Collections;
 import java.util.List;
 
 /** Shared logic between melting and foundry */
@@ -53,9 +53,13 @@ public abstract class AbstractMeltingCategory implements IRecipeCategory<Melting
   private final IDrawable background;
 
   @Override
-  @SuppressWarnings("removal")
-  public IDrawable getBackground() {
-    return background;
+  public int getWidth() {
+    return background.getWidth();
+  }
+
+  @Override
+  public int getHeight() {
+    return background.getHeight();
   }
 
   protected final IDrawableStatic tankOverlay;
@@ -76,6 +80,8 @@ public abstract class AbstractMeltingCategory implements IRecipeCategory<Melting
 
   @Override
   public void draw(MeltingRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
+    // the background first, where JEI drew getBackground() (deprecated for removal): same pose, right before draw
+    background.draw(graphics);
     // draw the arrow
     cachedArrows.getUnchecked(recipe.getTime() * 5).draw(graphics, 56, 18);
     if (recipe.getOreType() != null) {
@@ -91,18 +97,15 @@ public abstract class AbstractMeltingCategory implements IRecipeCategory<Melting
   }
 
   @Override
-  @SuppressWarnings("removal")
-  public List<Component> getTooltipStrings(MeltingRecipe recipe, IRecipeSlotsView slots, double mouseXD, double mouseYD) {
+  public void getTooltip(ITooltipBuilder tooltip, MeltingRecipe recipe, IRecipeSlotsView slots, double mouseXD, double mouseYD) {
     int mouseX = (int)mouseXD;
     int mouseY = (int)mouseYD;
     if (recipe.getOreType() != null && GuiUtil.isHovered(mouseX, mouseY, 87, 31, 16, 16)) {
-      return Collections.singletonList(TOOLTIP_ORE);
+      tooltip.add(TOOLTIP_ORE);
+    } else if (GuiUtil.isHovered(mouseX, mouseY, 56, 18, 24, 17)) {
+      // time tooltip
+      tooltip.add(Component.translatable(KEY_COOLING_TIME, recipe.getTime() / 4));
     }
-    // time tooltip
-    if (GuiUtil.isHovered(mouseX, mouseY, 56, 18, 24, 17)) {
-      return Collections.singletonList(Component.translatable(KEY_COOLING_TIME, recipe.getTime() / 4));
-    }
-    return Collections.emptyList();
   }
 
   /** Adds amounts to outputs and temperatures to fuels */

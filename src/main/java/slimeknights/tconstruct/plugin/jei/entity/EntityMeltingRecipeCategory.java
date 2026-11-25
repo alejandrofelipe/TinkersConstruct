@@ -49,9 +49,13 @@ public class EntityMeltingRecipeCategory implements IRecipeCategory<EntityMeltin
   private final IDrawable background;
 
   @Override
-  @SuppressWarnings("removal")
-  public IDrawable getBackground() {
-    return background;
+  public int getWidth() {
+    return background.getWidth();
+  }
+
+  @Override
+  public int getHeight() {
+    return background.getHeight();
   }
 
   @Getter
@@ -78,6 +82,8 @@ public class EntityMeltingRecipeCategory implements IRecipeCategory<EntityMeltin
 
   @Override
   public void draw(EntityMeltingRecipe recipe, IRecipeSlotsView slot, GuiGraphics graphics, double mouseX, double mouseY) {
+    // the background first, where JEI drew getBackground() (deprecated for removal): same pose, right before draw
+    background.draw(graphics);
     arrow.draw(graphics, 71, 21);
 
     // draw damage string next to the heart icon

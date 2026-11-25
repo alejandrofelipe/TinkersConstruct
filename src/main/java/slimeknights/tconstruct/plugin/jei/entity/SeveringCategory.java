@@ -5,11 +5,13 @@ import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IIngredientAcceptor;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import slimeknights.mantle.plugin.jei.MantleJEIConstants;
@@ -30,9 +32,13 @@ public class SeveringCategory implements IRecipeCategory<SeveringRecipe> {
   private final IDrawable background;
 
   @Override
-  @SuppressWarnings("removal")
-  public IDrawable getBackground() {
-    return background;
+  public int getWidth() {
+    return background.getWidth();
+  }
+
+  @Override
+  public int getHeight() {
+    return background.getHeight();
   }
 
   @Getter
@@ -50,6 +56,12 @@ public class SeveringCategory implements IRecipeCategory<SeveringRecipe> {
   @Override
   public Component getTitle() {
     return TITLE;
+  }
+
+  @Override
+  public void draw(SeveringRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
+    // the background, where JEI drew getBackground() (deprecated for removal): same pose, right before draw
+    background.draw(graphics);
   }
 
   @Override

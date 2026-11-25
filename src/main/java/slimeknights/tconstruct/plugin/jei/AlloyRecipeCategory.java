@@ -61,9 +61,13 @@ public class AlloyRecipeCategory implements IRecipeCategory<AlloyRecipe> {
   private final IDrawable background;
 
   @Override
-  @SuppressWarnings("removal")
-  public IDrawable getBackground() {
-    return background;
+  public int getWidth() {
+    return background.getWidth();
+  }
+
+  @Override
+  public int getHeight() {
+    return background.getHeight();
   }
 
   @Getter
@@ -90,6 +94,8 @@ public class AlloyRecipeCategory implements IRecipeCategory<AlloyRecipe> {
 
   @Override
   public void draw(AlloyRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
+    // the background first, where JEI drew getBackground() (deprecated for removal): same pose, right before draw
+    background.draw(graphics);
     arrow.draw(graphics, 90, 21);
     // temperature info
     Font fontRenderer = Minecraft.getInstance().font;

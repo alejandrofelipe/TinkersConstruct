@@ -8,6 +8,7 @@ import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableAnimated;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -32,7 +33,6 @@ import slimeknights.tconstruct.plugin.jei.util.FluidTooltipCallback;
 
 import javax.annotation.Nullable;
 import java.awt.Color;
-import java.util.Collections;
 import java.util.List;
 
 /** Shared base logic for the two casting recipe types */
@@ -45,9 +45,13 @@ public abstract class AbstractCastingCategory implements IRecipeCategory<IDispla
   private final IDrawable background;
 
   @Override
-  @SuppressWarnings("removal")
-  public IDrawable getBackground() {
-    return background;
+  public int getWidth() {
+    return background.getWidth();
+  }
+
+  @Override
+  public int getHeight() {
+    return background.getHeight();
   }
 
   @Getter
@@ -75,6 +79,8 @@ public abstract class AbstractCastingCategory implements IRecipeCategory<IDispla
 
   @Override
   public void draw(IDisplayableCastingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics graphics, double mouseX, double mouseY) {
+    // the background first, where JEI drew getBackground() (deprecated for removal): same pose, right before draw
+    background.draw(graphics);
     cachedArrows.getUnchecked(Math.max(1, recipe.getCoolingTime())).draw(graphics, 58, 18);
     block.draw(graphics, 38, 35);
     if (recipe.hasCast()) {
@@ -89,12 +95,10 @@ public abstract class AbstractCastingCategory implements IRecipeCategory<IDispla
   }
 
   @Override
-  @SuppressWarnings("removal")
-  public List<Component> getTooltipStrings(IDisplayableCastingRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+  public void getTooltip(ITooltipBuilder tooltip, IDisplayableCastingRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
     if (recipe.hasCast() && GuiUtil.isHovered((int)mouseX, (int)mouseY, 63, 39, 13, 11)) {
-      return Collections.singletonList(Component.translatable(recipe.isConsumed() ? KEY_CAST_CONSUMED : KEY_CAST_KEPT));
+      tooltip.add(Component.translatable(recipe.isConsumed() ? KEY_CAST_CONSUMED : KEY_CAST_KEPT));
     }
-    return Collections.emptyList();
   }
 
   @Override

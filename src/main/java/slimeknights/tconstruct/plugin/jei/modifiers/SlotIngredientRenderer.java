@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 /** Renderer for modifier slot types */
-@SuppressWarnings("removal")
 public enum SlotIngredientRenderer implements IIngredientRenderer<SlotCount> {
   /** Shows a slot in the ingredients view */
   INGREDIENT {

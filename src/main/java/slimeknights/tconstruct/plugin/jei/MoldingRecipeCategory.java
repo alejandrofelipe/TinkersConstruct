@@ -4,6 +4,7 @@ import lombok.Getter;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -24,8 +25,6 @@ import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.molding.MoldingRecipe;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
-import java.util.Collections;
-import java.util.List;
 
 /** Recipe category for molding casts */
 public class MoldingRecipeCategory implements IRecipeCategory<MoldingRecipe> {
@@ -36,9 +35,13 @@ public class MoldingRecipeCategory implements IRecipeCategory<MoldingRecipe> {
   private final IDrawable background;
 
   @Override
-  @SuppressWarnings("removal")
-  public IDrawable getBackground() {
-    return background;
+  public int getWidth() {
+    return background.getWidth();
+  }
+
+  @Override
+  public int getHeight() {
+    return background.getHeight();
   }
 
   @Getter
@@ -65,6 +68,8 @@ public class MoldingRecipeCategory implements IRecipeCategory<MoldingRecipe> {
 
   @Override
   public void draw(MoldingRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
+    // the background first, where JEI drew getBackground() (deprecated for removal): same pose, right before draw
+    background.draw(graphics);
     // draw the main block
     IDrawable block = recipe.getType() == TinkerRecipeTypes.MOLDING_BASIN.get() ? basin : table;
     block.draw(graphics, 3, 40);
@@ -80,12 +85,10 @@ public class MoldingRecipeCategory implements IRecipeCategory<MoldingRecipe> {
   }
 
   @Override
-  @SuppressWarnings("removal")
-  public List<Component> getTooltipStrings(MoldingRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
+  public void getTooltip(ITooltipBuilder tooltip, MoldingRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
     if (recipe.isPatternConsumed() && !recipe.getPattern().isEmpty() && GuiUtil.isHovered((int)mouseX, (int)mouseY, 50, 7, 18, 18)) {
-      return Collections.singletonList(TOOLTIP_PATTERN_CONSUMED);
+      tooltip.add(TOOLTIP_PATTERN_CONSUMED);
     }
-    return Collections.emptyList();
   }
 
   @Override

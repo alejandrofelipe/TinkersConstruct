@@ -3,6 +3,7 @@ package slimeknights.tconstruct.plugin.jei.modifiers;
 import lombok.Getter;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -60,9 +61,13 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
   private final IDrawable background;
 
   @Override
-  @SuppressWarnings("removal")
-  public IDrawable getBackground() {
-    return background;
+  public int getWidth() {
+    return background.getWidth();
+  }
+
+  @Override
+  public int getHeight() {
+    return background.getHeight();
   }
 
   @Getter
@@ -102,6 +107,8 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
 
   @Override
   public void draw(IDisplayModifierRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics graphics, double mouseX, double mouseY) {
+    // the background first, where JEI drew getBackground() (deprecated for removal): same pose, right before draw
+    background.draw(graphics);
     drawSlot(graphics, recipe, 0,  2, 32);
     drawSlot(graphics, recipe, 1, 24, 14);
     drawSlot(graphics, recipe, 2, 46, 32);
@@ -157,26 +164,25 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
   }
 
   @Override
-  @SuppressWarnings("removal")
-  public List<Component> getTooltipStrings(IDisplayModifierRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+  public void getTooltip(ITooltipBuilder tooltip, IDisplayModifierRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
     int checkX = (int) mouseX;
     int checkY = (int) mouseY;
     ModifierEntry result = recipe.getDisplayResult();
     if (GuiUtil.isHovered(checkX, checkY, 66, 58, 16, 16)) {
       Component requirements = result.getHook(ModifierHooks.REQUIREMENTS).requirementsError(result);
       if (requirements != null) {
-        return Collections.singletonList(requirements);
+        tooltip.add(requirements);
+        return;
       }
     }
     if (recipe.isIncremental() && GuiUtil.isHovered(checkX, checkY, 83, 59, 16, 16)) {
-      return TEXT_INCREMENTAL;
+      tooltip.addAll(TEXT_INCREMENTAL);
+      return;
     }
     SlotCount slots = recipe.getSlots();
     if (slots == null && GuiUtil.isHovered(checkX, checkY, 102, 58, 24, 16)) {
-      return SlotIngredientRenderer.TEXT_FREE;
+      tooltip.addAll(SlotIngredientRenderer.TEXT_FREE);
     }
-    
-    return Collections.emptyList();
   }
 
   @Override

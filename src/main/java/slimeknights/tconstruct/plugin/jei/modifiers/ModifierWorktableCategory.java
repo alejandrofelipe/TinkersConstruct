@@ -4,6 +4,7 @@ import lombok.Getter;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -22,7 +23,6 @@ import slimeknights.tconstruct.library.recipe.worktable.IModifierWorktableRecipe
 import slimeknights.tconstruct.plugin.jei.TConstructJEIConstants;
 import slimeknights.tconstruct.tables.TinkerTables;
 
-import java.util.Collections;
 import java.util.List;
 
 public class ModifierWorktableCategory implements IRecipeCategory<IModifierWorktableRecipe> {
@@ -32,9 +32,13 @@ public class ModifierWorktableCategory implements IRecipeCategory<IModifierWorkt
   private final IDrawable background;
 
   @Override
-  @SuppressWarnings("removal")
-  public IDrawable getBackground() {
-    return background;
+  public int getWidth() {
+    return background.getWidth();
+  }
+
+  @Override
+  public int getHeight() {
+    return background.getHeight();
   }
 
   @Getter
@@ -63,6 +67,8 @@ public class ModifierWorktableCategory implements IRecipeCategory<IModifierWorkt
 
   @Override
   public void draw(IModifierWorktableRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
+    // the background first, where JEI drew getBackground() (deprecated for removal): same pose, right before draw
+    background.draw(graphics);
     if (recipe.getInputTools().isEmpty()) {
       toolIcon.draw(graphics, 23, 16);
     }
@@ -76,12 +82,10 @@ public class ModifierWorktableCategory implements IRecipeCategory<IModifierWorkt
   }
 
   @Override
-  @SuppressWarnings("removal")
-  public List<Component> getTooltipStrings(IModifierWorktableRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+  public void getTooltip(ITooltipBuilder tooltip, IModifierWorktableRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
     if (mouseY >= 2 && mouseY <= 12) {
-      return List.of(recipe.getDescription(null));
+      tooltip.add(recipe.getDescription(null));
     }
-    return Collections.emptyList();
   }
 
   @Override

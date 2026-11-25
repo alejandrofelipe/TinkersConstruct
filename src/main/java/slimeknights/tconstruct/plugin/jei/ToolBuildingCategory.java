@@ -3,6 +3,7 @@ package slimeknights.tconstruct.plugin.jei;
 import lombok.Getter;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -40,9 +41,13 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
   private final IDrawable background;
 
   @Override
-  @SuppressWarnings("removal")
-  public IDrawable getBackground() {
-    return background;
+  public int getWidth() {
+    return background.getWidth();
+  }
+
+  @Override
+  public int getHeight() {
+    return background.getHeight();
   }
 
   private final IDrawable anvil, slotBorder;
@@ -92,6 +97,8 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
 
   @Override
   public void draw(ToolBuildingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics graphics, double mouseX, double mouseY) {
+    // the background first, where JEI drew getBackground() (deprecated for removal): same pose, right before draw
+    background.draw(graphics);
     // first, draw the item background
     ItemStack outputStack = recipe.getOutput() instanceof IModifiableDisplay modifiable ? modifiable.getRenderTool() : recipe.getOutput().asItem().getDefaultInstance();
     Matrix3x2fStack renderPose = graphics.pose();
@@ -125,11 +132,10 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
   }
 
   @Override
-  @SuppressWarnings("removal")
-  public List<Component> getTooltipStrings(ToolBuildingRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
-    return recipe.requiresAnvil() && GuiUtil.isHovered((int) mouseX, (int) mouseY, 76, 44, ITEM_SIZE, ITEM_SIZE) ?
-      List.of(TConstruct.makeTranslation("jei", "tinkering.tool_building.anvil")) :
-      List.of();
+  public void getTooltip(ITooltipBuilder tooltip, ToolBuildingRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+    if (recipe.requiresAnvil() && GuiUtil.isHovered((int) mouseX, (int) mouseY, 76, 44, ITEM_SIZE, ITEM_SIZE)) {
+      tooltip.add(TConstruct.makeTranslation("jei", "tinkering.tool_building.anvil"));
+    }
   }
 
   @Nonnull

@@ -38,9 +38,13 @@ public class PartBuilderCategory implements IRecipeCategory<IDisplayPartBuilderR
   private final IDrawable background;
 
   @Override
-  @SuppressWarnings("removal")
-  public IDrawable getBackground() {
-    return background;
+  public int getWidth() {
+    return background.getWidth();
+  }
+
+  @Override
+  public int getHeight() {
+    return background.getHeight();
   }
 
   @Getter
@@ -62,6 +66,8 @@ public class PartBuilderCategory implements IRecipeCategory<IDisplayPartBuilderR
 
   @Override
   public void draw(IDisplayPartBuilderRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
+    // the background first, where JEI drew getBackground() (deprecated for removal): same pose, right before draw
+    background.draw(graphics);
     MaterialVariant variant = recipe.getMaterial();
     if (!variant.isEmpty()) {
       Font fontRenderer = Minecraft.getInstance().font;
