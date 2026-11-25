@@ -3,6 +3,7 @@ package slimeknights.tconstruct.client.uitest;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.IRecipeLayoutDrawable;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.IRecipeManager;
@@ -84,6 +85,12 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
 import slimeknights.tconstruct.library.recipe.FluidValues;
+import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
+import slimeknights.tconstruct.library.recipe.melting.MeltingRecipe;
+import slimeknights.tconstruct.library.recipe.modifiers.adding.IDisplayModifierRecipe;
+import slimeknights.tconstruct.library.recipe.molding.MoldingRecipe;
+import slimeknights.tconstruct.library.recipe.tinkerstation.building.ToolBuildingRecipe;
+import slimeknights.tconstruct.library.recipe.worktable.IModifierWorktableRecipe;
 import slimeknights.tconstruct.library.tools.nbt.MaterialIdNBT;
 import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
@@ -123,7 +130,9 @@ import slimeknights.tconstruct.world.TinkerWorld;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -153,6 +162,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new BookScenario());
     UiTestScenarios.register(new JeiCategoryScenario<>("melting", TConstructJEIConstants.MELTING));
     UiTestScenarios.register(new JeiItemListCleanupScenario());
+    UiTestScenarios.register(new JeiCategoryTooltipsScenario());
     UiTestScenarios.register(new BookInteriorScenario());
     UiTestScenarios.register(new StationReflowScenario());
     UiTestScenarios.register(new StationCollapsedScenario());
@@ -421,6 +431,99 @@ public class TinkerUiTestScenarios {
         .toList();
       if (!leftovers.isEmpty()) {
         throw new IllegalStateException("JEI item list still contains " + leftovers.size() + " hidden-item entries, first: " + leftovers.get(0));
+      }
+    }
+
+    @Override
+    public void close(UiTestContext ctx) { /* nothing open */ }
+  }
+
+  /**
+   * No GUI: asks every Tinkers JEI category with hover tooltips for its tooltip at a point inside each tooltip area and at one outside,
+   * through {@link IRecipeCategory#getTooltip(ITooltipBuilder, Object, IRecipeSlotsView, double, double)} as JEI's recipe layout does,
+   * and checks the exact lines (cooling time, ore, cast kept/consumed, pattern consumed, anvil, incremental/free modifiers, worktable
+   * description). Pins the tooltips across the move off JEI's deprecated {@code getTooltipStrings}.
+   */
+  private static class JeiCategoryTooltipsScenario implements UiTestScenario {
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource("jei_category_tooltips");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) { /* nothing to build */ }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      IJeiRuntime runtime = JEIPlugin.runtime;
+      if (runtime == null) {
+        throw new IllegalStateException("JEI runtime not captured - onRuntimeAvailable never fired");
+      }
+      IRecipeManager recipes = runtime.getRecipeManager();
+
+      // melting: ore marker, cooling time over the arrow
+      MeltingRecipe melting = prefer(recipes, TConstructJEIConstants.MELTING, recipe -> recipe.getOreType() != null);
+      check(runtime, TConstructJEIConstants.MELTING, melting, 90, 35, melting.getOreType() != null ? List.of(Component.translatable(jeiKey("melting.ore"))) : List.of());
+      check(runtime, TConstructJEIConstants.MELTING, melting, 60, 20, List.of(Component.translatable(jeiKey("melting.time"), melting.getTime() / 4)));
+      check(runtime, TConstructJEIConstants.MELTING, melting, 2, 2, List.of());
+      // casting: cast kept or consumed
+      IDisplayableCastingRecipe cast = prefer(recipes, TConstructJEIConstants.CASTING_TABLE, IDisplayableCastingRecipe::hasCast);
+      check(runtime, TConstructJEIConstants.CASTING_TABLE, cast, 65, 42,
+            cast.hasCast() ? List.of(Component.translatable(jeiKey(cast.isConsumed() ? "casting.cast_consumed" : "casting.cast_kept"))) : List.of());
+      check(runtime, TConstructJEIConstants.CASTING_TABLE, cast, 110, 2, List.of());
+      // molding: consumed pattern (Tinkers' own recipes keep their patterns, so this may only check the empty case)
+      MoldingRecipe molding = prefer(recipes, TConstructJEIConstants.MOLDING, recipe -> recipe.isPatternConsumed() && recipe.getPattern() != null && !recipe.getPattern().isEmpty());
+      check(runtime, TConstructJEIConstants.MOLDING, molding, 55, 10, molding.isPatternConsumed() && molding.getPattern() != null && !molding.getPattern().isEmpty()
+                                                                   ? List.of(Component.translatable(jeiKey("molding.pattern_consumed"))) : List.of());
+      check(runtime, TConstructJEIConstants.MOLDING, molding, 2, 50, List.of());
+      // tool building: anvil requirement
+      ToolBuildingRecipe tool = prefer(recipes, TConstructJEIConstants.TOOL_BUILDING, ToolBuildingRecipe::requiresAnvil);
+      check(runtime, TConstructJEIConstants.TOOL_BUILDING, tool, 80, 48, tool.requiresAnvil() ? List.of(Component.translatable(jeiKey("tinkering.tool_building.anvil"))) : List.of());
+      check(runtime, TConstructJEIConstants.TOOL_BUILDING, tool, 2, 2, List.of());
+      // modifiers: incremental marker, free slot marker
+      IDisplayModifierRecipe incremental = prefer(recipes, TConstructJEIConstants.MODIFIERS, IDisplayModifierRecipe::isIncremental);
+      check(runtime, TConstructJEIConstants.MODIFIERS, incremental, 85, 61, incremental.isIncremental() ? List.of(Component.translatable(jeiKey("modifiers.incremental"))) : List.of());
+      IDisplayModifierRecipe free = prefer(recipes, TConstructJEIConstants.MODIFIERS, recipe -> recipe.getSlots() == null);
+      check(runtime, TConstructJEIConstants.MODIFIERS, free, 110, 60, free.getSlots() == null ? List.of(Component.translatable(jeiKey("modifiers.free"))) : List.of());
+      check(runtime, TConstructJEIConstants.MODIFIERS, free, 120, 2, List.of());
+      // worktable: description along the top
+      IModifierWorktableRecipe worktable = prefer(recipes, TConstructJEIConstants.MODIFIER_WORKTABLE, recipe -> true);
+      check(runtime, TConstructJEIConstants.MODIFIER_WORKTABLE, worktable, 30, 5, List.of(worktable.getDescription(null)));
+      check(runtime, TConstructJEIConstants.MODIFIER_WORKTABLE, worktable, 30, 30, List.of());
+    }
+
+    private static String jeiKey(String path) {
+      return TConstruct.makeTranslationKey("jei", path);
+    }
+
+    /** Gets the first recipe matching the predicate, the one whose tooltip has lines, or the first recipe if none does */
+    private static <T> T prefer(IRecipeManager recipes, IRecipeType<T> type, Predicate<T> predicate) {
+      List<T> all = recipes.createRecipeLookup(type).get().toList();
+      if (all.isEmpty()) {
+        throw new IllegalStateException("JEI category " + type.getUid() + " has no recipes");
+      }
+      return all.stream().filter(predicate).findFirst().orElse(all.get(0));
+    }
+
+    /** Collects the tooltip of the category at the given point and compares it to the expected lines */
+    private static <T> void check(IJeiRuntime runtime, IRecipeType<T> type, T recipe, double mouseX, double mouseY, List<Component> expected) {
+      IRecipeManager recipes = runtime.getRecipeManager();
+      IRecipeCategory<T> category = recipes.getRecipeCategory(type);
+      List<Object> lines = new ArrayList<>();
+      // a proxy rather than an implementation, so nothing overrides the builder's deprecated legacy methods
+      ITooltipBuilder tooltip = (ITooltipBuilder) Proxy.newProxyInstance(ITooltipBuilder.class.getClassLoader(), new Class<?>[] {ITooltipBuilder.class}, (proxy, method, args) -> {
+        switch (method.getName()) {
+          case "add" -> lines.add(args[0]);
+          case "addAll" -> lines.addAll((Collection<?>) args[0]);
+          default -> throw new UnsupportedOperationException("tooltip builder method " + method.getName() + " used by " + type.getUid());
+        }
+        return null;
+      });
+      IRecipeSlotsView slots = recipes.createRecipeLayoutDrawable(category, recipe, runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup())
+        .map(IRecipeLayoutDrawable::getRecipeSlotsView).orElseThrow(() -> new IllegalStateException("JEI could not lay out a " + type.getUid() + " recipe"));
+      category.getTooltip(tooltip, recipe, slots, mouseX, mouseY);
+      if (!lines.equals(expected)) {
+        throw new IllegalStateException(type.getUid() + " tooltip at " + mouseX + ", " + mouseY + ": expected " + expected + " but got " + lines);
       }
     }
 
