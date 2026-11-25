@@ -1,12 +1,14 @@
 package slimeknights.tconstruct.tables.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
@@ -92,6 +94,23 @@ public class ChestBlock extends TabbedTableBlock {
     }
     // fall through to useWithoutItem (opens the GUI)
     return InteractionResult.TRY_WITH_EMPTY_HAND;
+  }
+
+  @Override
+  public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    // chests that keep their contents in the dropped item (cast chest) drop no loot when broken in creative, so drop the item with the
+    // contents like ShulkerBoxBlock does; the component is only there when the chest has contents
+    if (!dropsItems && !level.isClientSide() && player.preventsBlockDrops() && level.getBlockEntity(pos) instanceof AbstractChestBlockEntity chest) {
+      DataComponentMap components = chest.collectComponents();
+      if (components.has(DataComponents.CONTAINER)) {
+        ItemStack stack = new ItemStack(this);
+        stack.applyComponents(components);
+        ItemEntity entity = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
+        entity.setDefaultPickUpDelay();
+        level.addFreshEntity(entity);
+      }
+    }
+    return super.playerWillDestroy(level, pos, state, player);
   }
 
   @Override

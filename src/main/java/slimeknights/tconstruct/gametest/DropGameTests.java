@@ -18,6 +18,7 @@ import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Husk;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -27,9 +28,11 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
@@ -227,6 +230,50 @@ public class DropGameTests {
     BlockPos emptyPos = helper.absolutePos(new BlockPos(1, 1, 3));
     level.setBlockAndUpdate(emptyPos, state);
     assertPlainChest(helper, breakChest(helper, emptyPos), "an empty chest");
+    helper.succeed();
+  }
+
+  /** Breaks the block like a creative player does: {@code playerWillDestroy}, then the block is removed without loot */
+  private static void breakInCreative(GameTestHelper helper, BlockPos pos) {
+    ServerLevel level = helper.getLevel();
+    Player player = helper.makeMockPlayer(GameType.CREATIVE);
+    GameType.CREATIVE.updatePlayerAbilities(player.getAbilities());
+    BlockState state = level.getBlockState(pos);
+    state.getBlock().playerWillDestroy(level, pos, state, player);
+    level.removeBlock(pos, false);
+  }
+
+  /** Item entities lying in the block space at the position */
+  private static List<ItemEntity> itemsAt(GameTestHelper helper, BlockPos pos) {
+    return helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(pos));
+  }
+
+  /**
+   * Breaking a filled cast chest in creative drops no loot, so like a shulker box it drops the chest with its inventory instead
+   * (nothing is lost); an empty chest drops nothing.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void cast_chest_keeps_inventory_when_broken_in_creative(GameTestHelper helper) {
+    ServerLevel level = helper.getLevel();
+    BlockState state = TinkerTables.castChest.get().defaultBlockState();
+    BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
+    level.setBlockAndUpdate(pos, state);
+    if (!(level.getBlockEntity(pos) instanceof CastChestBlockEntity chest)) {
+      throw new IllegalStateException("no cast chest block entity");
+    }
+    ItemStack ingots = new ItemStack(TinkerSmeltery.ingotCast.get(), 3);
+    chest.getItemHandler().setStackInSlot(0, ingots.copy());
+    breakInCreative(helper, pos);
+    helper.assertTrue(level.getBlockState(pos).isAir(), Component.literal("cast chest was not removed"));
+    List<ItemEntity> drops = itemsAt(helper, pos);
+    helper.assertTrue(drops.size() == 1 && drops.getFirst().getItem().is(TinkerTables.castChest.asItem()), Component.literal("expected a single cast chest item, got " + drops));
+    assertDroppedContents(helper, drops.getFirst().getItem(), ingots);
+
+    // empty chest: nothing to keep, so nothing drops
+    BlockPos emptyPos = helper.absolutePos(new BlockPos(3, 1, 3));
+    level.setBlockAndUpdate(emptyPos, state);
+    breakInCreative(helper, emptyPos);
+    helper.assertTrue(itemsAt(helper, emptyPos).isEmpty(), Component.literal("empty cast chest dropped " + itemsAt(helper, emptyPos)));
     helper.succeed();
   }
 
