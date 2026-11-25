@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.library.modifiers.fluid;
 
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import slimeknights.tconstruct.library.fluid.FluidAction;
 
 /** Base class for {@link FluidEffect} to simplify creating effects */
 public interface UnloadableFluidEffect<C extends FluidEffectContext> {

@@ -3,12 +3,12 @@ package slimeknights.tconstruct.library.modifiers.fluid;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.mantle.data.loadable.primitive.BooleanLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.recipe.ingredient.FluidIngredient;
+import slimeknights.tconstruct.library.fluid.FluidAction;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext.Block;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext.Entity;
 
