@@ -20,7 +20,6 @@ import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Fluid handler of casting tables and basins, whose capacity comes from the casting recipe started by the first fill.
@@ -315,17 +314,10 @@ public class CastingFluidHandler implements IFluidHandler, ResourceHandler<Fluid
   /** Reads the tank from Tag */
   public void read(ValueInput nbt) {
     capacity = nbt.getIntOr(TAG_CAPACITY, 0);
-    // only replace the fluid if the key holds a compound, OPTIONAL_CODEC treats an empty compound as empty like the old parseOptional
-    if (nbt.child(TAG_FLUID).isPresent()) {
-      setFluid(nbt.read(TAG_FLUID, FluidStack.OPTIONAL_CODEC).orElse(FluidStack.EMPTY));
-    }
-    Optional<String> filterName = nbt.getString(TAG_FILTER);
-    if (filterName.isPresent()) {
-      Fluid fluid = BuiltInRegistries.FLUID.getValue(Objects.requireNonNull(ResourceLocation.tryParse(filterName.get())));
-      if (fluid != null) {
-        filter = fluid;
-      }
-    }
+    // saving skips an empty fluid and filter, so a missing key means empty (a client copy may still hold the previous ones)
+    // OPTIONAL_CODEC treats an empty compound as empty like the old parseOptional
+    setFluid(nbt.read(TAG_FLUID, FluidStack.OPTIONAL_CODEC).orElse(FluidStack.EMPTY));
+    filter = nbt.getString(TAG_FILTER).map(ResourceLocation::tryParse).map(BuiltInRegistries.FLUID::getValue).orElse(Fluids.EMPTY);
   }
 
   /** Write the tank from NBT */

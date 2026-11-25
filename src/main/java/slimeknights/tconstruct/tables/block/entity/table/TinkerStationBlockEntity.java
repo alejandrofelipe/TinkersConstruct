@@ -41,8 +41,6 @@ import slimeknights.tconstruct.tables.menu.TinkerStationContainerMenu;
 import slimeknights.tconstruct.tables.network.UpdateTinkerStationRecipePacket;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
-import java.util.Optional;
 
 import static slimeknights.tconstruct.library.tools.part.IMaterialItem.MATERIAL_TAG;
 
@@ -348,9 +346,10 @@ public class TinkerStationBlockEntity extends RetexturedTableBlockEntity impleme
   @Override
   public void loadAdditional(ValueInput tags) {
     super.loadAdditional(tags);
-    Optional<String> materialName = tags.getString(MATERIAL_TAG);
-    if (materialName.isPresent()) {
-      material = Objects.requireNonNullElse(MaterialVariantId.tryParse(materialName.get()), IMaterial.UNKNOWN_ID);
+    // saving skips the unknown material, so a missing tag means unknown (also clears a client copy that held a material)
+    MaterialVariantId oldMaterial = material;
+    material = tags.getString(MATERIAL_TAG).map(MaterialVariantId::tryParse).orElse(IMaterial.UNKNOWN_ID);
+    if (!oldMaterial.equals(material)) {
       RetexturedHelper.onTextureUpdated(this);
     }
   }

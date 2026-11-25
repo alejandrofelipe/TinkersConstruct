@@ -617,6 +617,13 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
         // otherwise fetch the recipe when the level is set
         recipeName = name;
       }
+    } else {
+      // saving skips the recipe when there is none, so clear it (a client copy may still hold the previous one)
+      currentRecipe = null;
+      currentRecipeName = null;
+      recipeName = null;
+      lastOutput = null;
+      coolingTime = -1;
     }
     lastRedstone = tags.getBooleanOr(TAG_REDSTONE, false);
   }

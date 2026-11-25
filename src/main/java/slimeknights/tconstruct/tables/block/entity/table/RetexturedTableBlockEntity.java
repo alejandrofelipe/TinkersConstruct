@@ -16,7 +16,6 @@ import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.shared.block.entity.TableBlockEntity;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
 
 public abstract class RetexturedTableBlockEntity extends TableBlockEntity implements IRetexturedBlockEntity {
   private static final String TAG_TEXTURE = "texture";
@@ -80,10 +79,8 @@ public abstract class RetexturedTableBlockEntity extends TableBlockEntity implem
   @Override
   public void loadAdditional(ValueInput tags) {
     super.loadAdditional(tags);
-    Optional<String> textureName = tags.getString(TAG_TEXTURE);
-    if (textureName.isPresent()) {
-      texture = RetexturedHelper.getBlock(textureName.get());
-      textureUpdated();
-    }
+    // saving skips air, so a missing tag means no texture (also clears a client copy that held one); textureUpdated only acts on a change
+    texture = RetexturedHelper.getBlock(tags.getStringOr(TAG_TEXTURE, ""));
+    textureUpdated();
   }
 }

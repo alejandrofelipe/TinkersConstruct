@@ -650,9 +650,10 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
     // 1.21: writeBlockPos stores an INT_ARRAY, so no TAG_COMPOUND guard — the Optional handles missing keys
     nbt.read(TAG_ERROR_POS, BlockPos.CODEC).ifPresent(pos -> this.errorPos = pos.offset(this.worldPosition));
     fuelModule.readFromTag(nbt);
-    Optional<String> textureName = nbt.getString(TAG_TEXTURE);
-    if (textureName.isPresent()) {
-      texture = RetexturedHelper.getBlock(textureName.get());
+    // saving skips air, so a missing tag means no texture (also clears a client copy that held one)
+    Block oldTexture = texture;
+    texture = RetexturedHelper.getBlock(nbt.getStringOr(TAG_TEXTURE, ""));
+    if (oldTexture != texture) {
       RetexturedHelper.onTextureUpdated(this);
     }
   }

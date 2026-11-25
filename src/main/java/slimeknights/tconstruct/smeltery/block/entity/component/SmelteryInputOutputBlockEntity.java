@@ -26,7 +26,6 @@ import slimeknights.tconstruct.smeltery.block.entity.tank.ISmelteryTankHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
-import java.util.Optional;
 
 import static slimeknights.mantle.util.RetexturedHelper.TAG_TEXTURE;
 
@@ -164,9 +163,10 @@ public abstract class SmelteryInputOutputBlockEntity<T> extends SmelteryComponen
   @Override
   public void loadAdditional(ValueInput tags) {
     super.loadAdditional(tags);
-    Optional<String> textureName = tags.getString(TAG_TEXTURE);
-    if (textureName.isPresent()) {
-      texture = RetexturedHelper.getBlock(textureName.get());
+    // saving skips air, so a missing tag means no texture (also clears a client copy that held one)
+    Block oldTexture = texture;
+    texture = RetexturedHelper.getBlock(tags.getStringOr(TAG_TEXTURE, ""));
+    if (oldTexture != texture) {
       RetexturedHelper.onTextureUpdated(this);
     }
   }
