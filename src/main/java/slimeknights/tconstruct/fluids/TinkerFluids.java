@@ -12,6 +12,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.network.syncher.EntityDataSerializer;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -268,9 +269,8 @@ public final class TinkerFluids extends TinkerModule {
     event.addProvider(new FluidTooltipProvider(packOutput));
     FluidTextureProvider textureProvider = new FluidTextureProvider(packOutput);
     event.addProvider(textureProvider);
-    // PORT 1.21.4: FluidTextureCameraProvider renders fluid blocks through a client camera, which is part of the
-    // client-render batch (not yet ported) and no longer carries an ExistingFileHelper; re-enable it with that batch.
-    // event.addProvider(new FluidTextureCameraProvider(packOutput, event.getResourceManager(PackType.CLIENT_RESOURCES), textureProvider));
+    // the textures seen from inside the fluid: the first frame of each still texture, read through the client resources
+    event.addProvider(new FluidTextureCameraProvider(packOutput, event.getResourceManager(PackType.CLIENT_RESOURCES), textureProvider));
     event.addProvider(new FluidBucketModelProvider(packOutput, TConstruct.MOD_ID));
     event.addProvider(new FluidBlockstateModelProvider(packOutput, TConstruct.MOD_ID));
   }

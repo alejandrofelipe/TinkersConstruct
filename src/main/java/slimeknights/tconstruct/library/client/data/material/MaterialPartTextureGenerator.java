@@ -5,7 +5,9 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.data.GenericTextureGenerator;
 import slimeknights.tconstruct.library.client.data.material.AbstractMaterialSpriteProvider.MaterialSpriteInfo;
 import slimeknights.tconstruct.library.client.data.material.AbstractPartSpriteProvider.PartSpriteInfo;
@@ -16,7 +18,12 @@ import slimeknights.tconstruct.library.client.data.util.DataGenSpriteReader;
 import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -98,7 +105,7 @@ public class MaterialPartTextureGenerator extends GenericTextureGenerator {
             for (MaterialStatsId statType : part.getStatTypes()) {
               if (material.supportStatType(statType) || overrides.hasOverride(statType, material.getTexture())) {
                 ResourceLocation spritePath = outputPath(part, material);
-                if (!spriteReader.exists(spritePath)) {
+                if (!existsElsewhere(spritePath)) {
                   generateSprite(spriteReader, material, part, spritePath, saver, metaSaver);
                 }
                 break;
@@ -113,6 +120,36 @@ public class MaterialPartTextureGenerator extends GenericTextureGenerator {
       partProvider.cleanCache();
       runCallbacks(null);
     });
+  }
+
+  /**
+   * Checks if the sprite already exists other than as this generator's own previous output, in which case it is not generated.
+   * The resource manager also sees the generated folder (it is part of the mod resources), and a sprite skipped for its own previous
+   * output would not go through the data cache, so the data run would delete it.
+   */
+  private boolean existsElsewhere(ResourceLocation spritePath) {
+    List<Resource> resources = resourceManager.getResourceStack(spritePath.withPath(path -> FOLDER + '/' + path + ".png"));
+    if (resources.isEmpty()) {
+      return false;
+    }
+    Path generated = pathProvider.file(spritePath, "png");
+    if (!Files.isRegularFile(generated)) {
+      return true;
+    }
+    try {
+      byte[] previous = Files.readAllBytes(generated);
+      for (Resource resource : resources) {
+        try (InputStream stream = resource.open()) {
+          if (!Arrays.equals(stream.readAllBytes(), previous)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    } catch (IOException e) {
+      TConstruct.LOG.error("Failed to compare sprite {} with its generated copy, keeping the existing sprite", spritePath, e);
+      return true;
+    }
   }
 
   /** Gets the output path for a given sprite */

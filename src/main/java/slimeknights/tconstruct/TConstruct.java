@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -20,6 +21,7 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import slimeknights.mantle.data.DatagenCacheKeeper;
 import slimeknights.tconstruct.common.TinkerModule;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.config.Config;
@@ -197,6 +199,18 @@ public class TConstruct {
   static void commonSetup(final FMLCommonSetupEvent event) {
     ToolDefinitionLoader.init();
     StationSlotLayoutLoader.init();
+  }
+
+  /** Both data runs write to src/generated, keep the outputs of the server run (after every provider is registered) */
+  @SubscribeEvent(priority = EventPriority.LOWEST)
+  static void keepServerDataOutputs(final GatherDataEvent.Client event) {
+    DatagenCacheKeeper.keepOtherRunOutputs(event);
+  }
+
+  /** Both data runs write to src/generated, keep the outputs of the client run (after every provider is registered) */
+  @SubscribeEvent(priority = EventPriority.LOWEST)
+  static void keepClientDataOutputs(final GatherDataEvent.Server event) {
+    DatagenCacheKeeper.keepOtherRunOutputs(event);
   }
 
   // PORT 1.21.4: GatherDataEvent split into nested Server/Client events; ExistingFileHelper + includeServer/includeClient

@@ -1,8 +1,6 @@
 package slimeknights.tconstruct.world.data;
 
-import com.google.common.hash.Hashing;
 import com.mojang.blaze3d.platform.NativeImage;
-import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
@@ -18,7 +16,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -97,7 +94,7 @@ public class SpawnEggTextureProvider extends GenericTextureGenerator {
         image.setPixel(x, y, composite(base.getPixel(x, y), overlay.getPixel(x, y), egg.getPrimary(), egg.getSecondary()));
       }
     }
-    return saveCached(cache, item.withPrefix("item/"), image).whenComplete((result, error) -> image.close());
+    return saveImage(cache, item.withPrefix("item/"), image).whenComplete((result, error) -> image.close());
   }
 
   /**
@@ -138,29 +135,6 @@ public class SpawnEggTextureProvider extends GenericTextureGenerator {
                       Math.round((ARGB.red(top) * a + ARGB.red(bottom) * b) / alpha),
                       Math.round((ARGB.green(top) * a + ARGB.green(bottom) * b) / alpha),
                       Math.round((ARGB.blue(top) * a + ARGB.blue(bottom) * b) / alpha));
-  }
-
-  /**
-   * Saves the image through the cache, unlike {@link #saveImage(CachedOutput, ResourceLocation, NativeImage)}: files written past the cache
-   * are deleted by the data run's stale file purge. {@link NativeImage} only encodes PNGs to files, so encode through a temporary file.
-   */
-  @SuppressWarnings("deprecation") // sha1 is what the data cache hashes with
-  private CompletableFuture<?> saveCached(CachedOutput cache, ResourceLocation location, NativeImage image) {
-    return CompletableFuture.runAsync(() -> {
-      try {
-        Path temp = Files.createTempFile("tconstruct_spawn_egg", ".png");
-        try {
-          image.writeToFile(temp);
-          byte[] bytes = Files.readAllBytes(temp);
-          cache.writeIfNeeded(pathProvider.file(location, "png"), bytes, Hashing.sha1().hashBytes(bytes));
-        } finally {
-          Files.deleteIfExists(temp);
-        }
-      } catch (IOException e) {
-        TConstruct.LOG.error("Couldn't write image for {}", location, e);
-        throw new CompletionException(e);
-      }
-    }, Util.backgroundExecutor());
   }
 
   @Override
