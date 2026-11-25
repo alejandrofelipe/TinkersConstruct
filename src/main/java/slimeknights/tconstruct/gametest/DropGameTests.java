@@ -31,6 +31,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -233,14 +234,23 @@ public class DropGameTests {
     helper.succeed();
   }
 
-  /** Breaks the block like a creative player does: {@code playerWillDestroy}, then the block is removed without loot */
-  private static void breakInCreative(GameTestHelper helper, BlockPos pos) {
+  /**
+   * Breaks the block like a player in the given game mode, following {@code ServerPlayerGameMode#destroyBlock}: {@code playerWillDestroy}, the
+   * block is removed, then the loot drops through {@code playerDestroy} unless the player prevents block drops (creative)
+   */
+  private static void breakAsPlayer(GameTestHelper helper, BlockPos pos, GameType mode) {
     ServerLevel level = helper.getLevel();
-    Player player = helper.makeMockPlayer(GameType.CREATIVE);
-    GameType.CREATIVE.updatePlayerAbilities(player.getAbilities());
+    Player player = helper.makeMockPlayer(mode);
+    mode.updatePlayerAbilities(player.getAbilities());
     BlockState state = level.getBlockState(pos);
-    state.getBlock().playerWillDestroy(level, pos, state, player);
+    BlockEntity blockEntity = level.getBlockEntity(pos);
+    Block block = state.getBlock();
+    BlockState destroyed = block.playerWillDestroy(level, pos, state, player);
     level.removeBlock(pos, false);
+    block.destroy(level, pos, destroyed);
+    if (!player.preventsBlockDrops()) {
+      block.playerDestroy(level, player, pos, destroyed, blockEntity, player.getMainHandItem().copy());
+    }
   }
 
   /** Item entities lying in the block space at the position */
@@ -263,7 +273,7 @@ public class DropGameTests {
     }
     ItemStack ingots = new ItemStack(TinkerSmeltery.ingotCast.get(), 3);
     chest.getItemHandler().setStackInSlot(0, ingots.copy());
-    breakInCreative(helper, pos);
+    breakAsPlayer(helper, pos, GameType.CREATIVE);
     helper.assertTrue(level.getBlockState(pos).isAir(), Component.literal("cast chest was not removed"));
     List<ItemEntity> drops = itemsAt(helper, pos);
     helper.assertTrue(drops.size() == 1 && drops.getFirst().getItem().is(TinkerTables.castChest.asItem()), Component.literal("expected a single cast chest item, got " + drops));
@@ -272,8 +282,32 @@ public class DropGameTests {
     // empty chest: nothing to keep, so nothing drops
     BlockPos emptyPos = helper.absolutePos(new BlockPos(3, 1, 3));
     level.setBlockAndUpdate(emptyPos, state);
-    breakInCreative(helper, emptyPos);
+    breakAsPlayer(helper, emptyPos, GameType.CREATIVE);
     helper.assertTrue(itemsAt(helper, emptyPos).isEmpty(), Component.literal("empty cast chest dropped " + itemsAt(helper, emptyPos)));
+    helper.succeed();
+  }
+
+  /**
+   * Breaking a filled cast chest in survival drops exactly one chest item holding the inventory, from the loot table: the creative drop in
+   * {@code playerWillDestroy} must not add a second one.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void cast_chest_drops_once_when_broken_in_survival(GameTestHelper helper) {
+    ServerLevel level = helper.getLevel();
+    BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
+    level.setBlockAndUpdate(pos, TinkerTables.castChest.get().defaultBlockState());
+    if (!(level.getBlockEntity(pos) instanceof CastChestBlockEntity chest)) {
+      throw new IllegalStateException("no cast chest block entity");
+    }
+    ItemStack ingots = new ItemStack(TinkerSmeltery.ingotCast.get(), 3);
+    chest.getItemHandler().setStackInSlot(0, ingots.copy());
+    breakAsPlayer(helper, pos, GameType.SURVIVAL);
+    helper.assertTrue(level.getBlockState(pos).isAir(), Component.literal("cast chest was not removed"));
+    List<ItemEntity> drops = itemsAt(helper, pos);
+    int total = drops.stream().mapToInt(entity -> entity.getItem().getCount()).sum();
+    helper.assertTrue(drops.size() == 1 && total == 1 && drops.getFirst().getItem().is(TinkerTables.castChest.asItem()),
+                      Component.literal("expected exactly one cast chest item, got " + drops));
+    assertDroppedContents(helper, drops.getFirst().getItem(), ingots);
     helper.succeed();
   }
 
