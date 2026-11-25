@@ -6,7 +6,7 @@ import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
@@ -28,11 +28,11 @@ import java.util.Optional;
 @Internal
 public class TinkerStationTransferInfo<T> implements IRecipeTransferInfo<TinkerStationContainerMenu,T>, IRecipeTransferHandler<TinkerStationContainerMenu,T> {
   @Getter
-  private final RecipeType<T> recipeType;
+  private final IRecipeType<T> recipeType;
   private final IRecipeTransferHandlerHelper handlerHelper;
   private final IRecipeTransferHandler<TinkerStationContainerMenu,T> handler;
 
-  public TinkerStationTransferInfo(RecipeType<T> recipeType, IRecipeTransferHandlerHelper handlerHelper) {
+  public TinkerStationTransferInfo(IRecipeType<T> recipeType, IRecipeTransferHandlerHelper handlerHelper) {
     this.recipeType = recipeType;
     this.handlerHelper = handlerHelper;
     this.handler = handlerHelper.createUnregisteredRecipeTransferHandler(this);

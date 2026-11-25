@@ -7,9 +7,11 @@ import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.helpers.IModIdHelper;
+import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.category.extensions.vanilla.crafting.IExtendableCraftingRecipeCategory;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IModIngredientRegistration;
@@ -275,57 +277,75 @@ public class JEIPlugin implements IModPlugin {
    * @param ownCategory  Category to always add
    * @param type         Molding recipe type
    */
-  private static void addCastingCatalyst(IRecipeCatalystRegistration registry, ItemLike item, mezz.jei.api.recipe.RecipeType<IDisplayableCastingRecipe> ownCategory, RecipeType<MoldingRecipe> type) {
+  private static void addCastingCatalyst(IRecipeCatalystRegistration registry, ItemLike item, IRecipeType<IDisplayableCastingRecipe> ownCategory, RecipeType<MoldingRecipe> type) {
     ItemStack stack = new ItemStack(item);
-    registry.addRecipeCatalyst(stack, ownCategory);
+    registry.addCraftingStation(ownCategory, stack);
     Level level = Minecraft.getInstance().level;
     assert level != null;
     if (!TinkerRecipeAccess.byType(type, level).isEmpty()) {
-      registry.addRecipeCatalyst(stack, TConstructJEIConstants.MOLDING);
+      registry.addCraftingStation(TConstructJEIConstants.MOLDING, stack);
+    }
+  }
+
+  /**
+   * Adds the stack as a catalyst of each recipe type, in order.
+   * PORT 1.21.10 (JEI 26): replaces the deprecated {@code addRecipeCatalyst(ItemStack, IRecipeType...)}, which JEI implements as exactly this
+   * loop (one typed ingredient registered per recipe type, in the given order).
+   */
+  private static void addCatalyst(IRecipeCatalystRegistration registry, ItemStack stack, IRecipeType<?>... types) {
+    for (IRecipeType<?> type : types) {
+      registry.addCraftingStation(type, stack);
+    }
+  }
+
+  /** Adds the ingredient as a catalyst of each recipe type, in order; replaces the deprecated {@code addRecipeCatalyst(IIngredientType, T, IRecipeType...)} */
+  private static <T> void addCatalyst(IRecipeCatalystRegistration registry, IIngredientType<T> ingredientType, T ingredient, IRecipeType<?>... types) {
+    for (IRecipeType<?> type : types) {
+      registry.addCraftingStation(type, ingredientType, ingredient);
     }
   }
 
   @Override
   public void registerRecipeCatalysts(IRecipeCatalystRegistration registry) {
     // tables
-    registry.addRecipeCatalyst(new ItemStack(TinkerTables.partBuilder), TConstructJEIConstants.PART_BUILDER);
-    registry.addRecipeCatalyst(new ItemStack(TinkerTables.tinkerStation), TConstructJEIConstants.MODIFIERS, TConstructJEIConstants.TOOL_BUILDING);
-    registry.addRecipeCatalyst(new ItemStack(TinkerTables.tinkersAnvil), TConstructJEIConstants.MODIFIERS, TConstructJEIConstants.TOOL_BUILDING);
-    registry.addRecipeCatalyst(new ItemStack(TinkerTables.scorchedAnvil), TConstructJEIConstants.MODIFIERS, TConstructJEIConstants.TOOL_BUILDING);
-    registry.addRecipeCatalyst(new ItemStack(TinkerTables.modifierWorktable), TConstructJEIConstants.MODIFIER_WORKTABLE);
+    registry.addCraftingStation(TConstructJEIConstants.PART_BUILDER, new ItemStack(TinkerTables.partBuilder));
+    addCatalyst(registry, new ItemStack(TinkerTables.tinkerStation), TConstructJEIConstants.MODIFIERS, TConstructJEIConstants.TOOL_BUILDING);
+    addCatalyst(registry, new ItemStack(TinkerTables.tinkersAnvil), TConstructJEIConstants.MODIFIERS, TConstructJEIConstants.TOOL_BUILDING);
+    addCatalyst(registry, new ItemStack(TinkerTables.scorchedAnvil), TConstructJEIConstants.MODIFIERS, TConstructJEIConstants.TOOL_BUILDING);
+    registry.addCraftingStation(TConstructJEIConstants.MODIFIER_WORKTABLE, new ItemStack(TinkerTables.modifierWorktable));
 
     // smeltery
-    registry.addRecipeCatalyst(new ItemStack(TinkerSmeltery.searedMelter), TConstructJEIConstants.MELTING);
+    registry.addCraftingStation(TConstructJEIConstants.MELTING, new ItemStack(TinkerSmeltery.searedMelter));
     // 1.21.4 JEI 20: the single RecipeTypes.FUELING category was split into SMELTING_FUEL/BLASTING_FUEL/SMOKING_FUEL;
     // the seared heater burns furnace fuel, so it maps to the primary smelting-fuel category
-    registry.addRecipeCatalyst(new ItemStack(TinkerSmeltery.searedHeater), RecipeTypes.SMELTING_FUEL);
+    registry.addCraftingStation(RecipeTypes.SMELTING_FUEL, new ItemStack(TinkerSmeltery.searedHeater));
     addCastingCatalyst(registry, TinkerSmeltery.searedTable, TConstructJEIConstants.CASTING_TABLE, TinkerRecipeTypes.MOLDING_TABLE.get());
     addCastingCatalyst(registry, TinkerSmeltery.searedBasin, TConstructJEIConstants.CASTING_BASIN, TinkerRecipeTypes.MOLDING_BASIN.get());
-    registry.addRecipeCatalyst(new ItemStack(TinkerSmeltery.smelteryController), TConstructJEIConstants.MELTING, TConstructJEIConstants.ALLOY, TConstructJEIConstants.ENTITY_MELTING);
+    addCatalyst(registry, new ItemStack(TinkerSmeltery.smelteryController), TConstructJEIConstants.MELTING, TConstructJEIConstants.ALLOY, TConstructJEIConstants.ENTITY_MELTING);
 
     // foundry
-    registry.addRecipeCatalyst(new ItemStack(TinkerSmeltery.scorchedAlloyer), TConstructJEIConstants.ALLOY);
+    registry.addCraftingStation(TConstructJEIConstants.ALLOY, new ItemStack(TinkerSmeltery.scorchedAlloyer));
     addCastingCatalyst(registry, TinkerSmeltery.scorchedTable, TConstructJEIConstants.CASTING_TABLE, TinkerRecipeTypes.MOLDING_TABLE.get());
     addCastingCatalyst(registry, TinkerSmeltery.scorchedBasin, TConstructJEIConstants.CASTING_BASIN, TinkerRecipeTypes.MOLDING_BASIN.get());
-    registry.addRecipeCatalyst(new ItemStack(TinkerSmeltery.foundryController), TConstructJEIConstants.FOUNDRY);
+    registry.addCraftingStation(TConstructJEIConstants.FOUNDRY, new ItemStack(TinkerSmeltery.foundryController));
 
     // modifiers
-    registry.addRecipeCatalyst(TConstructJEIConstants.MODIFIER_TYPE, new ModifierEntry(TinkerModifiers.severing, 1), TConstructJEIConstants.SEVERING);
-    registry.addRecipeCatalyst(TConstructJEIConstants.MODIFIER_TYPE, new ModifierEntry(TinkerModifiers.melting, 1), TConstructJEIConstants.MELTING, TConstructJEIConstants.ENTITY_MELTING);
+    addCatalyst(registry, TConstructJEIConstants.MODIFIER_TYPE, new ModifierEntry(TinkerModifiers.severing, 1), TConstructJEIConstants.SEVERING);
+    addCatalyst(registry, TConstructJEIConstants.MODIFIER_TYPE, new ModifierEntry(TinkerModifiers.melting, 1), TConstructJEIConstants.MELTING, TConstructJEIConstants.ENTITY_MELTING);
     for (Holder<Item> item : BuiltInRegistries.ITEM.getTagOrEmpty(TinkerTags.Items.MODIFIABLE)) {
       if (item.value() instanceof IModifiableDisplay modifiable) {
         // add any tools with a severing trait to severing
         ModifierNBT traits = ToolTraitHook.getTraits(modifiable.getToolDefinition(), MaterialNBT.EMPTY);
         if (traits.getLevel(TinkerModifiers.severing.getId()) > 0) {
-          registry.addRecipeCatalyst(modifiable.getRenderTool(), TConstructJEIConstants.SEVERING);
+          registry.addCraftingStation(TConstructJEIConstants.SEVERING, modifiable.getRenderTool());
         }
         // add any tools with a melting trait to melting
         if (traits.getLevel(TinkerModifiers.melting.getId()) > 0) {
           // only add to entity melting if its melee too
           if (item.is(TinkerTags.Items.MELEE)) {
-            registry.addRecipeCatalyst(modifiable.getRenderTool(), TConstructJEIConstants.MELTING, TConstructJEIConstants.ENTITY_MELTING);
+            addCatalyst(registry, modifiable.getRenderTool(), TConstructJEIConstants.MELTING, TConstructJEIConstants.ENTITY_MELTING);
           } else {
-            registry.addRecipeCatalyst(modifiable.getRenderTool(), TConstructJEIConstants.MELTING);
+            registry.addCraftingStation(TConstructJEIConstants.MELTING, modifiable.getRenderTool());
           }
         }
       }

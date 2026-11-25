@@ -6,7 +6,7 @@ import mezz.jei.api.gui.IRecipeLayoutDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.IRecipeManager;
-import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
@@ -435,21 +435,21 @@ public class TinkerUiTestScenarios {
    */
   private static class JeiCategoryScenario<T> implements UiTestScenario {
     private final String name;
-    private final RecipeType<T> type;
+    private final IRecipeType<T> type;
     private final String mustShowDescription;
     /** A recipe JEI must list, e.g. one kind the category dropped before (JEI only logs recipes that fail to lay out) */
     private final Predicate<T> mustShow;
     /** Re-parks every tick: a recentering cursor event from opening the screen may land after open() */
     private final Consumer<ClientTickEvent.Post> mouseParker = event -> new UiTestContext(Minecraft.getInstance()).parkMouse();
 
-    private JeiCategoryScenario(String name, RecipeType<T> type, String mustShowDescription, Predicate<T> mustShow) {
+    private JeiCategoryScenario(String name, IRecipeType<T> type, String mustShowDescription, Predicate<T> mustShow) {
       this.name = name;
       this.type = type;
       this.mustShowDescription = mustShowDescription;
       this.mustShow = mustShow;
     }
 
-    private JeiCategoryScenario(String name, RecipeType<T> type) {
+    private JeiCategoryScenario(String name, IRecipeType<T> type) {
       this(name, type, "any recipe", recipe -> true);
     }
 

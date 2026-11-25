@@ -9,7 +9,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -51,7 +51,7 @@ public class PartBuilderCategory implements IRecipeCategory<IDisplayPartBuilderR
   }
 
   @Override
-  public RecipeType<IDisplayPartBuilderRecipe> getRecipeType() {
+  public IRecipeType<IDisplayPartBuilderRecipe> getRecipeType() {
     return TConstructJEIConstants.PART_BUILDER;
   }
 
@@ -81,7 +81,7 @@ public class PartBuilderCategory implements IRecipeCategory<IDisplayPartBuilderR
     IRecipeSlotBuilder materialSlot = builder.addSlot(RecipeIngredientRole.INPUT, 25, 16).addItemStacks(materialItems);
     builder.addSlot(RecipeIngredientRole.INPUT,  4, 16).addItemStacks(recipe.getPatternItems());
     // patterns
-    builder.addSlot(RecipeIngredientRole.INPUT, 46, 16).addIngredient(TConstructJEIConstants.PATTERN_TYPE, recipe.getPattern());
+    builder.addSlot(RecipeIngredientRole.INPUT, 46, 16).add(TConstructJEIConstants.PATTERN_TYPE, recipe.getPattern());
     // TODO: material ingredient input?
 
     // output

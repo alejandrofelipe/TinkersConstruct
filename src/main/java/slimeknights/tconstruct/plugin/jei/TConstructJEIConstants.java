@@ -2,7 +2,7 @@ package slimeknights.tconstruct.plugin.jei;
 
 import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.ingredients.IIngredientTypeWithSubtypes;
-import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import net.minecraft.resources.ResourceLocation;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.modifiers.Modifier;
@@ -60,28 +60,28 @@ public class TConstructJEIConstants {
   };
 
   // casting
-  public static final RecipeType<IDisplayableCastingRecipe> CASTING_BASIN = type("casting_basin", IDisplayableCastingRecipe.class);
-  public static final RecipeType<IDisplayableCastingRecipe> CASTING_TABLE = type("casting_table", IDisplayableCastingRecipe.class);
-  public static final RecipeType<MoldingRecipe> MOLDING = type("molding", MoldingRecipe.class);
+  public static final IRecipeType<IDisplayableCastingRecipe> CASTING_BASIN = type("casting_basin", IDisplayableCastingRecipe.class);
+  public static final IRecipeType<IDisplayableCastingRecipe> CASTING_TABLE = type("casting_table", IDisplayableCastingRecipe.class);
+  public static final IRecipeType<MoldingRecipe> MOLDING = type("molding", MoldingRecipe.class);
 
   // melting
-  public static final RecipeType<MeltingRecipe> MELTING = type("melting", MeltingRecipe.class);
-  public static final RecipeType<EntityMeltingRecipe> ENTITY_MELTING = type("entity_melting", EntityMeltingRecipe.class);
-  public static final RecipeType<AlloyRecipe> ALLOY = type("alloy", AlloyRecipe.class);
-  public static final RecipeType<MeltingRecipe> FOUNDRY = type("foundry", MeltingRecipe.class);
+  public static final IRecipeType<MeltingRecipe> MELTING = type("melting", MeltingRecipe.class);
+  public static final IRecipeType<EntityMeltingRecipe> ENTITY_MELTING = type("entity_melting", EntityMeltingRecipe.class);
+  public static final IRecipeType<AlloyRecipe> ALLOY = type("alloy", AlloyRecipe.class);
+  public static final IRecipeType<MeltingRecipe> FOUNDRY = type("foundry", MeltingRecipe.class);
 
   // tinker station
-  public static final RecipeType<IDisplayModifierRecipe> MODIFIERS = type("modifiers", IDisplayModifierRecipe.class);
-  public static final RecipeType<SeveringRecipe> SEVERING = type("severing", SeveringRecipe.class);
-  public static final RecipeType<ToolBuildingRecipe> TOOL_BUILDING = type("tool_recipes", ToolBuildingRecipe.class);
+  public static final IRecipeType<IDisplayModifierRecipe> MODIFIERS = type("modifiers", IDisplayModifierRecipe.class);
+  public static final IRecipeType<SeveringRecipe> SEVERING = type("severing", SeveringRecipe.class);
+  public static final IRecipeType<ToolBuildingRecipe> TOOL_BUILDING = type("tool_recipes", ToolBuildingRecipe.class);
 
   // part builder
-  public static final RecipeType<IDisplayPartBuilderRecipe> PART_BUILDER = type("part_builder", IDisplayPartBuilderRecipe.class);
+  public static final IRecipeType<IDisplayPartBuilderRecipe> PART_BUILDER = type("part_builder", IDisplayPartBuilderRecipe.class);
 
   // modifier workstation
-  public static final RecipeType<IModifierWorktableRecipe> MODIFIER_WORKTABLE = type("worktable", IModifierWorktableRecipe.class);
+  public static final IRecipeType<IModifierWorktableRecipe> MODIFIER_WORKTABLE = type("worktable", IModifierWorktableRecipe.class);
 
-  private static <T> RecipeType<T> type(String name, Class<T> clazz) {
-    return RecipeType.create(TConstruct.MOD_ID, name, clazz);
+  private static <T> IRecipeType<T> type(String name, Class<T> clazz) {
+    return IRecipeType.create(TConstruct.MOD_ID, name, clazz);
   }
 }

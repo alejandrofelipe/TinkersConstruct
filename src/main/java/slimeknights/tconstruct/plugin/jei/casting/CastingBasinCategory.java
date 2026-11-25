@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.plugin.jei.casting;
 
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import net.minecraft.network.chat.Component;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
@@ -15,7 +15,7 @@ public class CastingBasinCategory extends AbstractCastingCategory {
   }
 
   @Override
-  public RecipeType<IDisplayableCastingRecipe> getRecipeType() {
+  public IRecipeType<IDisplayableCastingRecipe> getRecipeType() {
     return TConstructJEIConstants.CASTING_BASIN;
   }
 

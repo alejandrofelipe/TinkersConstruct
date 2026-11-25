@@ -8,7 +8,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -140,7 +140,7 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
 
   @Nonnull
   @Override
-  public RecipeType<ToolBuildingRecipe> getRecipeType() {
+  public IRecipeType<ToolBuildingRecipe> getRecipeType() {
     return TConstructJEIConstants.TOOL_BUILDING;
   }
 

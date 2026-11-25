@@ -11,7 +11,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -79,7 +79,7 @@ public class AlloyRecipeCategory implements IRecipeCategory<AlloyRecipe> {
   }
 
   @Override
-  public RecipeType<AlloyRecipe> getRecipeType() {
+  public IRecipeType<AlloyRecipe> getRecipeType() {
     return TConstructJEIConstants.ALLOY;
   }
 
@@ -158,7 +158,7 @@ public class AlloyRecipeCategory implements IRecipeCategory<AlloyRecipe> {
     builder.addSlot(RecipeIngredientRole.OUTPUT, 137, 11)
            .addRichTooltipCallback(FluidTooltipCallback.UNITS)
            .setFluidRenderer(maxAmount, false, 16, 32)
-           .addIngredient(NeoForgeTypes.FLUID_STACK, recipe.getOutput());
+           .add(NeoForgeTypes.FLUID_STACK, recipe.getOutput());
 
     // fuel
     builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 94, 43)

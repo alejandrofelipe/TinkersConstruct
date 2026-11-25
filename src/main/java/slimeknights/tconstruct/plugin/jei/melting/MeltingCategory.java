@@ -12,7 +12,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -60,7 +60,7 @@ public class MeltingCategory extends AbstractMeltingCategory {
   }
 
   @Override
-  public RecipeType<MeltingRecipe> getRecipeType() {
+  public IRecipeType<MeltingRecipe> getRecipeType() {
     return TConstructJEIConstants.MELTING;
   }
 
@@ -83,7 +83,7 @@ public class MeltingCategory extends AbstractMeltingCategory {
   @Override
   public void setRecipe(IRecipeLayoutBuilder builder, MeltingRecipe recipe, IFocusGroup focuses) {
     // input
-    builder.addSlot(RecipeIngredientRole.INPUT, 24, 18).addIngredients(recipe.getInput());
+    builder.addSlot(RecipeIngredientRole.INPUT, 24, 18).add(recipe.getInput());
 
     // output
     OreRateType oreType = recipe.getOreType();
@@ -99,7 +99,7 @@ public class MeltingCategory extends AbstractMeltingCategory {
       .addRichTooltipCallback(tooltip)
       .setFluidRenderer(FluidValues.METAL_BLOCK, false, 32, 32)
       .setOverlay(tankOverlay, 0, 0)
-      .addIngredient(NeoForgeTypes.FLUID_STACK, recipe.getOutput());
+      .add(NeoForgeTypes.FLUID_STACK, recipe.getOutput());
 
     // show fuels that are valid for this recipe
     int fuelHeight = 32;

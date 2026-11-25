@@ -9,7 +9,7 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocus;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -82,7 +82,7 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
   }
 
   @Override
-  public RecipeType<IDisplayModifierRecipe> getRecipeType() {
+  public IRecipeType<IDisplayModifierRecipe> getRecipeType() {
     return TConstructJEIConstants.MODIFIERS;
   }
 
@@ -191,7 +191,7 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
     // modifiers
     builder.addSlot(RecipeIngredientRole.OUTPUT, 3, 3)
            .setCustomRenderer(TConstructJEIConstants.MODIFIER_TYPE, modifierRenderer)
-           .addIngredient(TConstructJEIConstants.MODIFIER_TYPE, recipe.getDisplayResult());
+           .add(TConstructJEIConstants.MODIFIER_TYPE, recipe.getDisplayResult());
 
     // tool
     List<ItemStack> toolWithoutModifier = recipe.getToolWithoutModifier();
@@ -231,7 +231,7 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
     if (slots != null) {
       builder.addSlot(RecipeIngredientRole.INPUT, 102, 58)
         .setCustomRenderer(TConstructJEIConstants.SLOT_TYPE, SlotIngredientRenderer.INPUT)
-        .addIngredient(TConstructJEIConstants.SLOT_TYPE, recipe.getSlots());
+        .add(TConstructJEIConstants.SLOT_TYPE, recipe.getSlots());
     }
     // result slots is determined based on the volatile data hook. Its a bit of a heuristic, but is good enough for our usecases
     builder.addInvisibleIngredients(RecipeIngredientRole.OUTPUT).addIngredients(TConstructJEIConstants.SLOT_TYPE, recipe.getResultSlots());

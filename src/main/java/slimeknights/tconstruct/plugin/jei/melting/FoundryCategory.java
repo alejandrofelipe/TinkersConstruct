@@ -8,7 +8,7 @@ import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.tconstruct.TConstruct;
@@ -33,7 +33,7 @@ public class FoundryCategory extends AbstractMeltingCategory {
   }
 
   @Override
-  public RecipeType<MeltingRecipe> getRecipeType() {
+  public IRecipeType<MeltingRecipe> getRecipeType() {
     return TConstructJEIConstants.FOUNDRY;
   }
 
@@ -45,7 +45,7 @@ public class FoundryCategory extends AbstractMeltingCategory {
   @Override
   public void setRecipe(IRecipeLayoutBuilder builder, MeltingRecipe recipe, IFocusGroup focuses) {
     // input
-    builder.addSlot(RecipeIngredientRole.INPUT, 24, 18).addIngredients(recipe.getInput());
+    builder.addSlot(RecipeIngredientRole.INPUT, 24, 18).add(recipe.getInput());
 
     // output fluid
     AlloyRecipeCategory.drawVariableFluids(builder, RecipeIngredientRole.OUTPUT, 96, 4, 32, 32, recipe.getOutputWithByproducts(), FluidValues.METAL_BLOCK, Function.identity(), list -> MeltingFluidCallback.INSTANCE);

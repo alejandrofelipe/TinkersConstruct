@@ -11,7 +11,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -67,7 +67,7 @@ public class EntityMeltingRecipeCategory implements IRecipeCategory<EntityMeltin
   }
 
   @Override
-  public RecipeType<EntityMeltingRecipe> getRecipeType() {
+  public IRecipeType<EntityMeltingRecipe> getRecipeType() {
     return TConstructJEIConstants.ENTITY_MELTING;
   }
 
@@ -102,7 +102,7 @@ public class EntityMeltingRecipeCategory implements IRecipeCategory<EntityMeltin
     builder.addSlot(RecipeIngredientRole.OUTPUT, 115, 11)
            .setFluidRenderer(FluidValues.INGOT * 2, false, 16, 32)
            .addRichTooltipCallback(new FluidTooltip(recipe.getDamage())) // object is cheap, no need to cache
-           .addIngredient(NeoForgeTypes.FLUID_STACK, recipe.getOutput());
+           .add(NeoForgeTypes.FLUID_STACK, recipe.getOutput());
 
     // show fuels that are valid for this recipe
     builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 75, 43)

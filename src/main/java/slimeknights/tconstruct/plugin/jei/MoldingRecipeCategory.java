@@ -9,7 +9,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.RegistryAccess;
@@ -54,7 +54,7 @@ public class MoldingRecipeCategory implements IRecipeCategory<MoldingRecipe> {
   }
 
   @Override
-  public RecipeType<MoldingRecipe> getRecipeType() {
+  public IRecipeType<MoldingRecipe> getRecipeType() {
     return TConstructJEIConstants.MOLDING;
   }
 
@@ -91,19 +91,19 @@ public class MoldingRecipeCategory implements IRecipeCategory<MoldingRecipe> {
   @Override
   public void setRecipe(IRecipeLayoutBuilder builder, MoldingRecipe recipe, IFocusGroup focuses) {
     // basic input output
-    builder.addSlot(RecipeIngredientRole.INPUT, 3, 24).addIngredients(recipe.getMaterial());
+    builder.addSlot(RecipeIngredientRole.INPUT, 3, 24).add(recipe.getMaterial());
     RegistryAccess access = SafeClientAccess.getRegistryAccess();
     if (access != null) {
-      builder.addSlot(RecipeIngredientRole.OUTPUT, 51, 24).addItemStack(recipe.getResultItem(access));
+      builder.addSlot(RecipeIngredientRole.OUTPUT, 51, 24).add(recipe.getResultItem(access));
     }
 
     // if we have a mold, we are pressing into the table, so draw pressed item on input and output
     // null when the recipe has no pattern (1.21.4 removed the empty ingredient)
     Ingredient pattern = recipe.getPattern();
     if (pattern != null && !pattern.isEmpty()) {
-      IRecipeSlotBuilder inputSlot = builder.addSlot(RecipeIngredientRole.INPUT, 3, 1).addIngredients(pattern);
+      IRecipeSlotBuilder inputSlot = builder.addSlot(RecipeIngredientRole.INPUT, 3, 1).add(pattern);
       if (!recipe.isPatternConsumed()) {
-        IRecipeSlotBuilder preservedSlot = builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 51, 8).addIngredients(pattern);
+        IRecipeSlotBuilder preservedSlot = builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 51, 8).add(pattern);
         builder.createFocusLink(inputSlot, preservedSlot);
       }
     }
