@@ -12,7 +12,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.packs.PackType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacementTypes;
@@ -415,7 +414,7 @@ public final class TinkerWorld extends TinkerModule {
 
   @SubscribeEvent
   void gatherDataClient(final GatherDataEvent.Client event) {
-    event.addProvider(new SpawnEggTextureProvider(event.getGenerator().getPackOutput(), event.getResourceManager(PackType.CLIENT_RESOURCES)));
+    event.addProvider(new SpawnEggTextureProvider(event.getGenerator().getPackOutput()));
   }
 
   @SubscribeEvent

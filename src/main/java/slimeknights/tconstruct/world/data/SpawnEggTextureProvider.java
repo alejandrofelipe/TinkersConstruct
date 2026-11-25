@@ -7,67 +7,110 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.data.GenericTextureGenerator;
-import slimeknights.tconstruct.library.client.data.util.DataGenSpriteReader;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Generates the spawn egg textures. Until 1.21.4 every spawn egg was the vanilla two layer template ({@code item/template_spawn_egg}:
  * {@code spawn_egg} tinted with the primary color, {@code spawn_egg_overlay} tinted with the secondary color); 1.21.5 removed the template
  * for one texture per egg. This bakes the old tinted look into one texture per egg, multiplying each layer by its color the way the tint did.
  * <p>
- * The two template layers are Mojang's 1.21.4 {@code minecraft:textures/item/spawn_egg.png} and {@code spawn_egg_overlay.png}, kept as
- * datagen-only inputs under {@code src/datagen/resources/assets/tconstruct/textures/item/template_spawn_egg/} (not shipped).
+ * The two template layers are Mojang's {@code minecraft:textures/item/spawn_egg.png} and {@code spawn_egg_overlay.png} (byte identical
+ * from 1.21.1 to 1.21.4). They are not part of this repository: the {@code runData} Gradle task finds the 1.21.4 client jar on the machine
+ * and passes its path in the {@value #TEMPLATE_JAR_PROPERTY} system property, and the layers are read from it.
  */
 public class SpawnEggTextureProvider extends GenericTextureGenerator {
-  private static final ResourceLocation BASE = TConstruct.getResource("item/template_spawn_egg/spawn_egg");
-  private static final ResourceLocation OVERLAY = TConstruct.getResource("item/template_spawn_egg/spawn_egg_overlay");
+  /** System property holding the path to the 1.21.4 client jar */
+  public static final String TEMPLATE_JAR_PROPERTY = "tconstruct.datagen.spawnEggTemplateJar";
+  /** Base layer in the client jar, tinted with the primary color */
+  public static final String BASE = "assets/minecraft/textures/item/spawn_egg.png";
+  /** Overlay layer in the client jar, tinted with the secondary color */
+  public static final String OVERLAY = "assets/minecraft/textures/item/spawn_egg_overlay.png";
 
-  public SpawnEggTextureProvider(PackOutput packOutput, ResourceManager resourceManager) {
-    super(packOutput, resourceManager, "textures");
+  public SpawnEggTextureProvider(PackOutput packOutput) {
+    super(packOutput, "textures");
   }
 
   @Override
   public CompletableFuture<?> run(CachedOutput cache) {
-    DataGenSpriteReader spriteReader = new DataGenSpriteReader(Objects.requireNonNull(resourceManager), "textures");
-    List<CompletableFuture<?>> tasks = new ArrayList<>();
-    try {
-      NativeImage base = spriteReader.read(BASE);
-      NativeImage overlay = spriteReader.read(OVERLAY);
-      for (SpawnEggColors egg : SpawnEggColors.values()) {
-        tasks.add(egg(cache, spriteReader, base, overlay, egg));
+    String jarPath = System.getProperty(TEMPLATE_JAR_PROPERTY);
+    if (jarPath == null || !Files.isRegularFile(Path.of(jarPath))) {
+      return CompletableFuture.failedFuture(new IllegalStateException(
+        "System property " + TEMPLATE_JAR_PROPERTY + " must point to the 1.21.4 client jar holding the spawn egg template layers, got " + jarPath
+        + "; run datagen through the runData Gradle task, which finds the jar"));
+    }
+    NativeImage base;
+    NativeImage overlay;
+    try (ZipFile jar = new ZipFile(jarPath)) {
+      base = readLayer(jar, BASE);
+      try {
+        overlay = readLayer(jar, OVERLAY);
+      } catch (IOException e) {
+        base.close();
+        throw e;
       }
     } catch (IOException e) {
-      tasks.add(CompletableFuture.failedFuture(e));
+      return CompletableFuture.failedFuture(new IllegalStateException("Could not read the spawn egg template layers from " + jarPath, e));
     }
-    return CompletableFuture.allOf(tasks.toArray(new CompletableFuture[0])).whenComplete((result, error) -> spriteReader.closeAll());
+    List<CompletableFuture<?>> tasks = new ArrayList<>();
+    for (SpawnEggColors egg : SpawnEggColors.values()) {
+      tasks.add(egg(cache, base, overlay, egg));
+    }
+    return CompletableFuture.allOf(tasks.toArray(new CompletableFuture[0])).whenComplete((result, error) -> {
+      base.close();
+      overlay.close();
+    });
+  }
+
+  /** Reads an image from the jar */
+  private static NativeImage readLayer(ZipFile jar, String path) throws IOException {
+    ZipEntry entry = jar.getEntry(path);
+    if (entry == null) {
+      throw new IOException("No " + path + " in " + jar.getName());
+    }
+    try (InputStream stream = jar.getInputStream(entry)) {
+      return NativeImage.read(stream);
+    }
   }
 
   /** Saves the tinted template as the texture named after the egg item, {@code tconstruct:item/<egg name>} */
-  private CompletableFuture<?> egg(CachedOutput cache, DataGenSpriteReader spriteReader, NativeImage base, NativeImage overlay, SpawnEggColors egg) {
+  private CompletableFuture<?> egg(CachedOutput cache, NativeImage base, NativeImage overlay, SpawnEggColors egg) {
     ResourceLocation item = TConstruct.getResource(egg.getEggName());
     if (!BuiltInRegistries.ITEM.containsKey(item)) {
       return CompletableFuture.failedFuture(new IllegalStateException("Spawn egg colors for " + item + ", which is not a registered item"));
     }
-    NativeImage image = spriteReader.create(base.getWidth(), base.getHeight());
+    NativeImage image = new NativeImage(base.getWidth(), base.getHeight(), true);
     for (int x = 0; x < base.getWidth(); x++) {
       for (int y = 0; y < base.getHeight(); y++) {
-        // overlay drawn over the base, like the second layer of a generated item model
-        image.setPixel(x, y, over(tint(overlay.getPixel(x, y), egg.getSecondary()), tint(base.getPixel(x, y), egg.getPrimary())));
+        image.setPixel(x, y, composite(base.getPixel(x, y), overlay.getPixel(x, y), egg.getPrimary(), egg.getSecondary()));
       }
     }
-    return saveCached(cache, item.withPrefix("item/"), image);
+    return saveCached(cache, item.withPrefix("item/"), image).whenComplete((result, error) -> image.close());
+  }
+
+  /**
+   * Computes a pixel of the egg texture: the overlay tinted with the secondary color drawn over the base tinted with the primary color,
+   * like the two tinted layers of the old generated item model
+   * @param base       Base layer pixel, ARGB
+   * @param overlay    Overlay layer pixel, ARGB
+   * @param primary    Primary color, RGB
+   * @param secondary  Secondary color, RGB
+   * @return  Egg texture pixel, ARGB
+   */
+  static int composite(int base, int overlay, int primary, int secondary) {
+    return over(tint(overlay, secondary), tint(base, primary));
   }
 
   /** Multiplies the color channels by the tint, as the vertex color does in the item shader; alpha is kept */

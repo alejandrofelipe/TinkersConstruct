@@ -6,23 +6,22 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
- * Checks the committed spawn egg textures from {@link SpawnEggTextureProvider} pixel by pixel against the pre 1.21.5 look: the vanilla template
- * base layer multiplied by the primary color, with the overlay layer multiplied by the secondary color on top (the layers are fully opaque or
- * fully transparent). Computed independently of the provider, straight from the files.
+ * Checks the spawn egg textures from {@link SpawnEggTextureProvider} against the pre 1.21.5 look: the vanilla template base layer multiplied by
+ * the primary color, with the overlay layer multiplied by the secondary color on top (the layers are fully opaque or fully transparent).
+ * Expected pixels are computed independently of the provider.
  */
 class SpawnEggTextureTest {
-  private static final String TEMPLATE = "src/datagen/resources/assets/tconstruct/textures/item/template_spawn_egg/";
+  /** Set by the Gradle test task when it finds the 1.21.4 client jar holding the template layers */
+  private static final String TEMPLATE_JAR_PROPERTY = "tconstruct.test.spawnEggTemplateJar";
   private static final String GENERATED = "src/generated/resources/assets/tconstruct/textures/item/";
-
-  private static BufferedImage read(String path) throws IOException {
-    File file = new File(path);
-    assertThat(file).as(path).exists();
-    return ImageIO.read(file);
-  }
 
   /** Multiplies a channel by the tint channel, rounding like the GPU stores the shader output */
   private static int multiply(int argb, int tint, int shift) {
@@ -33,30 +32,74 @@ class SpawnEggTextureTest {
     return (argb & 0xFF000000) | multiply(argb, tint, 16) | multiply(argb, tint, 8) | multiply(argb, tint, 0);
   }
 
-  @Test
-  void everyEgg_matchesTintedTemplate() throws IOException {
-    for (SpawnEggColors egg : SpawnEggColors.values()) {
-      assertTintedTemplate(egg.getEggName(), egg.getPrimary(), egg.getSecondary());
+  /** Expected egg pixel: the tinted overlay where it is opaque, else the tinted base */
+  private static int expected(int base, int overlay, int primary, int secondary) {
+    return (overlay >>> 24) == 0xFF ? tint(overlay, secondary) : tint(base, primary);
+  }
+
+  /** Asserts the actual pixel matches the expected one; fully transparent pixels only need to stay transparent */
+  private static void assertPixel(int expected, int actual, String description) {
+    if ((expected >>> 24) == 0) {
+      assertThat(actual >>> 24).as("%s alpha", description).isZero();
+    } else {
+      assertThat(Integer.toHexString(actual)).as(description).isEqualTo(Integer.toHexString(expected));
     }
   }
 
-  /** Asserts the generated egg texture is the base layer tinted with the primary color under the overlay tinted with the secondary color */
-  private static void assertTintedTemplate(String name, int primary, int secondary) throws IOException {
-    BufferedImage base = read(TEMPLATE + "spawn_egg.png");
-    BufferedImage overlay = read(TEMPLATE + "spawn_egg_overlay.png");
-    BufferedImage egg = read(GENERATED + name + ".png");
-    assertThat(egg.getWidth()).isEqualTo(base.getWidth());
-    assertThat(egg.getHeight()).isEqualTo(base.getHeight());
-    for (int x = 0; x < base.getWidth(); x++) {
-      for (int y = 0; y < base.getHeight(); y++) {
-        int top = overlay.getRGB(x, y);
-        int expected = (top >>> 24) == 0xFF ? tint(top, secondary) : tint(base.getRGB(x, y), primary);
-        if ((expected >>> 24) == 0) {
-          assertThat(egg.getRGB(x, y) >>> 24).as("%s alpha at %d,%d", name, x, y).isZero();
-        } else {
-          assertThat(Integer.toHexString(egg.getRGB(x, y))).as("%s at %d,%d", name, x, y).isEqualTo(Integer.toHexString(expected));
+  /** Runs the provider's pixel math over a synthetic template: every combination of transparent/opaque layers and a spread of grays and colors */
+  @Test
+  void composite_tintsLayersOfSyntheticTemplate() {
+    int[] colors = {0x000000, 0xFFFFFF, 0x808080, 0x3A5F7C, 0xC81E64, 0x7F7F7F, 0x010203};
+    int[] alphas = {0x00, 0xFF};
+    for (SpawnEggColors egg : SpawnEggColors.values()) {
+      for (int baseAlpha : alphas) {
+        for (int overlayAlpha : alphas) {
+          for (int baseColor : colors) {
+            for (int overlayColor : colors) {
+              int base = baseAlpha << 24 | baseColor;
+              int overlay = overlayAlpha << 24 | overlayColor;
+              assertPixel(expected(base, overlay, egg.getPrimary(), egg.getSecondary()),
+                          SpawnEggTextureProvider.composite(base, overlay, egg.getPrimary(), egg.getSecondary()),
+                          String.format("%s base %08x overlay %08x", egg, base, overlay));
+            }
+          }
         }
       }
+    }
+  }
+
+  /** Checks the committed egg textures pixel by pixel against the real template layers, read from the 1.21.4 client jar */
+  @Test
+  void committedEggs_matchTintedTemplateFromClientJar() throws IOException {
+    String jarPath = System.getProperty(TEMPLATE_JAR_PROPERTY);
+    assumeTrue(jarPath != null && new File(jarPath).isFile(),
+               "the Gradle test task found no 1.21.4 client jar (it passes -D" + TEMPLATE_JAR_PROPERTY + " when it does), so the committed egg textures are not checked against the template layers");
+    BufferedImage base;
+    BufferedImage overlay;
+    try (ZipFile jar = new ZipFile(jarPath)) {
+      base = readLayer(jar, SpawnEggTextureProvider.BASE);
+      overlay = readLayer(jar, SpawnEggTextureProvider.OVERLAY);
+    }
+    for (SpawnEggColors egg : SpawnEggColors.values()) {
+      String name = egg.getEggName();
+      File file = new File(GENERATED + name + ".png");
+      assertThat(file).as(name).exists();
+      BufferedImage texture = ImageIO.read(file);
+      assertThat(texture.getWidth()).as("%s width", name).isEqualTo(base.getWidth());
+      assertThat(texture.getHeight()).as("%s height", name).isEqualTo(base.getHeight());
+      for (int x = 0; x < base.getWidth(); x++) {
+        for (int y = 0; y < base.getHeight(); y++) {
+          assertPixel(expected(base.getRGB(x, y), overlay.getRGB(x, y), egg.getPrimary(), egg.getSecondary()), texture.getRGB(x, y), String.format("%s at %d,%d", name, x, y));
+        }
+      }
+    }
+  }
+
+  private static BufferedImage readLayer(ZipFile jar, String path) throws IOException {
+    ZipEntry entry = jar.getEntry(path);
+    assertThat(entry).as("%s in %s", path, jar.getName()).isNotNull();
+    try (InputStream stream = jar.getInputStream(entry)) {
+      return ImageIO.read(stream);
     }
   }
 }
