@@ -63,7 +63,7 @@ import slimeknights.tconstruct.smeltery.block.entity.controller.MelterBlockEntit
 import slimeknights.tconstruct.smeltery.item.CopperCanItem;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.entity.chest.TinkersChestBlockEntity;
-import slimeknights.tconstruct.tables.block.entity.inventory.IChestItemHandler;
+import slimeknights.tconstruct.tables.block.entity.inventory.ChestItemHandler;
 import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
@@ -256,7 +256,7 @@ public class CapabilityGameTests {
     ItemStack tool = slot.getResource(0).toStack();
 
     // the menu sees the real slots
-    helper.assertTrue(ToolInventoryCapability.getMenuHandler(tool).getSlots() == 3, Component.literal("menu handler does not see the pocket slots"));
+    helper.assertTrue(ToolInventoryCapability.getMenuHandler(tool).size() == 3, Component.literal("menu handler does not see the pocket slots"));
     Player player = helper.makeMockPlayer(GameType.SURVIVAL);
     player.setItemInHand(InteractionHand.MAIN_HAND, tool);
     InteractionResult opened = ToolInventoryCapability.tryOpenContainer(tool, ToolStack.from(tool), player, EquipmentSlot.MAINHAND);
@@ -266,7 +266,7 @@ public class CapabilityGameTests {
     helper.assertTrue(used.consumesAction(), Component.literal("using the tool did not open its inventory: " + used));
     // the menu the server opens, see tryOpenContainer
     ToolContainerMenu menu = new ToolContainerMenu(0, player.getInventory(), tool, ToolInventoryCapability.getMenuHandler(tool), player.getInventory().getSelectedSlot());
-    helper.assertTrue(menu.getItemHandler().getSlots() == 3 && menu.getItemHandler().getStackInSlot(0).is(Items.COBBLESTONE),
+    helper.assertTrue(menu.getItemHandler().size() == 3 && menu.getItemHandler().getStack(0).is(Items.COBBLESTONE),
       Component.literal("tool container menu does not show the tool inventory"));
     helper.succeed();
   }
@@ -790,7 +790,7 @@ public class CapabilityGameTests {
       helper.fail(Component.literal("no tinkers chest block entity"), new BlockPos(2, 1, 2));
       return;
     }
-    IChestItemHandler inventory = chest.getItemHandler();
+    ChestItemHandler inventory = chest.getItemHandler();
     inventory.setStackInSlot(0, new ItemStack(Items.DIAMOND, 5));
     level.destroyBlock(pos, true);
     helper.assertTrue(inventory.getStackInSlot(0).isEmpty(), Component.literal("broken chest still holds its items"));

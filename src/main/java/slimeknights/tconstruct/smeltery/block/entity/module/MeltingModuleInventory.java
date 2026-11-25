@@ -7,7 +7,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
@@ -15,16 +14,16 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer.IOreRate;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 import slimeknights.tconstruct.library.transfer.SlotStorageItemHandler;
 
-import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
 /**
  * Inventory composite made of a set of melting module inventories
  */
-public class MeltingModuleInventory implements IItemHandlerModifiable {
+public class MeltingModuleInventory {
   /**
    * There are {@link Short#MAX_VALUE} data slots in a standard container instance.
    * The smeltery requires 6 slots for fuel syncing. It also requires 3 slots per inventory slot.
@@ -47,7 +46,7 @@ public class MeltingModuleInventory implements IItemHandlerModifiable {
   /** Number of nuggets to produce when melting an ore */
   private final IOreRate oreRate;
   /** Native view of this inventory, registered as the item capability. Lazy as subclasses may not be ready in the constructor */
-  private ResourceHandler<ItemResource> itemCapability;
+  private SlotStorageItemHandler itemCapability;
 
   /**
    * Gets the native item handler of this inventory, registered as the block's item capability.
@@ -98,6 +97,12 @@ public class MeltingModuleInventory implements IItemHandlerModifiable {
     return itemCapability;
   }
 
+  /** Gets a handler over this inventory for menu slots, set through {@link #setStackInSlot(int, ItemStack)} */
+  public ModifiableItemHandler getModifiableItemHandler() {
+    getItemCapability();
+    return ModifiableItemHandler.of(itemCapability, this::setStackInSlot);
+  }
+
   /**
    * Creates a new inventory with a fixed size
    * @param parent         Parent tile
@@ -125,7 +130,6 @@ public class MeltingModuleInventory implements IItemHandlerModifiable {
 
   /* Properties */
 
-  @Override
   public int getSlots() {
     return modules.length;
   }
@@ -139,12 +143,10 @@ public class MeltingModuleInventory implements IItemHandlerModifiable {
     return slot >= 0 && slot < getSlots();
   }
 
-  @Override
   public int getSlotLimit(int slot) {
     return 1;
   }
 
-  @Override
   public boolean isItemValid(int slot, ItemStack stack) {
     return true;
   }
@@ -234,8 +236,6 @@ public class MeltingModuleInventory implements IItemHandlerModifiable {
 
   /* Item handling */
 
-  @Nonnull
-  @Override
   public ItemStack getStackInSlot(int slot) {
     if (validSlot(slot)) {
       // don't create the slot, just reading
@@ -246,7 +246,6 @@ public class MeltingModuleInventory implements IItemHandlerModifiable {
     return ItemStack.EMPTY;
   }
 
-  @Override
   public void setStackInSlot(int slot, ItemStack stack) {
     // actually set the stack
     if (validSlot(slot)) {
@@ -263,49 +262,6 @@ public class MeltingModuleInventory implements IItemHandlerModifiable {
       }
     }
   }
-
-  @Nonnull
-  @Override
-  public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-    if (stack.isEmpty()) {
-      return ItemStack.EMPTY;
-    }
-    if (slot < 0 || slot >= getSlots()) {
-      return stack;
-    }
-
-    // if the slot is empty, we can insert. Ignores stack sizes at this time, assuming always 1
-    MeltingModule module = getModule(slot);
-    boolean canInsert = module.getStack().isEmpty();
-    if (!simulate && canInsert) {
-      setStackInSlot(slot, stack.copyWithCount(1));
-    }
-    return canInsert ? stack.copyWithCount(stack.getCount() - 1) : stack;
-  }
-
-  @Nonnull
-  @Override
-  public ItemStack extractItem(int slot, int amount, boolean simulate) {
-    if (amount == 0) {
-      return ItemStack.EMPTY;
-    }
-    if (!validSlot(slot)) {
-      return ItemStack.EMPTY;
-    }
-
-    ItemStack existing = getStackInSlot(slot);
-    if (existing.isEmpty()) {
-      return ItemStack.EMPTY;
-    }
-
-    if (simulate) {
-      return existing.copy();
-    } else {
-      setStackInSlot(slot, ItemStack.EMPTY);
-      return existing;
-    }
-  }
-
 
   /* Heating */
 

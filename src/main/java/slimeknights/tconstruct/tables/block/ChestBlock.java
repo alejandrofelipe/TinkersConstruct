@@ -22,12 +22,12 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.tables.block.entity.chest.AbstractChestBlockEntity;
+import slimeknights.tconstruct.tables.block.entity.inventory.ChestItemHandler;
 
 import javax.annotation.Nullable;
 
@@ -86,8 +86,7 @@ public class ChestBlock extends TabbedTableBlock {
   protected InteractionResult useItemOn(ItemStack heldItem, BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
     BlockEntity te = worldIn.getBlockEntity(pos);
     if (!heldItem.isEmpty() && te instanceof AbstractChestBlockEntity chest && chest.canInsert(player, heldItem)) {
-      IItemHandlerModifiable itemHandler = chest.getItemHandler();
-      ItemStack rest = ItemHandlerHelper.insertItem(itemHandler, heldItem, false);
+      ItemStack rest = TransferUtil.insertItem(chest.getItemHandler(), heldItem);
       if (rest.isEmpty() || rest.getCount() < heldItem.getCount()) {
         player.setItemInHand(hand, rest);
         return InteractionResult.SUCCESS;
@@ -116,13 +115,12 @@ public class ChestBlock extends TabbedTableBlock {
 
   @Override
   public void preRemoveSideEffects(BlockState state, Level level, BlockPos pos, BlockEntity blockEntity) {
-    // PORT 1.21.10: drop the real stacks rather than going through the item capability, whose legacy bridge hands out copies and would
-    // leave the items in the chest; dropping splits each stack, and the slot is cleared, so the chest ends up empty
+    // PORT 1.21.10: drop copies of the stacks, then clear the slots, so the chest ends up empty (the drop helper only reads the inventory)
     if (blockEntity instanceof AbstractChestBlockEntity chest) {
       if (dropsItems) {
-        IItemHandlerModifiable inventory = chest.getItemHandler();
+        ChestItemHandler inventory = chest.getItemHandler();
         dropInventoryItems(level, pos, inventory);
-        for (int i = 0; i < inventory.getSlots(); i++) {
+        for (int i = 0; i < inventory.size(); i++) {
           inventory.setStackInSlot(i, ItemStack.EMPTY);
         }
       }

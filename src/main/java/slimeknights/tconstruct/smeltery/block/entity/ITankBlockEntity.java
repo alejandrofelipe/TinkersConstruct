@@ -6,7 +6,8 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.client.SafeClient;
 import slimeknights.tconstruct.library.fluid.FluidTankAnimated;
@@ -120,9 +121,9 @@ public interface ITankBlockEntity extends IFluidTankUpdater, FluidUpdatePacket.I
   interface ITankInventoryBlockEntity extends ITankBlockEntity {
     /**
      * Gets the inventory of this tank, as displayed by its renderer.
-     * PORT 1.21.10: was {@code getItemHandler()}, renamed as {@code InventoryBlockEntity#getItemHandler()} returns the native handler now.
+     * PORT 1.21.10: was {@code getItemHandler()}, renamed as {@code InventoryBlockEntity#getItemHandler()} returns the native handler now;
+     * native since transfer phase 6, only read.
      */
-    @SuppressWarnings("removal")  // legacy item handler for rendering until phase 6
-    IItemHandler getDisplayInventory();
+    ResourceHandler<ItemResource> getDisplayInventory();
   }
 }

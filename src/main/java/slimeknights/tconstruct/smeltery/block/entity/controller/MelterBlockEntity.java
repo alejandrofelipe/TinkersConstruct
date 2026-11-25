@@ -14,9 +14,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.IModifiableItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
@@ -41,7 +40,7 @@ import slimeknights.tconstruct.smeltery.menu.MelterContainerMenu;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class MelterBlockEntity extends NameableBlockEntity implements ITankInventoryBlockEntity, ILegacyItemHandlerProvider {
+public class MelterBlockEntity extends NameableBlockEntity implements ITankInventoryBlockEntity, IModifiableItemHandlerProvider {
 
   /** Max capacity for the tank */
   private static final int TANK_CAPACITY = FluidValues.INGOT * 24;
@@ -93,15 +92,14 @@ public class MelterBlockEntity extends NameableBlockEntity implements ITankInven
     return meltingInventory;
   }
 
-  @SuppressWarnings("removal")
   @Override
-  public IItemHandler getDisplayInventory() {
-    return meltingInventory;
+  public ResourceHandler<ItemResource> getDisplayInventory() {
+    return meltingInventory.getItemCapability();
   }
 
   @Override
-  public IItemHandlerModifiable getLegacyItemHandler(@Nullable Direction side) {
-    return meltingInventory;
+  public ModifiableItemHandler getModifiableItemHandler(@Nullable Direction side) {
+    return meltingInventory.getModifiableItemHandler();
   }
 
   /*

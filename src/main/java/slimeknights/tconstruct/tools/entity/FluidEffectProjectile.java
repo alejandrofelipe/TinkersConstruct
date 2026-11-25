@@ -26,13 +26,11 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.IModifiableItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import slimeknights.mantle.inventory.EmptyItemHandler;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.library.modifiers.entity.ProjectileWithKnockback;
 import slimeknights.tconstruct.library.modifiers.entity.ProjectileWithPower;
@@ -139,11 +137,11 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
 
   /** Gets the cannon tank */
   @Nullable
-  private IItemHandlerModifiable getCannonInventory() {
+  private ModifiableItemHandler getCannonInventory() {
     Level level = level();
     if (this.cannon != null && level.isLoaded(this.cannon)) {
-      // PORT 1.21.10: the real stacks of the cannon, the native capability's legacy bridge is not modifiable
-      return ILegacyItemHandlerProvider.find(level, this.cannon, null);
+      // PORT 1.21.10: the real stacks of the cannon, set directly rather than through the native capability
+      return IModifiableItemHandlerProvider.find(level, this.cannon, null);
     }
     return null;
   }
@@ -157,9 +155,9 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
       builder.user(owner);
     }
     if (this.cannon != null) {
-      IItemHandler handler = getCannonInventory();
+      ModifiableItemHandler handler = getCannonInventory();
       if (handler != null) {
-        builder.stack(handler.getStackInSlot(0).copy());
+        builder.stack(handler.getStack(0));
       }
     }
     return builder;
@@ -168,9 +166,9 @@ public class FluidEffectProjectile extends Projectile implements ProjectileWithK
   /** Updates the stack for the fluid cannon */
   private void updateCannonStack(FluidEffectContext context) {
     if (cannon != null) {
-      IItemHandlerModifiable handler = getCannonInventory();
+      ModifiableItemHandler handler = getCannonInventory();
       if (handler != null) {
-        handler.setStackInSlot(0, context.getStack());
+        handler.setStack(0, context.getStack());
       }
     }
   }

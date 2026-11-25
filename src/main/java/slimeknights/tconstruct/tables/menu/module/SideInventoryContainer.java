@@ -7,11 +7,9 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.wrapper.EmptyItemHandler;
 import slimeknights.mantle.inventory.BaseContainerMenu;
-import slimeknights.mantle.inventory.SmartItemHandlerSlot;
+import slimeknights.tconstruct.library.transfer.IModifiableItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 
 import javax.annotation.Nullable;
 
@@ -21,31 +19,26 @@ public class SideInventoryContainer<TILE extends BlockEntity> extends BaseContai
   private final int columns;
   @Getter
   private final int slotCount;
-  protected final IItemHandler itemHandler;
+  protected final ModifiableItemHandler itemHandler;
 
   public SideInventoryContainer(MenuType<?> containerType, int windowId, Inventory inv, @Nullable TILE tile, int x, int y, int columns) {
-    this(containerType, windowId, inv, tile, null, x, y, columns);
+    this(containerType, windowId, inv, tile, (Direction) null, x, y, columns);
   }
 
   public SideInventoryContainer(MenuType<?> containerType, int windowId, Inventory inv, @Nullable TILE tile, @Nullable Direction inventoryDirection, int x, int y, int columns) {
-    super(containerType, windowId, inv, tile);
+    this(containerType, windowId, inv, tile, findHandler(tile, inventoryDirection), x, y, columns);
+  }
 
-    // must have a TE with a level to resolve the capability
-    IItemHandler handler = null;
-    if (tile != null) {
-      Level level = tile.getLevel();
-      if (level != null) {
-        // PORT 1.21.10: menu slots need the real stacks, which the native capability's legacy bridge does not give
-        handler = ILegacyItemHandlerProvider.find(level, tile.getBlockPos(), inventoryDirection);
-      }
-    }
-    if (handler == null) {
-      handler = EmptyItemHandler.INSTANCE;
-    }
+  /**
+   * Creates a side inventory over the given item handler
+   * @param handler  Handler holding the slots, typically from {@link IModifiableItemHandlerProvider#find}
+   */
+  public SideInventoryContainer(MenuType<?> containerType, int windowId, Inventory inv, @Nullable TILE tile, ModifiableItemHandler handler, int x, int y, int columns) {
+    super(containerType, windowId, inv, tile);
     this.itemHandler = handler;
 
     // slot properties
-    this.slotCount = handler.getSlots();
+    this.slotCount = handler.size();
     this.columns = columns;
     int rows = this.slotCount / columns;
     if (this.slotCount % columns != 0) {
@@ -66,6 +59,21 @@ public class SideInventoryContainer<TILE extends BlockEntity> extends BaseContai
     }
   }
 
+  /** Finds the item handler of the given block entity, empty if it has none */
+  private static ModifiableItemHandler findHandler(@Nullable BlockEntity tile, @Nullable Direction inventoryDirection) {
+    // must have a TE with a level to resolve the inventory
+    if (tile != null) {
+      Level level = tile.getLevel();
+      if (level != null) {
+        ModifiableItemHandler handler = IModifiableItemHandlerProvider.find(level, tile.getBlockPos(), inventoryDirection);
+        if (handler != null) {
+          return handler;
+        }
+      }
+    }
+    return ModifiableItemHandler.EMPTY;
+  }
+
   /**
    * Creates a slot for this inventory
    * @param itemHandler  Item handler
@@ -74,7 +82,7 @@ public class SideInventoryContainer<TILE extends BlockEntity> extends BaseContai
    * @param y            Slot Y position
    * @return  Inventory slot
    */
-  protected Slot createSlot(IItemHandler itemHandler, int index, int x, int y) {
-    return new SmartItemHandlerSlot(itemHandler, index, x, y);
+  protected Slot createSlot(ModifiableItemHandler itemHandler, int index, int x, int y) {
+    return itemHandler.createSlot(index, x, y);
   }
 }

@@ -21,13 +21,12 @@ import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferDirection;
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferResult;
-import slimeknights.mantle.inventory.SmartItemHandlerSlot;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandlerSlot;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.config.Config.ToolSyncType;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
@@ -64,7 +63,7 @@ public class ToolContainerMenu extends AbstractContainerMenu {
   private final IToolStackView tool;
   /** Item handler being rendered */
   @Getter
-  private final IItemHandler itemHandler;
+  private final ModifiableItemHandler itemHandler;
   /** Tank in the tool */
   @Getter
   private final SimpleFluidTank tank;
@@ -85,12 +84,12 @@ public class ToolContainerMenu extends AbstractContainerMenu {
   @Getter
   private final int playerInventoryStart;
 
-  public ToolContainerMenu(int id, Inventory playerInventory, ItemStack stack, IItemHandler itemHandler, int slotIndex) {
+  public ToolContainerMenu(int id, Inventory playerInventory, ItemStack stack, ModifiableItemHandler itemHandler, int slotIndex) {
     this(TinkerTools.toolContainer.get(), id, playerInventory, stack, itemHandler, slotIndex);
   }
 
   // TODO 1.21: probably ditch this constructor
-  protected ToolContainerMenu(@Nullable MenuType<?> type, int id, Inventory playerInventory, ItemStack stack, IItemHandler handler, int slotIndex) {
+  protected ToolContainerMenu(@Nullable MenuType<?> type, int id, Inventory playerInventory, ItemStack stack, ModifiableItemHandler handler, int slotIndex) {
     this(type, id, playerInventory, stack, handler, slotIndex, CraftingType.fromStack(stack), ModifierUtil.checkVolatileFlag(stack, ToolInventoryCapability.INCLUDE_OFFHAND));
   }
 
@@ -121,21 +120,21 @@ public class ToolContainerMenu extends AbstractContainerMenu {
       includeOffhand = ModifierUtil.checkVolatileFlag(stack, ToolInventoryCapability.INCLUDE_OFFHAND);
     }
     // if the stack looks like it could be our tool, fetch the handler from it
-    IItemHandler handler;
+    ModifiableItemHandler handler;
     if (!stack.getComponentsPatch().isEmpty() && stack.is(TinkerTags.Items.MODIFIABLE)) {
       handler = ToolInventoryCapability.getMenuHandler(stack);
       // wrong number of slots means something went wrong, use a dummy
-      if (handler.getSlots() != size) {
-        handler = new ItemStackHandler(size);
+      if (handler.size() != size) {
+        handler = ModifiableItemHandler.ofStacks(new ItemStacksResourceHandler(size));
       }
     } else {
       // stack doesn't look right? use a dummy
-      handler = new ItemStackHandler(size);
+      handler = ModifiableItemHandler.ofStacks(new ItemStacksResourceHandler(size));
     }
     return new ToolContainerMenu(TinkerTools.toolContainer.get(), id, inventory, stack, handler, slotIndex, craftingType, includeOffhand);
   }
 
-  protected ToolContainerMenu(@Nullable MenuType<?> type, int id, Inventory playerInventory, ItemStack stack, IItemHandler handler, int slotIndex, CraftingType craftingType, boolean includeOffhand) {
+  protected ToolContainerMenu(@Nullable MenuType<?> type, int id, Inventory playerInventory, ItemStack stack, ModifiableItemHandler handler, int slotIndex, CraftingType craftingType, boolean includeOffhand) {
     super(type, id);
     this.stack = stack;
     this.tool = ToolStack.from(stack);
@@ -145,7 +144,7 @@ public class ToolContainerMenu extends AbstractContainerMenu {
     this.slotIndex = slotIndex;
 
     // if requested, add 3x3 crafting area
-    int slots = itemHandler.getSlots();
+    int slots = itemHandler.size();
     int craftingOffset = (slots == 0 ? REPEAT_BACKGROUND_START : UI_START) + 1;
     if (craftingType == CraftingType.FULL) {
       this.craftingContainer = new TransientCraftingContainer(this, 3, 3);
@@ -322,29 +321,15 @@ public class ToolContainerMenu extends AbstractContainerMenu {
     return false;
   }
 
-  private static class ToolContainerSlot extends SmartItemHandlerSlot {
-    private final int index;
-
-    public ToolContainerSlot(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
-      super(itemHandler, index, xPosition, yPosition);
-      this.index = index;
+  /** Tool inventory slot: sets go straight to the tool through the handler's setter, {@code setChanged} sets the stack back if it was changed */
+  private static class ToolContainerSlot extends ModifiableItemHandlerSlot {
+    public ToolContainerSlot(ModifiableItemHandler itemHandler, int index, int xPosition, int yPosition) {
+      super(itemHandler.handler(), itemHandler.modifier(), index, xPosition, yPosition);
     }
 
     @Override
     public boolean mayPickup(Player playerIn) {
       return true;
-    }
-
-    @Override
-    public void set(@Nonnull ItemStack stack) {
-      // using set as an indicator it changed, so no need to call setChanged anymore here
-      ((IItemHandlerModifiable) this.getItemHandler()).setStackInSlot(index, stack);
-    }
-
-    @Override
-    public void setChanged() {
-      // no proper setChanged method on item handler, so just set the existing stack
-      set(getItem());
     }
   }
 

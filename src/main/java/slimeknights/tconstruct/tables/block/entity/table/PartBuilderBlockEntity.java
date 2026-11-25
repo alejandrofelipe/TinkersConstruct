@@ -9,7 +9,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
@@ -271,7 +271,7 @@ public class PartBuilderBlockEntity extends RetexturedTableBlockEntity implement
         setItem(slot, container);
       } else {
         stack.shrink(amount);
-        ItemHandlerHelper.giveItemToPlayer(player, container);
+        TransferUtil.giveItemToPlayer(player, container);
       }
     }
   }
@@ -296,7 +296,7 @@ public class PartBuilderBlockEntity extends RetexturedTableBlockEntity implement
     if (level != null && !level.isClientSide()) {
       ItemStack leftover = recipe.getLeftover(inventoryWrapper, selectedPattern);
       if (!leftover.isEmpty()) {
-        ItemHandlerHelper.giveItemToPlayer(player, leftover);
+        TransferUtil.giveItemToPlayer(player, leftover);
       }
     }
 

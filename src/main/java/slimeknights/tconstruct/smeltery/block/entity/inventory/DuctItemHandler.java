@@ -39,18 +39,19 @@ public class DuctItemHandler extends SingleItemHandler<DuctBlockEntity> {
   }
 
   /**
-   * Sets the stack in this duct
-   * @param newStack  New stack
-   */
-  /**
    * Sets the stack without syncing to the client, for the native item handler inside transactions and their reverts.
    * Still clears the fluid caches (ours and the listening tank wrappers), which are no side effects.
    */
-  public void setStackSilently(ItemStack newStack) {
-    super.setStack(newStack);
+  @Override
+  protected void setStackSilently(ItemStack newStack) {
+    super.setStackSilently(newStack);
     updateFluid();
   }
 
+  /**
+   * Sets the stack in this duct
+   * @param newStack  New stack
+   */
   @Override
   public void setStack(ItemStack newStack) {
     Level world = parent.getLevel();

@@ -17,7 +17,6 @@ import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.network.InventorySlotSyncPacket;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.fluid.IFluidTankUpdater;
-import slimeknights.tconstruct.library.transfer.SingleItemResourceHandler;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
 
 /**
@@ -28,24 +27,13 @@ public class ProxyItemTank<T extends MantleBlockEntity & IFluidTankUpdater> exte
   /** Set while the native fluid handler runs, so the contained item may be exchanged for any container (e.g. an emptied bottle) */
   private boolean exchanging = false;
   /**
-   * Native view of the item slot, registered as the item capability.
-   * PORT 1.21.10 (transfer step 1): changes are silent until the root transaction commits, then replayed through {@link #setStack(ItemStack)}.
-   */
-  @Getter
-  private final SingleItemResourceHandler itemCapability = new SingleItemResourceHandler(this, this::setStackSilently) {
-    @Override
-    protected boolean isItemValid(int slot, ItemResource resource) {
-      return exchanging || super.isItemValid(slot, resource);
-    }
-  };
-  /**
-   * Native fluid handler, registered as the fluid capability: the native fluid handler of the contained item, accessed through
-   * {@link #itemCapability}, so the item changes as part of the transaction and the block syncs only once it commits.
+   * Native fluid handler, registered as the fluid capability: the native fluid handler of the contained item, accessed through this
+   * item handler, so the item changes as part of the transaction and the block syncs only once it commits.
    */
   @Getter
   private final ResourceHandler<FluidResource> fluidCapability = new ResourceHandler<>() {
     private ResourceHandler<FluidResource> handler() {
-      ResourceHandler<FluidResource> handler = getStack().isEmpty() ? null : ItemAccess.forHandlerIndex(itemCapability, 0).getCapability(Capabilities.Fluid.ITEM);
+      ResourceHandler<FluidResource> handler = getStack().isEmpty() ? null : ItemAccess.forHandlerIndex(ProxyItemTank.this, 0).getCapability(Capabilities.Fluid.ITEM);
       return handler != null ? handler : EmptyResourceHandler.instance();
     }
 
@@ -96,8 +84,9 @@ public class ProxyItemTank<T extends MantleBlockEntity & IFluidTankUpdater> exte
   };
 
   /** Sets the stack without syncing, for the native handlers inside transactions and their reverts */
-  private void setStackSilently(ItemStack newStack) {
-    super.setStack(newStack.isEmpty() ? ItemStack.EMPTY : newStack);
+  @Override
+  protected void setStackSilently(ItemStack newStack) {
+    super.setStackSilently(newStack.isEmpty() ? ItemStack.EMPTY : newStack);
   }
   public ProxyItemTank(T parent) {
     super(parent, 1);
@@ -114,6 +103,11 @@ public class ProxyItemTank<T extends MantleBlockEntity & IFluidTankUpdater> exte
       && (craftRemaining.isEmpty() || !craftRemaining.is(TinkerTags.Items.PROXY_TANK_BLACKLIST))
       // transaction safe: called by the native item handler while inserting
       && TransferUtil.hasFluidHandler(stack);
+  }
+
+  @Override
+  protected boolean isItemValid(ItemResource resource) {
+    return exchanging || super.isItemValid(resource);
   }
 
   /** Used by the fluid handler logic to sync changes as we directly mutate the internal stack */

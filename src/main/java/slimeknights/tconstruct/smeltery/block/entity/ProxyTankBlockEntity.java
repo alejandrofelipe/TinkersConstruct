@@ -10,14 +10,15 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.mantle.block.InventoryBlock;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.tconstruct.library.fluid.IFluidTankUpdater;
-import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.IModifiableItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
@@ -26,7 +27,7 @@ import slimeknights.tconstruct.smeltery.block.entity.tank.ProxyItemTank;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
 
 /** Block entity with a tank that proxies to the nested item handler */
-public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTankUpdater, ILegacyItemHandlerProvider {
+public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTankUpdater, IModifiableItemHandlerProvider {
   /** Direct access to the fluid handler and item handler */
   @Getter
   private final ProxyItemTank<ProxyTankBlockEntity> itemTank = new ProxyItemTank<>(this);
@@ -58,8 +59,8 @@ public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTan
   }
 
   @Override
-  public IItemHandlerModifiable getLegacyItemHandler(@javax.annotation.Nullable Direction side) {
-    return itemTank;
+  public ModifiableItemHandler getModifiableItemHandler(@javax.annotation.Nullable Direction side) {
+    return ModifiableItemHandler.ofSingle(itemTank);
   }
 
 
@@ -126,9 +127,9 @@ public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTan
     // no fluid transfer? swap items around
     // inventory is empty means place item inside
     if (inventory.isEmpty()) {
-      if (!held.isEmpty() && itemTank.isItemValid(0, held)) {
+      if (!held.isEmpty() && itemTank.isValid(0, ItemResource.of(held))) {
         // split the stack to place into inventory
-        ItemStack stack = held.split(itemTank.getSlotLimit(0));
+        ItemStack stack = held.split(itemTank.getSlotLimit());
         player.setItemInHand(hand, held.isEmpty() ? ItemStack.EMPTY : held);
         itemTank.setStack(stack);
       }

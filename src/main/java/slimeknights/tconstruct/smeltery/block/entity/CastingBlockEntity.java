@@ -28,9 +28,9 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.shared.block.entity.TableItemHandler;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.mantle.util.BlockEntityHelper;
@@ -182,7 +182,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
         recipe = findMoldingRecipe();
         if (recipe != null) {
           setItem(INPUT, ItemStack.EMPTY);
-          ItemHandlerHelper.giveItemToPlayer(player, recipe.assemble(moldingInventory, level.registryAccess()), player.getInventory().getSelectedSlot());
+          TransferUtil.giveItemToPlayer(player, recipe.assemble(moldingInventory, level.registryAccess()), player.getInventory().getSelectedSlot());
           return;
         }
       }
@@ -207,7 +207,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
       // can have ItemStacks with stacksize > 1 as output
       // we therefore spill the whole contents on extraction.
       ItemStack stack = getItem(slot);
-      ItemHandlerHelper.giveItemToPlayer(player, stack, player.getInventory().getSelectedSlot());
+      TransferUtil.giveItemToPlayer(player, stack, player.getInventory().getSelectedSlot());
       setItem(slot, ItemStack.EMPTY);
 
       // send a block update for the comparator, needs to be done after the stack is removed

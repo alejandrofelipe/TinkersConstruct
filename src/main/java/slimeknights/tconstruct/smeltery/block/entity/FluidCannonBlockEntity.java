@@ -21,9 +21,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
-import net.minecraft.core.Direction;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
@@ -35,8 +32,8 @@ import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectManager;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffects;
-import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
-import slimeknights.tconstruct.library.transfer.SingleItemResourceHandler;
+import slimeknights.tconstruct.library.transfer.IModifiableItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 import slimeknights.tconstruct.library.utils.NBTTags;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.library.utils.Util;
@@ -52,12 +49,11 @@ import slimeknights.tconstruct.tools.entity.FluidEffectProjectile;
 import static net.minecraft.world.level.block.DirectionalBlock.FACING;
 
 /** Tank block entity which also shoots a fluid */
-public class FluidCannonBlockEntity extends TankBlockEntity implements ITankInventoryBlockEntity, ILegacyItemHandlerProvider {
+public class FluidCannonBlockEntity extends TankBlockEntity implements ITankInventoryBlockEntity, IModifiableItemHandlerProvider {
   private final IFluidCannon block;
+  /** Inventory of the cannon, native, also registered as the item capability */
   @Getter
   private final FluidCannonItemHandler itemHandler = new FluidCannonItemHandler();
-  /** Native view of {@link #itemHandler}, registered as the item capability */
-  private final SingleItemResourceHandler itemCapability = new SingleItemResourceHandler(itemHandler, itemHandler::setStackSilently);
 
   public FluidCannonBlockEntity(BlockPos pos, BlockState state) {
     this(pos, state, state.getBlock() instanceof IFluidCannon tank
@@ -185,16 +181,16 @@ public class FluidCannonBlockEntity extends TankBlockEntity implements ITankInve
 
   /** Gets the item handler exposed by this cannon; registered centrally on {@code RegisterCapabilitiesEvent}. */
   public ResourceHandler<ItemResource> getItemCapability() {
-    return itemCapability;
-  }
-
-  @Override
-  public IItemHandlerModifiable getLegacyItemHandler(@Nullable Direction side) {
     return itemHandler;
   }
 
   @Override
-  public IItemHandler getDisplayInventory() {
+  public ModifiableItemHandler getModifiableItemHandler(@Nullable Direction side) {
+    return ModifiableItemHandler.ofSingle(itemHandler);
+  }
+
+  @Override
+  public ResourceHandler<ItemResource> getDisplayInventory() {
     return itemHandler;
   }
 
@@ -232,11 +228,6 @@ public class FluidCannonBlockEntity extends TankBlockEntity implements ITankInve
     @Override
     protected boolean isItemValid(ItemStack stack) {
       return true;
-    }
-
-    /** Sets the stack without syncing, for the native item handler inside transactions */
-    public void setStackSilently(ItemStack newStack) {
-      super.setStack(newStack);
     }
 
     @Override

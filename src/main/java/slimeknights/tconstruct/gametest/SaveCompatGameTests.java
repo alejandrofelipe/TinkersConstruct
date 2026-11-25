@@ -51,7 +51,7 @@ import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.mantle.transfer.SingleFluidTank;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.entity.chest.PartChestBlockEntity;
-import slimeknights.tconstruct.tables.block.entity.inventory.IChestItemHandler;
+import slimeknights.tconstruct.tables.block.entity.inventory.ChestItemHandler;
 import slimeknights.tconstruct.tables.block.entity.table.CraftingStationBlockEntity;
 import slimeknights.tconstruct.tables.block.entity.table.PartBuilderBlockEntity;
 import slimeknights.tconstruct.tables.block.entity.table.RetexturedTableBlockEntity;
@@ -218,7 +218,7 @@ public class SaveCompatGameTests {
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void save_compat_part_chest_round_trip(GameTestHelper helper) {
     PartChestBlockEntity chest = place(helper, new BlockPos(2, 1, 2), TinkerTables.partChest.get(), PartChestBlockEntity.class);
-    IChestItemHandler handler = chest.getItemHandler();
+    ChestItemHandler handler = chest.getItemHandler();
     handler.setStackInSlot(0, TinkerToolParts.pickHead.get().withMaterial(MaterialIds.rock));
     handler.setStackInSlot(1, TinkerToolParts.toolHandle.get().withMaterial(MaterialIds.wood).copyWithCount(2));
     handler.setStackInSlot(2, TinkerToolParts.toolBinding.get().withMaterial(MaterialIds.iron));
@@ -235,10 +235,10 @@ public class SaveCompatGameTests {
     }
 
     PartChestBlockEntity loaded = loadFresh(helper, chest, tag, PartChestBlockEntity.class);
-    IChestItemHandler loadedHandler = loaded.getItemHandler();
-    check(helper, loadedHandler.getSlots() == handler.getSlots(), "part chest slot count " + handler.getSlots() + " became " + loadedHandler.getSlots());
+    ChestItemHandler loadedHandler = loaded.getItemHandler();
+    check(helper, loadedHandler.size() == handler.size(), "part chest slot count " + handler.size() + " became " + loadedHandler.size());
     check(helper, loadedHandler.getVisualSize() == visualSize, "part chest visual size " + visualSize + " became " + loadedHandler.getVisualSize());
-    for (int i = 0; i < handler.getSlots(); i++) {
+    for (int i = 0; i < handler.size(); i++) {
       checkStack(helper, handler.getStackInSlot(i), loadedHandler.getStackInSlot(i), "part chest slot " + i);
     }
     helper.succeed();
@@ -317,11 +317,11 @@ public class SaveCompatGameTests {
     items.add(idless);
     items.add(new CompoundTag());
     tag.put("Items", items);
-    int maxSlots = chest.getItemHandler().getSlots();
+    int maxSlots = chest.getItemHandler().size();
     chest.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registries, tag));
 
-    IChestItemHandler handler = chest.getItemHandler();
-    check(helper, handler.getSlots() == maxSlots, "legacy chest without Size must keep " + maxSlots + " slots, got " + handler.getSlots());
+    ChestItemHandler handler = chest.getItemHandler();
+    check(helper, handler.size() == maxSlots, "legacy chest without Size must keep " + maxSlots + " slots, got " + handler.size());
     checkStack(helper, head, handler.getStackInSlot(0), "legacy chest slot 0");
     checkStack(helper, handle, handler.getStackInSlot(200), "legacy chest int slot 200");
     check(helper, handler.getStackInSlot(3).isEmpty(), "id-less chest entry should load as empty, got " + handler.getStackInSlot(3));

@@ -18,12 +18,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.loading.FMLEnvironment;
-import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
-import net.neoforged.neoforge.items.IItemHandler;
 import org.apache.commons.lang3.tuple.Pair;
 import slimeknights.mantle.util.RegistryHelper;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.config.Config;
+import slimeknights.tconstruct.library.transfer.IModifiableItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 import slimeknights.tconstruct.shared.inventory.TriggeringMultiModuleContainerMenu;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.ITabbedBlock;
@@ -148,8 +148,8 @@ public class TabbedContainerMenu<TILE extends BlockEntity> extends TriggeringMul
 
       // if we found something, add the side inventory
       if (inventoryTE != null) {
-        IItemHandler handler = ILegacyItemHandlerProvider.find(world, inventoryPos, accessDir);
-        int invSlots = handler != null ? handler.getSlots() : 0;
+        ModifiableItemHandler handler = IModifiableItemHandlerProvider.find(world, inventoryPos, accessDir);
+        int invSlots = handler != null ? handler.size() : 0;
         int columns = Mth.clamp((invSlots - 1) / 9 + 1, 3, 6);
         this.addSubContainer(new SideInventoryContainer<>(TinkerTables.craftingStationContainer.get(), containerId, inv, inventoryTE, accessDir, -6 - 18 * 6, 8, columns), false);
       }
@@ -170,14 +170,13 @@ public class TabbedContainerMenu<TILE extends BlockEntity> extends TriggeringMul
 
   /**
    * Checks to see if the given Tile Entity has an item handler that's compatible with the side inventory
-   * The Tile Entity's item handler must be an instance of IItemHandlerModifiable
    * @param tileEntity Tile to check
    * @param direction the given direction
    * @return True if compatible.
    */
   private static boolean hasItemHandler(Level level, BlockPos pos, @Nullable Direction direction) {
-    // PORT 1.21.10: the native capability's legacy bridge is never modifiable, look up the real stacks instead
-    return ILegacyItemHandlerProvider.find(level, pos, direction) != null;
+    // PORT 1.21.10: our blocks and vanilla containers give their real stacks, other blocks their native capability
+    return IModifiableItemHandlerProvider.find(level, pos, direction) != null;
   }
 
 

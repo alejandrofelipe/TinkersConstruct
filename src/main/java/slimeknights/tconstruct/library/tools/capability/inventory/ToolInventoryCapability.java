@@ -12,14 +12,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ItemCapability;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.TransferPreconditions;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
-import slimeknights.mantle.inventory.EmptyItemHandler;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.config.Config;
@@ -35,6 +33,8 @@ import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
+import slimeknights.tconstruct.library.transfer.SlotStorageItemHandler;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
 
@@ -606,15 +606,55 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
   }
 
   /**
-   * Gets the legacy handler over the real stacks of the given tool, for menus, when the tool exposes the native item capability.
-   * PORT 1.21.10: menus need the real stacks, which the native capability's legacy bridge does not give. The capability is registered for
-   * every modifiable item by {@link slimeknights.tconstruct.library.tools.capability.ToolCapabilityProvider#register}.
+   * Gets a handler over the real stacks of the given tool, for menus, when the tool exposes the native item capability.
+   * PORT 1.21.10: menus need the real stacks, which the native capability (working on the item access) does not give. The capability is
+   * registered for every modifiable item by {@link slimeknights.tconstruct.library.tools.capability.ToolCapabilityProvider#register}.
    */
-  public static IItemHandler getMenuHandler(ItemStack stack) {
+  public static ModifiableItemHandler getMenuHandler(ItemStack stack) {
     if (!TransferUtil.hasItemHandler(stack)) {
-      return EmptyItemHandler.INSTANCE;
+      return ModifiableItemHandler.EMPTY;
     }
-    return new ToolInventoryCapability(() -> ToolStack.from(stack));
+    return ModifiableItemHandler.ofSlots(new MenuHandler(new ToolInventoryCapability(() -> ToolStack.from(stack))));
+  }
+
+  /**
+   * Native view of the real stacks of a tool for menu slots: every change, including the silent ones of a transaction, writes the tool
+   * right away, as the legacy handler did; menu slots only use transactions to simulate.
+   */
+  @RequiredArgsConstructor
+  private static class MenuHandler extends SlotStorageItemHandler {
+    private final ToolInventoryCapability inventory;
+
+    @Override
+    public int size() {
+      return inventory.getSlots();
+    }
+
+    @Override
+    protected ItemStack getStack(int slot) {
+      return inventory.getStackInSlot(slot);
+    }
+
+    @Override
+    protected void setStackSilently(int slot, ItemStack stack) {
+      inventory.setStackInSlot(slot, stack);
+    }
+
+    @Override
+    protected void setStackWithSideEffects(int slot, ItemStack stack) {
+      inventory.setStackInSlot(slot, stack);
+    }
+
+    @Override
+    protected int getSlotCapacity(int slot, ItemResource resource) {
+      int limit = inventory.getSlotLimit(slot);
+      return resource.isEmpty() ? limit : Math.min(limit, resource.getMaxStackSize());
+    }
+
+    @Override
+    protected boolean isItemValid(int slot, ItemResource resource) {
+      return inventory.isItemValid(slot, resource.toStack());
+    }
   }
 
 
@@ -645,9 +685,9 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
 
   /** Opens the tool inventory container if an inventory is present on the given tool */
   public static InteractionResult tryOpenContainer(ItemStack stack, @Nullable IToolStackView tool, ToolDefinition definition, Player player, int slotIndex) {
-    IItemHandler handler = getMenuHandler(stack);
+    ModifiableItemHandler handler = getMenuHandler(stack);
     // open if we have any slots or we have a crafting table
-    if (handler.getSlots() > 0 || ModifierUtil.checkVolatileFlag(stack, CRAFTING_TABLE) || ModifierUtil.checkVolatileFlag(stack, INVENTORY_CRAFTING)) {
+    if (handler.size() > 0 || ModifierUtil.checkVolatileFlag(stack, CRAFTING_TABLE) || ModifierUtil.checkVolatileFlag(stack, INVENTORY_CRAFTING)) {
       if (player instanceof ServerPlayer serverPlayer) {
         serverPlayer.openMenu(new SimpleMenuProvider(
           (id, inventory, p) -> new ToolContainerMenu(id, inventory, stack, handler, slotIndex),

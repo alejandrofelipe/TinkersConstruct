@@ -494,7 +494,7 @@ public final class TinkerSmeltery extends TinkerModule {
     event.registerBlockEntity(Capabilities.Item.BLOCK,  castingTank.get(), (be, side) -> be.getItemHandler(side));
     event.registerBlockEntity(Capabilities.Fluid.BLOCK, castingTank.get(), (be, side) -> be.getFluidHandler());
     // tanks & misc (proxy tank is both item and fluid; fluid cannon/lantern extend TankBlockEntity)
-    event.registerBlockEntity(Capabilities.Item.BLOCK,  proxyTank.get(),   (be, side) -> be.getTank().getItemCapability());
+    event.registerBlockEntity(Capabilities.Item.BLOCK,  proxyTank.get(),   (be, side) -> be.getTank());
     event.registerBlockEntity(Capabilities.Fluid.BLOCK, proxyTank.get(),   (be, side) -> be.getTank().getFluidCapability());
     event.registerBlockEntity(Capabilities.Item.BLOCK,  fluidCannon.get(), (be, side) -> be.getItemCapability());
     event.registerBlockEntity(Capabilities.Fluid.BLOCK, fluidCannon.get(), (be, side) -> be.getFluidHandler(side));

@@ -10,11 +10,10 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
-import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
-import slimeknights.tconstruct.library.transfer.SingleItemResourceHandler;
+import slimeknights.tconstruct.library.transfer.IModifiableItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 import slimeknights.mantle.block.entity.NameableBlockEntity;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.utils.TagUtil;
@@ -26,13 +25,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Tile entity for the heater block below the melter */
-public class HeaterBlockEntity extends NameableBlockEntity implements ILegacyItemHandlerProvider {
+public class HeaterBlockEntity extends NameableBlockEntity implements IModifiableItemHandlerProvider {
   private static final String TAG_ITEM = "item";
   private static final Component TITLE = TConstruct.makeTranslation("gui", "heater");
 
+  /** Inventory of the heater, native, also registered as the item capability */
   private final HeaterItemHandler itemHandler = new HeaterItemHandler(this);
-  /** Native view of {@link #itemHandler}, registered as the item capability */
-  private final SingleItemResourceHandler itemCapability = new SingleItemResourceHandler(itemHandler, itemHandler::setStack);
 
   protected HeaterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
     super(type, pos, state, TITLE);
@@ -54,12 +52,12 @@ public class HeaterBlockEntity extends NameableBlockEntity implements ILegacyIte
   /** Exposes the item handler capability; registered centrally in RegisterCapabilitiesEvent */
   @Nullable
   public ResourceHandler<ItemResource> getItemHandler(@Nullable Direction side) {
-    return itemCapability;
+    return itemHandler;
   }
 
   @Override
-  public IItemHandlerModifiable getLegacyItemHandler(@Nullable Direction side) {
-    return itemHandler;
+  public ModifiableItemHandler getModifiableItemHandler(@Nullable Direction side) {
+    return ModifiableItemHandler.ofSingle(itemHandler);
   }
 
 

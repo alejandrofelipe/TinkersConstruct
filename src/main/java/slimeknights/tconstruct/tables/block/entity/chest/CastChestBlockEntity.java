@@ -13,7 +13,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.tables.TinkerTables;
-import slimeknights.tconstruct.tables.block.entity.inventory.IChestItemHandler;
+import slimeknights.tconstruct.tables.block.entity.inventory.ChestItemHandler;
 import slimeknights.tconstruct.tables.block.entity.inventory.ScalingChestItemHandler;
 
 import java.util.ArrayList;
@@ -39,8 +39,8 @@ public class CastChestBlockEntity extends AbstractChestBlockEntity {
     // only replace the inventory when the item has contents, so block entity data with items (or the legacy custom data read on placement) still applies
     ItemContainerContents contents = components.get(DataComponents.CONTAINER);
     if (contents != null) {
-      IChestItemHandler inventory = getItemHandler();
-      NonNullList<ItemStack> items = NonNullList.withSize(inventory.getSlots(), ItemStack.EMPTY);
+      ChestItemHandler inventory = getItemHandler();
+      NonNullList<ItemStack> items = NonNullList.withSize(inventory.size(), ItemStack.EMPTY);
       contents.copyInto(items);
       for (int i = 0; i < items.size(); i++) {
         inventory.setStackInSlot(i, items.get(i));
@@ -52,9 +52,9 @@ public class CastChestBlockEntity extends AbstractChestBlockEntity {
   protected void collectImplicitComponents(DataComponentMap.Builder components) {
     super.collectImplicitComponents(components);
     // an empty chest has no component, so it stacks with crafted ones
-    IChestItemHandler inventory = getItemHandler();
-    List<ItemStack> items = new ArrayList<>(inventory.getSlots());
-    for (int i = 0; i < inventory.getSlots(); i++) {
+    ChestItemHandler inventory = getItemHandler();
+    List<ItemStack> items = new ArrayList<>(inventory.size());
+    for (int i = 0; i < inventory.size(); i++) {
       items.add(inventory.getStackInSlot(i));
     }
     ItemContainerContents contents = ItemContainerContents.fromItems(items);
@@ -79,7 +79,7 @@ public class CastChestBlockEntity extends AbstractChestBlockEntity {
 
     @Override
     public boolean isItemValid(int slot, ItemStack stack) {
-      for (int i = 0; i < this.getSlots(); i++) {
+      for (int i = 0; i < this.size(); i++) {
         if (ItemStack.isSameItem(stack, this.getStackInSlot(i))) {
           return i == slot;
         }

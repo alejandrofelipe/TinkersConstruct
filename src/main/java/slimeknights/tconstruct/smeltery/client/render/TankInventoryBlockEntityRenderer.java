@@ -11,7 +11,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.mantle.client.render.FluidCuboid;
 import slimeknights.mantle.client.render.InventoryRenderState;
 import slimeknights.mantle.client.render.RenderItem;
@@ -19,6 +20,7 @@ import slimeknights.mantle.client.render.RenderingHelper;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.client.RenderUtils;
 import slimeknights.tconstruct.library.client.RenderUtils.TankRenderData;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.smeltery.block.entity.ITankBlockEntity.ITankInventoryBlockEntity;
 import slimeknights.tconstruct.smeltery.client.render.TankInventoryBlockEntityRenderer.TankInventoryRenderState;
 
@@ -45,8 +47,8 @@ public class TankInventoryBlockEntityRenderer<T extends BlockEntity & ITankInven
     state.fluids = Config.CLIENT.tankFluidModel.get() ? List.of() : FluidCuboid.REGISTRY.get(state.blockState, List.of());
     state.tank = state.fluids.isEmpty() ? TankRenderData.EMPTY : RenderUtils.extractFluidTank(melter.getTank(), partialTicks);
     // TODO: can we show count somehow?
-    IItemHandler inventory = melter.getDisplayInventory();
-    state.extractItems(itemModelResolver, RenderItem.STATE_REGISTRY.get(state.blockState, List.of()), inventory::getStackInSlot, melter.getLevel());
+    ResourceHandler<ItemResource> inventory = melter.getDisplayInventory();
+    state.extractItems(itemModelResolver, RenderItem.STATE_REGISTRY.get(state.blockState, List.of()), index -> TransferUtil.getStack(inventory, index), melter.getLevel());
   }
 
   @Override

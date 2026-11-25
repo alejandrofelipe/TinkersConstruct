@@ -10,15 +10,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.IModifiableItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 import net.neoforged.neoforge.transfer.EmptyResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.items.IItemHandler;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferDirection;
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferResult;
-import slimeknights.mantle.inventory.SmartItemHandlerSlot;
 import slimeknights.mantle.util.sync.ValidZeroDataSlot;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -54,10 +53,10 @@ public class AlloyerContainerMenu extends TriggeringBaseContainerMenu<AlloyerBlo
       // add fuel slot if present
       BlockPos down = alloyer.getBlockPos().below();
       if (world != null && world.getBlockState(down).is(TinkerTags.Blocks.FUEL_TANKS)) {
-        // PORT 1.21.10: menu slots need the real stacks, which the native capability's legacy bridge does not give
-        IItemHandler handler = ILegacyItemHandlerProvider.find(world, down, null);
-        if (handler != null) {
-          this.addSlot(new SmartItemHandlerSlot(handler, 0, 151, 32));
+        // PORT 1.21.10: menu slots need a setter for the real stacks, not just the native capability
+        ModifiableItemHandler handler = IModifiableItemHandlerProvider.find(world, down, null);
+        if (handler != null && handler.size() > 0) {
+          this.addSlot(handler.createSlot(0, 151, 32));
           hasFuelSlot = true;
         }
       }

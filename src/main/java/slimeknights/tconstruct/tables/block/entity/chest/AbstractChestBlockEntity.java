@@ -16,40 +16,38 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.mantle.block.entity.NameableBlockEntity;
-import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
-import slimeknights.tconstruct.library.transfer.ItemHandlerResourceHandler;
+import slimeknights.tconstruct.library.transfer.IModifiableItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 import slimeknights.tconstruct.library.utils.TagUtil;
-import slimeknights.tconstruct.tables.block.entity.inventory.IChestItemHandler;
+import slimeknights.tconstruct.tables.block.entity.inventory.ChestItemHandler;
 import slimeknights.tconstruct.tables.menu.TinkerChestContainerMenu;
 
 import javax.annotation.Nullable;
 
 /** Shared base logic for all Tinkers' chest tile entities */
-public abstract class AbstractChestBlockEntity extends NameableBlockEntity implements ILegacyItemHandlerProvider {
+public abstract class AbstractChestBlockEntity extends NameableBlockEntity implements IModifiableItemHandlerProvider {
   protected static final String KEY_ITEMS = "Items";
 
+  /** Inventory of this chest, native, also registered as the item capability */
   @Getter
-  private final IChestItemHandler itemHandler;
-  /**
-   * Native view of {@link #itemHandler}, registered as the item capability.
-   * PORT 1.21.10 (transfer step 1): changes are silent until the root transaction commits, then replayed through the legacy handler.
-   */
-  @Getter
-  private final ResourceHandler<ItemResource> itemCapability;
-  protected AbstractChestBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, Component name, IChestItemHandler itemHandler) {
+  private final ChestItemHandler itemHandler;
+  protected AbstractChestBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, Component name, ChestItemHandler itemHandler) {
     super(type, pos, state, name);
     itemHandler.setParent(this);
     this.itemHandler = itemHandler;
-    this.itemCapability = new ItemHandlerResourceHandler(itemHandler, itemHandler::setStackSilently);
+  }
+
+  /** Gets the item capability of this chest, registered centrally on {@code RegisterCapabilitiesEvent} */
+  public ResourceHandler<ItemResource> getItemCapability() {
+    return itemHandler;
   }
 
   @Override
-  public IItemHandlerModifiable getLegacyItemHandler(@Nullable Direction side) {
-    return itemHandler;
+  public ModifiableItemHandler getModifiableItemHandler(@Nullable Direction side) {
+    return ModifiableItemHandler.ofSlots(itemHandler);
   }
 
   @Nullable
@@ -74,7 +72,7 @@ public abstract class AbstractChestBlockEntity extends NameableBlockEntity imple
     // write just the items list, same as the handler's serialized "Items" (ItemStackWithSlot)
     // we don't care about the size and need it here for compat with old worlds
     ValueOutput.TypedOutputList<ItemStackWithSlot> items = tags.list(KEY_ITEMS, ItemStackWithSlot.CODEC);
-    for (int i = 0; i < itemHandler.getSlots(); i++) {
+    for (int i = 0; i < itemHandler.size(); i++) {
       ItemStack stack = itemHandler.getStackInSlot(i);
       if (!stack.isEmpty()) {
         items.add(new ItemStackWithSlot(i, stack));

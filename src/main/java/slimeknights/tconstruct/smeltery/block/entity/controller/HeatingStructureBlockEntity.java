@@ -23,12 +23,12 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.transfer.ResourceHandler;
-import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.IModifiableItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.model.data.ModelData;
 import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
 import slimeknights.mantle.block.entity.NameableBlockEntity;
@@ -67,7 +67,7 @@ import java.util.function.Consumer;
 
 import static slimeknights.mantle.util.RetexturedHelper.TAG_TEXTURE;
 
-public abstract class HeatingStructureBlockEntity extends NameableBlockEntity implements IMasterLogic, ISmelteryTankHandler, IRetexturedBlockEntity, ILegacyItemHandlerProvider {
+public abstract class HeatingStructureBlockEntity extends NameableBlockEntity implements IMasterLogic, ISmelteryTankHandler, IRetexturedBlockEntity, IModifiableItemHandlerProvider {
   private static final String TAG_STRUCTURE = "multiblock";
   private static final String TAG_TANK = "tank";
   private static final String TAG_INVENTORY = "inventory";
@@ -337,8 +337,8 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
   }
 
   @Override
-  public IItemHandlerModifiable getLegacyItemHandler(@Nullable net.minecraft.core.Direction side) {
-    return meltingInventory;
+  public ModifiableItemHandler getModifiableItemHandler(@Nullable net.minecraft.core.Direction side) {
+    return meltingInventory.getModifiableItemHandler();
   }
 
   @Nullable
@@ -547,7 +547,7 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
    * @param stack  Stack to insert
    */
   private ItemStack insertIntoInventory(ItemStack stack) {
-    return ItemHandlerHelper.insertItem(meltingInventory, stack, false);
+    return TransferUtil.insertItem(meltingInventory.getItemCapability(), stack);
   }
 
 

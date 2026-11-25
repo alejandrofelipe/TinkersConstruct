@@ -21,8 +21,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.client.extensions.common.IClientMobEffectExtensions;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import slimeknights.mantle.item.TooltipItem;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerEffect;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -56,7 +56,7 @@ public class PiggyBackPackItem extends TooltipItem {
     if (pickupEntity(playerIn, target)) {
       // unequip old armor
       if (chestArmor.getItem() != this) {
-        ItemHandlerHelper.giveItemToPlayer(playerIn, chestArmor);
+        TransferUtil.giveItemToPlayer(playerIn, chestArmor);
         chestArmor = ItemStack.EMPTY;
       }
 

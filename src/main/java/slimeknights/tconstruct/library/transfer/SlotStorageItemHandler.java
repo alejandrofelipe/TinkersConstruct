@@ -21,8 +21,8 @@ import java.util.Objects;
  * replays the final stack through {@link #setStackWithSideEffects(int, ItemStack)}, so the owner reacts exactly once, as if the change
  * had been made outside a transaction. Simulations (aborted transactions) therefore never reach the owner's side effects.
  * <p>
- * PORT 1.21.10 (transfer step 1): replaces the legacy {@code IItemHandler}s we registered as capabilities; the legacy handlers stay for
- * internal use (menus, rendering) until the full migration.
+ * PORT 1.21.10 (transfer step 1): replaces the legacy {@code IItemHandler}s we registered as capabilities. Since phase 6 it is also the base of
+ * inventories that own their stacks (chests, see {@code ChestItemHandler}); menus set slots through {@link #setStackInSlot(int, ItemStack)}.
  */
 public abstract class SlotStorageItemHandler implements ResourceHandler<ItemResource> {
   private final List<Slot> slots = new ArrayList<>();

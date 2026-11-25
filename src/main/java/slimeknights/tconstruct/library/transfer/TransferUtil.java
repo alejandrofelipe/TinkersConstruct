@@ -2,15 +2,23 @@ package slimeknights.tconstruct.library.transfer;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.item.PlayerInventoryWrapper;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.transfer.TransferHelper;
 
@@ -97,6 +105,81 @@ public final class TransferUtil {
         tx.commit();
       }
       return resource.toStack(drained);
+    }
+  }
+
+  /* Item handlers */
+
+  /** Gets a copy of the stack at the given index of the handler, empty if the index is out of range. Read only, safe anywhere. */
+  public static ItemStack getStack(ResourceHandler<ItemResource> handler, int index) {
+    if (index < 0 || index >= handler.size()) {
+      return ItemStack.EMPTY;
+    }
+    return ItemUtil.getStack(handler, index);
+  }
+
+  /**
+   * Inserts the stack into the handler, slot by slot, like the legacy {@code ItemHandlerHelper.insertItem(handler, stack, false)}.
+   * Opens a root transaction, so it must not be called inside an open transaction.
+   * @param handler  Handler to fill
+   * @param stack    Stack to insert, not modified
+   * @return  Stack that did not fit
+   */
+  public static ItemStack insertItem(ResourceHandler<ItemResource> handler, ItemStack stack) {
+    if (stack.isEmpty()) {
+      return ItemStack.EMPTY;
+    }
+    ItemResource resource = ItemResource.of(stack);
+    int inserted = 0;
+    try (Transaction tx = Transaction.openRoot()) {
+      for (int i = 0; i < handler.size() && inserted < stack.getCount(); i++) {
+        inserted += handler.insert(i, resource, stack.getCount() - inserted, tx);
+      }
+      tx.commit();
+    }
+    return inserted == stack.getCount() ? ItemStack.EMPTY : stack.copyWithCount(stack.getCount() - inserted);
+  }
+
+  /** Gives the stack to the player, see {@link #giveItemToPlayer(Player, ItemStack, int)} */
+  public static void giveItemToPlayer(Player player, ItemStack stack) {
+    giveItemToPlayer(player, stack, -1);
+  }
+
+  /**
+   * Gives the stack to the player, like the legacy {@code ItemHandlerHelper.giveItemToPlayer}: into the preferred main inventory slot first,
+   * then stacking onto matching stacks and into empty slots of the main inventory, playing the pickup sound if anything went in; the rest is
+   * dropped at the player's feet (server side). Opens a root transaction, so it must not be called inside an open transaction.
+   * @param player         Player receiving the stack
+   * @param stack          Stack to give, not modified
+   * @param preferredSlot  Main inventory slot to try first, -1 for none
+   */
+  public static void giveItemToPlayer(Player player, ItemStack stack, int preferredSlot) {
+    if (stack.isEmpty()) {
+      return;
+    }
+    ItemResource resource = ItemResource.of(stack);
+    int count = stack.getCount();
+    int inserted = 0;
+    ResourceHandler<ItemResource> main = PlayerInventoryWrapper.of(player).getMainSlots();
+    try (Transaction tx = Transaction.openRoot()) {
+      if (preferredSlot >= 0 && preferredSlot < main.size()) {
+        inserted = main.insert(preferredSlot, resource, count, tx);
+      }
+      if (inserted < count) {
+        inserted += ResourceHandlerUtil.insertStacking(main, resource, count - inserted, tx);
+      }
+      tx.commit();
+    }
+    Level level = player.level();
+    if (inserted > 0) {
+      level.playSound(null, player.getX(), player.getY() + 0.5, player.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F,
+                      ((level.random.nextFloat() - level.random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
+    }
+    if (inserted < count && !level.isClientSide()) {
+      ItemEntity entity = new ItemEntity(level, player.getX(), player.getY() + 0.5, player.getZ(), stack.copyWithCount(count - inserted));
+      entity.setPickUpDelay(40);
+      entity.setDeltaMovement(entity.getDeltaMovement().multiply(0, 1, 0));
+      level.addFreshEntity(entity);
     }
   }
 

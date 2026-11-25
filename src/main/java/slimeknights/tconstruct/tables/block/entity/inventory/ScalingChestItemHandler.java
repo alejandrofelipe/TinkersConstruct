@@ -1,25 +1,15 @@
 package slimeknights.tconstruct.tables.block.entity.inventory;
 
 import lombok.Getter;
-import lombok.Setter;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.storage.ValueInput;
-import net.neoforged.neoforge.items.ItemStackHandler;
-import slimeknights.mantle.block.entity.MantleBlockEntity;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /** Base logic for scaling chest inventories */
-public abstract class ScalingChestItemHandler extends ItemStackHandler implements IChestItemHandler {
+public abstract class ScalingChestItemHandler extends ChestItemHandler {
   /** Default maximum size */
   protected static final int DEFAULT_MAX = 256;
   /** Current size for display in containers */
   @Getter
   private int visualSize = 1;
-  /** TE owning this inventory */
-  @Setter @Nullable
-  private MantleBlockEntity parent;
 
   public ScalingChestItemHandler(int size) {
     super(size);
@@ -33,15 +23,8 @@ public abstract class ScalingChestItemHandler extends ItemStackHandler implement
   public abstract boolean isItemValid(int slot, ItemStack stack);
 
   @Override
-  public void deserialize(ValueInput input) {
-    super.deserialize(input);
-    // 1.21.8: ItemStackHandler#deserialize no longer calls onLoad (the old deserializeNBT did), so call it here to restore the visual size
-    onLoad();
-  }
-
-  @Override
   protected void onLoad() {
-    int newLimit = getSlots();
+    int newLimit = size();
     if (newLimit > 1 && this.getStackInSlot(newLimit - 1).isEmpty()) {
       while (newLimit > 1 && this.getStackInSlot(newLimit - 2).isEmpty()) {
         newLimit--;
@@ -53,7 +36,7 @@ public abstract class ScalingChestItemHandler extends ItemStackHandler implement
   /** Updates the visual size of the inventory */
   private void updateVisualSize(int slotChanged, ItemStack stack) {
     // if the slot is too large, nothing to do
-    int maxSlots = getSlots();
+    int maxSlots = size();
     if (slotChanged >= maxSlots) {
       return;
     }
@@ -68,50 +51,16 @@ public abstract class ScalingChestItemHandler extends ItemStackHandler implement
     } else {
       // if the current index is past the max, increase visual size to this plus 1
       if (visualSize < maxSlots && visualSize < slotChanged + 2) {
-        visualSize =slotChanged + 2;
+        visualSize = slotChanged + 2;
       }
     }
   }
 
+  /* Hook in visual size update, also runs once per slot when a transaction commits */
 
   @Override
-  public void setStackSilently(int slot, ItemStack stack) {
-    validateSlotIndex(slot);
-    stacks.set(slot, stack);
-  }
-
-  /* Hook in visual size update */
-
-  @Override
-  public void setStackInSlot(int slot, ItemStack stack) {
-    super.setStackInSlot(slot, stack);
+  protected void setStackWithSideEffects(int slot, ItemStack stack) {
+    super.setStackWithSideEffects(slot, stack);
     updateVisualSize(slot, stack);
-  }
-
-  @Nonnull
-  @Override
-  public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-    ItemStack result = super.insertItem(slot, stack, simulate);
-    if (!simulate) {
-      updateVisualSize(slot, getStackInSlot(slot));
-    }
-    return result;
-  }
-
-  @Nonnull
-  @Override
-  public ItemStack extractItem(int slot, int amount, boolean simulate) {
-    ItemStack result = super.extractItem(slot, amount, simulate);
-    if (!simulate) {
-      updateVisualSize(slot, getStackInSlot(slot));
-    }
-    return result;
-  }
-
-  @Override
-  protected void onContentsChanged(int slot) {
-    if (parent != null) {
-      parent.setChangedFast();
-    }
   }
 }

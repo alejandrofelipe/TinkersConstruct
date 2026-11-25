@@ -39,7 +39,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import slimeknights.tconstruct.tables.block.entity.inventory.ChestItemHandler;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.entity.chest.CastChestBlockEntity;
@@ -143,8 +143,8 @@ public class DropGameTests {
 
   /** Asserts the chest holds exactly the given stacks in its first slots, and nothing else */
   private static void assertContents(GameTestHelper helper, CastChestBlockEntity chest, ItemStack... expected) {
-    IItemHandlerModifiable inventory = chest.getItemHandler();
-    for (int i = 0; i < inventory.getSlots(); i++) {
+    ChestItemHandler inventory = chest.getItemHandler();
+    for (int i = 0; i < inventory.size(); i++) {
       ItemStack actual = inventory.getStackInSlot(i);
       ItemStack wanted = i < expected.length ? expected[i] : ItemStack.EMPTY;
       helper.assertTrue(ItemStack.matches(actual, wanted), Component.literal("slot " + i + ": expected " + wanted + ", got " + actual));
@@ -222,7 +222,7 @@ public class DropGameTests {
     assertContents(helper, placeChest(helper, picked, new BlockPos(3, 1, 1)), ingots, nuggets);
 
     // emptied chest: plain drop
-    for (int i = 0; i < placed.getItemHandler().getSlots(); i++) {
+    for (int i = 0; i < placed.getItemHandler().size(); i++) {
       placed.getItemHandler().setStackInSlot(i, ItemStack.EMPTY);
     }
     assertPlainChest(helper, breakChest(helper, placed.getBlockPos()), "an emptied chest");

@@ -1,7 +1,6 @@
 package slimeknights.tconstruct.tables.block.entity.chest;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -10,13 +9,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.items.ItemStackHandler;
-import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.tables.TinkerTables;
-import slimeknights.tconstruct.tables.block.entity.inventory.IChestItemHandler;
-
-import javax.annotation.Nullable;
+import slimeknights.tconstruct.tables.block.entity.inventory.ChestItemHandler;
 
 /**
  * Chest holding 64 slots of 16 items each
@@ -65,9 +60,7 @@ public class TinkersChestBlockEntity extends AbstractChestBlockEntity {
   }
 
   /** Item handler for tinkers chests */
-  public static class TinkersChestItemHandler extends ItemStackHandler implements IChestItemHandler {
-    @Setter @Nullable
-    private MantleBlockEntity parent;
+  public static class TinkersChestItemHandler extends ChestItemHandler {
     public TinkersChestItemHandler() {
       super(64);
     }
@@ -79,20 +72,7 @@ public class TinkersChestBlockEntity extends AbstractChestBlockEntity {
 
     @Override
     public int getVisualSize() {
-      return getSlots();
-    }
-
-    @Override
-    public void setStackSilently(int slot, ItemStack stack) {
-      validateSlotIndex(slot);
-      stacks.set(slot, stack);
-    }
-
-    @Override
-    protected void onContentsChanged(int slot) {
-      if (parent != null) {
-        parent.setChangedFast();
-      }
+      return size();
     }
   }
 }

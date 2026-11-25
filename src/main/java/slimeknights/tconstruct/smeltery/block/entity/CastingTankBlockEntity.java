@@ -21,12 +21,11 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
-import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.mantle.fluid.transfer.FluidContainerTransferManager;
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer;
@@ -125,11 +124,11 @@ public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlo
       // if there is an item in the output slot, take it
       if (!output.isEmpty()) {
         setItem(OUTPUT, ItemStack.EMPTY);
-        ItemHandlerHelper.giveItemToPlayer(player, output, player.getInventory().getSelectedSlot());
+        TransferUtil.giveItemToPlayer(player, output, player.getInventory().getSelectedSlot());
         // next try to take the item from the input slot
       } else if (!input.isEmpty()) {
         setItem(INPUT, ItemStack.EMPTY);
-        ItemHandlerHelper.giveItemToPlayer(player, input, player.getInventory().getSelectedSlot());
+        TransferUtil.giveItemToPlayer(player, input, player.getInventory().getSelectedSlot());
         // if no item in the tank, try to place a held item in the input
       } else if (!held.isEmpty() && canPlaceItem(INPUT, held)) {
         setItem(INPUT, held.split(1));
@@ -238,13 +237,15 @@ public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlo
     return tank;
   }
 
-  /** Legacy view of this inventory for the renderer */
-  @SuppressWarnings("removal")
-  private final IItemHandler displayInventory = new InvWrapper(this);
+  /** View of this inventory for the renderer, all slots */
+  @Nullable
+  private ResourceHandler<ItemResource> displayInventory;
 
-  @SuppressWarnings("removal")
   @Override
-  public IItemHandler getDisplayInventory() {
+  public ResourceHandler<ItemResource> getDisplayInventory() {
+    if (displayInventory == null) {
+      displayInventory = VanillaContainerWrapper.of(this);
+    }
     return displayInventory;
   }
 

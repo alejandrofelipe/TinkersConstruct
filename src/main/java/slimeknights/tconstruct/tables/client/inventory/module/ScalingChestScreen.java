@@ -6,11 +6,10 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import slimeknights.tconstruct.library.transfer.ILegacyItemHandlerProvider;
-import net.neoforged.neoforge.items.IItemHandler;
 import slimeknights.mantle.client.screen.MultiModuleScreen;
 import slimeknights.mantle.inventory.BaseContainerMenu;
-import slimeknights.mantle.inventory.EmptyItemHandler;
+import slimeknights.tconstruct.library.transfer.IModifiableItemHandlerProvider;
+import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 import slimeknights.tconstruct.tables.block.entity.inventory.IScalingContainer;
 
 public class ScalingChestScreen<T extends BlockEntity> extends DynamicContainerScreen<MultiModuleScreen<?>,BaseContainerMenu<T>> {
@@ -18,17 +17,17 @@ public class ScalingChestScreen<T extends BlockEntity> extends DynamicContainerS
   public ScalingChestScreen(MultiModuleScreen<?> parent, BaseContainerMenu<T> container, Inventory playerInventory, Component title) {
     super(parent, container, playerInventory, title);
     BlockEntity tile = container.getTile();
-    IItemHandler handler = null;
+    ModifiableItemHandler handler = null;
     if (tile != null) {
       Level level = tile.getLevel();
       if (level != null) {
-        handler = ILegacyItemHandlerProvider.find(level, tile.getBlockPos(), null);
+        handler = IModifiableItemHandlerProvider.find(level, tile.getBlockPos(), null);
       }
     }
     if (handler == null) {
-      handler = EmptyItemHandler.INSTANCE;
+      handler = ModifiableItemHandler.EMPTY;
     }
-    this.scaling = handler instanceof IScalingContainer ? (IScalingContainer) handler : handler::getSlots;
+    this.scaling = handler.handler() instanceof IScalingContainer scalingContainer ? scalingContainer : handler::size;
     this.slotCount = scaling.getVisualSize();
     this.sliderActive = true;
   }
