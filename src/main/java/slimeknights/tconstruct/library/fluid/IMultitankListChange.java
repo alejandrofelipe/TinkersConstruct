@@ -6,6 +6,10 @@ import java.util.function.Consumer;
 public interface IMultitankListChange {
   /**
    * Adds a listener which runs when the tank order changes to clear relevant caches.
+   * <p>
+   * Listeners may run while a transaction is being reverted (a native multitank runs them from its journal's revert when an aborted change
+   * altered the tank layout), i.e. while the transaction is closing: they must only invalidate state (clear caches, mark dirty), never query
+   * a handler, open a transaction or change any journaled state, as the transaction system is in an inconsistent state at that point.
    * @param parent    Object containing the listener
    * @param listener  Consumer running on change, with parent as a parameter. Should not capture the parent instance directy.
    * @param <T>  Parent type
