@@ -76,7 +76,12 @@ public abstract class HeatingStructureMultiblock<T extends MantleBlockEntity & I
     // add all tanks from Tag, will be picked up in the create call
     tanks.clear();
     tanks.addAll(readPosList(nbt, TAG_TANKS, controllerPos));
-    return super.readFromTag(nbt, controllerPos);
+    StructureData data = super.readFromTag(nbt, controllerPos);
+    // resume the inside block scan where it was saved, the full save writes it (absent in the client tag)
+    if (data != null) {
+      data.insideCheck = TagUtil.readOptionalPos(nbt, TAG_INSIDE_CHECK, controllerPos);
+    }
+    return data;
   }
 
   /**
