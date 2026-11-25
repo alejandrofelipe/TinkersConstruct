@@ -7,6 +7,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -149,12 +151,12 @@ public class SmelteryGameTests {
     BlockPos upperChannel = lowerChannel.north();
     BlockPos faucet = upperChannel.above();
     BlockPos tank = faucet.east();
-    // built bottom up, like a player would. The channel default state is powered (the boolean property's first value; placement
-    // computes it), and a channel losing power clears its down connection, so set it unpowered like an unpowered placement
+    // built bottom up, like a player would, but placed like /setblock: the channels keep their default (unpowered) state, so the
+    // neighbor updates of the blocks placed after them must not clear the lower channel's down connection
     level.setBlockAndUpdate(basin, TinkerSmeltery.searedBasin.get().defaultBlockState());
-    level.setBlockAndUpdate(lowerChannel, TinkerSmeltery.searedChannel.get().defaultBlockState().setValue(ChannelBlock.POWERED, false)
+    level.setBlockAndUpdate(lowerChannel, TinkerSmeltery.searedChannel.get().defaultBlockState()
       .setValue(ChannelBlock.DOWN, true).setValue(ChannelBlock.NORTH, ChannelBlock.ChannelConnection.IN));
-    level.setBlockAndUpdate(upperChannel, TinkerSmeltery.searedChannel.get().defaultBlockState().setValue(ChannelBlock.POWERED, false)
+    level.setBlockAndUpdate(upperChannel, TinkerSmeltery.searedChannel.get().defaultBlockState()
       .setValue(ChannelBlock.SOUTH, ChannelBlock.ChannelConnection.OUT));
     level.setBlockAndUpdate(tank, TinkerSmeltery.searedTank.get(TankType.INGOT_TANK).defaultBlockState());
     SmelteryRigs.fillTank(level, tank, new FluidStack(TinkerFluids.moltenIron.get(), FluidValues.INGOT * 2));
@@ -176,6 +178,45 @@ public class SmelteryGameTests {
         + (level.getBlockEntity(faucet) instanceof FaucetBlockEntity faucetBE && faucetBE.isPouring())
         + ", upper channel: " + channelFluid(level, upperChannel) + " mB, lower channel: " + channelFluid(level, lowerChannel) + " mB"));
     });
+  }
+
+  /**
+   * A channel placed without {@code getStateForPlacement} ({@code /setblock}, structures) takes its powered state from the real
+   * neighbor signal: unpowered on its own, powered next to a redstone block even when the placed state says unpowered, without
+   * touching its down connection. Losing the signal afterwards still clears the down connection, as before.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void channel_placed_takes_neighbor_power(GameTestHelper helper) {
+    ServerLevel level = helper.getLevel();
+    BlockState channel = TinkerSmeltery.searedChannel.get().defaultBlockState();
+    helper.assertFalse(channel.getValue(ChannelBlock.POWERED), Component.literal("channel default state is powered"));
+
+    // no signal: stays unpowered
+    BlockPos unpowered = helper.absolutePos(new BlockPos(1, 2, 1));
+    level.setBlockAndUpdate(unpowered.below(), TinkerSmeltery.searedBasin.get().defaultBlockState());
+    level.setBlockAndUpdate(unpowered, channel.setValue(ChannelBlock.DOWN, true));
+    helper.assertTrue(!level.getBlockState(unpowered).getValue(ChannelBlock.POWERED) && level.getBlockState(unpowered).getValue(ChannelBlock.DOWN),
+                      Component.literal("unpowered channel changed on placement: " + level.getBlockState(unpowered)));
+
+    // next to a redstone block: powered, placed with the default state and with an explicitly unpowered one (a saved structure)
+    BlockPos redstone = helper.absolutePos(new BlockPos(3, 2, 2));
+    level.setBlockAndUpdate(redstone, Blocks.REDSTONE_BLOCK.defaultBlockState());
+    BlockPos powered = redstone.west();
+    level.setBlockAndUpdate(powered.below(), TinkerSmeltery.searedBasin.get().defaultBlockState());
+    level.setBlockAndUpdate(powered, channel.setValue(ChannelBlock.DOWN, true));
+    helper.assertTrue(level.getBlockState(powered).getValue(ChannelBlock.POWERED) && level.getBlockState(powered).getValue(ChannelBlock.DOWN),
+                      Component.literal("channel next to a redstone block is not powered with its down connection: " + level.getBlockState(powered)));
+    BlockPos explicit = redstone.north();
+    level.setBlockAndUpdate(explicit, channel.setValue(ChannelBlock.POWERED, false));
+    helper.assertTrue(level.getBlockState(explicit).getValue(ChannelBlock.POWERED),
+                      Component.literal("channel placed unpowered next to a redstone block did not pick up the signal: " + level.getBlockState(explicit)));
+
+    // losing the signal clears the down connection (existing redstone behavior)
+    level.setBlockAndUpdate(redstone, Blocks.AIR.defaultBlockState());
+    BlockState after = level.getBlockState(powered);
+    helper.assertTrue(!after.getValue(ChannelBlock.POWERED) && !after.getValue(ChannelBlock.DOWN),
+                      Component.literal("channel losing its signal should be unpowered without down connection: " + after));
+    helper.succeed();
   }
 
   /** Fluid amount in the channel at the position, -1 without a channel */

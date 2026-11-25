@@ -129,8 +129,10 @@ public class ChannelBlock extends Block implements EntityBlock {
 	public ChannelBlock(Properties props) {
 		super(props);
 
+		// unpowered by default (a boolean property starts true), onPlace syncs it with the real signal for placements skipping getStateForPlacement
 		this.registerDefaultState(this.defaultBlockState()
 														 .setValue(DOWN, false)
+														 .setValue(POWERED, false)
 														 .setValue(NORTH, ChannelConnection.NONE)
 														 .setValue(SOUTH, ChannelConnection.NONE)
 														 .setValue(WEST, ChannelConnection.NONE)
@@ -357,6 +359,21 @@ public class ChannelBlock extends Block implements EntityBlock {
 		}
 
 		return InteractionResult.PASS;
+	}
+
+	/**
+	 * Syncs {@link #POWERED} with the neighbor signal when placed without {@link #getStateForPlacement} ({@code /setblock}, structures,
+	 * schematics), like vanilla redstone-sensitive blocks. Only the power changes: the down connection is kept as placed, as on placement.
+	 */
+	@Override
+	protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+		super.onPlace(state, level, pos, oldState, movedByPiston);
+		if (!level.isClientSide() && !oldState.is(this)) {
+			boolean isPowered = level.hasNeighborSignal(pos);
+			if (isPowered != state.getValue(POWERED)) {
+				level.setBlock(pos, state.setValue(POWERED, isPowered), Block.UPDATE_CLIENTS);
+			}
+		}
 	}
 
 	@SuppressWarnings("deprecation")

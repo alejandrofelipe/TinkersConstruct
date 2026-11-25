@@ -1194,12 +1194,11 @@ public class TinkerUiTestScenarios {
         SmelteryRigs.fillTank(level, gaugeTank, new FluidStack(TinkerFluids.moltenCopper.get(), FluidValues.INGOT * 24));
         level.setBlockAndUpdate(gauge, TinkerSmeltery.obsidianGauge.get().defaultBlockState().setValue(BlockStateProperties.FACING, Direction.WEST));
         // pour rig, built bottom up: basin, the channel above it flowing down, the channel feeding it, the source tank and its faucet.
-        // 7 ingots never fill the 9 ingot block cast, so the basin stays partially filled. Channels unpowered like an unpowered placement:
-        // the default state is powered, and losing power clears the down connection
+        // 7 ingots never fill the 9 ingot block cast, so the basin stays partially filled
         level.setBlockAndUpdate(basin, TinkerSmeltery.searedBasin.get().defaultBlockState());
-        level.setBlockAndUpdate(basin.above(), TinkerSmeltery.searedChannel.get().defaultBlockState().setValue(ChannelBlock.POWERED, false)
+        level.setBlockAndUpdate(basin.above(), TinkerSmeltery.searedChannel.get().defaultBlockState()
           .setValue(ChannelBlock.DOWN, true).setValue(ChannelBlock.NORTH, ChannelBlock.ChannelConnection.IN));
-        level.setBlockAndUpdate(faucet.below(), TinkerSmeltery.searedChannel.get().defaultBlockState().setValue(ChannelBlock.POWERED, false)
+        level.setBlockAndUpdate(faucet.below(), TinkerSmeltery.searedChannel.get().defaultBlockState()
           .setValue(ChannelBlock.SOUTH, ChannelBlock.ChannelConnection.OUT));
         BlockPos source = faucet.east();
         level.setBlockAndUpdate(source, TinkerSmeltery.searedTank.get(TankType.INGOT_TANK).defaultBlockState());
