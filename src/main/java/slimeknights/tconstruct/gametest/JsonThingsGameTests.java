@@ -99,17 +99,28 @@ public class JsonThingsGameTests {
     });
   }
 
-  /** A mob effect liquid applies its effect to living entities inside, level from {@code burn_time} like upstream */
-  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
-  public static void jsonthings_mob_effect_liquid(GameTestHelper helper) {
+  /** Places the mob effect liquid on a pig and checks it gets slowness with the given amplifier, not fire */
+  private static void assertSlowingLiquid(GameTestHelper helper, String fluid, int amplifier, String source) {
     BlockPos pos = new BlockPos(2, 1, 2);
-    placeLiquid(helper, pos, fluid(helper, "slowing_liquid"), FlexMobEffectLiquidBlock.class);
+    placeLiquid(helper, pos, fluid(helper, fluid), FlexMobEffectLiquidBlock.class);
     Pig pig = helper.spawnWithNoFreeWill(EntityType.PIG, pos);
     helper.succeedWhen(() -> {
       MobEffectInstance effect = pig.getEffect(MobEffects.SLOWNESS);
-      helper.assertTrue(effect != null, Component.literal("pig in the slowing liquid has no slowness"));
-      helper.assertTrue(effect.getAmplifier() == 2, Component.literal("slowness amplifier is " + effect.getAmplifier() + ", expected 2 (burn_time 3)"));
-      helper.assertTrue(!pig.isOnFire(), Component.literal("pig in the slowing liquid is on fire"));
+      helper.assertTrue(effect != null, Component.literal("pig in " + fluid + " has no slowness"));
+      helper.assertTrue(effect.getAmplifier() == amplifier, Component.literal("slowness amplifier is " + effect.getAmplifier() + ", expected " + amplifier + " (" + source + ")"));
+      helper.assertTrue(!pig.isOnFire(), Component.literal("pig in " + fluid + " is on fire"));
     });
+  }
+
+  /** A legacy mob effect liquid with only {@code burn_time} still takes its effect level from it, like upstream */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void jsonthings_mob_effect_liquid(GameTestHelper helper) {
+    assertSlowingLiquid(helper, "slowing_liquid", 2, "burn_time 3, no level");
+  }
+
+  /** A mob effect liquid with {@code level} uses it, ignoring {@code burn_time} */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void jsonthings_mob_effect_liquid_level(GameTestHelper helper) {
+    assertSlowingLiquid(helper, "leveled_liquid", 1, "level 2, burn_time 4");
   }
 }

@@ -23,7 +23,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-/** Collection of custom block types added by Tinkers */
+/**
+ * Collection of custom block types added by Tinkers. Fields of each type in a thingpack block definition:
+ * <ul>
+ *   <li>{@code tconstruct:burning_liquid}: {@code fluid} (optional, defaults to the block name), {@code burn_time} (seconds
+ *       entities inside burn), {@code damage} (fire damage per hit).</li>
+ *   <li>{@code tconstruct:mob_effect_liquid}: {@code fluid} (optional, defaults to the block name), {@code effect} (mob effect
+ *       ID), {@code level} (effect level, 1 = amplifier 0). Thingpacks written for older versions set the level in
+ *       {@code burn_time} (upstream read it from there); {@code burn_time} is only used when {@code level} is absent.</li>
+ * </ul>
+ */
 public class FlexBlockTypes {
   /** Creates the supplier for a fluid in a fluid block */
   private static Supplier<FlowingFluid> fluidSupplier(ResourceLocation name) {
@@ -56,7 +65,8 @@ public class FlexBlockTypes {
     register("mob_effect_liquid", data -> {
       ResourceLocation fluidField = Loadables.RESOURCE_LOCATION.getOrDefault(data, "fluid", null);
       ResourceLocation effectName = Loadables.RESOURCE_LOCATION.getIfPresent(data, "effect");
-      int effectLevel = GsonHelper.getAsInt(data, "burn_time");
+      // legacy thingpacks set the level in burn_time, which upstream read it from
+      int effectLevel = data.has("level") ? GsonHelper.getAsInt(data, "level") : GsonHelper.getAsInt(data, "burn_time");
       return (props, builder) -> {
         final List<Property<?>> _properties = builder.getProperties();
         Lazy<MobEffect> effect = Lazy.of(() -> Loadables.MOB_EFFECT.fromKey(effectName, "effect"));
