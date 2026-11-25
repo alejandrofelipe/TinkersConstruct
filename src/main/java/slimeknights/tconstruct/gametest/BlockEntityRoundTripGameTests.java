@@ -44,7 +44,6 @@ import slimeknights.tconstruct.library.tools.part.block.MaterialBlockEntity;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedBlock;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
-import slimeknights.tconstruct.smeltery.block.controller.ControllerBlock;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.FaucetBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
@@ -162,10 +161,10 @@ public class BlockEntityRoundTripGameTests {
   @TinkerGameTest(template = "gametest/empty_9x9x9", timeoutTicks = 200)
   public static void block_entity_round_trip_structures(GameTestHelper helper) {
     ServerLevel level = helper.getLevel();
-    BlockPos smeltery = buildHeatingStructure(level, helper.absolutePos(new BlockPos(1, 1, 1)), TinkerSmeltery.searedBricks.get().defaultBlockState(),
+    BlockPos smeltery = SmelteryRigs.buildHeatingStructure(level, helper.absolutePos(new BlockPos(1, 1, 1)), TinkerSmeltery.searedBricks.get().defaultBlockState(),
       TinkerSmeltery.searedTank.get(TankType.FUEL_TANK), TinkerSmeltery.searedDrain.get(), TinkerSmeltery.searedDuct.get(), TinkerSmeltery.searedChute.get(),
       TinkerSmeltery.smelteryController.get());
-    BlockPos foundry = buildHeatingStructure(level, helper.absolutePos(new BlockPos(1, 1, 5)), TinkerSmeltery.scorchedBricks.get().defaultBlockState(),
+    BlockPos foundry = SmelteryRigs.buildHeatingStructure(level, helper.absolutePos(new BlockPos(1, 1, 5)), TinkerSmeltery.scorchedBricks.get().defaultBlockState(),
       TinkerSmeltery.scorchedTank.get(TankType.FUEL_TANK), TinkerSmeltery.scorchedDrain.get(), TinkerSmeltery.scorchedDuct.get(), TinkerSmeltery.scorchedChute.get(),
       TinkerSmeltery.foundryController.get());
     // melter and alloyer: the fuel tank goes in after the controller, so its shape update forms the controller
@@ -480,31 +479,4 @@ public class BlockEntityRoundTripGameTests {
     }
   }
 
-
-  /* Structures */
-
-  /**
-   * Builds a 3×3×3 heating structure (open top): bricks everywhere but the centre column, the south wall centre is the controller,
-   * the west wall holds a filled fuel tank and above it an empty tank, the north wall a drain with a chute above it, the east wall a duct.
-   * @return controller position
-   */
-  private static BlockPos buildHeatingStructure(ServerLevel level, BlockPos origin, BlockState bricks, Block tank, Block drain, Block duct, Block chute, Block controller) {
-    for (int x = 0; x < 3; x++) {
-      for (int z = 0; z < 3; z++) {
-        level.setBlockAndUpdate(origin.offset(x, 0, z), bricks);
-        for (int y = 1; y <= 2; y++) {
-          level.setBlockAndUpdate(origin.offset(x, y, z), x == 1 && z == 1 ? Blocks.AIR.defaultBlockState() : bricks);
-        }
-      }
-    }
-    level.setBlockAndUpdate(origin.offset(0, 1, 1), tank.defaultBlockState());
-    SmelteryRigs.fillTank(level, origin.offset(0, 1, 1), new FluidStack(Fluids.LAVA, 4000));
-    level.setBlockAndUpdate(origin.offset(0, 2, 1), tank.defaultBlockState());
-    level.setBlockAndUpdate(origin.offset(1, 1, 0), drain.defaultBlockState());
-    level.setBlockAndUpdate(origin.offset(1, 2, 0), chute.defaultBlockState());
-    level.setBlockAndUpdate(origin.offset(2, 1, 1), duct.defaultBlockState());
-    BlockPos controllerPos = origin.offset(1, 1, 2);
-    level.setBlockAndUpdate(controllerPos, controller.defaultBlockState().setValue(ControllerBlock.FACING, Direction.SOUTH));
-    return controllerPos;
-  }
 }

@@ -5,6 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
@@ -60,6 +61,37 @@ public final class SmelteryRigs {
       TinkerSmeltery.smelteryController.get().defaultBlockState()
         .setValue(ControllerBlock.FACING, Direction.SOUTH));
     return controller;
+  }
+
+  /**
+   * Builds a 3×3×3 heating structure (open top): bricks everywhere but the centre column, the south wall centre is the controller,
+   * the west wall holds a filled fuel tank and above it an empty tank, the north wall a drain with a chute above it, the east wall a duct.
+   * @return controller position
+   */
+  public static BlockPos buildHeatingStructure(ServerLevel level, BlockPos origin, BlockState bricks, Block tank, Block drain, Block duct, Block chute, Block controller) {
+    for (int x = 0; x < 3; x++) {
+      for (int z = 0; z < 3; z++) {
+        level.setBlockAndUpdate(origin.offset(x, 0, z), bricks);
+        for (int y = 1; y <= 2; y++) {
+          level.setBlockAndUpdate(origin.offset(x, y, z), x == 1 && z == 1 ? Blocks.AIR.defaultBlockState() : bricks);
+        }
+      }
+    }
+    level.setBlockAndUpdate(origin.offset(0, 1, 1), tank.defaultBlockState());
+    fillTank(level, origin.offset(0, 1, 1), new FluidStack(Fluids.LAVA, 4000));
+    level.setBlockAndUpdate(origin.offset(0, 2, 1), tank.defaultBlockState());
+    level.setBlockAndUpdate(origin.offset(1, 1, 0), drain.defaultBlockState());
+    level.setBlockAndUpdate(origin.offset(1, 2, 0), chute.defaultBlockState());
+    level.setBlockAndUpdate(origin.offset(2, 1, 1), duct.defaultBlockState());
+    BlockPos controllerPos = origin.offset(1, 1, 2);
+    level.setBlockAndUpdate(controllerPos, controller.defaultBlockState().setValue(ControllerBlock.FACING, Direction.SOUTH));
+    return controllerPos;
+  }
+
+  /** {@link #buildHeatingStructure} as a seared smeltery */
+  public static BlockPos buildSearedHeatingStructure(ServerLevel level, BlockPos origin) {
+    return buildHeatingStructure(level, origin, TinkerSmeltery.searedBricks.get().defaultBlockState(), TinkerSmeltery.searedTank.get(TankType.FUEL_TANK),
+      TinkerSmeltery.searedDrain.get(), TinkerSmeltery.searedDuct.get(), TinkerSmeltery.searedChute.get(), TinkerSmeltery.smelteryController.get());
   }
 
   /**
