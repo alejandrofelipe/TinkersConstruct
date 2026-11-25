@@ -1,6 +1,8 @@
 {
     "pack": {
         "description": "Tinkers Construct Resources",
-        "pack_format": 48
+        "min_format": 88,
+        "max_format": 88,
+        "_comment": "1.21.9+ format, like NeoForge's own pack.mcmeta. One file serves the client (69) and server (88) packs: the server requires supported_formats for a min_format up to 81 while the client rejects it above 64, so min_format must be above 81. NeoForge ignores the range of mod packs."
     }
 }
