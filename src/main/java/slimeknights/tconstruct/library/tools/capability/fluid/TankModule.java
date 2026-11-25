@@ -204,6 +204,11 @@ public class TankModule implements HookProvider, FluidModifierHook, VolatileData
    * it), and only then the held stack changes. A slot over a native handler may refuse the set (side inventories), and NeoForge's
    * ResourceHandlerSlot hands out copies, so the tool in the slot must be written back with an explicit set (the stack passed to
    * overrideOtherStackedOnMe is a copy vanilla never writes back).
+   * Why mutating a slot stack is fragile there: NeoForge's StackCopySlot (ResourceHandlerSlot's parent) remembers only the copy returned by
+   * the latest getItem() call, and its setChanged() (which vanilla calls at the end of the click) writes back that one object. Code that
+   * mutates a stack from getItem() therefore relies on it being that latest copy; any fresh slot.getItem() before the click ends (including
+   * the one inside allowModification, or vanilla's own second getItem() before the stacking hooks, which is why the stack passed here is
+   * stale) replaces it, and the mutation is silently discarded. An explicit set does not depend on this.
    */
 
   @Override

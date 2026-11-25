@@ -92,6 +92,9 @@ public class ModifierCrystalItem extends Item {
     // must be op or in creative, right-clicking onto a modifiable slot
     if (action == ClickAction.SECONDARY && slot.allowModification(player) && CreativeSlotItem.canApply(player)) {
       ModifierId modifier = getModifier(stack);
+      // updated in place below: slots handing out copies (NeoForge's StackCopySlot, e.g. our chests and side inventories) write back only the
+      // copy from their latest getItem() call when vanilla calls setChanged() at the end of the click, so this must be that latest call
+      // (after allowModification, which calls getItem() too) and nothing may call slot.getItem() again before the click ends
       ItemStack toolItem = slot.getItem();
       // slot must have a tool, NBT must be valid
       if (modifier != null && !toolItem.isEmpty() && toolItem.is(TinkerTags.Items.MODIFIABLE)) {

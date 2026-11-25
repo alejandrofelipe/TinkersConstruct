@@ -73,6 +73,9 @@ public class RepairKitItem extends MaterialItem implements IRepairKitItem {
     // stacking on a tool repairs the tool, if the material is valid
     if (canRepairInCraftingTable() && action == ClickAction.SECONDARY && slot.allowModification(player)) {
       // tool must be modifiable, if so block interactions beyond repair
+      // the repair mutates this stack in place: slots handing out copies (NeoForge's StackCopySlot, e.g. our chests and side inventories)
+      // write back only the copy from their latest getItem() call when vanilla calls setChanged() at the end of the click, so this must be
+      // that latest call (after allowModification, which calls getItem() too) and nothing may call slot.getItem() again before the click ends
       ItemStack toolItem = slot.getItem();
       if (!toolItem.isEmpty() && toolItem.is(TinkerTags.Items.MODIFIABLE)) {
         ToolStack tool = ToolStack.from(toolItem);

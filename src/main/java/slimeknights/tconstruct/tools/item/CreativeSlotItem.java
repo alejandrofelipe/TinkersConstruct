@@ -165,6 +165,9 @@ public class CreativeSlotItem extends Item {
   public boolean overrideStackedOnOther(ItemStack stack, Slot slot, ClickAction action, Player player) {
     if (action == ClickAction.SECONDARY && slot.allowModification(player)) {
       // click tool with item - add slot
+      // handleStackOn updates the slot's stack in place: slots handing out copies (NeoForge's StackCopySlot, e.g. our chests and side
+      // inventories) write back only the copy from their latest getItem() call when vanilla calls setChanged() at the end of the click, so
+      // this getItem() must come after allowModification (which calls it too) and nothing may call slot.getItem() again before the click ends
       return handleStackOn(stack, slot.getItem(), player, stack.getCount());
     }
     return false;

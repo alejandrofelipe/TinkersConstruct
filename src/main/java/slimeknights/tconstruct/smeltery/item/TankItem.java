@@ -174,7 +174,9 @@ public class TankItem extends BlockTooltipItem {
           return false;
         }
         // PORT 1.21.10 (transfer phase 6): transfer on a copy of the held stack, and write the filled tank back to the slot explicitly before
-        // changing the held stack: NeoForge's ResourceHandlerSlot hands out copies (vanilla never writes this one back) and may refuse the set
+        // changing the held stack: NeoForge's ResourceHandlerSlot hands out copies (vanilla never writes this one back) and may refuse the set.
+        // Its StackCopySlot#setChanged, run at the end of the click, writes back only the copy from the latest getItem() call; vanilla calls
+        // getItem() again after taking this stack, so mutating it would be silently discarded (see TankModule).
         TransferResult result = FluidTransferHelper.interactWithStack(tank, held.copy(), TransferDirection.AUTO);
         if (result != null && TransferUtil.trySetSlot(slot, player, setTank(stack.copy(), tank))) {
           // play sound
