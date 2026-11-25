@@ -10,7 +10,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
@@ -26,6 +25,7 @@ import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferDirect
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferResult;
 import slimeknights.mantle.recipe.helper.FluidOutput;
 import slimeknights.mantle.recipe.helper.ItemOutput;
+import slimeknights.mantle.transfer.SingleFluidTank;
 import slimeknights.mantle.transfer.TestFluidItemCapabilities;
 import slimeknights.tconstruct.test.BaseMcTest;
 
@@ -270,21 +270,21 @@ class FluidTransferHelperTest extends BaseMcTest {
     assertSlot(tank, 0, FluidStack.EMPTY);
   }
 
-  @SuppressWarnings({"removal", "deprecation"})
+  /** Mantle's native single tank (the replacement of NeoForge's legacy {@code FluidTank}, which the removed legacy overload test used) */
   @Test
-  void legacyOverloads_sameResults() {
-    FluidTank legacy = new FluidTank(4000);
+  void singleFluidTank_interactAndFill() {
+    SingleFluidTank tank = new SingleFluidTank(4000);
     ItemStack stack = new ItemStack(Items.WATER_BUCKET);
-    TransferResult result = FluidTransferHelper.interactWithStack(legacy, stack, TransferDirection.AUTO);
+    TransferResult result = FluidTransferHelper.interactWithStack(tank, stack, TransferDirection.AUTO);
     assertThat(result).isNotNull();
     assertThat(result.stack().is(Items.BUCKET)).isTrue();
     assertThat(result.didFill()).isFalse();
     assertThat(stack.isEmpty()).isTrue();
-    assertThat(legacy.getFluidAmount()).isEqualTo(1000);
+    assertThat(tank.getFluidAmount()).isEqualTo(1000);
 
-    result = FluidTransferHelper.fillStack(legacy, new ItemStack(Items.BUCKET), new FluidStack(Fluids.WATER, 1000));
+    result = FluidTransferHelper.fillStack(tank, new ItemStack(Items.BUCKET), new FluidStack(Fluids.WATER, 1000));
     assertThat(result).isNotNull();
     assertThat(result.stack().is(Items.WATER_BUCKET)).isTrue();
-    assertThat(legacy.isEmpty()).isTrue();
+    assertThat(tank.isEmpty()).isTrue();
   }
 }

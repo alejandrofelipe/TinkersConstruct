@@ -1,13 +1,14 @@
 package slimeknights.tconstruct.tables.block.entity.inventory;
 
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,9 @@ import slimeknights.tconstruct.tables.block.entity.chest.TinkersChestBlockEntity
 import slimeknights.tconstruct.test.BaseMcTest;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,13 +54,25 @@ class ChestItemHandlerTest extends BaseMcTest {
     return output.buildResult();
   }
 
-  @SuppressWarnings("removal")  // the legacy handler is the reference for the saved data
-  private static CompoundTag writeLegacy(int size, int slot, ItemStack stack) {
-    ItemStackHandler legacy = new ItemStackHandler(size);
-    legacy.setStackInSlot(slot, stack);
-    TagValueOutput output = TagValueOutput.createWithoutContext(ProblemReporter.DISCARDING);
-    legacy.serialize(output);
-    return output.buildResult();
+  /**
+   * Fixture of what NeoForge's legacy {@code ItemStackHandler.serialize(ValueOutput)} writes (javap on NF 21.10.64): {@code Items}, a list of
+   * {@code ItemStackWithSlot} ({@code Slot} as an unsigned byte, then the stack's {@code id} and {@code count}) for the non-empty slots in
+   * slot order, and the {@code Size} int. Kept as literal data instead of instantiating the deprecated legacy handler, so the saved data check
+   * survives its removal from NeoForge. The native chest's output was verified equal to the legacy handler's own output before the switch (6b(ii)).
+   */
+  private static CompoundTag legacyHandlerData(int size, Map<Integer, ItemStack> stacks) {
+    ListTag items = new ListTag();
+    stacks.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> {
+      CompoundTag item = new CompoundTag();
+      item.putByte("Slot", (byte) (int) entry.getKey());
+      item.putString("id", BuiltInRegistries.ITEM.getKey(entry.getValue().getItem()).toString());
+      item.putInt("count", entry.getValue().getCount());
+      items.add(item);
+    });
+    CompoundTag tag = new CompoundTag();
+    tag.put("Items", items);
+    tag.putInt("Size", size);
+    return tag;
   }
 
   @Test
@@ -65,26 +80,23 @@ class ChestItemHandlerTest extends BaseMcTest {
     TinkersChestItemHandler handler = new TinkersChestItemHandler();
     handler.setStackInSlot(10, new ItemStack(Items.IRON_INGOT, 12));
     CompoundTag tag = write(handler);
-    assertThat(tag).isEqualTo(writeLegacy(64, 10, new ItemStack(Items.IRON_INGOT, 12)));
+    assertThat(tag).isEqualTo(legacyHandlerData(64, Map.of(10, new ItemStack(Items.IRON_INGOT, 12))));
     assertThat(tag.getList("Items")).isPresent();
     assertThat(tag.getInt("Size")).contains(64);
   }
 
-  @SuppressWarnings("removal")  // the legacy handler is the reference for the saved data
   @Test
   void serialize_slotsPastByteRange_matchLegacyAndRoundTrip() {
     // ItemStackWithSlot stores the slot as an unsigned byte, slots 128+ must come out the same as the legacy handler and read back
     TestScalingHandler handler = new TestScalingHandler(200);
-    ItemStackHandler legacy = new ItemStackHandler(200);
+    Map<Integer, ItemStack> expected = new HashMap<>();
     for (int slot : new int[] { 10, 127, 128, 150, 199 }) {
       ItemStack stack = new ItemStack(Items.IRON_INGOT, slot % 7 + 1);
       handler.setStackInSlot(slot, stack.copy());
-      legacy.setStackInSlot(slot, stack.copy());
+      expected.put(slot, stack.copy());
     }
-    TagValueOutput legacyOutput = TagValueOutput.createWithoutContext(ProblemReporter.DISCARDING);
-    legacy.serialize(legacyOutput);
     CompoundTag tag = write(handler);
-    assertThat(tag).isEqualTo(legacyOutput.buildResult());
+    assertThat(tag).isEqualTo(legacyHandlerData(200, expected));
 
     TestScalingHandler read = new TestScalingHandler(200);
     read.deserialize(TagValueInput.create(ProblemReporter.DISCARDING, RegistryAccess.EMPTY, tag));
@@ -98,7 +110,7 @@ class ChestItemHandlerTest extends BaseMcTest {
     TestScalingHandler handler = new TestScalingHandler(20);
     handler.setStackInSlot(0, new ItemStack(Items.GOLD_INGOT));
     // the chest block entity saves only Items: the size stays, old contents are cleared
-    CompoundTag tag = writeLegacy(20, 7, new ItemStack(Items.DIAMOND, 3));
+    CompoundTag tag = legacyHandlerData(20, Map.of(7, new ItemStack(Items.DIAMOND, 3)));
     tag.remove("Size");
     handler.deserialize(TagValueInput.create(ProblemReporter.DISCARDING, RegistryAccess.EMPTY, tag));
     assertThat(handler.size()).isEqualTo(20);

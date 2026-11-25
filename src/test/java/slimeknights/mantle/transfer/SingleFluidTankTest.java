@@ -7,7 +7,6 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.junit.jupiter.api.Test;
@@ -39,13 +38,19 @@ class SingleFluidTankTest extends BaseMcTest {
     return output.buildResult();
   }
 
-  @SuppressWarnings("removal")  // the legacy tank is the reference for the saved data
-  private static CompoundTag writeLegacy(FluidStack fluid) {
-    FluidTank tank = new FluidTank(1000);
-    tank.setFluid(fluid);
-    TagValueOutput output = TagValueOutput.createWithoutContext(ProblemReporter.DISCARDING);
-    tank.serialize(output);
-    return output.buildResult();
+  /**
+   * Fixture of what NeoForge's legacy {@code FluidTank.serialize(ValueOutput)} writes for a non-empty tank (javap on NF 21.10.64: the stack
+   * under {@code Fluid} through {@code FluidStack.CODEC}, i.e. {@code {id, amount}} without components; nothing at all when empty). Kept as
+   * literal data instead of instantiating the deprecated legacy tank, so the saved data check survives its removal from NeoForge. The native
+   * tank's output was verified equal to the legacy tank's own output before the switch (6b(i)).
+   */
+  private static CompoundTag legacyTankData(String fluid, int amount) {
+    CompoundTag stack = new CompoundTag();
+    stack.putString("id", fluid);
+    stack.putInt("amount", amount);
+    CompoundTag tag = new CompoundTag();
+    tag.put("Fluid", stack);
+    return tag;
   }
 
   @Test
@@ -53,21 +58,21 @@ class SingleFluidTankTest extends BaseMcTest {
     SingleFluidTank tank = new SingleFluidTank(1000);
     tank.setFluid(new FluidStack(Fluids.LAVA, 250));
     CompoundTag tag = write(tank);
-    assertThat(tag).isEqualTo(writeLegacy(new FluidStack(Fluids.LAVA, 250)));
+    assertThat(tag).isEqualTo(legacyTankData("minecraft:lava", 250));
     assertThat(tag.getCompound(SingleFluidTank.TAG_FLUID)).isPresent();
   }
 
   @Test
   void serialize_empty_writesNothing() {
+    // the legacy tank wrote nothing for an empty tank
     CompoundTag tag = write(new SingleFluidTank(1000));
     assertThat(tag.isEmpty()).isTrue();
-    assertThat(tag).isEqualTo(writeLegacy(FluidStack.EMPTY));
   }
 
   @Test
   void deserialize_readsLegacyTankAndClearsWhenMissing() {
     SingleFluidTank tank = new SingleFluidTank(1000);
-    tank.deserialize(TagValueInput.create(ProblemReporter.DISCARDING, RegistryAccess.EMPTY, writeLegacy(new FluidStack(Fluids.WATER, 400))));
+    tank.deserialize(TagValueInput.create(ProblemReporter.DISCARDING, RegistryAccess.EMPTY, legacyTankData("minecraft:water", 400)));
     assertThat(tank.getFluid().getFluid()).isEqualTo(Fluids.WATER);
     assertThat(tank.getFluidAmount()).isEqualTo(400);
 

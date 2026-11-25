@@ -29,8 +29,8 @@ import javax.annotation.Nullable;
  * Transaction safe helpers for querying and filling the fluid handler of a single container item, and for immediate fills and drains of
  * block and internal fluid handlers (the replacement of the legacy {@code fill}/{@code drain} calls).
  * <p>
- * PORT 1.21.10 (transfer step 1): Mantle's legacy item lookups ({@code TransferHelper.getLegacyFluidHandler(ItemStack)}) open a root
- * transaction on every call, so they throw when used inside a transaction. Code that may run inside one, such as validity checks of our
+ * PORT 1.21.10 (transfer step 1): Mantle's legacy item lookups (removed in phase 6b(v)) opened a root transaction on every call, so they
+ * threw when used inside a transaction. Code that may run inside one, such as validity checks of our
  * native handlers or recipe matching started from a native fill (casting tables), uses these helpers instead: every method works on an
  * isolated one item copy of the stack, so the passed stack is never modified, and opens a nested transaction when one is already open.
  */

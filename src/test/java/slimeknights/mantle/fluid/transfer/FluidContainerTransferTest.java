@@ -9,7 +9,6 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
@@ -22,6 +21,7 @@ import slimeknights.mantle.recipe.helper.FluidOutput;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.mantle.recipe.helper.TagPreference;
 import slimeknights.mantle.recipe.ingredient.FluidIngredient;
+import slimeknights.mantle.transfer.SingleFluidTank;
 import slimeknights.tconstruct.test.BaseMcTest;
 
 import java.lang.reflect.Field;
@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Native transfers of the {@code mantle:fluid_transfer} types (M5 phase 6a): each type moves its fluid through a {@link net.neoforged.neoforge.transfer.ResourceHandler}
- * in the given transaction, leaves no change when it fails, and gives the same result as its legacy {@link net.neoforged.neoforge.fluids.capability.IFluidHandler} path.
+ * in the given transaction and leaves no change when it fails. (The legacy {@code IFluidHandler} path and its parity test were removed in 6b(v).)
  */
 class FluidContainerTransferTest extends BaseMcTest {
   private static final int BUCKET = 1000;
@@ -60,13 +60,6 @@ class FluidContainerTransferTest extends BaseMcTest {
     if (!contents.isEmpty()) {
       tank.set(0, FluidResource.of(contents), contents.getAmount());
     }
-    return tank;
-  }
-
-  /** Legacy single tank with the given contents */
-  private static FluidTank legacyTank(int capacity, FluidStack contents) {
-    FluidTank tank = new FluidTank(capacity);
-    tank.setFluid(contents.copy());
     return tank;
   }
 
@@ -238,31 +231,41 @@ class FluidContainerTransferTest extends BaseMcTest {
   }
 
 
-  /* Legacy path parity (kept until phase 6b) */
+  /* Mantle's native single tank (the replacement of NeoForge's legacy FluidTank, which the old parity test used) */
 
-  @SuppressWarnings({"removal", "deprecation"})
+  /** Commits the transfer into a Mantle single tank */
+  private static TransferResult commit(IFluidContainerTransfer transfer, ItemStack stack, FluidStack fluid, SingleFluidTank tank) {
+    try (Transaction tx = Transaction.openRoot()) {
+      TransferResult result = transfer.transfer(stack, fluid, tank, TransferDirection.AUTO, tx);
+      tx.commit();
+      return result;
+    }
+  }
+
   @Test
-  void legacyPath_sameResults() {
+  void singleFluidTank_transfers() {
     // empty
-    FluidTank legacy = legacyTank(4000, FluidStack.EMPTY);
-    TransferResult result = emptyBucket().transfer(new ItemStack(Items.WATER_BUCKET), FluidStack.EMPTY, legacy, TransferDirection.AUTO);
+    SingleFluidTank tank = new SingleFluidTank(4000);
+    TransferResult result = commit(emptyBucket(), new ItemStack(Items.WATER_BUCKET), FluidStack.EMPTY, tank);
     assertThat(result).isNotNull();
     assertThat(result.stack().is(Items.BUCKET)).isTrue();
-    assertThat(legacy.getFluidAmount()).isEqualTo(BUCKET);
+    assertThat(tank.getFluidAmount()).isEqualTo(BUCKET);
     // fill
-    result = fillBucket().transfer(new ItemStack(Items.BUCKET), legacy.getFluid().copy(), legacy, TransferDirection.AUTO);
+    result = commit(fillBucket(), new ItemStack(Items.BUCKET), tank.getFluid().copy(), tank);
     assertThat(result).isNotNull();
     assertThat(result.stack().is(Items.WATER_BUCKET)).isTrue();
-    assertThat(legacy.isEmpty()).isTrue();
+    assertThat(tank.isEmpty()).isTrue();
     // fill with potion contents
-    FluidTank potion = legacyTank(4000, potionWater(1000));
-    result = fillPotion().transfer(new ItemStack(Items.GLASS_BOTTLE), potion.getFluid().copy(), potion, TransferDirection.AUTO);
+    SingleFluidTank potion = new SingleFluidTank(4000);
+    potion.setFluid(potionWater(1000));
+    result = commit(fillPotion(), new ItemStack(Items.GLASS_BOTTLE), potion.getFluid().copy(), potion);
     assertThat(result).isNotNull();
     assertThat(result.stack().get(DataComponents.POTION_CONTENTS)).isEqualTo(new PotionContents(Potions.SWIFTNESS));
     assertThat(potion.getFluidAmount()).isEqualTo(750);
     // a failed transfer leaves the tank alone
-    FluidTank small = legacyTank(1500, new FluidStack(Fluids.WATER, 1000));
-    assertThat(emptyBucket().transfer(new ItemStack(Items.WATER_BUCKET), FluidStack.EMPTY, small, TransferDirection.AUTO)).isNull();
+    SingleFluidTank small = new SingleFluidTank(1500);
+    small.setFluid(new FluidStack(Fluids.WATER, 1000));
+    assertThat(commit(emptyBucket(), new ItemStack(Items.WATER_BUCKET), FluidStack.EMPTY, small)).isNull();
     assertThat(small.getFluidAmount()).isEqualTo(1000);
   }
 }

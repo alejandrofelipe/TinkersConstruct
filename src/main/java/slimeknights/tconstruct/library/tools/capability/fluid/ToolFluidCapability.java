@@ -195,7 +195,7 @@ public class ToolFluidCapability extends FluidModifierHookIterator<ModifierEntry
     int fill(IToolStackView tool, ModifierEntry modifier, FluidStack resource, FluidAction action);
 
     /**
-     * Drains fluid out of tanks, distribution is left entirely to the IFluidHandler.
+     * Drains fluid out of tanks, distribution is left entirely to the modifier.
      * @param tool      Tool instance
      * @param modifier  Entry instance
      * @param resource  FluidStack representing the Fluid and maximum amount of fluid to be drained.
@@ -206,7 +206,7 @@ public class ToolFluidCapability extends FluidModifierHookIterator<ModifierEntry
     FluidStack drain(IToolStackView tool, ModifierEntry modifier, FluidStack resource, FluidAction action);
 
     /**
-     * Drains fluid out of internal tanks, distribution is left entirely to the IFluidHandler.
+     * Drains fluid out of internal tanks, distribution is left entirely to the modifier.
      * @param tool      Tool instance
      * @param modifier  Entry instance
      * @param maxDrain  Maximum amount of fluid to drain.

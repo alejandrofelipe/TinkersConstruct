@@ -15,7 +15,7 @@ import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
 /**
- * Builder for a container filling recipe. Takes an arbitrary fluid for a specific amount to fill a Forge {@link net.neoforged.neoforge.fluids.capability.IFluidHandlerItem}
+ * Builder for a container filling recipe. Takes an arbitrary fluid for a specific amount to fill an item exposing a fluid handler ({@link net.neoforged.neoforge.capabilities.Capabilities.Fluid#ITEM})
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @SuppressWarnings({"WeakerAccess", "unused"})
