@@ -173,7 +173,7 @@ public class AlloyerScreen extends AbstractContainerScreen<AlloyerContainerMenu>
     if (fuel != null) {
       FluidLocation ingredient = fuel.getFluidUnderMouse(checkX, checkY);
       if (ingredient != null) {
-        return ingredient;
+        return FluidLocation.offset(ingredient, leftPos, topPos);
       }
     }
 
@@ -181,7 +181,7 @@ public class AlloyerScreen extends AbstractContainerScreen<AlloyerContainerMenu>
     if (outputTank != null) {
       FluidLocation ingredient = outputTank.getFluidUnderMouse(checkX, checkY);
       if (ingredient != null) {
-        return ingredient;
+        return FluidLocation.offset(ingredient, leftPos, topPos);
       }
     }
 
@@ -189,7 +189,7 @@ public class AlloyerScreen extends AbstractContainerScreen<AlloyerContainerMenu>
     for (GuiTankModule tankModule : inputTanks) {
       FluidLocation ingredient = tankModule.getFluidUnderMouse(checkX, checkY);
       if (ingredient != null) {
-        return ingredient;
+        return FluidLocation.offset(ingredient, leftPos, topPos);
       }
     }
 

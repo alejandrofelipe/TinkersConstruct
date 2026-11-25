@@ -1,7 +1,15 @@
 package slimeknights.tconstruct.client.uitest;
 
+import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.gui.IRecipeLayoutDrawable;
+import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.IRecipeManager;
 import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.category.IRecipeCategory;
+import mezz.jei.api.recipe.transfer.IRecipeTransferError;
+import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
+import mezz.jei.api.runtime.IClickableIngredient;
 import mezz.jei.api.runtime.IJeiRuntime;
 import mezz.jei.api.runtime.IRecipesGui;
 import net.blay09.mods.craftingtweaks.client.GuiTweakButton;
@@ -11,6 +19,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
@@ -35,9 +44,12 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluids;
@@ -49,6 +61,7 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -86,6 +99,8 @@ import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.FaucetBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.AlloyerBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.MelterBlockEntity;
+import slimeknights.tconstruct.smeltery.client.screen.IScreenWithFluidTank;
+import slimeknights.tconstruct.smeltery.client.screen.MelterScreen;
 import slimeknights.tconstruct.smeltery.item.CopperCanItem;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.entity.table.CraftingStationBlockEntity;
@@ -101,6 +116,7 @@ import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
 import slimeknights.tconstruct.world.TinkerHeadType;
 import slimeknights.tconstruct.world.TinkerWorld;
+import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -161,6 +177,8 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new AoeOutlineScenario("aoe_outline", SITE.offset(130, 0, 0), false, true));
     UiTestScenarios.register(new AoeOutlineScenario("aoe_outline_high_contrast", SITE.offset(136, 0, 0), true, false));
     UiTestScenarios.register(new StationCarriedClicksScenario());
+    UiTestScenarios.register(new JeiTankClickableScenario());
+    UiTestScenarios.register(new JeiRecipeTransferScenario());
     if (ModList.get().isLoaded("craftingtweaks")) {
       UiTestScenarios.register(new CraftingTweaksRotateScenario());
     }
@@ -1611,6 +1629,272 @@ public class TinkerUiTestScenarios {
       NeoForge.EVENT_BUS.unregister(clicker);
       ctx.mc().setScreen(null);
       ctx.sendCommand("clear @s");
+    }
+  }
+
+  /**
+   * JEI and the fluid tanks of our screens: opens a melter on a lava fuel tank, finds the fuel gauge through
+   * {@code IScreenWithFluidTank} and asks JEI's screen helper (which calls {@code GuiContainerTankHandler}) what is under the
+   * mouse there. The clickable lava must cover that point in screen coordinates, which is what JEI's own mouse-over check uses.
+   * Then presses JEI's show uses key (U) over the gauge through the screen key event JEI listens to; the capture is the JEI recipes
+   * GUI on the uses of lava.
+   */
+  private static class JeiTankClickableScenario implements UiTestScenario {
+    private static final String NAME = "jei_tank_clickable";
+    private final BlockPos pos = SITE.offset(146, 1, 0);
+    private final Consumer<ClientTickEvent.Post> poller = this::pressWhenReady;
+    private boolean pressed = false;
+    @Nullable
+    private String failure = null;
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      pressed = false;
+      failure = null;
+      ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + (pos.getY() - 1) + " " + pos.getZ());
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        // same rig as the melter scenario: the tank placed after the melter forms it
+        level.setBlockAndUpdate(pos, TinkerSmeltery.searedMelter.get().defaultBlockState());
+        BlockPos fuel = pos.below();
+        level.setBlockAndUpdate(fuel, TinkerSmeltery.searedTank.get(TankType.FUEL_TANK).defaultBlockState());
+        SmelteryRigs.fillTank(level, fuel, new FluidStack(Fluids.LAVA, 4000));
+      });
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.useBlock(pos);
+      NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, poller);
+    }
+
+    /** Point of the screen showing lava, or null if the gauge has not received the fuel yet */
+    @Nullable
+    private static int[] findLava(MelterScreen screen) {
+      for (int y = screen.getGuiTop(); y < screen.getGuiTop() + screen.getYSize(); y++) {
+        for (int x = screen.getGuiLeft(); x < screen.getGuiLeft() + screen.getXSize(); x++) {
+          IScreenWithFluidTank.FluidLocation fluid = screen.getFluidUnderMouse(x, y);
+          if (fluid != null && fluid.fluid().is(Fluids.LAVA)) {
+            return new int[] { x, y };
+          }
+        }
+      }
+      return null;
+    }
+
+    /** Once the gauge shows lava: checks JEI's clickable ingredient there, then presses the show uses key over it */
+    private void pressWhenReady(ClientTickEvent.Post event) {
+      Minecraft mc = Minecraft.getInstance();
+      if (pressed || !(mc.screen instanceof MelterScreen screen)) {
+        return;
+      }
+      int[] point = findLava(screen);
+      if (point == null) {
+        return;
+      }
+      pressed = true;
+      NeoForge.EVENT_BUS.unregister(poller);
+      IJeiRuntime runtime = JEIPlugin.runtime;
+      if (runtime == null) {
+        failure = "JEI runtime not captured - onRuntimeAvailable never fired";
+        return;
+      }
+      List<IClickableIngredient<?>> clickables = runtime.getScreenHelper().getClickableIngredientUnderMouse(screen, point[0], point[1]).toList();
+      IClickableIngredient<?> lava = clickables.stream()
+        .filter(clickable -> clickable.getTypedIngredient().getIngredient(NeoForgeTypes.FLUID_STACK).filter(fluid -> fluid.is(Fluids.LAVA)).isPresent())
+        .findFirst().orElse(null);
+      if (lava == null) {
+        failure = "JEI found no lava under the melter fuel gauge at " + point[0] + "," + point[1] + ", found " + clickables;
+        return;
+      }
+      Rect2i area = lava.getArea();
+      if (!area.contains(point[0], point[1])) {
+        failure = "JEI's clickable lava area (" + area.getX() + "," + area.getY() + " " + area.getWidth() + "x" + area.getHeight()
+                  + ") does not contain the mouse at " + point[0] + "," + point[1] + " - not in screen coordinates";
+        return;
+      }
+      new UiTestContext(mc).moveMouse(point[0] + 0.5, point[1] + 0.5);
+      // as KeyboardHandler would: screen key events go Pre, the screen, then Post (where JEI handles its hotkeys)
+      KeyEvent key = new KeyEvent(GLFW.GLFW_KEY_U, 0, 0);
+      if (!NeoForge.EVENT_BUS.post(new ScreenEvent.KeyPressed.Pre(screen, key)).isCanceled() && !screen.keyPressed(key)) {
+        NeoForge.EVENT_BUS.post(new ScreenEvent.KeyPressed.Post(screen, key));
+      }
+    }
+
+    @Override
+    public int settleTicks() {
+      return 40; // menu round trip + fuel sync + recipes GUI
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      if (failure != null) {
+        throw new IllegalStateException(NAME + ": " + failure);
+      }
+      if (!pressed) {
+        throw new IllegalStateException(NAME + ": the melter fuel gauge never showed lava, found screen " + ctx.mc().screen);
+      }
+      if (!(ctx.mc().screen instanceof IRecipesGui)) {
+        throw new IllegalStateException(NAME + ": the show uses key over the lava gauge did not open the JEI recipes GUI, found " + ctx.mc().screen);
+      }
+      ctx.mc().setScreen(null);
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(poller);
+      ctx.parkMouse();
+      ctx.mc().setScreen(null);
+    }
+  }
+
+  /**
+   * JEI recipe transfer into the crafting station from its side inventory: the only planks are in a chest next to the station
+   * (a side inventory slot over the legacy item handler bridge on the chest's resource handler). JEI's transfer handler for the
+   * vanilla stick recipe ({@code CraftingStationTransferInfo}) must accept the recipe and move both planks into the grid.
+   */
+  private static class JeiRecipeTransferScenario implements UiTestScenario {
+    private static final String NAME = "jei_recipe_transfer";
+    private static final ResourceLocation STICK = ResourceLocation.withDefaultNamespace("stick");
+    private final BlockPos pos = SITE.offset(150, 0, 0);
+    private final BlockPos chest = pos.south();
+    private final Consumer<ClientTickEvent.Post> poller = this::transferWhenReady;
+    private boolean transferred = false;
+    @Nullable
+    private String failure = null;
+
+    @Override
+    public ResourceLocation id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      transferred = false;
+      failure = null;
+      ctx.sendCommand("clear @s");
+      ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + pos.getY() + " " + pos.getZ());
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        level.setBlockAndUpdate(pos, TinkerTables.craftingStation.get().defaultBlockState());
+        if (!(level.getBlockEntity(pos) instanceof CraftingStationBlockEntity station)) {
+          throw new IllegalStateException("Expected crafting station at " + pos + ", found " + level.getBlockEntity(pos));
+        }
+        for (int i = 0; i < 9; i++) {
+          station.setItem(i, ItemStack.EMPTY);
+        }
+        level.setBlockAndUpdate(chest, Blocks.CHEST.defaultBlockState());
+        if (!(level.getBlockEntity(chest) instanceof ChestBlockEntity chestBE)) {
+          throw new IllegalStateException("Expected chest at " + chest + ", found " + level.getBlockEntity(chest));
+        }
+        chestBE.clearContent();
+        chestBE.setItem(4, new ItemStack(Items.OAK_PLANKS, 2));
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.useBlock(pos);
+      NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, poller);
+    }
+
+    /** Planks anywhere in the station menu outside the grid (side inventory and player inventory) */
+    private static int planksOutsideGrid(CraftingStationContainerMenu menu) {
+      int count = 0;
+      for (int i = 10; i < menu.slots.size(); i++) {
+        ItemStack stack = menu.getSlot(i).getItem();
+        if (stack.is(Items.OAK_PLANKS)) {
+          count += stack.getCount();
+        }
+      }
+      return count;
+    }
+
+    /** Runs JEI's transfer of the stick recipe once the menu shows the planks in the side inventory */
+    private void transferWhenReady(ClientTickEvent.Post event) {
+      Minecraft mc = Minecraft.getInstance();
+      if (transferred || !(mc.screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)
+          || planksOutsideGrid(menu) != 2 || mc.player == null) {
+        return;
+      }
+      transferred = true;
+      NeoForge.EVENT_BUS.unregister(poller);
+      IJeiRuntime runtime = JEIPlugin.runtime;
+      if (runtime == null) {
+        failure = "JEI runtime not captured - onRuntimeAvailable never fired";
+        return;
+      }
+      IRecipeManager recipes = runtime.getRecipeManager();
+      IRecipeCategory<RecipeHolder<CraftingRecipe>> category = recipes.getRecipeCategory(RecipeTypes.CRAFTING);
+      RecipeHolder<CraftingRecipe> stick = recipes.createRecipeLookup(RecipeTypes.CRAFTING).get()
+        .filter(holder -> holder.id().location().equals(STICK)).findFirst().orElse(null);
+      if (stick == null) {
+        failure = "JEI has no " + STICK + " crafting recipe";
+        return;
+      }
+      IRecipeSlotsView slots = recipes.createRecipeLayoutDrawable(category, stick, runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup())
+        .map(IRecipeLayoutDrawable::getRecipeSlotsView).orElse(null);
+      if (slots == null) {
+        failure = "JEI could not lay out " + STICK;
+        return;
+      }
+      IRecipeTransferHandler<CraftingStationContainerMenu, RecipeHolder<CraftingRecipe>> handler = runtime.getRecipeTransferManager().getRecipeTransferHandler(menu, category).orElse(null);
+      if (handler == null) {
+        failure = "JEI has no recipe transfer handler for the crafting station";
+        return;
+      }
+      // what the + button checks first, then the click
+      IRecipeTransferError error = handler.transferRecipe(menu, stick, slots, mc.player, false, false);
+      if (error != null) {
+        failure = "JEI refuses to transfer " + STICK + " into the crafting station: " + error.getType();
+        return;
+      }
+      handler.transferRecipe(menu, stick, slots, mc.player, false, true);
+    }
+
+    @Override
+    public int settleTicks() {
+      return 30; // menu round trip + transfer packet + slot sync
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      if (failure != null) {
+        throw new IllegalStateException(NAME + ": " + failure);
+      }
+      if (!(ctx.mc().screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)) {
+        throw new IllegalStateException(NAME + " expected the crafting station menu at capture, found " + ctx.mc().screen);
+      }
+      if (!transferred) {
+        throw new IllegalStateException(NAME + ": the side inventory never showed the 2 planks of the adjacent chest");
+      }
+      int inGrid = 0;
+      for (int i = 0; i < 9; i++) {
+        ItemStack stack = menu.getSlot(i).getItem();
+        if (stack.is(Items.OAK_PLANKS)) {
+          inGrid += stack.getCount();
+        }
+      }
+      if (inGrid != 2 || planksOutsideGrid(menu) != 0) {
+        throw new IllegalStateException(NAME + " expected both planks moved into the grid, found " + inGrid + " in the grid and " + planksOutsideGrid(menu) + " outside");
+      }
+      ctx.mc().setScreen(null);
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(poller);
+      ctx.mc().setScreen(null);
     }
   }
 }

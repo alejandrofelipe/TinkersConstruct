@@ -133,12 +133,12 @@ public class MelterScreen extends AbstractContainerScreen<MelterContainerMenu> i
     if (fuel != null) {
       FluidLocation ingredient = fuel.getFluidUnderMouse(checkX, checkY);
       if (ingredient != null) {
-        return ingredient;
+        return FluidLocation.offset(ingredient, leftPos, topPos);
       }
     }
     // melter tanks are about as fast
     if (tank != null) {
-      return tank.getFluidUnderMouse(checkX, checkY);
+      return FluidLocation.offset(tank.getFluidUnderMouse(checkX, checkY), leftPos, topPos);
     }
     return null;
   }

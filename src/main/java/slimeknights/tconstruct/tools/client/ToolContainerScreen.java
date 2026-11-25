@@ -266,7 +266,7 @@ public class ToolContainerScreen extends AbstractContainerScreen<ToolContainerMe
   @Override
   public FluidLocation getFluidUnderMouse(int mouseX, int mouseY) {
     if (tank != null) {
-      return tank.getFluidUnderMouse(mouseX - leftPos, mouseY - topPos);
+      return FluidLocation.offset(tank.getFluidUnderMouse(mouseX - leftPos, mouseY - topPos), leftPos, topPos);
     }
     return null;
   }

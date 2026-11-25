@@ -220,12 +220,12 @@ public class HeatingStructureScreen extends MultiModuleScreen<HeatingStructureCo
     if (fuel != null)  {
       FluidLocation ingredient = fuel.getFluidUnderMouse(checkX, checkY);
       if (ingredient != null) {
-        return ingredient;
+        return FluidLocation.offset(ingredient, cornerX, cornerY);
       }
     }
     // then try tank
     if (tank != null) {
-      return tank.getFluidUnderMouse(checkX, checkY);
+      return FluidLocation.offset(tank.getFluidUnderMouse(checkX, checkY), cornerX, cornerY);
     }
     return null;
   }

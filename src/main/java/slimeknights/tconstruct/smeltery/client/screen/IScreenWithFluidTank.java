@@ -13,11 +13,27 @@ public interface IScreenWithFluidTank {
    * Gets the ingredient under the mouse, typically a fluid
    * @param mouseX Mouse X
    * @param mouseY Mouse Y
-   * @return Fluid under mouse, or empty if no fluid.
+   * @return Fluid under mouse with its area in screen coordinates (like the mouse position), or null if no fluid.
    */
   @Nullable
   FluidLocation getFluidUnderMouse(int mouseX, int mouseY);
 
   /** Return from the fluid under mouse, maps to a JEI fluid */
-  record FluidLocation(FluidStack fluid, Rect2i location) {}
+  record FluidLocation(FluidStack fluid, Rect2i location) {
+    /**
+     * Moves the location by the given offset, used by screens to turn the GUI relative areas of their modules into screen coordinates
+     * @param location  Location to move, may be null
+     * @param x         X offset, typically the left of the GUI
+     * @param y         Y offset, typically the top of the GUI
+     * @return Moved location, or null if the location is null
+     */
+    @Nullable
+    public static FluidLocation offset(@Nullable FluidLocation location, int x, int y) {
+      if (location == null) {
+        return null;
+      }
+      Rect2i area = location.location;
+      return new FluidLocation(location.fluid, new Rect2i(area.getX() + x, area.getY() + y, area.getWidth(), area.getHeight()));
+    }
+  }
 }
