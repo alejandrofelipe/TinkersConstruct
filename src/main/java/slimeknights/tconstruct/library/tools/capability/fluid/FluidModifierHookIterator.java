@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.library.tools.capability.fluid;
 
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import slimeknights.tconstruct.library.fluid.FluidAction;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.tools.capability.CompoundIndexHookIterator;
 import slimeknights.tconstruct.library.tools.capability.fluid.ToolFluidCapability.FluidModifierHook;

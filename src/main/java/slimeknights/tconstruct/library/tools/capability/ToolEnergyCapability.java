@@ -5,7 +5,6 @@ import net.minecraft.util.Mth;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ItemCapability;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.transfer.TransferPreconditions;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
@@ -24,8 +23,15 @@ import slimeknights.tconstruct.tools.TinkerModifiers;
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
-/** Standard implementation of energy capability on a tool. Not currently used in the mod directly, but should help addons have more unity. */
-public record ToolEnergyCapability(Supplier<? extends IToolStackView> tool) implements IEnergyStorage {
+/**
+ * Standard implementation of energy capability on a tool. Not currently used in the mod directly, but should help addons have more unity.
+ * <p>
+ * PORT 1.21.10 (transfer phase 6): no longer a legacy {@code IEnergyStorage} over a tool supplier (nothing constructed it); the energy
+ * capability is the native {@link ItemHandler}, the static helpers read and write the tool's energy.
+ */
+public final class ToolEnergyCapability {
+  private ToolEnergyCapability() {}
+
   /** Format string to display energy amounts, used internally by the stat */
   public static final String ENERGY_FORMAT = TConstruct.makeDescriptionId("tool_stat", "energy");
   /** Stat marking the max capacity */
@@ -77,60 +83,6 @@ public record ToolEnergyCapability(Supplier<? extends IToolStackView> tool) impl
         ToolEnergyCapability.setEnergyRaw(tool, capacity);
       }
     }
-  }
-
-  @Override
-  public int receiveEnergy(int maxReceive, boolean simulate) {
-    if (maxReceive <= 0) {
-      return 0;
-    }
-    IToolStackView tool = this.tool.get();
-    int current = getEnergy(tool);
-    int filled = Math.min(getMaxEnergy(tool) - current, maxReceive);
-    if (!simulate) {
-      setEnergyRaw(tool, current + filled);
-    }
-    return filled;
-  }
-
-  @Override
-  public int extractEnergy(int maxExtract, boolean simulate) {
-    if (maxExtract <= 0) {
-      return 0;
-    }
-    IToolStackView tool = this.tool.get();
-    int current = getEnergy(tool);
-    if (current <= 0) {
-      return 0;
-    }
-    int drained = maxExtract;
-    if (current < drained) {
-      drained = current;
-    }
-    if (!simulate) {
-      setEnergyRaw(tool, current - drained);
-    }
-    return drained;
-  }
-
-  @Override
-  public int getEnergyStored() {
-    return getEnergy(tool.get());
-  }
-
-  @Override
-  public int getMaxEnergyStored() {
-    return getMaxEnergy(tool.get());
-  }
-
-  @Override
-  public boolean canExtract() {
-    return true;
-  }
-
-  @Override
-  public boolean canReceive() {
-    return true;
   }
 
   /**

@@ -25,7 +25,7 @@ import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtension
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidStackLinkedSet;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.fluids.FluidUtil;
+import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
@@ -166,7 +166,8 @@ public final class FluidContainerModel {
     public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
       FluidStack fluid = staticFluid;
       if (fluid.isEmpty()) {
-        fluid = FluidUtil.getFluidContained(stack).orElse(FluidStack.EMPTY);
+        // first fluid of one container, native capability
+        fluid = FluidUtil.getFirstStackContained(stack);
       }
       ItemModelUtil.renderModel(renderState, stack, displayContext, getCachedModel(fluid));
     }

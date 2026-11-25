@@ -12,7 +12,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ItemCapability;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.TransferPreconditions;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
@@ -38,7 +37,6 @@ import slimeknights.tconstruct.library.transfer.SlotStorageItemHandler;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
@@ -47,9 +45,15 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-/** Capability for a tool with an inventory */
+/**
+ * Capability for a tool with an inventory: a view of a tool's slots through its inventory modifier hooks, exposed to automation as the
+ * native {@link ItemHandler} and to menus through {@link #getMenuHandler(ItemStack)}.
+ * <p>
+ * PORT 1.21.10 (transfer phase 6): no longer a legacy {@code IItemHandlerModifiable}; changes made through this view apply to the viewed
+ * tool right away, so the native handler runs it on a detached copy and exchanges the result through the item access.
+ */
 @RequiredArgsConstructor
-public class ToolInventoryCapability extends InventoryModifierHookIterator<ModifierEntry> implements IItemHandlerModifiable {
+public class ToolInventoryCapability extends InventoryModifierHookIterator<ModifierEntry> {
   /** Boolean key to set in volatile mod data for the total slot count across all modifiers */
   public static final ResourceLocation TOTAL_SLOTS = TConstruct.getResource("total_item_slots");
   /** Boolean key to set in volatile mod data to show the offand in the inventory menu */
@@ -103,7 +107,7 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
   /** Cached slot count */
   private int slots = -1;
 
-  @Override
+  /** Gets the number of slots on the tool */
   public int getSlots() {
     if (slots == -1) {
       slots = tool.get().getVolatileData().getInt(TOTAL_SLOTS);
@@ -132,7 +136,7 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
     return !stack.getItem().canFitInsideContainerItems() || stack.is(TinkerTags.Items.TOOL_INVENTORY_BLACKLIST) || TransferUtil.hasItemHandler(stack);
   }
 
-  @Override
+  /** Checks if the stack may go in the given slot */
   public boolean isItemValid(int slot, ItemStack stack) {
     // no nesting item handlers
     if (!stack.isEmpty() && isBlacklisted(stack)) {
@@ -146,7 +150,7 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
     return false;
   }
 
-  @Override
+  /** Gets the max stack size of the given slot, 0 if the slot does not exist */
   public int getSlotLimit(int slot) {
     IToolStackView tool = this.tool.get();
     InventoryModifierHook inventory = findHook(tool, slot);
@@ -197,7 +201,7 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
 
   /* Get and set */
 
-  @Override
+  /** Sets the stack in the given slot without validation, ignored if the slot does not exist */
   public void setStackInSlot(int slot, ItemStack stack) {
     InventoryModifierHook inventory = findHook(tool.get(), slot);
     if (inventory != null) {
@@ -221,8 +225,7 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
     return stack;
   }
 
-  @Nonnull
-  @Override
+  /** Gets the stack in the given slot, empty if the slot does not exist. Do not modify. */
   public ItemStack getStackInSlot(int slot) {
     ItemStack cached = getCachedStack(slot);
     if (cached != null) {
@@ -235,98 +238,73 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
     return ItemStack.EMPTY;
   }
 
-  @Nonnull
-  @Override
-  public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-    if (stack.isEmpty()) {
-      return ItemStack.EMPTY;
-    }
+  /**
+   * Inserts into the given slot of the viewed tool, changing it right away.
+   * @param slot    Slot index
+   * @param stack   Item and amount to insert, not modified
+   * @return  Amount inserted
+   */
+  private int insert(int slot, ItemStack stack) {
     // no nesting item handlers
-    if (isBlacklisted(stack)) {
-      return stack;
+    if (stack.isEmpty() || isBlacklisted(stack)) {
+      return 0;
     }
     // first, do we have an inventory?
     IToolStackView tool = this.tool.get();
     InventoryModifierHook inventory = findHook(tool, slot);
     if (inventory == null) {
-      return stack;
+      return 0;
     }
     // next, is the item valid for the slot?
     int localSlot = slot - startIndex;
     if (!inventory.isItemValid(tool, indexEntry, localSlot, stack)) {
-      return stack;
+      return 0;
     }
-
-    // do we have a stack?
-    ItemStack current = getCached(inventory, localSlot, slot);
 
     // nothing currently? place the item in
-    int leftover;
+    ItemStack current = getCached(inventory, localSlot, slot);
     int slotLimit = inventory.getSlotLimit(tool, indexEntry, localSlot);
     if (current.isEmpty()) {
-      int canInsert = Math.min(stack.getCount(), Math.min(stack.getMaxStackSize(), slotLimit));
-      leftover = stack.getCount() - canInsert;
-      if (!simulate) {
-        setAndCache(inventory, localSlot, slot, stack.copyWithCount(canInsert));
+      int inserted = Math.min(stack.getCount(), Math.min(stack.getMaxStackSize(), slotLimit));
+      if (inserted > 0) {
+        setAndCache(inventory, localSlot, slot, stack.copyWithCount(inserted));
       }
-    } else {
-      // space leftover? does it match?
-      int limit = Math.min(current.getMaxStackSize(), slotLimit);
-      if (current.getCount() >= limit || !ItemStack.isSameItem(current, stack)) {
-        return stack;
-      }
-      int maxSize = current.getCount() + stack.getCount();
-      int newSize = Math.min(maxSize, limit);
-      leftover = maxSize - newSize;
-      // store new stack
-      if (!simulate) {
-        current.setCount(newSize);
-        inventory.setStack(tool, indexEntry, localSlot, current); // update stack in NBT
-      }
+      return Math.max(inserted, 0);
     }
-
-    // return leftover
-    if (leftover == 0) {
-      return ItemStack.EMPTY;
+    // space left and the same item? the legacy handler only compared items, merging different components into the stored stack
+    int limit = Math.min(current.getMaxStackSize(), slotLimit);
+    if (current.getCount() >= limit || !ItemStack.isSameItemSameComponents(current, stack)) {
+      return 0;
     }
-    return stack.copyWithCount(leftover);
+    int newSize = Math.min(current.getCount() + stack.getCount(), limit);
+    setAndCache(inventory, localSlot, slot, current.copyWithCount(newSize));
+    return newSize - current.getCount();
   }
 
-  @Nonnull
-  @Override
-  public ItemStack extractItem(int slot, int amount, boolean simulate) {
-    // first, are you wasting our time?
+  /**
+   * Extracts from the given slot of the viewed tool, changing it right away.
+   * @param slot      Slot index
+   * @param resource  Item to extract, must match the slot exactly
+   * @param amount    Maximum to extract
+   * @return  Amount extracted
+   */
+  private int extract(int slot, ItemResource resource, int amount) {
     if (amount <= 0) {
-      return ItemStack.EMPTY;
+      return 0;
     }
-    // next, do we have an inventory?
     IToolStackView tool = this.tool.get();
     InventoryModifierHook inventory = findHook(tool, slot);
     if (inventory == null) {
-      return ItemStack.EMPTY;
+      return 0;
     }
     int localSlot = slot - startIndex;
-
-    // do we have anything in the slot?
     ItemStack current = getCached(inventory, localSlot, slot);
-    if (current.isEmpty()) {
-      return ItemStack.EMPTY;
+    if (current.isEmpty() || !resource.matches(current)) {
+      return 0;
     }
-    // they want more than we can give? just say no
-    if (amount > current.getCount()) {
-      amount = current.getCount();
-    }
-    // get the result before modifying current
-    ItemStack result = current.copyWithCount(amount);
-    if (!simulate) {
-      if (amount == current.getCount()) {
-        setAndCache(inventory, localSlot, slot, ItemStack.EMPTY);
-      } else {
-        current.shrink(amount);
-        inventory.setStack(tool, indexEntry, localSlot, current); // update in NBT
-      }
-    }
-    return result;
+    int extracted = Math.min(amount, current.getCount());
+    setAndCache(inventory, localSlot, slot, extracted == current.getCount() ? ItemStack.EMPTY : current.copyWithCount(current.getCount() - extracted));
+    return extracted;
   }
 
   /** Interface for an inventory modifier to use */
@@ -524,7 +502,7 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
    * tool untouched. Only a single accessed tool can be changed, as stacked tools would share one inventory.
    */
   public record ItemHandler(ItemAccess access) implements ResourceHandler<ItemResource> {
-    /** Creates a legacy view of a detached copy of the given tool stack */
+    /** Creates a view of the given detached tool */
     private static ToolInventoryCapability view(ToolStack tool) {
       return new ToolInventoryCapability(() -> tool);
     }
@@ -577,7 +555,7 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
       }
       ItemStack copy = access.getResource().toStack();
       ToolStack tool = ToolStack.copyFrom(copy);
-      int inserted = amount - view(tool).insertItem(index, resource.toStack(amount), false).getCount();
+      int inserted = view(tool).insert(index, resource.toStack(amount));
       if (inserted <= 0) {
         return 0;
       }
@@ -593,11 +571,7 @@ public class ToolInventoryCapability extends InventoryModifierHookIterator<Modif
       }
       ItemStack copy = access.getResource().toStack();
       ToolStack tool = ToolStack.copyFrom(copy);
-      ToolInventoryCapability view = view(tool);
-      if (!resource.matches(view.getStackInSlot(index))) {
-        return 0;
-      }
-      int extracted = view.extractItem(index, amount, false).getCount();
+      int extracted = view(tool).extract(index, resource, amount);
       if (extracted <= 0) {
         return 0;
       }

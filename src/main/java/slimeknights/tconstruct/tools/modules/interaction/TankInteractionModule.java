@@ -9,12 +9,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import slimeknights.mantle.transfer.TransferHelper;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.fluid.FluidTransferHelper;
+import slimeknights.mantle.transfer.TransferHelper;
 import slimeknights.tconstruct.library.json.TinkerLoadables;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
@@ -25,6 +25,7 @@ import slimeknights.tconstruct.library.module.HookProvider;
 import slimeknights.tconstruct.library.module.ModuleHook;
 import slimeknights.tconstruct.library.tools.definition.module.ToolHooks;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -57,8 +58,8 @@ public record TankInteractionModule(@Nullable InteractionSource source) implemen
     BlockPos target = context.getClickedPos();
     // must have a block that exposes a fluid handler capability
     Direction face = context.getClickedFace();
-    // player interaction, never inside a transaction
-    IFluidHandler cap = TransferHelper.getLegacyFluidHandler(world, target, face);
+    // player interaction, never inside a transaction: each fill/drain below runs in its own committed transaction
+    ResourceHandler<FluidResource> cap = TransferHelper.getFluidResourceHandler(world, target, face);
     if (cap == null) {
       return InteractionResult.PASS;
     }
@@ -73,7 +74,7 @@ public record TankInteractionModule(@Nullable InteractionSource source) implemen
       if (sneaking) {
         // must have something to fill
         if (!fluidStack.isEmpty()) {
-          int added = cap.fill(fluidStack, FluidAction.EXECUTE);
+          int added = TransferUtil.fill(cap, fluidStack, false);
           if (added > 0) {
             sound = FluidTransferHelper.getEmptySound(fluidStack);
             fluidStack.shrink(added);
@@ -82,14 +83,16 @@ public record TankInteractionModule(@Nullable InteractionSource source) implemen
         }
         // if nothing currently, will drain whatever
       } else if (fluidStack.isEmpty()) {
-        FluidStack drained = cap.drain(TANK_HELPER.getCapacity(tool), FluidAction.EXECUTE);
+        // like the legacy drain(amount): the first fluid the block can give
+        FluidStack drainable = FluidTransferHelper.getDrainableFluid(cap);
+        FluidStack drained = drainable.isEmpty() ? FluidStack.EMPTY : TransferUtil.drain(cap, drainable.copyWithAmount(TANK_HELPER.getCapacity(tool)), false);
         if (!drained.isEmpty()) {
           TANK_HELPER.setFluid(tool, drained);
           sound = FluidTransferHelper.getFillSound(fluidStack);
         }
       } else {
         // filter drained to be the same as the current fluid
-        FluidStack drained = cap.drain(fluidStack.copyWithAmount(TANK_HELPER.getCapacity(tool) - fluidStack.getAmount()), FluidAction.EXECUTE);
+        FluidStack drained = TransferUtil.drain(cap, fluidStack.copyWithAmount(TANK_HELPER.getCapacity(tool) - fluidStack.getAmount()), false);
         if (!drained.isEmpty() && FluidStack.isSameFluidSameComponents(drained, fluidStack)) {
           fluidStack.grow(drained.getAmount());
           TANK_HELPER.setFluid(tool, fluidStack);

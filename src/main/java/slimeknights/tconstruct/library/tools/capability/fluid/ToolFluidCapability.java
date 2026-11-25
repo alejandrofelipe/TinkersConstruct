@@ -1,13 +1,11 @@
 package slimeknights.tconstruct.library.tools.capability.fluid;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ItemCapability;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.TransferPreconditions;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
@@ -15,6 +13,7 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.library.fluid.FluidAction;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
 import slimeknights.tconstruct.library.module.ModuleHook;
@@ -24,7 +23,6 @@ import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
@@ -32,10 +30,14 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
- * Logic to make a tool a fluid handler
+ * Logic to make a tool a fluid handler: a view of a tool's tanks through its fluid modifier hooks, exposed to automation as the native
+ * {@link ItemHandler}.
+ * <p>
+ * PORT 1.21.10 (transfer phase 6): no longer a legacy {@code IFluidHandlerItem}; changes made through this view apply to the viewed tool
+ * right away, so the native handler runs it on a detached copy and exchanges the result through the item access.
  */
 @RequiredArgsConstructor
-public class ToolFluidCapability extends FluidModifierHookIterator<ModifierEntry> implements IFluidHandlerItem {
+public class ToolFluidCapability extends FluidModifierHookIterator<ModifierEntry> {
   /** Boolean key to set in volatile mod data to enable the fluid capability */
   public static final ResourceLocation TOTAL_TANKS = TConstruct.getResource("total_tanks");
 
@@ -67,15 +69,14 @@ public class ToolFluidCapability extends FluidModifierHookIterator<ModifierEntry
     }
   });
 
-  @Getter
-  private final ItemStack container;
-  private final Supplier<? extends IToolStackView> tool;
+  /** Viewed tool */
+  private final IToolStackView tool;
 
   /* Basic inventory */
 
-  @Override
+  /** Gets the number of tanks on the tool */
   public int getTanks() {
-    return tool.get().getVolatileData().getInt(TOTAL_TANKS);
+    return tool.getVolatileData().getInt(TOTAL_TANKS);
   }
 
   @Override
@@ -89,10 +90,8 @@ public class ToolFluidCapability extends FluidModifierHookIterator<ModifierEntry
     return entry.getHook(HOOK);
   }
 
-  @Nonnull
-  @Override
+  /** Gets the fluid in the given tank, empty if the tank does not exist */
   public FluidStack getFluidInTank(int tank) {
-    IToolStackView tool = this.tool.get();
     FluidModifierHook hook = findHook(tool, tank);
     if (hook != null) {
       return hook.getFluidInTank(tool, indexEntry, tank - startIndex);
@@ -100,9 +99,8 @@ public class ToolFluidCapability extends FluidModifierHookIterator<ModifierEntry
     return FluidStack.EMPTY;
   }
 
-  @Override
+  /** Gets the capacity of the given tank, 0 if the tank does not exist */
   public int getTankCapacity(int tank) {
-    IToolStackView tool = this.tool.get();
     FluidModifierHook hook = findHook(tool, tank);
     if (hook != null) {
       return hook.getTankCapacity(tool, indexEntry, tank - startIndex);
@@ -110,9 +108,8 @@ public class ToolFluidCapability extends FluidModifierHookIterator<ModifierEntry
     return 0;
   }
 
-  @Override
+  /** Checks if the fluid is valid for the given tank */
   public boolean isFluidValid(int tank, FluidStack stack) {
-    IToolStackView tool = this.tool.get();
     FluidModifierHook hook = findHook(tool, tank);
     if (hook != null) {
       return hook.isFluidValid(tool, indexEntry, tank - startIndex, stack);
@@ -120,40 +117,14 @@ public class ToolFluidCapability extends FluidModifierHookIterator<ModifierEntry
     return false;
   }
 
-  @Override
+  /** Fills the first tanks accepting the fluid, changing the viewed tool when executing. Returns the amount filled. */
   public int fill(FluidStack resource, FluidAction action) {
-    return fill(tool.get(), resource, action);
+    return fill(tool, resource, action);
   }
 
-  /** Scales the result for the given stack size */
-  private static FluidStack scaleResult(FluidStack stack, int size) {
-    if (size > 1 && !stack.isEmpty()) {
-      stack.setAmount(stack.getAmount() * size);
-    }
-    return stack;
-  }
-
-  @Nonnull
-  @Override
+  /** Drains the fluid from the tanks holding it, changing the viewed tool when executing. Returns the fluid drained. */
   public FluidStack drain(FluidStack resource, FluidAction action) {
-    if (resource.isEmpty()) {
-      return FluidStack.EMPTY;
-    }
-    int size = container.getCount();
-    if (size > 1) {
-      resource = resource.copyWithAmount(resource.getAmount() / size);
-    }
-    return scaleResult(drain(tool.get(), resource, action), size);
-  }
-
-  @Nonnull
-  @Override
-  public FluidStack drain(int maxDrain, FluidAction action) {
-    if (maxDrain < 0) {
-      return FluidStack.EMPTY;
-    }
-    int size = container.getCount();
-    return scaleResult(drain(tool.get(), maxDrain / size, action), size);
+    return drain(tool, resource, action);
   }
 
   /** Adds the tanks from the fluid modifier to the tool */
@@ -323,25 +294,19 @@ public class ToolFluidCapability extends FluidModifierHookIterator<ModifierEntry
     }
   }
 
-  /** Provider instance for a fluid cap */
   /**
    * Native fluid handler of the tool in an item access, the form of {@code Capabilities.Fluid.ITEM}.
    * <p>
    * PORT 1.21.10 (transfer step 1): reads go through the tool's fluid modifier hooks on a detached copy of the tool; every change runs the
    * hooks on a detached one item copy, then exchanges the accessed items for the updated tool through the access, so it is transactional
-   * and a simulation leaves the tool untouched. Amounts are totals over the accessed items. Like the legacy {@code fill}, inserts go to
-   * the first tank accepting the fluid whatever the index, the index only matters to read.
+   * and a simulation leaves the tool untouched. Amounts are totals over the accessed items, which change together. Like the legacy
+   * {@code fill}/{@code drain}, inserts and extracts go to the first tanks accepting or holding the fluid whatever the index, the index only
+   * matters to read.
    */
   public record ItemHandler(ItemAccess access) implements ResourceHandler<FluidResource> {
-    /** Creates a legacy view of a detached copy of the given single item */
-    private static ToolFluidCapability view(ItemStack copy) {
-      ToolStack tool = ToolStack.copyFrom(copy);
-      return new ToolFluidCapability(copy, () -> tool);
-    }
-
     /** Creates a view of a detached copy of the accessed tool */
     private ToolFluidCapability view() {
-      return view(access.getResource().toStack());
+      return new ToolFluidCapability(ToolStack.copyFrom(access.getResource().toStack()));
     }
 
     @Override
@@ -388,7 +353,7 @@ public class ToolFluidCapability extends FluidModifierHookIterator<ModifierEntry
       }
       ItemStack copy = access.getResource().toStack();
       ToolStack tool = ToolStack.copyFrom(copy);
-      int filled = new ToolFluidCapability(copy, () -> tool).fill(resource.toStack(perItem), FluidAction.EXECUTE);
+      int filled = new ToolFluidCapability(tool).fill(resource.toStack(perItem), FluidAction.EXECUTE);
       if (filled <= 0) {
         return 0;
       }
@@ -406,7 +371,7 @@ public class ToolFluidCapability extends FluidModifierHookIterator<ModifierEntry
       }
       ItemStack copy = access.getResource().toStack();
       ToolStack tool = ToolStack.copyFrom(copy);
-      int drained = new ToolFluidCapability(copy, () -> tool).drain(resource.toStack(perItem), FluidAction.EXECUTE).getAmount();
+      int drained = new ToolFluidCapability(tool).drain(resource.toStack(perItem), FluidAction.EXECUTE).getAmount();
       if (drained <= 0) {
         return 0;
       }

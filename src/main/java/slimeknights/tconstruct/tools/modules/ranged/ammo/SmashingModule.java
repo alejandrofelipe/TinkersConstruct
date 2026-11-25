@@ -21,13 +21,14 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.data.loadable.record.SingletonLoader;
 import slimeknights.mantle.util.TranslationHelper;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.library.fluid.FluidAction;
 import slimeknights.tconstruct.library.modifiers.Modifier;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
@@ -363,7 +364,7 @@ public enum SmashingModule implements ModifierModule, FluidModifierHook, Project
             makeStack(fluid, amount, getFluidTag(persistentData), projectile.level().registryAccess()),
             modifier.getEffectiveLevel(),
             FluidEffectContext.builder(projectile.level()).user(attacker).projectile(projectile).location(hit.getLocation()).target(hit.getEntity(), target),
-            FluidAction.EXECUTE
+            IFluidHandler.FluidAction.EXECUTE
           );
           // drain the fluid
           if (drained > 0) {
@@ -400,7 +401,7 @@ public enum SmashingModule implements ModifierModule, FluidModifierHook, Project
             makeStack(fluid, amount, getFluidTag(persistentData), projectile.level().registryAccess()),
             modifier.getEffectiveLevel(),
             FluidEffectContext.builder(projectile.level()).user(attacker).projectile(projectile).location(hit.getLocation()).block(hit),
-            FluidAction.EXECUTE
+            IFluidHandler.FluidAction.EXECUTE
           );
           // drain the fluid
           if (drained > 0) {
@@ -442,7 +443,7 @@ public enum SmashingModule implements ModifierModule, FluidModifierHook, Project
             modifier.getEffectiveLevel(),
             FluidEffectContext.builder(projectile.level()).user(projectile.getOwner()).projectile(projectile).location(position)
               .block(new BlockHitResult(position, projectile.getDirection(), projectile.blockPosition(), false)),
-            FluidAction.EXECUTE
+            IFluidHandler.FluidAction.EXECUTE
           );
           // drain the fluid
           if (drained > 0) {
