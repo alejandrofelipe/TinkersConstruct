@@ -61,7 +61,7 @@ public class ChestBlock extends TabbedTableBlock {
   @Override
   public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
     super.setPlacedBy(worldIn, pos, state, placer, stack);
-    // the inventory is block entity data (the cast chest loot copies it there), which BlockItem already loaded
+    // the cast chest inventory is the minecraft:container component, which BlockItem already applied (CastChestBlockEntity#applyImplicitComponents)
     // items dropped before 1.21.10 hold it in custom data instead (1.20 root tag, moved by the data fixer, and the 1.21.1 - 1.21.8 loot table)
     CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
     if (customData != null) {

@@ -17,10 +17,11 @@
               "source": "block_entity"
             },
             {
-              "function": "tconstruct:copy_block_entity_data",
-              "keys": [
-                "Items"
-              ]
+              "function": "minecraft:copy_components",
+              "include": [
+                "minecraft:container"
+              ],
+              "source": "block_entity"
             }
           ],
           "name": "tconstruct:cast_chest"

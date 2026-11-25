@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
 
 /** Shared base logic for all Tinkers' chest tile entities */
 public abstract class AbstractChestBlockEntity extends NameableBlockEntity implements ILegacyItemHandlerProvider {
-  private static final String KEY_ITEMS = "Items";
+  protected static final String KEY_ITEMS = "Items";
 
   @Getter
   private final IChestItemHandler itemHandler;

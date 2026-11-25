@@ -21,8 +21,13 @@ import net.minecraft.world.entity.monster.Husk;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -142,7 +147,39 @@ public class DropGameTests {
     }
   }
 
-  /** Breaking a filled cast chest drops it with its inventory, and placing the dropped item restores it */
+  /** Breaks the cast chest at the position through its loot table, asserting it drops just the chest item, and removes the block */
+  private static ItemStack breakChest(GameTestHelper helper, BlockPos pos) {
+    ServerLevel level = helper.getLevel();
+    BlockState state = level.getBlockState(pos);
+    List<ItemStack> drops = Block.getDrops(state, level, pos, level.getBlockEntity(pos));
+    helper.assertTrue(drops.size() == 1 && drops.getFirst().is(TinkerTables.castChest.asItem()), Component.literal("expected a single cast chest drop, got " + drops));
+    level.removeBlock(pos, false);
+    return drops.getFirst();
+  }
+
+  /** Asserts the stack holds no block entity data and exactly the given stacks (in the first slots) in its container component */
+  private static void assertDroppedContents(GameTestHelper helper, ItemStack drop, ItemStack... expected) {
+    helper.assertFalse(drop.has(DataComponents.BLOCK_ENTITY_DATA), Component.literal("cast chest item has block entity data: " + drop.getComponentsPatch()));
+    ItemContainerContents contents = drop.get(DataComponents.CONTAINER);
+    helper.assertTrue(contents != null, Component.literal("cast chest item has no container contents: " + drop.getComponentsPatch()));
+    List<ItemStack> stacks = contents.stream().toList();
+    helper.assertTrue(stacks.size() == expected.length, Component.literal("expected " + expected.length + " container slots, got " + stacks));
+    for (int i = 0; i < expected.length; i++) {
+      helper.assertTrue(ItemStack.matches(stacks.get(i), expected[i]), Component.literal("container slot " + i + ": expected " + expected[i] + ", got " + stacks.get(i)));
+    }
+  }
+
+  /** Asserts the stack is a plain cast chest, which stacks with a crafted one */
+  private static void assertPlainChest(GameTestHelper helper, ItemStack drop, String what) {
+    helper.assertTrue(ItemStack.isSameItemSameComponents(drop, new ItemStack(TinkerTables.castChest)),
+                      Component.literal("expected a plain cast chest from " + what + ", got " + drop.getComponentsPatch()));
+  }
+
+  /**
+   * Breaking a filled cast chest drops it with its inventory in {@code minecraft:container} (tooltip hidden), and placing the dropped item
+   * restores it; the creative pick-block copy (block entity data without the items plus the components) restores it too. Empty and
+   * emptied chests drop a plain item, which stacks with crafted ones.
+   */
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void cast_chest_keeps_inventory_when_broken(GameTestHelper helper) {
     ServerLevel level = helper.getLevel();
@@ -157,26 +194,46 @@ public class DropGameTests {
     chest.getItemHandler().setStackInSlot(0, ingots.copy());
     chest.getItemHandler().setStackInSlot(1, nuggets.copy());
 
+    // creative pick-block: like ServerGamePacketListenerImpl#addBlockDataToItem
+    ItemStack picked = new ItemStack(TinkerTables.castChest);
+    TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
+    chest.saveCustomOnly(output);
+    chest.removeComponentsFromTag(output);
+    BlockItem.setBlockEntityData(picked, chest.getType(), output);
+    picked.applyComponents(chest.collectComponents());
+    TypedEntityData<?> pickedData = picked.get(DataComponents.BLOCK_ENTITY_DATA);
+    helper.assertTrue(pickedData == null || !pickedData.copyTagWithoutId().contains("Items"), Component.literal("picked cast chest still holds the items in block entity data: " + pickedData));
+    helper.assertTrue(picked.has(DataComponents.CONTAINER), Component.literal("picked cast chest has no container contents: " + picked.getComponentsPatch()));
+
     // loot table drop
-    List<ItemStack> drops = Block.getDrops(state, level, pos, chest);
-    helper.assertTrue(drops.size() == 1 && drops.getFirst().is(TinkerTables.castChest.asItem()), Component.literal("expected a single cast chest drop, got " + drops));
-    ItemStack drop = drops.getFirst();
-    helper.assertTrue(drop.has(DataComponents.BLOCK_ENTITY_DATA), Component.literal("dropped cast chest has no block entity data: " + drop.getComponentsPatch()));
-    level.removeBlock(pos, false);
+    ItemStack drop = breakChest(helper, pos);
+    assertDroppedContents(helper, drop, ingots, nuggets);
+    TooltipDisplay tooltip = drop.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
+    helper.assertFalse(tooltip.shows(DataComponents.CONTAINER), Component.literal("cast chest shows the container tooltip: " + tooltip));
 
-    // place it again
-    assertContents(helper, placeChest(helper, drop, new BlockPos(3, 1, 3)), ingots, nuggets);
+    // place both again; the block entity keeps no copy of the applied component
+    CastChestBlockEntity placed = placeChest(helper, drop, new BlockPos(3, 1, 3));
+    assertContents(helper, placed, ingots, nuggets);
+    helper.assertFalse(placed.components().has(DataComponents.CONTAINER), Component.literal("placed cast chest kept the container component: " + placed.components()));
+    assertContents(helper, placeChest(helper, picked, new BlockPos(3, 1, 1)), ingots, nuggets);
 
-    // an empty chest drops a plain item, which stacks with crafted ones
+    // emptied chest: plain drop
+    for (int i = 0; i < placed.getItemHandler().getSlots(); i++) {
+      placed.getItemHandler().setStackInSlot(i, ItemStack.EMPTY);
+    }
+    assertPlainChest(helper, breakChest(helper, placed.getBlockPos()), "an emptied chest");
+
+    // never filled chest: plain drop
     BlockPos emptyPos = helper.absolutePos(new BlockPos(1, 1, 3));
     level.setBlockAndUpdate(emptyPos, state);
-    List<ItemStack> emptyDrops = Block.getDrops(state, level, emptyPos, level.getBlockEntity(emptyPos));
-    helper.assertTrue(emptyDrops.size() == 1 && ItemStack.isSameItemSameComponents(emptyDrops.getFirst(), new ItemStack(TinkerTables.castChest)),
-                      Component.literal("expected a plain cast chest from an empty chest, got " + emptyDrops + " " + emptyDrops.stream().map(ItemStack::getComponentsPatch).toList()));
+    assertPlainChest(helper, breakChest(helper, emptyPos), "an empty chest");
     helper.succeed();
   }
 
-  /** Cast chests dropped before 1.21.10 hold the inventory in custom data ({@code TinkerData.Items}); placing one still restores it */
+  /**
+   * Cast chests dropped before 1.21.10 hold the inventory in custom data ({@code TinkerData.Items}); placing one still restores it,
+   * and breaking it again drops the inventory in the container component.
+   */
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void cast_chest_reads_legacy_item_inventory(GameTestHelper helper) {
     ItemStack ingots = new ItemStack(TinkerSmeltery.ingotCast.get(), 2);
@@ -189,7 +246,9 @@ public class DropGameTests {
     ItemStack legacy = new ItemStack(TinkerTables.castChest);
     legacy.set(DataComponents.CUSTOM_DATA, CustomData.of(custom));
 
-    assertContents(helper, placeChest(helper, legacy, new BlockPos(2, 1, 2)), ingots);
+    CastChestBlockEntity chest = placeChest(helper, legacy, new BlockPos(2, 1, 2));
+    assertContents(helper, chest, ingots);
+    assertDroppedContents(helper, breakChest(helper, chest.getBlockPos()), ingots);
     helper.succeed();
   }
 }
