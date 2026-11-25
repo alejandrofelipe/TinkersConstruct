@@ -45,26 +45,13 @@ public abstract class RetexturedTableBlockEntity extends TableBlockEntity implem
     return RetexturedHelper.getTextureName(texture);
   }
 
-  private void textureUpdated() {
-    // update the texture in BE data
-    if (level != null && level.isClientSide()) {
-      Block normalizedTexture = texture == Blocks.AIR ? null : texture;
-      ModelData data = getModelData();
-      if (data.get(RetexturedHelper.BLOCK_PROPERTY) != normalizedTexture) {
-        requestModelDataUpdate();
-        BlockState state = getBlockState();
-        level.sendBlockUpdated(worldPosition, state, state, 0);
-      }
-    }
-  }
-
   @Override
   public void updateTexture(String name) {
     Block oldTexture = texture;
     texture = RetexturedHelper.getBlock(name);
     if (oldTexture != texture) {
       setChangedFast();
-      textureUpdated();
+      RetexturedHelper.onTextureUpdated(this);
     }
   }
 
@@ -79,8 +66,11 @@ public abstract class RetexturedTableBlockEntity extends TableBlockEntity implem
   @Override
   public void loadAdditional(ValueInput tags) {
     super.loadAdditional(tags);
-    // saving skips air, so a missing tag means no texture (also clears a client copy that held one); textureUpdated only acts on a change
+    // saving skips air, so a missing tag means no texture (also clears a client copy that held one)
+    Block oldTexture = texture;
     texture = RetexturedHelper.getBlock(tags.getStringOr(TAG_TEXTURE, ""));
-    textureUpdated();
+    if (oldTexture != texture) {
+      RetexturedHelper.onTextureUpdated(this);
+    }
   }
 }
