@@ -70,6 +70,29 @@ class ChestItemHandlerTest extends BaseMcTest {
     assertThat(tag.getInt("Size")).contains(64);
   }
 
+  @SuppressWarnings("removal")  // the legacy handler is the reference for the saved data
+  @Test
+  void serialize_slotsPastByteRange_matchLegacyAndRoundTrip() {
+    // ItemStackWithSlot stores the slot as an unsigned byte, slots 128+ must come out the same as the legacy handler and read back
+    TestScalingHandler handler = new TestScalingHandler(200);
+    ItemStackHandler legacy = new ItemStackHandler(200);
+    for (int slot : new int[] { 10, 127, 128, 150, 199 }) {
+      ItemStack stack = new ItemStack(Items.IRON_INGOT, slot % 7 + 1);
+      handler.setStackInSlot(slot, stack.copy());
+      legacy.setStackInSlot(slot, stack.copy());
+    }
+    TagValueOutput legacyOutput = TagValueOutput.createWithoutContext(ProblemReporter.DISCARDING);
+    legacy.serialize(legacyOutput);
+    CompoundTag tag = write(handler);
+    assertThat(tag).isEqualTo(legacyOutput.buildResult());
+
+    TestScalingHandler read = new TestScalingHandler(200);
+    read.deserialize(TagValueInput.create(ProblemReporter.DISCARDING, RegistryAccess.EMPTY, tag));
+    for (int slot = 0; slot < 200; slot++) {
+      assertThat(ItemStack.matches(read.getStackInSlot(slot), handler.getStackInSlot(slot))).as("slot %d", slot).isTrue();
+    }
+  }
+
   @Test
   void deserialize_readsLegacyDataKeepsSizeWithoutSizeKey() {
     TestScalingHandler handler = new TestScalingHandler(20);

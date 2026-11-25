@@ -101,11 +101,19 @@ public record ModifiableItemHandler(ResourceHandler<ItemResource> handler, Index
 
   /**
    * Creates a handler over any native handler, for inventories that only expose the native capability. The setter moves the
-   * difference through the handler in a root transaction, committed only if the slot ends up holding exactly the given stack, so it
-   * is subject to the handler's validation (menu slots already check it through {@link Slot#mayPlace(ItemStack)} and the capacity).
+   * difference through the handler in a root transaction, committed only if every move went through completely and the slot then holds
+   * exactly the given stack, so it is subject to the handler's validation and may refuse a set. Menu slots created from it
+   * ({@link ModifiableItemHandlerSlot}) bound what vanilla places and takes by simulated transfers, so vanilla never takes items from the
+   * cursor for a set the handler would refuse.
    */
   public static ModifiableItemHandler transactional(ResourceHandler<ItemResource> handler) {
-    return new ModifiableItemHandler(handler, (index, resource, amount) -> {
+    return new ModifiableItemHandler(handler, new TransactionalModifier(handler));
+  }
+
+  /** Setter of {@link #transactional(ResourceHandler)}, recognized by {@link ModifiableItemHandlerSlot} */
+  record TransactionalModifier(ResourceHandler<ItemResource> handler) implements IndexModifier<ItemResource> {
+    @Override
+    public void set(int index, ItemResource resource, int amount) {
       ItemResource current = handler.getResource(index);
       int currentAmount = current.isEmpty() ? 0 : handler.getAmountAsInt(index);
       try (Transaction tx = Transaction.openRoot()) {
@@ -127,11 +135,17 @@ public record ModifiableItemHandler(ResourceHandler<ItemResource> handler, Index
             success = handler.insert(index, resource, amount, tx) == amount;
           }
         }
+        // the handler may have put the items elsewhere (e.g. merged into another slot): the slot itself must hold the stack
+        if (success) {
+          boolean empty = resource.isEmpty() || amount <= 0;
+          success = empty ? handler.getResource(index).isEmpty() || handler.getAmountAsInt(index) == 0
+                          : handler.getResource(index).equals(resource) && handler.getAmountAsInt(index) == amount;
+        }
         if (success) {
           tx.commit();
         }
       }
-    });
+    }
   }
 
   /** Sets a stack in a slot */
