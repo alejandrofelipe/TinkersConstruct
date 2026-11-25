@@ -12,6 +12,14 @@ releases piggyback onto the next checkpoint), gating each with the full test bat
 
 **Decision log (2026-10-21):**
 - Target = **26.2** — most mod support in the ecosystem today; **26.3 is NeoForge-beta-only**, so not yet.
+  **Update 2026-11-25:** 26.3 has been **NeoForge-stable since 2026-10-11** (and 26.4 is in pre-release). Target stays
+  **26.2** for now (user decision pending when M8 closes): 26.3 is much heavier (SDL input, `blaze3d` → `renderpearl`,
+  legacy transfer API removed). Revisit after M8. Full dependency matrix + per-version breaks:
+  [`2026-11-25-m6-plus-dependency-analysis.md`](2026-11-25-m6-plus-dependency-analysis.md).
+- **Milestones from M6 regrouped (2026-11-25, dependency analysis):** **M6 = 1.21.11** · **M7 = 26.1.2** (folds 26.1 and
+  26.1.1 — NeoForge beta-only) · **M8 = 26.2** 🏁 target. The old "M7 = 26.2 folds 26.1" violated the folding rule:
+  26.1.2 has a stable NeoForge + JEI, and it is the biggest jump of the series (Java 25, unobfuscated jar), so it gets
+  its own checkpoint before 26.2's rendering rewrite.
 - Strategy = **milestone-incremental** (not jump-to-target, not every point release).
 - **M1 lands on 1.21.4 / NF 21.4.161 (user decision, 2026-10-21) — folds the old M1 (1.21.2) + M2 (1.21.4).**
   Two findings drove it: (1) NeoForge for 1.21.2 never left beta (`21.2.0/1-beta`); (2) **JEI and Immersive
@@ -87,8 +95,9 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
 | **M3** | 1.21.5 / NF 21.5 | — | 🔴 **Data components for weapons/tools/armor**; model-loading rewrite; `@Mod` constructed before MC | 🔴 **ENORME** — the core tool/armor/stat system |
 | **M4** | 1.21.8 / NF 21.8.57 (was 1.21.6) | 1.21.6, 1.21.7 | 🔴 Serialization `CompoundTag` → **`ValueInput`/`ValueOutput`**; **deferred GUI** (`RenderPipelines` blits, `Matrix3x2fStack`, PiP, GUI item atlas); UBO shaders + fog; tag datagen appenders | 🟠 **Alto** (smaller than predicted — tool NBT untouched; the cost was silent GUI breakage) |
 | **M5** | 1.21.10 / NF 21.10.64 (was 1.21.9) | 1.21.9 | 🔴 NeoForge **transfer API rework** (`ResourceHandler<FluidResource/ItemResource>`, `ItemAccess`, transactions; old capabilities removed); **two-phase rendering** (BER/entity/layer/particle extract + `submit`, `ExtractBlockOutlineRenderStateEvent`, `AtlasManager`); **event-based input** (`MouseButtonEvent`/`KeyEvent`/`InputWithModifiers`, `KeyMapping.Category`); `Level#isClientSide()`, `Entity#getServer()` removed, reload `SharedState`, FML `getDist()`/`isProduction()`, `TypedEntityData`, `ContainerUser`, `entityInside(…, boolean)` | 🟠 **Médio-alto** — Mantle 100 errors / 48 files; Tinkers est. 450–650 (half mechanical `isClientSide`); transfer in two steps (bridge first, full migration later in M5) |
-| **M6** | 1.21.11 / NF 21.11 | — (1.21.10 moved into M5) | **`ResourceLocation` → `Identifier`** (Mojang rename); `FMLLoader.isProduction()` removed | 🟠 **Mecânico mas pervasivo** (MaterialId/ModifierId já saíram de ResourceLocation no 1.21.1 → ajuda). Ecosystem exists (checked 2026-11-23): NF `21.11.48`, JEI `27.55.0.122`, Crafting Tweaks `21.11.5`, Balm `21.11.9.1`, Parchment `2025.12.20`, JSON Things `0.17.0` |
-| **M7** | 26.2 / NF 26.2 | 26.1 | **Java 25**; new-series changes | **Médio** — toolchain bump + sweep |
+| **M6** | 1.21.11 / NF 21.11.48 | — (1.21.10 moved into M5) | **`ResourceLocation` → `Identifier`** (Mojang rename, confirmed); vanilla `MethodsReturnNonnullByDefault`/`FieldsAreNonnullByDefault` removed (breaks every `package-info`); `BakedQuad` no longer `int[]`; vanilla render types → `RenderTypes`; game rules, buttons, `FMLLoader.isProduction()` | 🟠 **Mecânico mas pervasivo** — `ResourceLocation` in Mantle 174 / Tinkers 511 files; `package-info` 78 + 278; `BakedQuad` 6 + 24; render types 7 + 15. Check in Phase 0 whether `javax.annotation` (jsr305) still ships — if not, ~1150 files (mechanical). Pins: NF `21.11.48`, JEI `27.55.0.122`, CT `21.11.5` / Balm `21.11.9.1`, Parchment `2025.12.20`, JSON Things `0.17.0`, NeoGradle 7.1.39 / Gradle 9.2.1 / **Java 21** |
+| **M7** | 26.1.2 / NF 26.1.2.130 | 26.1, 26.1.1 (NeoForge beta-only) | 🔴 **Java 25**; **unobfuscated jar → no Parchment** (drop the Parchment block); `ItemStack`/`FluidStack` require loaded registries; `ItemStackTemplate` in recipes; `RecipeSerializer` becomes a record; `GuiGraphics` → `GuiGraphicsExtractor` + renamed render methods; loot `*Type`s removed | 🔴 **Alto** — the biggest jump: `FluidStack` in 188 Tinkers files; `RecipeSerializer` 11 + 68; `GuiGraphics` 29 + 52. Pins: NF `26.1.2.130` (4-part versions from 26.x), JEI `29.54.0.123`, CT `26.1.2.4` / Balm `26.1.2.15` (new transitive dep `kuma-api-neoforge` — repository filters may block it, like JSON Things did), JSON Things `0.18.5`, NeoGradle 7.1.39 / Gradle 9.2.1 / **Java 25** (installed: `C:\Users\aleja\scoop\apps\temurin25-jdk\current`) |
+| **M8** 🏁 | 26.2 / NF 26.2.0.95 | — | 🔴 **Rendering rewrite**: `MultiBufferSource` removed, **inverted depth test**; advancements packages + `EntityPredicate` changed; `EntityType.X` → `EntityTypes` | 🟠 **Médio-alto** — tank/smeltery renderers, the 42-advancement provider rewritten, `EntityTypes` 25 Tinkers files. Pins: NF `26.2.0.95`, JEI `30.48.0.244` (no new builds since 2026-10-28), CT `26.2.0.4` / Balm `26.2.0.9`, JSON Things `0.19.0`, Java 25. Legacy transfer API still present (deprecated) — removed only in 26.3, so M5 Phase 6 (full transfer migration) keeps us ahead |
 
 > Sources to pull each milestone's exact checklist from: NeoForge release notes
 > ([21.4](https://neoforged.net/news/21.4release/), [21.5](https://neoforged.net/news/21.5release/),
@@ -115,8 +124,11 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
 - **M6 rename (`ResourceLocation` → `Identifier`)** is huge in surface area but mechanical; a mapping
   sweep + the compiler is the tool. The 1.21.1 port already decoupled MaterialId/ModifierId from
   ResourceLocation, which softens the blow.
-- **M7 Java 25:** install a JDK 25 (scoop), repoint `JAVA_HOME`, bump the Gradle toolchain; verify
-  NeoGradle/Gradle-wrapper support 26.x.
+- **M7 Java 25:** JDK 25 **already installed** (2026-11-25, scoop `temurin25-jdk` 25.0.5, at
+  `C:\Users\aleja\scoop\apps\temurin25-jdk\current`; the machine default stays JDK 17 — `scoop reset temurin17-jdk` was
+  run after the install because scoop repoints `JAVA_HOME`/`PATH`). From M7 on, pass that path as `JAVA_HOME` in the
+  same command as Gradle and bump the Gradle toolchain to 25. The official 26.x MDKs still use NeoGradle 7.1.39 +
+  Gradle 9.2.1 (no switch to ModDevGradle required). Drop the Parchment block (26.x ships unobfuscated).
 - **Compat is optional per milestone** — core Tinkers green is the gate; a compat mod without a target
   build gets re-excluded (M6 decision pattern), re-added when a build appears.
 - **uitest flake:** the AMD `atio6axx.dll` GL-init crash will recur; retry, and if it stays env-blocked,
@@ -178,5 +190,6 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
 - [x] **M3 patch** — Tinkers `3.13.1` (2026-10-24): mob head item rendering + legacy tool model cleanup (16 uitest)
 - [x] **M4** — **1.21.8** / NF 21.8.57 (1.21.6 + 1.21.7 folded in) 🔴 — **FECHADO 🏁 2026-11-23**: Fases 0–7 ✅ (2026-10-24 → 2026-11-23), release Mantle `1.15` / Tinkers `3.14.0`, tags `v1.21.8-1.15` / `v1.21.8-3.14.0` pushadas; battery: build + 674 unit + 58 gametest (57 + vanilla `always_pass`) + 31/31 uitest (visual verified vs 1.21.5 reference). Plano [`2026-10-24-m4-1.21.8-port.md`](2026-10-24-m4-1.21.8-port.md); gotchas [`repo/docs/migration/1.21.5-to-1.21.8.md`](../../../../repo/docs/migration/1.21.5-to-1.21.8.md)
 - [ ] **M5** — **1.21.10** / NF 21.10.64 (1.21.9 folded in) 🟠 — **em andamento**: Fase 0 ✅ 2026-11-23 (pins, toolchain verificado, baseline Mantle 100 erros / 48 arquivos, assinaturas verificadas no decompilado), branch `1.21.10`; próximo: Fase 1 (Mantle compila). Plano [`2026-11-23-m5-1.21.10-port.md`](2026-11-23-m5-1.21.10-port.md)
-- [ ] **M6** — 1.21.11 / NF 21.11 (1.21.10 moved into M5)
-- [ ] **M7** — 26.1 → 26.2 / NF 26.2 (Java 25) 🏁 target
+- [ ] **M6** — 1.21.11 / NF 21.11.48 (1.21.10 moved into M5)
+- [ ] **M7** — 26.1.2 / NF 26.1.2.130 (26.1 + 26.1.1 folded in; Java 25, unobfuscated → no Parchment)
+- [ ] **M8** — 26.2 / NF 26.2.0.95 (Java 25) 🏁 target — revisit 26.3 (NeoForge-stable since 2026-10-11) after M8
