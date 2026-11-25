@@ -9,11 +9,9 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
-import net.minecraft.world.level.ItemLike;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.data.GenericTextureGenerator;
 import slimeknights.tconstruct.library.client.data.util.DataGenSpriteReader;
-import slimeknights.tconstruct.world.TinkerWorld;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -47,24 +45,26 @@ public class SpawnEggTextureProvider extends GenericTextureGenerator {
     try {
       NativeImage base = spriteReader.read(BASE);
       NativeImage overlay = spriteReader.read(OVERLAY);
-      // the colors TinkerWorld registers each egg with, which tinted the template up to 1.21.4
-      tasks.add(egg(cache, spriteReader, base, overlay, TinkerWorld.skySlimeEntity, 0x47eff5, 0xacfff4));
-      tasks.add(egg(cache, spriteReader, base, overlay, TinkerWorld.enderSlimeEntity, 0x6300B0, 0xD37CFF));
-      tasks.add(egg(cache, spriteReader, base, overlay, TinkerWorld.terracubeEntity, 0xAFB9D6, 0xA1A7B1));
+      for (SpawnEggColors egg : SpawnEggColors.values()) {
+        tasks.add(egg(cache, spriteReader, base, overlay, egg));
+      }
     } catch (IOException e) {
       tasks.add(CompletableFuture.failedFuture(e));
     }
     return CompletableFuture.allOf(tasks.toArray(new CompletableFuture[0])).whenComplete((result, error) -> spriteReader.closeAll());
   }
 
-  /** Saves the tinted template as the texture named after the egg item, {@code <namespace>:item/<egg id>} */
-  private CompletableFuture<?> egg(CachedOutput cache, DataGenSpriteReader spriteReader, NativeImage base, NativeImage overlay, ItemLike egg, int primary, int secondary) {
-    ResourceLocation item = BuiltInRegistries.ITEM.getKey(egg.asItem());
+  /** Saves the tinted template as the texture named after the egg item, {@code tconstruct:item/<egg name>} */
+  private CompletableFuture<?> egg(CachedOutput cache, DataGenSpriteReader spriteReader, NativeImage base, NativeImage overlay, SpawnEggColors egg) {
+    ResourceLocation item = TConstruct.getResource(egg.getEggName());
+    if (!BuiltInRegistries.ITEM.containsKey(item)) {
+      return CompletableFuture.failedFuture(new IllegalStateException("Spawn egg colors for " + item + ", which is not a registered item"));
+    }
     NativeImage image = spriteReader.create(base.getWidth(), base.getHeight());
     for (int x = 0; x < base.getWidth(); x++) {
       for (int y = 0; y < base.getHeight(); y++) {
         // overlay drawn over the base, like the second layer of a generated item model
-        image.setPixel(x, y, over(tint(overlay.getPixel(x, y), secondary), tint(base.getPixel(x, y), primary)));
+        image.setPixel(x, y, over(tint(overlay.getPixel(x, y), egg.getSecondary()), tint(base.getPixel(x, y), egg.getPrimary())));
       }
     }
     return saveCached(cache, item.withPrefix("item/"), image);

@@ -34,18 +34,10 @@ class SpawnEggTextureTest {
   }
 
   @Test
-  void skySlime_matchesTintedTemplate() throws IOException {
-    assertTintedTemplate("sky_slime_spawn_egg", 0x47eff5, 0xacfff4);
-  }
-
-  @Test
-  void enderSlime_matchesTintedTemplate() throws IOException {
-    assertTintedTemplate("ender_slime_spawn_egg", 0x6300B0, 0xD37CFF);
-  }
-
-  @Test
-  void terracube_matchesTintedTemplate() throws IOException {
-    assertTintedTemplate("terracube_spawn_egg", 0xAFB9D6, 0xA1A7B1);
+  void everyEgg_matchesTintedTemplate() throws IOException {
+    for (SpawnEggColors egg : SpawnEggColors.values()) {
+      assertTintedTemplate(egg.getEggName(), egg.getPrimary(), egg.getSecondary());
+    }
   }
 
   /** Asserts the generated egg texture is the base layer tinted with the primary color under the overlay tinted with the secondary color */
