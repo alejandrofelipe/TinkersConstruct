@@ -7,6 +7,8 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -14,14 +16,17 @@ import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.FluidUtil;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.fluid.FluidTransferHelper;
+import slimeknights.mantle.fluid.FluidTransferHelper.FluidInteractionResult;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
@@ -29,9 +34,12 @@ import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.CastingTankBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.FluidCannonBlockEntity;
+import slimeknights.tconstruct.smeltery.block.entity.component.TankBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
 import slimeknights.tconstruct.smeltery.item.CopperCanItem;
 import slimeknights.tconstruct.smeltery.menu.HeatingStructureContainerMenu;
+
+import java.util.List;
 
 /**
  * Gametests for Mantle's native {@link FluidTransferHelper} (M5 phase 6a) against real blocks and datapacks: player interactions with Tinkers
@@ -162,6 +170,105 @@ public class FluidTransferGameTests {
     tank.interact(player, InteractionHand.MAIN_HAND, true);
     assertFluid(helper, fluid(helper, POS), FluidStack.EMPTY, "after filling the held bucket");
     assertHeld(helper, player, new ItemStack(Items.LAVA_BUCKET), "after filling the held bucket");
+    helper.succeed();
+  }
+
+  /** Places a seared tank holding the given fluid and returns its native fluid handler */
+  private static ResourceHandler<FluidResource> filledTank(GameTestHelper helper, FluidStack fluid) {
+    place(helper, POS, TinkerSmeltery.searedTank.get(TankType.FUEL_TANK), TankBlockEntity.class);
+    ResourceHandler<FluidResource> handler = helper.getLevel().getCapability(Capabilities.Fluid.BLOCK, helper.absolutePos(POS), Direction.UP);
+    if (handler == null) {
+      throw new IllegalStateException("No fluid capability at " + helper.absolutePos(POS));
+    }
+    try (Transaction tx = Transaction.openRoot()) {
+      helper.assertTrue(handler.insert(FluidResource.of(fluid), fluid.getAmount(), tx) == fluid.getAmount(), Component.literal("tank did not take " + fluid));
+      tx.commit();
+    }
+    return handler;
+  }
+
+  /** Player interaction in creative: the held container is not used up, the filled container is added to the inventory once. */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tank_interact_container_creative(GameTestHelper helper) {
+    ResourceHandler<FluidResource> tank = filledTank(helper, new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME * 2));
+    Player player = helper.makeMockPlayer(GameType.CREATIVE);
+    // the mock player does not update its abilities from the game mode
+    player.getAbilities().instabuild = true;
+    player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BUCKET));
+    BlockPos pos = helper.absolutePos(POS);
+    helper.assertTrue(FluidTransferHelper.interactWithContainer(helper.getLevel(), pos, tank, player, InteractionHand.MAIN_HAND) == FluidInteractionResult.FILLED_STACK,
+      Component.literal("creative interaction did not fill the bucket"));
+    assertFluid(helper, fluid(helper, POS), new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME), "after the first creative fill");
+    assertHeld(helper, player, new ItemStack(Items.BUCKET), "after the first creative fill");
+    helper.assertTrue(player.getInventory().countItem(Items.WATER_BUCKET) == 1, Component.literal("creative player did not get the water bucket"));
+    // the filled container is only added if missing
+    helper.assertTrue(FluidTransferHelper.interactWithContainer(helper.getLevel(), pos, tank, player, InteractionHand.MAIN_HAND) == FluidInteractionResult.FILLED_STACK,
+      Component.literal("second creative interaction did not fill the bucket"));
+    assertFluid(helper, fluid(helper, POS), FluidStack.EMPTY, "after the second creative fill");
+    assertHeld(helper, player, new ItemStack(Items.BUCKET), "after the second creative fill");
+    helper.assertTrue(player.getInventory().countItem(Items.WATER_BUCKET) == 1,
+      Component.literal("creative player got a second water bucket: " + player.getInventory().countItem(Items.WATER_BUCKET)));
+    helper.succeed();
+  }
+
+  /**
+   * Player interaction holding several containers: one container is filled and goes to the inventory, the rest stay in hand; with a full
+   * inventory the filled container is dropped.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tank_interact_container_stacked(GameTestHelper helper) {
+    ResourceHandler<FluidResource> tank = filledTank(helper, new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME * 3));
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    player.setPos(helper.absoluteVec(new Vec3(1.5, 1, 1.5)));
+    player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BUCKET, 3));
+    BlockPos pos = helper.absolutePos(POS);
+    helper.assertTrue(FluidTransferHelper.interactWithContainer(helper.getLevel(), pos, tank, player, InteractionHand.MAIN_HAND) == FluidInteractionResult.FILLED_STACK,
+      Component.literal("interaction did not fill a bucket"));
+    assertFluid(helper, fluid(helper, POS), new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME * 2), "after filling one of three buckets");
+    assertHeld(helper, player, new ItemStack(Items.BUCKET, 2), "after filling one of three buckets");
+    helper.assertTrue(player.getInventory().countItem(Items.WATER_BUCKET) == 1, Component.literal("the water bucket did not go to the inventory"));
+
+    // fill every other main inventory slot, so the next water bucket has no room
+    for (int i = 0; i < Inventory.INVENTORY_SIZE; i++) {
+      if (i != player.getInventory().getSelectedSlot()) {
+        player.getInventory().setItem(i, new ItemStack(Items.COBBLESTONE, 64));
+      }
+    }
+    helper.assertTrue(FluidTransferHelper.interactWithContainer(helper.getLevel(), pos, tank, player, InteractionHand.MAIN_HAND) == FluidInteractionResult.FILLED_STACK,
+      Component.literal("interaction with a full inventory did not fill a bucket"));
+    assertHeld(helper, player, new ItemStack(Items.BUCKET), "after filling with a full inventory");
+    helper.assertTrue(player.getInventory().countItem(Items.WATER_BUCKET) == 0, Component.literal("a full inventory took the water bucket"));
+    List<ItemEntity> drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(3), entity -> entity.getItem().is(Items.WATER_BUCKET));
+    helper.assertTrue(drops.size() == 1, Component.literal("expected the water bucket to be dropped, found " + drops.size() + " drops"));
+    drops.forEach(ItemEntity::discard);
+    helper.succeed();
+  }
+
+  /**
+   * Casting tank: a lava bucket inserted through the native item capability (as a hopper does) is emptied into the tank once the
+   * transaction commits. The insert is silent until the root commit, whose replay sets the input slot, which processes the item through
+   * the native {@link FluidTransferHelper#interactWithStack} — opening a new root transaction while the first one is closing. An aborted
+   * insert leaves the tank untouched.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void casting_tank_native_insert_processes_bucket(GameTestHelper helper) {
+    CastingTankBlockEntity tank = place(helper, POS, TinkerSmeltery.searedCastingTank.get(), CastingTankBlockEntity.class);
+    ResourceHandler<ItemResource> items = helper.getLevel().getCapability(Capabilities.Item.BLOCK, helper.absolutePos(POS), Direction.UP);
+    helper.assertTrue(items != null, Component.literal("casting tank has no item capability"));
+    // aborted: nothing happens
+    try (Transaction tx = Transaction.openRoot()) {
+      helper.assertTrue(items.insert(ItemResource.of(Items.LAVA_BUCKET), 1, tx) == 1, Component.literal("casting tank refused the lava bucket"));
+    }
+    helper.assertTrue(tank.getItem(CastingTankBlockEntity.INPUT).isEmpty() && fluid(helper, POS).isEmpty(),
+      Component.literal("aborted insert changed the casting tank: " + tank.getItem(CastingTankBlockEntity.INPUT) + " / " + fluid(helper, POS)));
+    // committed: the bucket is emptied into the tank and moves to the output
+    try (Transaction tx = Transaction.openRoot()) {
+      helper.assertTrue(items.insert(ItemResource.of(Items.LAVA_BUCKET), 1, tx) == 1, Component.literal("casting tank refused the lava bucket"));
+      tx.commit();
+    }
+    assertFluid(helper, fluid(helper, POS), new FluidStack(Fluids.LAVA, FluidType.BUCKET_VOLUME), "after the committed insert");
+    helper.assertTrue(tank.getItem(CastingTankBlockEntity.INPUT).isEmpty() && tank.getItem(CastingTankBlockEntity.OUTPUT).is(Items.BUCKET),
+      Component.literal("emptied bucket did not move to the output: " + tank.getItem(CastingTankBlockEntity.INPUT) + " / " + tank.getItem(CastingTankBlockEntity.OUTPUT)));
     helper.succeed();
   }
 

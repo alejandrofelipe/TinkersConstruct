@@ -1,8 +1,13 @@
 package slimeknights.mantle.fluid;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
@@ -13,6 +18,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import slimeknights.mantle.fluid.FluidTransferHelper.FluidInteractionResult;
 import slimeknights.mantle.fluid.transfer.EmptyFluidContainerTransfer;
 import slimeknights.mantle.fluid.transfer.FluidContainerTransferManager;
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer;
@@ -29,6 +35,11 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static slimeknights.mantle.transfer.TestFluidItemCapabilities.HONEY_WATER;
 
 /**
@@ -209,6 +220,43 @@ class FluidTransferHelperTest extends BaseMcTest {
     result = FluidTransferHelper.interactWithStack(water, stack, TransferDirection.AUTO);
     assertThat(result).isNotNull();
     assertSlot(water, 0, new FluidStack(Fluids.WATER, 100 + HONEY_WATER));
+  }
+
+  /** Server side level and a player holding the given stack, mocked: only the failure paths below run without the fluid type registry (sounds, messages) */
+  private static Player holding(ItemStack held) {
+    Level level = mock(Level.class);
+    when(level.isClientSide()).thenReturn(false);
+    Player player = mock(Player.class);
+    when(player.level()).thenReturn(level);
+    when(player.getItemInHand(InteractionHand.MAIN_HAND)).thenReturn(held);
+    return player;
+  }
+
+  @Test
+  void interactWithContainer_failedJsonTransfer_returnsContainerWithoutCapabilityFallback() throws ReflectiveOperationException {
+    // the JSON transfer empties lava, which the water tank refuses; the honey bottle capability (water) would fit, but unlike
+    // interactWithStack the player interaction does not fall back to it
+    setTransfers(List.of(new EmptyFluidContainerTransfer(Ingredient.of(Items.HONEY_BOTTLE), ItemOutput.fromItem(Items.GLASS_BOTTLE), FluidOutput.fromFluid(Fluids.LAVA, 250))));
+    FluidStacksResourceHandler tank = tank(4000, new FluidStack(Fluids.WATER, 100));
+    ItemStack held = new ItemStack(Items.HONEY_BOTTLE, 2);
+    Player player = holding(held);
+    FluidInteractionResult result = FluidTransferHelper.interactWithContainer(player.level(), BlockPos.ZERO, tank, player, InteractionHand.MAIN_HAND);
+    assertThat(result).isEqualTo(FluidInteractionResult.CONTAINER);
+    assertSlot(tank, 0, new FluidStack(Fluids.WATER, 100));
+    assertThat(held.getCount()).isEqualTo(2);
+    verify(player, never()).setItemInHand(any(), any());
+  }
+
+  @Test
+  void interactWithFilledBucket_noRoomForTheWholeBucket_returnsContainerWithoutChange() {
+    FluidStacksResourceHandler tank = tank(500, new FluidStack(Fluids.WATER, 100));
+    ItemStack held = new ItemStack(Items.WATER_BUCKET);
+    Player player = holding(held);
+    FluidInteractionResult result = FluidTransferHelper.interactWithFilledBucket(player.level(), BlockPos.ZERO, tank, player, InteractionHand.MAIN_HAND, Direction.UP);
+    assertThat(result).isEqualTo(FluidInteractionResult.CONTAINER);
+    assertSlot(tank, 0, new FluidStack(Fluids.WATER, 100));
+    assertThat(held.is(Items.WATER_BUCKET)).isTrue();
+    verify(player, never()).setItemInHand(any(), any());
   }
 
   @Test
