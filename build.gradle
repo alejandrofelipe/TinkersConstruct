@@ -19,6 +19,18 @@ repositories {
     maven { name "TwelveIterations"; url 'https://maven.twelveiterations.com/repository/maven-public/'; content { includeGroup 'net.blay09.mods' } }
     // (JSON Things excluded on 1.21.4 — maven unreachable; re-enable with the dep in the compat phase)
     // maven { name "Dogforce Games"; url 'https://www.dogforce-games.com/maven/'; content { includeGroupByRegex 'dev\\.gigaherz.*' } }
+    // Mojang's download host, objects addressed by SHA-1; only serves the 1.21.4 client jar for the spawn egg templates (see below)
+    exclusiveContent {
+        forRepository {
+            ivy {
+                name 'Mojang piston-data'
+                url 'https://piston-data.mojang.com/v1/objects/'
+                patternLayout { artifact '[revision]/[artifact].[ext]' }
+                metadataSources { artifact() }
+            }
+        }
+        filter { includeGroup 'com.mojang.piston-data' }
+    }
 }
 
 group = 'slimeknights.tconstruct'
@@ -174,14 +186,27 @@ tasks.matching { it.name == 'runGameTestServer' }.configureEach { dependsOn 'cle
 
 // SpawnEggTextureProvider tints Mojang's spawn egg template layers (assets/minecraft/textures/item/spawn_egg.png and
 // spawn_egg_overlay.png), removed from the game in 1.21.5. They are not committed: they are read from the 1.21.4 client jar
-// already on this machine, found in the NeoGradle/ForgeGradle caches or a launcher's files and checked by its SHA-1
-// (-PspawnEggTemplateJar=<path> points at it directly). runData fails without it; SpawnEggTextureTest skips the check against it.
+// (-PspawnEggTemplateJar=<path> points at it directly), found by its SHA-1 in the NeoGradle/ForgeGradle caches or a launcher's
+// files when already on this machine, otherwise downloaded once from Mojang into the Gradle cache (the client download of
+// https://piston-meta.mojang.com/v1/packages/148e7e24fc222fdb21b0b90c6ee0d63da082a84a/1.21.4.json) and checked by its SHA-1.
+// runData fails without it; SpawnEggTextureTest skips the check against it.
+def spawnEggTemplateSha1 = 'a7e5a6024bfd3cd614625aa05629adf760020304'
+def spawnEggTemplateSize = 28335587L
+configurations {
+    spawnEggTemplateClient {
+        canBeConsumed = false
+        transitive = false
+    }
+}
+dependencies {
+    spawnEggTemplateClient "com.mojang.piston-data:client:${spawnEggTemplateSha1}@jar"
+}
+def isSpawnEggTemplateJar = { File jar -> jar.isFile() && jar.length() == spawnEggTemplateSize && jar.bytes.digest('SHA-1') == spawnEggTemplateSha1 }
+// the jar, or a GradleException saying why there is none
 def spawnEggTemplateJar = { ->
     if (project.hasProperty('spawnEggTemplateJar')) {
         return file(project.property('spawnEggTemplateJar'))
     }
-    def sha1 = 'a7e5a6024bfd3cd614625aa05629adf760020304' // client.jar of the 1.21.4 version manifest
-    def size = 28335587L
     def caches = new File(gradle.gradleUserHomeDir, 'caches')
     def appData = System.getenv('APPDATA') ?: System.getProperty('user.home')
     def candidates = []
@@ -195,23 +220,44 @@ def spawnEggTemplateJar = { ->
         new File(appData, '.minecraft/versions/1.21.4/1.21.4.jar'),
         new File(appData, 'PrismLauncher/libraries/com/mojang/minecraft/1.21.4/minecraft-1.21.4-client.jar')
     ]
-    return candidates.find { it.isFile() && it.length() == size && it.bytes.digest('SHA-1') == sha1 }
+    def local = candidates.find(isSpawnEggTemplateJar)
+    if (local != null) {
+        return local
+    }
+    def missing = "The 1.21.4 client jar (SHA-1 ${spawnEggTemplateSha1}) holding the spawn egg template layers was not found in the Gradle caches or launcher files"
+    File downloaded
+    try {
+        downloaded = configurations.spawnEggTemplateClient.singleFile
+    } catch (Exception e) {
+        def cause = e
+        while (cause.cause != null && cause.cause != cause) { cause = cause.cause }
+        throw new GradleException("${missing} and could not be downloaded from piston-data.mojang.com (${cause.message}); "
+            + 'run once online, run 1.21.4 once (any launcher) or pass -PspawnEggTemplateJar=<path to the jar>', e)
+    }
+    if (!isSpawnEggTemplateJar(downloaded)) {
+        throw new GradleException("${missing}, and the jar downloaded from piston-data.mojang.com (${downloaded}) does not match that SHA-1/size; "
+            + 'delete it from the Gradle cache and retry, or pass -PspawnEggTemplateJar=<path to the jar>')
+    }
+    return downloaded
 }
 tasks.matching { it.name == 'runData' }.configureEach {
     doFirst {
         def jar = spawnEggTemplateJar()
-        if (jar == null || !jar.isFile()) {
-            throw new GradleException('The 1.21.4 client jar (SHA-1 a7e5a6024bfd3cd614625aa05629adf760020304) holding the spawn egg template '
-                + 'layers was not found in the Gradle caches or launcher files; run 1.21.4 once (any launcher) or pass -PspawnEggTemplateJar=<path to the jar>')
+        if (!jar.isFile()) {
+            throw new GradleException("-PspawnEggTemplateJar=${jar} is not a file")
         }
         systemProperty 'tconstruct.datagen.spawnEggTemplateJar', jar.absolutePath
     }
 }
 tasks.named('test') {
     doFirst {
-        def jar = spawnEggTemplateJar()
-        if (jar != null && jar.isFile()) {
-            systemProperty 'tconstruct.test.spawnEggTemplateJar', jar.absolutePath
+        try {
+            def jar = spawnEggTemplateJar()
+            if (jar.isFile()) {
+                systemProperty 'tconstruct.test.spawnEggTemplateJar', jar.absolutePath
+            }
+        } catch (GradleException e) {
+            logger.warn("SpawnEggTextureTest will skip the check against the real template layers: ${e.message}")
         }
     }
 }
