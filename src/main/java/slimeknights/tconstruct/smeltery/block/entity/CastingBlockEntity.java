@@ -145,7 +145,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
     // first try interacting with the table as a tank. If that fails, run normal item swap logic
     // normal item swap logic should only run if we lack a fluid though
     ItemStack held = player.getItemInHand(hand);
-    if (FluidTransferHelper.interactWithContainer(level, worldPosition, tank, player, hand).didTransfer() || !tank.isEmpty()) {
+    if (FluidTransferHelper.interactWithContainer(level, worldPosition, getFluidHandler(), player, hand).didTransfer() || !tank.isEmpty()) {
       return;
     }
 

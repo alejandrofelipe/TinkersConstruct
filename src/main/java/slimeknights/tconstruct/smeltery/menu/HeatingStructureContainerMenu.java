@@ -12,6 +12,8 @@ import net.minecraft.world.item.ItemStack;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import slimeknights.mantle.fluid.FluidTransferHelper;
 import slimeknights.mantle.fluid.transfer.FluidContainerTransferManager;
 import slimeknights.mantle.fluid.transfer.IFluidContainerTransfer.TransferDirection;
@@ -83,7 +85,7 @@ public class HeatingStructureContainerMenu extends TriggeringMultiModuleContaine
     if (!player.level().isClientSide() && tile != null) {
       ItemStack bucket = bucketContainer.getItem(0);
       if (!bucket.isEmpty() && bucketContainer.getItem(1).isEmpty()) {
-        TransferResult result = FluidTransferHelper.interactWithStack(tile.getTank(), bucket, transferDirection);
+        TransferResult result = FluidTransferHelper.interactWithStack((ResourceHandler<FluidResource>) tile.getTank(), bucket, transferDirection);
         if (result != null) {
           FluidTransferHelper.playUISound(player, result.getSound());
           bucketContainer.setItem(0, bucket);
@@ -139,7 +141,7 @@ public class HeatingStructureContainerMenu extends TriggeringMultiModuleContaine
           ItemStack held = getCarried();
           if (!held.isEmpty()) {
             // if holding an item, fill it from the fluid
-            TransferResult result = FluidTransferHelper.fillStack(tank, held, fluid);
+            TransferResult result = FluidTransferHelper.fillStack((ResourceHandler<FluidResource>) tank, held, fluid);
             setCarried(FluidTransferHelper.handleUIResult(player, held, result));
           } else {
             // switch fluid order if not holding anything

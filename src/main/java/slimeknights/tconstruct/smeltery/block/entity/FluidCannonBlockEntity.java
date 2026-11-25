@@ -25,6 +25,7 @@ import net.minecraft.core.Direction;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.mantle.block.InventoryBlock;
 import slimeknights.mantle.fluid.FluidTransferHelper;
@@ -91,8 +92,10 @@ public class FluidCannonBlockEntity extends TankBlockEntity implements ITankInve
     }
     // transfer fluid if clicked tank
     if (clickedTank) {
-      if (!FluidTransferHelper.interactWithContainer(level, worldPosition, tank, player, hand).didTransfer()) {
-        FluidTransferHelper.interactWithFilledBucket(level, worldPosition, tank, player, hand, getBlockState().getValue(FACING));
+      // the tank is native and legacy, so pick the native transfer explicitly
+      ResourceHandler<FluidResource> handler = tank;
+      if (!FluidTransferHelper.interactWithContainer(level, worldPosition, handler, player, hand).didTransfer()) {
+        FluidTransferHelper.interactWithFilledBucket(level, worldPosition, handler, player, hand, getBlockState().getValue(FACING));
       }
     } else {
       // no fluid transfer? swap items around

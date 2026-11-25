@@ -114,8 +114,8 @@ public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlo
 
     // clicked tank? move fluid
     if (clickedTank) {
-      if (!FluidTransferHelper.interactWithContainer(level, worldPosition, tank, player, hand).didTransfer()) {
-        FluidTransferHelper.interactWithFilledBucket(level, worldPosition, tank, player, hand, getBlockState().getValue(CastingTankBlock.FACING));
+      if (!FluidTransferHelper.interactWithContainer(level, worldPosition, getFluidHandler(), player, hand).didTransfer()) {
+        FluidTransferHelper.interactWithFilledBucket(level, worldPosition, getFluidHandler(), player, hand, getBlockState().getValue(CastingTankBlock.FACING));
       }
     } else {
       // did not click tank? swap items around
@@ -196,7 +196,7 @@ public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlo
 
     // need to take the item out of the input slot to prevent a nested call from getting too far if we do modify the tank
     setInputItem(ItemStack.EMPTY);
-    TransferResult result = FluidTransferHelper.interactWithStack(tank, input, IFluidContainerTransfer.TransferDirection.AUTO);
+    TransferResult result = FluidTransferHelper.interactWithStack(getFluidHandler(), input, IFluidContainerTransfer.TransferDirection.AUTO);
 
     // if no transfer happened
     if (result == null) {
