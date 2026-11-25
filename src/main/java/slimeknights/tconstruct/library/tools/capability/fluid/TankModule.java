@@ -27,6 +27,8 @@ import slimeknights.tconstruct.library.tools.capability.fluid.ToolFluidCapabilit
 import slimeknights.tconstruct.library.tools.nbt.IToolContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ToolDataNBT;
+import slimeknights.tconstruct.library.tools.nbt.ToolStack;
+import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.smeltery.item.TankItem;
 
 import javax.annotation.Nullable;
@@ -196,6 +198,14 @@ public class TankModule implements HookProvider, FluidModifierHook, VolatileData
     return tank;
   }
 
+  /*
+   * PORT 1.21.10 (transfer phase 6): both interactions run before vanilla's slot checks and must not change anything the slot then refuses.
+   * The transfer runs on copies; the slot is set through TransferUtil#trySetSlot (may pick up the old stack, may place the new one, took
+   * it), and only then the held stack changes. A slot over a native handler may refuse the set (side inventories), and NeoForge's
+   * ResourceHandlerSlot hands out copies, so the tool in the slot must be written back with an explicit set (the stack passed to
+   * overrideOtherStackedOnMe is a copy vanilla never writes back).
+   */
+
   @Override
   public boolean overrideStackedOnOther(IToolStackView heldTool, ModifierEntry modifier, Slot slot, Player player) {
     ItemStack slotStack = slot.getItem();
@@ -204,14 +214,14 @@ public class TankModule implements HookProvider, FluidModifierHook, VolatileData
       // target must be stack size 1, if not then its not safe to modify it
       if (slotStack.getCount() == 1) {
         SingleFluidTank tank = getTank(heldTool);
-        TransferResult result = FluidTransferHelper.interactWithStack(tank, slotStack, TransferDirection.REVERSE);
-        // update held tank and slot item if something changed (either we have a result or the stack in the slot was shrunk)
-        if (result != null) {
+        // the stack shrinks to empty on success, so the slot gets the resulting container
+        TransferResult result = FluidTransferHelper.interactWithStack(tank, slotStack.copy(), TransferDirection.REVERSE);
+        // update held tank and slot item if something changed and the slot accepts the result
+        if (result != null && TransferUtil.trySetSlot(slot, player, result.stack())) {
           if (player.level().isClientSide()) {
             player.playSound(result.getSound());
           }
           helper.setFluid(heldTool, tank.getFluid());
-          slot.set(FluidTransferHelper.getOrTransferFilled(player, slotStack, result.stack()));
         }
       }
       return true;
@@ -224,15 +234,22 @@ public class TankModule implements HookProvider, FluidModifierHook, VolatileData
     // must have something with possible fluid held
     if (!held.isEmpty() && TankItem.mayHaveFluid(held)) {
       SingleFluidTank tank = getTank(slotTool);
-      TransferResult result = FluidTransferHelper.interactWithStack(tank, held, TransferDirection.AUTO);
+      TransferResult result = FluidTransferHelper.interactWithStack(tank, held.copy(), TransferDirection.AUTO);
       // update tank if something happened
       if (result != null) {
-        if (player.level().isClientSide()) {
-          player.playSound(result.getSound());
+        // the tool with its new fluid, on a copy of the slot's stack
+        ItemStack updated = slot.getItem().copy();
+        helper.setFluid(ToolStack.from(updated), tank.getFluid());
+        if (TransferUtil.trySetSlot(slot, player, updated)) {
+          if (player.level().isClientSide()) {
+            player.playSound(result.getSound());
+          }
+          // keep the view in sync, a later hook may read it
+          helper.setFluid(slotTool, tank.getFluid());
+          // update held item, assuming its actually held; the transfer used one item
+          held.shrink(1);
+          TankItem.updateHeldItem(player, held, result.stack());
         }
-        helper.setFluid(slotTool, tank.getFluid());
-        // update held item, assuming its actually held
-        TankItem.updateHeldItem(player, held, result.stack());
       }
 
       return true;

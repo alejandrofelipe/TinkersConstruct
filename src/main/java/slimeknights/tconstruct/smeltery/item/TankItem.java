@@ -104,15 +104,15 @@ public class TankItem extends BlockTooltipItem {
         if (slotStack.getCount() == 1) {
           // transfer fluid - but we work with just 1 tank at a time instead of trying to transfer the whole stack
           SingleFluidTank tank = getTank(held, 1);
-          TransferResult result = FluidTransferHelper.interactWithStack(tank, slotStack, TransferDirection.REVERSE);
-          // update held tank and slot item if something changed
-          if (result != null) {
+          // PORT 1.21.10 (transfer phase 6): transfer on a copy and change the held tank only once the slot took the result, a slot over a
+          // native handler may refuse it (see TankModule). The copy shrinks to empty on success, so the slot gets the resulting container.
+          TransferResult result = FluidTransferHelper.interactWithStack(tank, slotStack.copy(), TransferDirection.REVERSE);
+          // update held tank and slot item if something changed and the slot accepts the result
+          if (result != null && TransferUtil.trySetSlot(slot, player, result.stack())) {
             // play sound
             if (player.level().isClientSide()) {
               player.playSound(result.getSound());
             }
-            // update stack
-            slot.set(FluidTransferHelper.getOrTransferFilled(player, slotStack, result.stack()));
             // deal with remainder
             if (held.getCount() == 1) {
               setTank(held, tank);
@@ -173,15 +173,16 @@ public class TankItem extends BlockTooltipItem {
         if (tank.isEmpty() && ItemStack.isSameItemSameComponents(stack, held)) {
           return false;
         }
-        TransferResult result = FluidTransferHelper.interactWithStack(tank, held, TransferDirection.AUTO);
-        if (result != null) {
+        // PORT 1.21.10 (transfer phase 6): transfer on a copy of the held stack, and write the filled tank back to the slot explicitly before
+        // changing the held stack: NeoForge's ResourceHandlerSlot hands out copies (vanilla never writes this one back) and may refuse the set
+        TransferResult result = FluidTransferHelper.interactWithStack(tank, held.copy(), TransferDirection.AUTO);
+        if (result != null && TransferUtil.trySetSlot(slot, player, setTank(stack.copy(), tank))) {
           // play sound
           if (player.level().isClientSide()) {
             player.playSound(result.getSound());
           }
-          // update tank
-          setTank(stack, tank);
-          // update held item, assuming its actually held
+          // update held item, assuming its actually held; the transfer used one item
+          held.shrink(1);
           updateHeldItem(player, held, result.stack());
         }
       }

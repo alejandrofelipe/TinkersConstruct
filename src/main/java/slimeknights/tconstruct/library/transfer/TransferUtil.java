@@ -6,6 +6,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -181,6 +182,26 @@ public final class TransferUtil {
       entity.setDeltaMovement(entity.getDeltaMovement().multiply(0, 1, 0));
       level.addFreshEntity(entity);
     }
+  }
+
+  /**
+   * Replaces the stack in a menu slot as the last step of a slot interaction that also changes something else (a held tank, the cursor).
+   * Checks first that the slot lets the player take its stack and place the new one, then verifies the slot took it: menu slots over a
+   * native handler ({@link ModifiableItemHandlerSlot}) may refuse a set, and the caller must then leave everything else unchanged.
+   * @param slot    Slot to change
+   * @param player  Player interacting
+   * @param stack   New stack for the slot, may be empty
+   * @return  True if the slot now holds the stack, false if it refused (the slot is unchanged)
+   */
+  public static boolean trySetSlot(Slot slot, Player player, ItemStack stack) {
+    if (!slot.mayPickup(player) || (!stack.isEmpty() && (!slot.mayPlace(stack) || stack.getCount() > slot.getMaxStackSize(stack)))) {
+      return false;
+    }
+    ItemStack before = slot.getItem().copy();
+    slot.set(stack);
+    ItemStack after = slot.getItem();
+    // a refused set leaves the old stack; anything else means the slot changed
+    return ItemStack.matches(after, stack) || !ItemStack.matches(after, before);
   }
 
   /** Puts a one item copy of the stack in a new single slot handler, giving it an isolated item access */

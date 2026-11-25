@@ -16,12 +16,23 @@ import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import slimeknights.mantle.inventory.WrapperSlot;
+import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
+import slimeknights.tconstruct.library.tools.capability.fluid.ToolTankHelper;
+import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
+import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
+import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
+import slimeknights.tconstruct.smeltery.item.TankItem;
+import slimeknights.tconstruct.tools.TinkerTools;
+import slimeknights.tconstruct.tools.data.ModifierIds;
+import slimeknights.tconstruct.tools.data.material.MaterialIds;
 import slimeknights.tconstruct.smeltery.block.entity.component.DuctBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModuleInventory;
@@ -211,6 +222,160 @@ public class MenuSlotGameTests {
     ItemStack thrown = menu.getSlot(2).safeTake(1, 1, player);
     helper.assertTrue(thrown.isEmpty() || (thrown.is(Items.DIAMOND) && thrown.getCount() + inventory.copyToList().get(2).getCount() == 6),
       Component.literal("took " + thrown + ", slot holds " + inventory.copyToList().get(2)));
+    helper.succeed();
+  }
+
+  /**
+   * Native handler that ignores the requested index for some slots, like a compacting storage or a void: inserting into slot 1 or
+   * extracting from it goes to a hidden internal storage, slot 2 accepts any insert and keeps nothing.
+   */
+  private static class MisdirectingInventory extends ItemStacksResourceHandler {
+    /** Where slot 1 really stores and takes items, not exposed as a slot */
+    final ItemStacksResourceHandler storage = new ItemStacksResourceHandler(1);
+
+    MisdirectingInventory() {
+      super(3);
+    }
+
+    @Override
+    public boolean isValid(int index, ItemResource resource) {
+      return true;
+    }
+
+    @Override
+    protected int getCapacity(int index, ItemResource resource) {
+      return 16;
+    }
+
+    @Override
+    public int insert(int index, ItemResource resource, int amount, TransactionContext transaction) {
+      return switch (index) {
+        case 1 -> storage.insert(0, resource, amount, transaction);
+        case 2 -> amount;
+        default -> super.insert(index, resource, amount, transaction);
+      };
+    }
+
+    @Override
+    public int extract(int index, ItemResource resource, int amount, TransactionContext transaction) {
+      return index == 1 ? storage.extract(0, resource, amount, transaction) : super.extract(index, resource, amount, transaction);
+    }
+  }
+
+  /**
+   * A native-only side inventory whose handler moves items somewhere other than the requested slot (or voids them) must never lose or
+   * duplicate items: the slot only reports what really reaches or leaves it, so vanilla never takes items for a set the handler then refuses.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void side_inventory_native_handler_misdirecting(GameTestHelper helper) {
+    MisdirectingInventory inventory = new MisdirectingInventory();
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    MovingSideInventory menu = new MovingSideInventory(player, ModifiableItemHandler.transactional(inventory));
+
+    // placing into the slots that put items elsewhere: the cursor keeps everything, nothing appears anywhere
+    for (int slot = 1; slot <= 2; slot++) {
+      ItemStack carried = click(menu, player, slot, 0, new ItemStack(Items.APPLE, 10));
+      assertStack(helper, carried, new ItemStack(Items.APPLE, 10), "carried after placing into misdirecting slot " + slot);
+      carried = click(menu, player, slot, 1, new ItemStack(Items.APPLE, 10));
+      assertStack(helper, carried, new ItemStack(Items.APPLE, 10), "carried after right clicking into misdirecting slot " + slot);
+    }
+    assertStack(helper, inventory.storage.copyToList().get(0), ItemStack.EMPTY, "hidden storage after placing");
+
+    // shift click with the only regular slot full of another item: the source keeps the stack
+    inventory.set(0, ItemResource.of(Items.DIAMOND), 16);
+    ItemStack moved = new ItemStack(Items.APPLE, 10);
+    menu.moveIn(moved);
+    assertStack(helper, moved, new ItemStack(Items.APPLE, 10), "shift clicked stack");
+    assertStack(helper, inventory.storage.copyToList().get(0), ItemStack.EMPTY, "hidden storage after the shift click");
+    assertStack(helper, inventory.copyToList().get(1), ItemStack.EMPTY, "slot 1 after the shift click");
+
+    // taking from a slot whose extracts come from the hidden storage: nothing is taken (it would duplicate)
+    inventory.set(1, ItemResource.of(Items.APPLE), 5);
+    inventory.storage.set(0, ItemResource.of(Items.APPLE), 5);
+    ItemStack carried = click(menu, player, 1, 0, ItemStack.EMPTY);
+    helper.assertTrue(carried.isEmpty(), Component.literal("took " + carried + " from the misdirecting slot"));
+    carried = click(menu, player, 1, 1, ItemStack.EMPTY);
+    helper.assertTrue(carried.isEmpty(), Component.literal("took half " + carried + " from the misdirecting slot"));
+    assertStack(helper, inventory.copyToList().get(1), new ItemStack(Items.APPLE, 5), "misdirecting slot after taking");
+    assertStack(helper, inventory.storage.copyToList().get(0), new ItemStack(Items.APPLE, 5), "hidden storage after taking");
+    helper.succeed();
+  }
+
+  /** Builds a rock/wood/wood pickaxe with a tank, holding the given fluid */
+  private static ItemStack tankPickaxe(FluidStack fluid) {
+    ToolStack tool = ToolStack.createTool(TinkerTools.pickaxe.get(), TinkerTools.pickaxe.get().getToolDefinition(),
+      MaterialNBT.of(MaterialVariant.of(MaterialIds.rock, ""), MaterialVariant.of(MaterialIds.wood, ""), MaterialVariant.of(MaterialIds.wood, "")));
+    tool.addModifier(ModifierIds.tank, 1);
+    ToolTankHelper.TANK_HELPER.setFluid(tool, fluid);
+    return tool.createStack();
+  }
+
+  private static FluidStack toolFluid(ItemStack stack) {
+    return ToolTankHelper.TANK_HELPER.getFluid(ToolStack.from(stack));
+  }
+
+  /**
+   * Tool tanks and tank items right clicked onto a container in a side inventory slot that refuses the filled container: neither the held
+   * tank nor the slot changes (before, the held tank lost its fluid and the slot kept the empty container).
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tank_held_over_refusing_slot(GameTestHelper helper) {
+    // takes anything except water buckets
+    ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(1) {
+      @Override
+      public boolean isValid(int index, ItemResource resource) {
+        return !resource.is(Items.WATER_BUCKET);
+      }
+
+      @Override
+      protected int getCapacity(int index, ItemResource resource) {
+        return 16;
+      }
+    };
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    MovingSideInventory menu = new MovingSideInventory(player, ModifiableItemHandler.transactional(inventory));
+    // the interactions update the cursor of the open menu
+    player.containerMenu = menu;
+    FluidStack bucket = new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME);
+
+    // tool with a bucket of water: filling the empty bucket would need the slot to take a water bucket
+    inventory.set(0, ItemResource.of(Items.BUCKET), 1);
+    ItemStack carried = click(menu, player, 0, 1, tankPickaxe(bucket));
+    helper.assertTrue(FluidStack.matches(toolFluid(carried), bucket), Component.literal("held tool holds " + toolFluid(carried)));
+    assertStack(helper, inventory.copyToList().get(0), new ItemStack(Items.BUCKET), "slot after the tool interaction");
+
+    // same with a tank item
+    ItemStack tank = TankItem.setTank(new ItemStack(TinkerSmeltery.searedTank.get(TankType.FUEL_TANK)), bucket);
+    carried = click(menu, player, 0, 1, tank.copy());
+    assertStack(helper, carried, tank, "held tank after the interaction");
+    assertStack(helper, inventory.copyToList().get(0), new ItemStack(Items.BUCKET), "slot after the tank interaction");
+    helper.succeed();
+  }
+
+  /**
+   * A container right clicked onto a tool tank or tank item in a Tinkers chest (whose menu slots work on copies of the stacks) fills the
+   * tank in the chest: the change must be written back to the chest, not just applied to a copy while the held container empties.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void container_on_tank_in_chest(GameTestHelper helper) {
+    TinkersChestBlockEntity chest = place(helper, POS, TinkerTables.tinkersChest.get(), TinkersChestBlockEntity.class);
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    TinkerChestContainerMenu menu = new TinkerChestContainerMenu(0, player.getInventory(), chest);
+    // the interactions update the cursor of the open menu
+    player.containerMenu = menu;
+    FluidStack water = new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME);
+
+    chest.getItemHandler().setStackInSlot(0, tankPickaxe(FluidStack.EMPTY));
+    ItemStack carried = click(menu, player, 0, 1, new ItemStack(Items.WATER_BUCKET));
+    assertStack(helper, carried, new ItemStack(Items.BUCKET), "carried after emptying into the tool");
+    helper.assertTrue(FluidStack.matches(toolFluid(chest.getItemHandler().getStackInSlot(0)), water),
+      Component.literal("tool in the chest holds " + toolFluid(chest.getItemHandler().getStackInSlot(0))));
+
+    chest.getItemHandler().setStackInSlot(1, new ItemStack(TinkerSmeltery.searedTank.get(TankType.FUEL_TANK)));
+    carried = click(menu, player, 1, 1, new ItemStack(Items.WATER_BUCKET));
+    assertStack(helper, carried, new ItemStack(Items.BUCKET), "carried after emptying into the tank");
+    FluidStack inTank = TankItem.getTank(chest.getItemHandler().getStackInSlot(1), 1).getFluid();
+    helper.assertTrue(FluidStack.matches(inTank, water), Component.literal("tank in the chest holds " + inTank));
     helper.succeed();
   }
 

@@ -98,9 +98,19 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
     return !current.isEmpty() && ItemStack.isSameItemSameComponents(current, stack) ? current.getCount() + insertable : insertable;
   }
 
+  /** Gets the amount of the given item held in this slot, 0 if it holds another item */
+  private int amountInSlot(ItemResource resource) {
+    return handler.getResource(index).equals(resource) ? handler.getAmountAsInt(index) : 0;
+  }
+
   /**
    * Simulates how much of the stack's item the handler takes into this slot, after taking out a different item it holds (a swap).
    * Menus run outside transactions, but nest just in case; nothing is ever committed.
+   * <p>
+   * Measures the change of the slot itself rather than trusting the returned amounts: a handler may ignore the requested index (a
+   * compacting storage putting items in another slot, a void slot keeping nothing), while the transactional setter only commits if the
+   * slot ends up holding exactly the requested stack. Counting items that did not reach the slot would let vanilla take them from the
+   * cursor or source for a set the setter then refuses, losing them.
    */
   private int simulateInsert(ItemStack stack) {
     if (stack.isEmpty()) {
@@ -111,29 +121,45 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
     try (Transaction tx = TransferUtil.openNestedOrRoot()) {
       if (!current.isEmpty() && !current.equals(resource)) {
         int amount = handler.getAmountAsInt(index);
-        if (handler.extract(index, current, amount, tx) != amount) {
+        // the old item must really leave this slot
+        if (handler.extract(index, current, amount, tx) != amount || amountInSlot(current) != 0) {
           return 0;
         }
       }
       int capacity = handler.getCapacityAsInt(index, resource);
-      return capacity <= 0 ? 0 : handler.insert(index, resource, capacity, tx);
+      if (capacity <= 0) {
+        return 0;
+      }
+      int before = amountInSlot(resource);
+      int inserted = handler.insert(index, resource, capacity, tx);
+      return Math.max(0, Math.min(inserted, amountInSlot(resource) - before));
     }
   }
 
 
   /* Taking */
 
-  /** Simulates extracting up to the given amount of the slot's item */
+  /**
+   * Simulates extracting up to the given amount of the slot's item. Like {@link #simulateInsert(ItemStack)}, counts only what really left
+   * this slot, as the setter checks the slot holds exactly the remainder.
+   */
   private int simulateExtract(int amount) {
     ItemResource current = handler.getResource(index);
     if (current.isEmpty() || amount <= 0) {
       return 0;
     }
     try (Transaction tx = TransferUtil.openNestedOrRoot()) {
-      return handler.extract(index, current, amount, tx);
+      int before = handler.getAmountAsInt(index);
+      int extracted = handler.extract(index, current, amount, tx);
+      return Math.max(0, Math.min(extracted, before - amountInSlot(current)));
     }
   }
 
+  /**
+   * Over a transactional setter, requires the whole stack to be extractable, not just one item: vanilla checks only this before clearing
+   * the slot or setting a remainder computed without the handler (QUICK_MOVE moves the whole stack then sets the rest, SWAP clears the
+   * slot, Mantle's {@code MultiModuleContainerMenu#notifySlotAfterTransfer} sets what is left), so a slot giving less than its whole stack must not be picked up from.
+   */
   @Override
   public boolean mayPickup(Player player) {
     if (!inRange()) {
