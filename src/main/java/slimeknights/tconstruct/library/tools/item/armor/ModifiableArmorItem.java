@@ -7,6 +7,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -22,8 +23,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorMaterials;
 import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
@@ -75,6 +79,18 @@ public class ModifiableArmorItem extends Item implements IModifiableDisplay {
   /** Volatile flag for an item to act as an enderman mask, stopping them from getting angry. */
   public static final Identifier ENDERMASK = TConstruct.getResource("endermask");
 
+  /**
+   * Equipment asset of all Tinkers armor. Worn Tinkers armor is drawn by {@link slimeknights.tconstruct.library.client.armor.TinkerArmorLayer}
+   * from the armor models, so vanilla's equipment layer must draw nothing for it. This asset intentionally has no JSON: the equipment asset codec
+   * rejects an empty layer map, and an unknown asset resolves to an asset without layers. It must still be set, as vanilla only copies worn
+   * equipment with an asset into the render state.
+   */
+  public static final ResourceKey<EquipmentAsset> EQUIPMENT_ASSET = ResourceKey.create(EquipmentAssets.ROOT_ID, TConstruct.getResource("tinker_armor"));
+  /** Iron's stats (durability, defense, toughness, equip sound, repair tag) on {@link #EQUIPMENT_ASSET}; Tinkers drives the real armor stats through tool stats */
+  private static final ArmorMaterial PLACEHOLDER_MATERIAL = new ArmorMaterial(
+    ArmorMaterials.IRON.durability(), ArmorMaterials.IRON.defense(), ArmorMaterials.IRON.enchantmentValue(), ArmorMaterials.IRON.equipSound(),
+    ArmorMaterials.IRON.toughness(), ArmorMaterials.IRON.knockbackResistance(), ArmorMaterials.IRON.repairIngredient(), EQUIPMENT_ASSET);
+
   @Getter
   private final ToolDefinition toolDefinition;
   /** Armor slot this item occupies. PORT 1.21.4: vanilla ArmorItem no longer exposes a {@code type} field, so we store it. 1.21.5: ArmorItem was removed entirely. */
@@ -82,13 +98,12 @@ public class ModifiableArmorItem extends Item implements IModifiableDisplay {
   /** Cache of the tool built for rendering */
   private ItemStack toolForRendering = null;
   // PORT M3 (armor materials): vanilla ArmorMaterial is now a record behind Holder<ArmorMaterial> and Tinkers'
-  // ModifiableArmorMaterial no longer extends it (see DummyArmorMaterial). The real Holder<ArmorMaterial> (defense
-  // values + layers) is deferred to the armor-layer port; we pass a vanilla placeholder holder to the super ctor so
-  // construction compiles, while Tinkers drives armor stats through ToolStats/attributes instead.
+  // ModifiableArmorMaterial no longer extends it (see DummyArmorMaterial). We pass a placeholder material to the super ctor
+  // so construction compiles, while Tinkers drives armor stats through ToolStats/attributes instead.
   // PORT 1.21.4: ArmorType became net.minecraft.world.item.equipment.ArmorType.
   public ModifiableArmorItem(DummyArmorMaterial materialIn, ArmorType type, Properties builderIn, ToolDefinition toolDefinition) {
-    // 1.21.5: ArmorItem was removed; humanoidArmor applies the same components the old ArmorItem constructor did (still with the placeholder material)
-    super(builderIn.humanoidArmor(ArmorMaterials.IRON, type));
+    // 1.21.5: ArmorItem was removed; humanoidArmor applies the same components the old ArmorItem constructor did (with the placeholder material)
+    super(builderIn.humanoidArmor(PLACEHOLDER_MATERIAL, type));
     this.type = type;
     this.toolDefinition = toolDefinition;
   }

@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.client.armor.texture;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.Identifier;
 import java.util.Objects;
@@ -41,10 +41,27 @@ public interface ArmorTextureSupplier extends IHaveLoader {
   /** Pair of texture and color */
   interface ArmorTexture {
     /** Empty instance since caches don't support caching null. */
-    ArmorTexture EMPTY = (model, matrices, bufferSource, packedLight, packedOverlay, red, green, blue, alpha, hasGlint) -> {};
+    ArmorTexture EMPTY = new ArmorTexture() {
+      @Override
+      public <S> int submit(Model<? super S> model, S state, PoseStack matrices, SubmitNodeCollector collector, int order, int packedLight, int outlineColor, boolean hasGlint) {
+        return order;
+      }
+    };
 
-    /** Renders this texture to the given model */
-    void renderTexture(Model model, PoseStack matrices, MultiBufferSource bufferSource, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean hasGlint);
+    /**
+     * Submits this texture on the given model.
+     * 1.21.9: replaces rendering into a buffer source, entity layers only submit render nodes (two-phase rendering).
+     * @param model         Model to draw, posed from the state when the node renders
+     * @param state         Render state to pose the model
+     * @param matrices      Pose to draw at
+     * @param collector     Collector receiving the nodes
+     * @param order         First order to submit at, as a layer drawn later must have a higher order to draw on top of the earlier ones
+     * @param packedLight   Packed light at the entity
+     * @param outlineColor  Outline color of the entity, for the glowing effect
+     * @param hasGlint      If true, also submits the enchantment glint over this texture
+     * @return  Next free order
+     */
+    <S> int submit(Model<? super S> model, S state, PoseStack matrices, SubmitNodeCollector collector, int order, int packedLight, int outlineColor, boolean hasGlint);
   }
 
   /** Texture variants, armor is used for helmet, chestplate, and boots, while leggings is leggings and wings is on chest for elytra */

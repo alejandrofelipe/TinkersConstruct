@@ -3,14 +3,15 @@ package slimeknights.tconstruct.library.client.armor;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.client.model.Model;
-import net.minecraft.client.resources.model.EquipmentClientInfo;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
@@ -19,7 +20,6 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier;
 import slimeknights.tconstruct.tools.client.material.CombatFishingHookRenderer;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -118,7 +118,7 @@ public class ArmorModelManager extends SimpleJsonResourceReloadListener<JsonElem
     protected abstract Identifier getName();
 
     /** Fetches the model from the cache */
-    protected ArmorModel getModel(ItemStack stack) {
+    public ArmorModel getModel(ItemStack stack) {
       if (model == null) {
         model = ArmorModelManager.INSTANCE.getModel(getName());
         if (model == ArmorModel.EMPTY) {
@@ -128,17 +128,21 @@ public class ArmorModelManager extends SimpleJsonResourceReloadListener<JsonElem
       return model;
     }
 
-    // PORT 1.21.4: the custom-armor-model hook signature changed to (ItemStack, EquipmentClientInfo.LayerType, Model)
-    // and, more importantly, NeoForge 21.4 no longer invokes it - equipped armor renders through EquipmentLayerRenderer
-    // with static EquipmentClientInfo JSON layers. Returning the original model keeps vanilla rendering; Tinkers' dynamic
-    // multilayer compositing ({@link MultilayerArmorModel}) must be re-seated onto custom EquipmentClientInfo assets plus
-    // IClientItemExtensions#getArmorTexture/getArmorLayerTintColor in Phase-4. getModel(stack) is still exercised here to
-    // surface missing-model warnings and keep the cache warm for that re-seat.
-    @Nonnull
-    @Override
-    public Model getHumanoidArmorModel(ItemStack stack, EquipmentClientInfo.LayerType layerType, Model original) {
-      getModel(stack);
-      return original;
+    /** Gets the renderer drawing the armor model on the entity */
+    protected MultilayerArmorModel getRenderer() {
+      return MultilayerArmorModel.INSTANCE;
+    }
+
+    /**
+     * Submits the armor worn in the slot, called by {@link TinkerArmorLayer}.
+     * 1.21.4: replaces returning a custom model from {@code getHumanoidArmorModel}, see {@link TinkerArmorLayer}.
+     * @param stack       Worn stack
+     * @param slot        Slot the stack is worn in
+     * @param armorModel  Vanilla armor model for the slot
+     * @param context     Entity being rendered
+     */
+    public <S extends HumanoidRenderState> void submitArmor(ItemStack stack, EquipmentSlot slot, HumanoidModel<S> armorModel, TinkerArmorLayer.Context<S> context) {
+      getRenderer().submit(getModel(stack), stack, slot, armorModel, context);
     }
   }
 }

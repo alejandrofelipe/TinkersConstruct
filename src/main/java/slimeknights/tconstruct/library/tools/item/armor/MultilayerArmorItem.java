@@ -43,8 +43,10 @@ public class MultilayerArmorItem extends ModifiableArmorItem {
     return ArmorUtil.getDummyArmorTexture(slot);
   }
 
-  // PORT 1.21.4: IItemExtension#initializeClient was removed (client extensions now register via
-  // RegisterClientExtensionsEvent). Kept as a plain helper until the client phase rewires it.
+  /**
+   * Creates the client extensions drawing this armor when worn, see {@link slimeknights.tconstruct.library.client.armor.TinkerArmorLayer}.
+   * 1.21.4: {@code IItemExtension#initializeClient} was removed, called from {@code ToolClientEvents} on {@code RegisterClientExtensionsEvent}.
+   */
   public void initializeClient(Consumer<IClientItemExtensions> consumer) {
     consumer.accept(new ArmorModelDispatcher() {
       @Override

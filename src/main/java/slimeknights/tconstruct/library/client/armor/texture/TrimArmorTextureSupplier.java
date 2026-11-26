@@ -1,13 +1,14 @@
 package slimeknights.tconstruct.library.client.armor.texture;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.data.AtlasIds;
@@ -15,7 +16,6 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.ARGB;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
@@ -92,6 +92,7 @@ public record TrimArmorTextureSupplier(ModifierId modifier, Identifier patternKe
   @RequiredArgsConstructor
   public static class TrimArmorTexture implements ArmorTexture {
     private static TextureAtlas armorTrimAtlas = null;
+    @Getter
     private final TextureAtlasSprite trimSprite;
 
     /** Gets the texture atlas for trim */
@@ -121,11 +122,10 @@ public record TrimArmorTextureSupplier(ModifierId modifier, Identifier patternKe
     }
 
     @Override
-    public void renderTexture(Model model, PoseStack matrices, MultiBufferSource bufferSource, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean hasGlint) {
+    public <S> int submit(Model<? super S> model, S state, PoseStack matrices, SubmitNodeCollector collector, int order, int packedLight, int outlineColor, boolean hasGlint) {
       // ignoring glint as odds are very low trim texture is the first one
-      VertexConsumer buffer = trimSprite.wrap(bufferSource.getBuffer(Sheets.armorTrimsSheet(false)));
-      // 1.21 renderToBuffer takes a single packed ARGB int rather than four floats
-      model.renderToBuffer(matrices, buffer, packedLight, packedOverlay, ARGB.colorFromFloat(alpha, red, green, blue));
+      collector.order(order).submitModel(model, state, matrices, Sheets.armorTrimsSheet(false), packedLight, OverlayTexture.NO_OVERLAY, -1, trimSprite, outlineColor, null);
+      return order + 1;
     }
   }
 }

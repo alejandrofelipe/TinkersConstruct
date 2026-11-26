@@ -15,10 +15,9 @@ import java.util.Map;
  * <p>PORT 1.21.4: this used to render a baked item model inside the skull slot via the removed
  * {@code ItemRenderer#getModel}/{@code renderModelLists}/{@code BakedModel} path, and overrode the now-final
  * {@link SkullModelBase#renderToBuffer}. The whole item-model render pipeline moved to {@code ItemStackRenderState}
- * (see {@code ItemModelUtil}/{@code ItemModelResolver}). Since the slimeskull render path that consumed this model
- * ({@code SlimeskullArmorModel}) is itself vestigial in 1.21.4 (NeoForge no longer invokes the custom armor-model
- * hook), this is reduced to an empty-root placeholder that compiles and registers; the item-as-skull render must be
- * rebuilt on {@code ItemStackRenderState} in Phase-4 (uitest).
+ * (see {@code ItemModelUtil}/{@code ItemModelResolver}), so this is reduced to an empty-root placeholder that compiles
+ * and registers: {@code SlimeskullArmorModel} draws nothing for it. The item-as-skull render must be rebuilt on
+ * {@code ItemStackRenderState}.
  **/
 public class BlockModelSkullRenderer extends SkullModelBase {
   private final ItemStack stack;

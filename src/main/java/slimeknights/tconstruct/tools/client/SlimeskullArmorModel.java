@@ -2,7 +2,6 @@ package slimeknights.tconstruct.tools.client;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.object.skull.PiglinHeadModel;
@@ -10,18 +9,19 @@ import net.minecraft.client.model.object.skull.SkullModel;
 import net.minecraft.client.model.object.skull.SkullModelBase;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.WalkAnimationState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.world.item.ItemStack;
-import org.joml.Quaternionf;
 import slimeknights.mantle.data.listener.ISafeManagerReloadListener;
 import slimeknights.tconstruct.library.client.armor.ArmorModelManager.ArmorModel;
 import slimeknights.tconstruct.library.client.armor.MultilayerArmorModel;
+import slimeknights.tconstruct.library.client.armor.TinkerArmorLayer.Context;
+import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.TextureType;
 import slimeknights.tconstruct.library.client.materials.MaterialRenderInfo;
 import slimeknights.tconstruct.library.client.materials.MaterialRenderInfoLoader;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
@@ -52,95 +52,46 @@ public class SlimeskullArmorModel extends MultilayerArmorModel {
     MATERIAL_COLOR_CACHE.clear();
   };
 
-  /** Head to render under the helmet */
-  @Nullable
-  private Identifier headTexture;
-  /** Tint color for the head */
-  private int headColor = -1;
-  /** Texture for the head */
-  @Nullable
-  private SkullModelBase headModel;
-  /** Current animation time for the skull */
-  private float walkAnimation = 0;
-  /** Captured baby/crouching flags. PORT 1.21.4: HumanoidModel no longer exposes {@code young}/{@code crouching} (moved to HumanoidRenderState), so we snapshot them from the entity in {@link #setup}. */
-  private boolean young = false;
-  private boolean crouching = false;
-
   private SlimeskullArmorModel() {}
 
-  /** Prepares the model */
-  public SlimeskullArmorModel setup(LivingEntity living, ItemStack stack, HumanoidModel<?> base, ArmorModel model) {
-    super.setup(living, stack, EquipmentSlot.HEAD, base, model);
-    this.young = living.isBaby();
-    this.crouching = living.isCrouching();
+  /** Composites the slimeskull armor layers plus the embedded skull model of the first material. */
+  @Override
+  public <S extends HumanoidRenderState> void submit(ArmorModel model, ItemStack stack, EquipmentSlot slot, HumanoidModel<S> armorModel, Context<S> context) {
+    S state = context.state();
+    PoseStack matrices = context.matrices();
+    int order = FIRST_ORDER;
+    if (model != ArmorModel.EMPTY) {
+      matrices.pushPose();
+      // TODO: this offset messes with the rotation of the skull slightly, though it is barely noticable
+      matrices.translate(0.0D, state.isBaby ? -0.015D : -0.02D, 0.0D);
+      matrices.scale(1.01f, 1.1f, 1.01f);
+      order = submitLayers(model, stack, TextureType.fromSlot(slot), armorModel, context, order);
+      matrices.popPose();
+    }
     MaterialId materialId = MaterialIdNBT.from(stack).getMaterial(0).getId();
     if (!materialId.equals(IMaterial.UNKNOWN_ID)) {
-      SkullModelBase skull = getHeadModel(materialId);
-      Identifier texture = HEAD_TEXTURES.get(materialId);
-      if (skull != null && texture != null) {
-        headModel = skull;
-        headTexture = texture;
-        // determine the color to tint the helmet, fallback to no tint if missing
-        MaterialVariantId material = MaterialIdNBT.from(stack).getMaterial(1);
-        if (IMaterial.UNKNOWN_ID.equals(material)) {
-          headColor = -1;
-        } else {
-          headColor = MATERIAL_COLOR_CACHE.apply(material);
-        }
-
-        // setup walk animation
-        WalkAnimationState walkState = living.getVehicle() instanceof LivingEntity vehicle ? vehicle.walkAnimation : living.walkAnimation;
-        this.walkAnimation = walkState.position();
-        return this;
-      }
-    }
-    headTexture = null;
-    headModel = null;
-    headColor = -1;
-    walkAnimation = 0;
-    return this;
-  }
-
-  /**
-   * Composites the slimeskull armor layers plus the embedded skull model.
-   * PORT 1.21.4: previously the {@code Model#renderToBuffer} override invoked by the custom-armor-model hook; kept as
-   * unwired scaffolding for the Phase-4 re-seat (the embedded skull in particular has no EquipmentClientInfo analog and
-   * needs a dedicated render-state hook).
-   */
-  @Override
-  public void renderArmor(PoseStack matrixStackIn, VertexConsumer vertexBuilder, int packedLightIn, int packedOverlayIn, int color) {
-    if (base != null && buffer != null) {
-      // 1.21 passes a single packed ARGB color; unpack to feed the float-based head render chain
-      float alpha = ARGB.alpha(color) / 255.0F;
-      float red = ARGB.red(color) / 255.0F;
-      float green = ARGB.green(color) / 255.0F;
-      float blue = ARGB.blue(color) / 255.0F;
-      if (model != ArmorModel.EMPTY) {
-        matrixStackIn.pushPose();
-        // TODO: this offset messes with the rotation of the skull slightly, though it is barely noticable
-        matrixStackIn.translate(0.0D, young ? -0.015D : -0.02D, 0.0D);
-        matrixStackIn.scale(1.01f, 1.1f, 1.01f);
-        super.renderArmor(matrixStackIn, vertexBuilder, packedLightIn, packedOverlayIn, color);
-        matrixStackIn.popPose();
-      }
+      SkullModelBase headModel = getHeadModel(materialId);
+      Identifier headTexture = HEAD_TEXTURES.get(materialId);
       if (headModel != null && headTexture != null) {
-        VertexConsumer heaadBuffer = getArmorFoilBuffer(buffer, RenderTypes.entityCutoutNoCullZOffset(headTexture), hasGlint);
-        matrixStackIn.pushPose();
-        if (crouching) {
-          matrixStackIn.translate(0, base.head.y / 16.0F, 0);
-        }
-        if (young) {
-          matrixStackIn.scale(0.85F, 0.85F, 0.85F);
-          matrixStackIn.translate(0.0D, 1.0D, 0.0D);
-        } else {
-          matrixStackIn.scale(1.115f, 1.115f, 1.115f);
-        }
-        matrixStackIn.mulPose((new Quaternionf()).rotationZYX(0, base.head.yRot, base.head.xRot));
+        // determine the color to tint the head, fallback to no tint if missing
+        MaterialVariantId material = MaterialIdNBT.from(stack).getMaterial(1);
+        int headColor = IMaterial.UNKNOWN_ID.equals(material) ? -1 : MATERIAL_COLOR_CACHE.apply(material);
+        matrices.pushPose();
+        // 1.21.4: follow the posed head of the entity like vanilla's custom head layer, which covers crouching and baby models
+        HumanoidModel<S> parent = context.parent();
+        parent.root().translateAndRotate(matrices);
+        parent.head.translateAndRotate(matrices);
+        matrices.scale(1.115f, 1.115f, 1.115f);
         SkullModelBase.State skullState = new SkullModelBase.State();
-        skullState.animationPos = walkAnimation;
-        headModel.setupAnim(skullState);
-        renderColored(headModel, matrixStackIn, heaadBuffer, packedLightIn, packedOverlayIn, headColor, red, green, blue, alpha);
-        matrixStackIn.popPose();
+        // walk animation, of the vehicle when riding
+        skullState.animationPos = state.wornHeadAnimationPos;
+        SubmitNodeCollector collector = context.collector();
+        int packedLight = context.packedLight();
+        collector.order(order++).submitModel(headModel, skullState, matrices, RenderTypes.entityCutoutNoCullZOffset(headTexture), packedLight, OverlayTexture.NO_OVERLAY, headColor, null, state.outlineColor, null);
+        if (stack.hasFoil()) {
+          collector.order(order).submitModel(headModel, skullState, matrices, RenderTypes.armorEntityGlint(), packedLight, OverlayTexture.NO_OVERLAY, headColor, null, state.outlineColor, null);
+        }
+        matrices.popPose();
       }
     }
   }

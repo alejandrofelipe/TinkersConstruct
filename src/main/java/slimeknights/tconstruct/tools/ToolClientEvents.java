@@ -4,15 +4,20 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.client.player.ClientInput;
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.ItemEntityRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
@@ -25,6 +30,7 @@ import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.event.RegisterSpriteSourcesEvent;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -40,8 +46,8 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.ClientEventBase;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
-import slimeknights.tconstruct.library.client.armor.AbstractArmorModel;
 import slimeknights.tconstruct.library.client.armor.ArmorModelManager;
+import slimeknights.tconstruct.library.client.armor.TinkerArmorLayer;
 import slimeknights.tconstruct.library.client.armor.texture.TrimArmorTextureSupplier;
 import slimeknights.tconstruct.library.client.book.content.AbstractMaterialContent;
 import slimeknights.tconstruct.library.client.materials.MaterialTooltipCache;
@@ -66,6 +72,7 @@ import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.modifiers.ModifierManager;
 import slimeknights.tconstruct.library.modifiers.modules.technical.ArmorStatModule;
 import slimeknights.tconstruct.library.tools.capability.TinkerDataKeys;
+import slimeknights.tconstruct.library.tools.item.armor.MultilayerArmorItem;
 import slimeknights.tconstruct.library.tools.nbt.ToolDataOwnership;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
@@ -83,6 +90,7 @@ import slimeknights.tconstruct.tools.client.material.CombatFishingHookRenderer;
 import slimeknights.tconstruct.tools.client.material.ThrownShurikenRenderer;
 import slimeknights.tconstruct.tools.client.material.ThrownToolRenderer;
 import slimeknights.tconstruct.tools.item.ModifierCrystalItem;
+import slimeknights.tconstruct.tools.item.SlimeskullItem;
 import slimeknights.tconstruct.tools.logic.DoubleJumpHandler;
 import slimeknights.tconstruct.tools.logic.InteractionHandler;
 import slimeknights.tconstruct.tools.modules.ranged.ammo.SmashingModule;
@@ -183,6 +191,34 @@ public class ToolClientEvents extends ClientEventBase {
     event.registerEntityRenderer(TinkerModifiers.fireball.get(), context -> new ThrownItemRenderer<>(context, 0.75f, true));
   }
 
+  /** Adds the layer drawing worn Tinkers armor to every renderer with a vanilla armor layer */
+  @SubscribeEvent
+  static void addEntityLayers(EntityRenderersEvent.AddLayers event) {
+    EntityModelSet models = event.getEntityModels();
+    for (EntityType<?> type : event.getEntityTypes()) {
+      EntityRenderer<?,?> renderer = event.getRenderer(type);
+      TinkerArmorLayer.addTo(renderer, models);
+    }
+    for (PlayerModelType skin : event.getSkins()) {
+      TinkerArmorLayer.addTo(event.getPlayerRenderer(skin), models);
+      TinkerArmorLayer.addTo(event.getMannequinRenderer(skin), models);
+    }
+  }
+
+  /** 1.21.4: {@code IItemExtension#initializeClient} was removed, so register the worn armor renderers of armor items here */
+  @SubscribeEvent
+  static void registerClientExtensions(RegisterClientExtensionsEvent event) {
+    for (Item item : BuiltInRegistries.ITEM) {
+      if (!event.isItemRegistered(item)) {
+        if (item instanceof MultilayerArmorItem armor) {
+          armor.initializeClient(extensions -> event.registerItem(extensions, item));
+        } else if (item instanceof SlimeskullItem slimeskull) {
+          slimeskull.initializeClient(extensions -> event.registerItem(extensions, item));
+        }
+      }
+    }
+  }
+
   @SubscribeEvent
   static void registerKeyBinding(RegisterKeyMappingsEvent event) {
     event.registerCategory(KEY_CATEGORY);
@@ -199,7 +235,6 @@ public class ToolClientEvents extends ClientEventBase {
   static void clientSetupEvent(FMLClientSetupEvent event) {
     NeoForge.EVENT_BUS.addListener(ToolClientEvents::handleKeyBindings);
     NeoForge.EVENT_BUS.addListener(ToolClientEvents::handleInput);
-    AbstractArmorModel.init();
 
     // keybinds
     event.enqueueWork(() -> {

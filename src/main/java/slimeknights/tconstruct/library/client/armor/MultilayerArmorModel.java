@@ -1,68 +1,65 @@
 package slimeknights.tconstruct.library.client.armor;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.util.ARGB;
+import net.minecraft.client.model.Model;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.tconstruct.library.client.armor.ArmorModelManager.ArmorModel;
+import slimeknights.tconstruct.library.client.armor.TinkerArmorLayer.Context;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.ArmorTexture;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.TextureType;
+import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
+import slimeknights.tconstruct.library.tools.item.armor.ModifiableArmorItem;
 
 /**
- * Armor model that just applies the list of textures.
- *
- * <p>PORT 1.21.4: see {@link AbstractArmorModel} - this is no longer a {@code Model} subclass (final
- * {@code renderToBuffer}) and is not wired into the render path (the custom-armor-model hook is vestigial). The dynamic
- * layer-compositing logic is preserved in {@link #renderArmor} as Phase-4 scaffolding for the EquipmentClientInfo
- * re-seat; {@code base}/{@link #setup} capture the state the re-seat will need.
+ * Renderer for worn armor that just applies the list of textures from its {@link ArmorModel}, called by {@link TinkerArmorLayer}.
+ * 1.21.4: was a {@link Model} subclass returned from the custom armor model hook; models are now final and stateless, so this
+ * submits each texture layer on the vanilla armor model instead.
  */
-public class MultilayerArmorModel extends AbstractArmorModel {
+public class MultilayerArmorModel {
   public static final MultilayerArmorModel INSTANCE = new MultilayerArmorModel();
-
-  protected ItemStack armorStack = ItemStack.EMPTY;
-  protected ArmorModel model = ArmorModel.EMPTY;
-  protected RegistryAccess registryAccess = RegistryAccess.EMPTY;
+  /** Order of the first armor layer, matching vanilla's {@code HumanoidArmorLayer}. The entity itself uses order 0. */
+  protected static final int FIRST_ORDER = 1;
 
   protected MultilayerArmorModel() {}
 
-  /** Prepares this model */
-  public MultilayerArmorModel setup(LivingEntity living, ItemStack stack, EquipmentSlot slot, HumanoidModel<?> base, ArmorModel model) {
-    this.model = model;
-    this.registryAccess = living.level().registryAccess();
-    if (!model.layers().isEmpty()) {
-      setup(living, stack, slot, base);
-      this.armorStack = stack;
-    } else {
-      this.armorStack = ItemStack.EMPTY;
+  /**
+   * Submits the armor worn in the given slot.
+   * @param model       Armor model with the texture layers
+   * @param stack       Worn stack
+   * @param slot        Slot the stack is worn in
+   * @param armorModel  Vanilla armor model for the slot
+   * @param context     Entity being rendered
+   */
+  public <S extends HumanoidRenderState> void submit(ArmorModel model, ItemStack stack, EquipmentSlot slot, HumanoidModel<S> armorModel, Context<S> context) {
+    submitLayers(model, stack, TextureType.fromSlot(slot), armorModel, context, FIRST_ORDER);
+    // elytra modifier adds wings, drawn from the wings variant of the same layers
+    if (slot == EquipmentSlot.CHEST && ModifierUtil.checkVolatileFlag(stack, ModifiableArmorItem.ELYTRA)) {
+      PoseStack matrices = context.matrices();
+      matrices.pushPose();
+      // same offset as vanilla's wings layer
+      matrices.translate(0.0F, 0.0F, 0.125F);
+      submitLayers(model, stack, TextureType.WINGS, context.wings(), context, FIRST_ORDER);
+      matrices.popPose();
     }
-    return this;
   }
 
   /**
-   * Composites the dynamic texture layers over the base humanoid model.
-   * PORT 1.21.4: previously the {@code Model#renderToBuffer} override invoked by the custom-armor-model hook; kept as
-   * scaffolding (unwired) for the Phase-4 EquipmentClientInfo re-seat.
+   * Submits each texture layer of the armor model, glint going on the first layer that renders.
+   * @return  Next free order
    */
-  public void renderArmor(PoseStack matrices, VertexConsumer bufferIn, int packedLightIn, int packedOverlayIn, int color) {
-    if (this.base != null && buffer != null) {
-      // 1.21 passes a single packed ARGB color; unpack to feed the float-based texture render chain
-      float alpha = ARGB.alpha(color) / 255.0F;
-      float red = ARGB.red(color) / 255.0F;
-      float green = ARGB.green(color) / 255.0F;
-      float blue = ARGB.blue(color) / 255.0F;
-      boolean armorGlint = hasGlint;
-      for (ArmorTextureSupplier textureSupplier : model.layers()) {
-        ArmorTexture texture = textureSupplier.getArmorTexture(armorStack, textureType, registryAccess);
-        if (texture != ArmorTexture.EMPTY) {
-          texture.renderTexture(base, matrices, buffer, packedLightIn, packedOverlayIn, red, green, blue, alpha, armorGlint);
-          armorGlint = false;
-        }
+  protected static <S extends HumanoidRenderState> int submitLayers(ArmorModel model, ItemStack stack, TextureType textureType, Model<? super S> target, Context<S> context, int order) {
+    boolean glint = stack.hasFoil();
+    for (ArmorTextureSupplier textureSupplier : model.layers()) {
+      ArmorTexture texture = textureSupplier.getArmorTexture(stack, textureType, context.registryAccess());
+      if (texture != ArmorTexture.EMPTY) {
+        order = texture.submit(target, context.state(), context.matrices(), context.collector(), order, context.packedLight(), context.state().outlineColor, glint);
+        glint = false;
       }
     }
+    return order;
   }
 }
