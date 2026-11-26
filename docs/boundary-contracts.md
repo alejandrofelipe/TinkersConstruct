@@ -1,0 +1,65 @@
+# Boundary contracts — integration point → guarding test
+
+Every place where Tinkers/Mantle meet vanilla or NeoForge can break **silently** on an upgrade: the code compiles, the
+unit suite passes, and the bug only shows on a dedicated server, after a save/load, or in another mod's pipe. This table
+maps each such integration point to the automated test that fails when it breaks (roadmap measure R1, M6 Phase 0.5b).
+Review it at each milestone's Phase 0: a new integration point gets a row and a guard, a row without a guard goes to
+[Gaps / candidates](#gaps--candidates).
+
+How to run: `test` (unit), `runGameTestServer` (gametests, `tconstruct:<method>`), `runClientUiTest` (uitest scenarios
+`tconstruct:<id>`) — see `repo/docs/COMMANDS.md` "Automated tests & screenshots". Gametest classes live in
+`src/main/java/slimeknights/tconstruct/gametest/`, uitest scenarios in `client/uitest/TinkerUiTestScenarios.java`.
+"Since" is the first release tag containing the guard.
+
+The new guards were mutation-checked on the 1.21.10 release code (M6 0.5b): dropping `SEVERING` from
+`RecipeLookupPopulator`'s client synced types failed **only** `client_synced_recipe_types_complete` (the codec round trip
+stayed green, it just covered fewer recipes); dropping the alloyer's fluid registration failed
+`block_entity_handlers_every_type` with a direct message, while the only other red test was
+`block_entity_round_trip_structures` with an indirect "no molten_bronze accepted"; dropping the copper can's registration
+failed `item_handlers_every_item` plus four existing behaviour tests.
+
+| Integration point | What can silently break | Guarding test(s) | Since |
+|---|---|---|---|
+| Block entity save/load (chunk save → load → re-save) | A key renamed or dropped by the save API (`ValueInput`/`ValueOutput`, codecs); an empty block entity that throws on load and disconnects clients | `BlockEntityRoundTripGameTests#block_entity_round_trip_every_type` (every `tconstruct` type, empty and filled), `#block_entity_round_trip_structures` (formed smeltery/foundry, fueled melter/alloyer, mid-pour faucet) | v1.21.10-3.15.0 |
+| Block entity client sync (update tag, `onDataPacket`) | Client copy differs from the server; a filled → empty transition keeps stale contents on the client because the save omits empty keys | `BlockEntityRoundTripGameTests#block_entity_round_trip_every_type` (update tag via `handleUpdateTag` and `onDataPacket`, plus filled → emptied on the client) | v1.21.10-3.15.0 |
+| Save compatibility with older worlds | On-disk keys/types drift from what earlier releases wrote; legacy NBT shapes no longer load | `SaveCompatGameTests#save_compat_melter_round_trip`, `#save_compat_casting_round_trip`, `#save_compat_tables_round_trip`, `#save_compat_part_chest_round_trip`, `#save_compat_legacy_melting_inventory`, `#save_compat_legacy_chest_items`, `#save_compat_legacy_casting_and_empty_entries`, `#save_compat_legacy_modifier_inventory`, `#save_compat_inventory_module_write_stack`, `#save_compat_tool_stack_codec_round_trip`, `#save_compat_dagger_codec_round_trip`, `#save_compat_thrown_tool_round_trip`, `#save_compat_tool_projectiles_round_trip`; `DropGameTests#cast_chest_reads_legacy_item_inventory`; unit `ToolDataNBTTest`, `MaterialNBTTest`, `ModifierNBTest`, `StatsNBTTest`, `MultiplierNBTTest` | v1.21.8-3.14.0 |
+| Recipe network codecs (dedicated server) | A recipe's `StreamCodec` loses or reorders bytes; singleplayer never serializes, so only a dedicated server sees it | `RecipeSyncGameTests#synced_recipes_stream_codec_round_trip` (every synced recipe encode → decode → re-encode, byte-equal) | v1.21.8-3.14.0 |
+| Recipe client sync presence (`OnDatapackSyncEvent#sendRecipes`) | A recipe type the client reads (JEI, books, GUI block entities) is not sent, so it is empty on servers — the alloying / entity melting / severing bug of 1.21.4 → hotfix | `RecipeSyncGameTests#client_synced_recipe_types_complete` (**new**: fires the real sync event; every `tconstruct` recipe type sent or listed `SERVER_ONLY`, foreign types read on the client sent, sent set == codec-tested set, each sent type has recipes) | new (M6 0.5b) |
+| Other datapack sync packets (materials, stats, traits, tool definitions, slot layouts) | Packet codec drift | unit `UpdateMaterialPacketTest`, `UpdateMaterialStatsPacketTest`, `UpdateMaterialTraitsPacketTest`, `UpdateToolDefinitionDataPacketTest`, `UpdateTinkerSlotLayoutsPacketTest` | v1.21.1-3.11.3 or earlier |
+| Recipe lookups populated at reload | A static lookup stays empty because the population hook moved | `RecipeValidationGameTests#melting_fuel_lookup_populated`, `#melting_recipe_lookup_populated`, `#casting_recipe_lookup_populated`, `#modifier_recipe_lookup_populated`, `#material_casting_lookup_populated`, `#material_recipe_cache_populated` | v1.21.1-3.11.3 |
+| Recipe data loads and is valid | Recipes skipped at load (missing tag, codec change), invalid fluids/outputs | `RecipeValidationGameTests#all_melting_recipes_valid`, `#all_casting_recipes_valid`, `#all_alloy_recipes_valid`, `#all_material_fluid_recipes_valid`; `DatapackTagGapGameTests#previously_skipped_recipes_load`, `#ore_loot_modifiers_load` | v1.21.1-3.11.3 / v1.21.4-3.12.0 |
+| Staged tags on first boot | Runtime JSON loaders decoding tag ingredients before the registry's tags are bound drop every tag entry on a fresh dedicated/gametest server | `DatapackTagGapGameTests#tag_ingredient_runtime_data_loads_on_first_boot`, `#port_tags_populated` | v1.21.4-3.12.1 / v1.21.4-3.12.0 |
+| Block entity handler registration (`RegisterCapabilitiesEvent`) | Getters ported but the central registration missing → block exposes no item/fluid handler (the 1.21.1 → 1.21.10 class of bug) | `HandlerRegistrationGameTests#block_entity_handlers_every_type` (**new**: every `tconstruct` block entity type must be in the expectation table; missing and unexpected handlers per side fail), `#block_entity_handlers_in_structure` (**new**: drain/chute/duct proxies in a formed smeltery and foundry) | new (M6 0.5b) |
+| Item handler registration | Fluid containers (tank items, copper can, bottles, buckets) or tools expose no handler — tool caps were never registered from the 1.21.1 port until 1.21.10 | `HandlerRegistrationGameTests#item_handlers_every_item` (**new**: every `tconstruct` item exposes exactly its kind's handlers), `#modifiable_items_expose_modifier_handlers` (**new**: every modifiable item with tank + pocket exposes fluid + item handlers); behaviour: `CapabilityGameTests#tool_without_modifiers_has_no_capabilities`, `#tool_tank_fluid_capability`, `#tool_tank_fluid_capability_extract`, `#tool_inventory_item_capability`, `#tool_inventory_item_capability_rules`, `#copper_can_item_fluid_capability`, `#tank_item_fluid_capability`, `#powder_snow_bucket_fluid_handler` | v1.21.10-3.15.0 (behaviour), new (registration) |
+| Transfer API transaction semantics | Simulate/abort leaks side effects (block updates, recipe starts), nested aborts revert too much, vanilla/NeoForge interop (hoppers, buckets, pipes) breaks | `CapabilityGameTests#tank_simulate_has_no_side_effects`, `#tank_nested_abort`, `#casting_table_simulate_has_no_side_effects`, `#casting_table_commit_starts_recipe`, `#casting_table_fluid_container_cast_in_transaction`, `#melter_simulate_has_no_side_effects`, `#hopper_inserts_into_casting_table`, `#bucket_interaction_fills_tank`, `#tank_hopper_and_pipe_interop`, `#duct_hopper_moves_filter`, `#smeltery_drain_and_duct_pipe_interop`; `FluidTransferGameTests`, `SmelteryTransferGameTests`, `FluidEffectGameTests#fluid_effect_block_simulate_changes_nothing`, `#fluid_effect_entity_simulate_changes_nothing`; unit `TransferHelperTest`, `FluidTransferHelperTest`, `SingleFluidTankTest`, `InventoryBlockEntityItemHandlerTest` | v1.21.10-3.15.0 |
+| Transactional slot safety (menus over native handlers) | Slot clicks, drags, swaps and shift-clicks duplicate or delete items when a native handler refuses or partially accepts | `MenuSlotGameTests#slot_safety_try_set_slot_exact`, `#slot_safety_full_slot_same_item`, `#slot_safety_tank_tool_in_native_slot`, `#slot_safety_spreading_click`, `#slot_safety_spreading_swap`, `#slot_safety_spreading_drag`, `#slot_safety_spreading_shift_click`, `#slot_safety_spreading_hotbar_swap`, `#slot_safety_spreading_plain_set`, `#slot_safety_same_item_hotbar_swap`, `#slot_safety_swap_refused_not_emptied`, `#slot_safety_take_refused`, `#slot_safety_shift_click_casting_tank`, `#slot_safety_shift_click_vanilla_container`, plus `#side_inventory_native_handler*`; unit `BaseContainerMenuTest` | v1.21.10-3.15.0 |
+| Tool data copy independence (`ToolDataOwnership`, `ItemStackMixin`) | `ItemStack#copy` shares the tool's mutable data, so a change on one stack leaks into its copies | `ToolGameTests#tool_changes_do_not_leak_into_copies`, `#copy_takes_verified_result`, `#tool_container_tank_keeps_writes` | v1.21.10-3.15.0 |
+| Lazy tool verification on read | Tools re-verified on every read, verified off the server thread, or redirected materials not resolved | `ToolGameTests#tool_verified_once_on_server_read`, `#fresh_tool_not_verified_again`, `#tool_not_verified_off_server_thread`, `#part_material_redirected_on_server_read` | v1.21.10-3.15.0 |
+| Worldgen registries and placement | Structures/sets/features/biome modifiers no longer resolve, island templates or palettes fail to load, features fail to place | `WorldgenGameTests#worldgen_registries_resolve`, `#island_templates_load`, `#islands_place`, `#geodes_place`, `#cobalt_ore_places`, `#slime_trees_place` | v1.21.4-3.12.1 |
+| Datagen output | A provider produces different (or no) files after an API change; the two datagen runs purge each other's files | `repo/scripts/verify-generated/Test-GeneratedUnchanged.ps1` (**new**, self-test `Test-VerifyGenerated.ps1`); unit `DatagenCacheKeeperTest` | new (M6 0.5b) |
+| JEI integration (one scenario per category) | A JEI category is not registered or has no recipes | uitest `tconstruct:jei_melting_category`, `jei_casting_table_category`, `jei_casting_basin_category`, `jei_molding_category`, `jei_alloy_category`, `jei_entity_melting_category`, `jei_foundry_category`, `jei_modifiers_category`, `jei_severing_category`, `jei_tool_building_category`, `jei_part_builder_category`, `jei_worktable_category`; `jei_category_tooltips`, `jei_item_list_cleanup`, `jei_recipe_transfer`, `jei_*_clickable`, `jei_*_slot`. Singleplayer reads the integrated server's recipes, so these do **not** cover the dedicated-server sync (that is `client_synced_recipe_types_complete`) | v1.21.1-3.11.3 (melting) / v1.21.8-3.14.0 (other categories) |
+| uitest gate | The client exits 0 even when scenarios fail or the suite dies early | `runClientUiTest` task check in `tinkers/build.gradle` (fails on any non-`"ok"` result, a missing `mantle:suite_setup`, or a missing/stale `uitest-results.json`) | v1.21.10-3.15.0 |
+| Gametest world isolation | Structures/chunks from a previous run leak into the next | `cleanGameTestWorld` task (dependency of `runGameTestServer`) | v1.21.4-3.12.1 |
+
+## Gaps / candidates
+
+Integration points noticed without a dedicated guard (not implemented here):
+
+- **Gametest class list** — `TinkerGameTestRegistration.TEST_CLASSES` is explicit: a new test class that is not added there
+  silently runs nothing (only the overall count would notice).
+- **Book recipe references** — book pages name crafting recipes by id (`"recipe": "tconstruct:tables/part_builder"`); no test
+  checks that each id exists and has a client-synced type. Mantle's `ContentSmelting` would read smelting recipes, which are
+  not synced (no Tinkers book uses it today).
+- **Entity capabilities** — `EntityModifierCapability`, `PersistentDataCapability`, `TinkerDataCapability` registrations
+  have no presence test (only `CapabilityGameTests#player_piggyback_capability`).
+- **Tool energy handler** — registered with the other tool handlers, but no shipped modifier gives energy, so it is never
+  exercised functionally.
+- **Dedicated-server join** — no two-process test; non-recipe play packets (block entity sync, fluid/menu packets) are
+  only covered where a unit test exists for the codec.
+- **Data component codecs over the network** — custom components (e.g. `TANK_FLUID`, tool data) are checked on disk by
+  the save-compat tests but have no stream-codec round trip.
+- **Loot tables** — no "every block has a loot table / drops itself" check (`DropGameTests` covers specific blocks).
+- **Natural worldgen** — biome tags and structure-set spacing on real terrain (the flat gametest world cannot cover them).
+- **Dispenser behaviours, menu/screen registration, model loaders, keybinds** — only exercised indirectly by uitest
+  smoke scenarios or not at all.
+- **Advancements and criteria** — no load/trigger test for the 42 advancements.
