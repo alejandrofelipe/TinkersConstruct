@@ -121,4 +121,13 @@ pattern as baseline vs baseline; `smeltery`/`melter` differ only in the animated
 New scenario `smeltery_tank_world`: client tank holds a liquid below a gas; cobalt layer blue, ichor layer orange, empty top
 neither; mutation (tank submit skipped) → fails on the cobalt layer (0/5600 px).
 
-**Decision:** continue R3 — GUI fluid/tank widgets next (26.1 `GuiGraphicsExtractor`, M7), then item-in-world rendering.
+**Independent review:** no serious finding (gas flips, opacity, light, tiling, pipeline flags and two-phase state checked
+line by line against the old code). Follow-up applied: `FluidRenderer.tiledBounds` opened to tests +
+`FluidRendererTiledBoundsTest` (4 cases; its javadoc example was wrong — 2.3..5.1 splits at 3, 4 **and** 5), Tinkers 803
+unit. Accepted/noted: `smeltery_tank_world` asserts layer presence/order/hue only (gas flip, tiling, cull, z-offset are
+guarded by the pixel diff of this pilot, not by the scenario); channel now submits per cube (same vertex stream, a few more
+allocations); removed Tinkers render API (`RenderUtils.*TransparentCuboid`, `TinkerRenderTypes.SMELTERY_FLUID`, pipeline id
+`tconstruct:pipeline/smeltery_fluid` → `mantle:pipeline/fluid_no_cull`) — no in-repo users.
+
+**Recommendation (user decides):** continue R3 — GUI fluid/tank widgets next (26.1 `GuiGraphicsExtractor`, M7), then
+item-in-world rendering.
