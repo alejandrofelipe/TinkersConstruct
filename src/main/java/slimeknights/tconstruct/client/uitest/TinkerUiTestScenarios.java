@@ -26,9 +26,11 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
@@ -52,7 +54,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
@@ -101,11 +108,14 @@ import slimeknights.mantle.client.screen.book.element.StructureElement;
 import slimeknights.mantle.client.uitest.UiTestContext;
 import slimeknights.mantle.client.uitest.UiTestScenario;
 import slimeknights.mantle.client.uitest.UiTestScenarios;
+import slimeknights.mantle.client.uitest.UiTestSuite;
+import slimeknights.mantle.registration.object.EnumObject;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.library.client.armor.ArmorModelManager.ArmorModelDispatcher;
+import slimeknights.tconstruct.library.client.armor.TinkerArmorLayer;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.ArmorTexture;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.TextureType;
 import slimeknights.tconstruct.library.client.armor.texture.TintedArmorTexture;
@@ -167,6 +177,7 @@ import org.lwjgl.glfw.GLFW;
 import javax.annotation.Nullable;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -214,6 +225,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new DynamicItemIconsScenario());
     UiTestScenarios.register(new ToolInventoryScenario());
     UiTestScenarios.register(new TrimmedArmorScenario());
+    UiTestScenarios.register(new WornArmorScenario());
     UiTestScenarios.register(new ItemAtlasGridScenario());
     // every other Tinkers JEI category (JEIPlugin#registerCategories), melting is registered above
     // 1.21.10 (JEI 26) listed all 1859 table / 1016 basin display recipes; JEI 27 hides the ones only showing hidden fluids
@@ -1591,6 +1603,98 @@ public class TinkerUiTestScenarios {
       ctx.mc().setScreen(null);
       ctx.sendCommand("clear @s");
       ctx.sendCommand("gamemode creative");
+    }
+  }
+
+  /**
+   * No menu: Tinkers armor worn by entities other than the player, drawn by {@code TinkerArmorLayer} on their renderers (M6 Phase 4): an armor
+   * stand with the slimeskull (bone skull on skyslime) and slime suit, an armor stand with travelers gear and a zombie with plate armor. Asserts
+   * the renderer of each entity has the Tinkers armor layer, then captures them for a visual check of the skull, slime and travelers layers.
+   */
+  private static class WornArmorScenario implements UiTestScenario {
+    private final BlockPos origin = SITE.offset(100, 0, 0);
+    /** Entities spawned by this scenario, removed on cleanup */
+    private final List<LivingEntity> spawned = new ArrayList<>();
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource("worn_armor");
+    }
+
+    /** Builds an armor piece from the given materials */
+    private static ItemStack armor(ModifiableArmorItem item, MaterialId... materials) {
+      return ToolStack.createTool(item, item.getToolDefinition(), MaterialNBT.of(Arrays.stream(materials).map(material -> MaterialVariant.of(material, "")).toArray(MaterialVariant[]::new))).createStack();
+    }
+
+    /** Equips the four pieces and adds the entity facing the player, west of it */
+    private void spawn(ServerLevel level, LivingEntity entity, int z, ItemStack head, ItemStack chest, ItemStack legs, ItemStack feet) {
+      entity.setPos(origin.getX() + 0.5, origin.getY(), origin.getZ() + z + 0.5);
+      entity.setYRot(90);
+      entity.setYHeadRot(90);
+      entity.setYBodyRot(90);
+      entity.setItemSlot(EquipmentSlot.HEAD, head);
+      entity.setItemSlot(EquipmentSlot.CHEST, chest);
+      entity.setItemSlot(EquipmentSlot.LEGS, legs);
+      entity.setItemSlot(EquipmentSlot.FEET, feet);
+      level.addFreshEntity(entity);
+      spawned.add(entity);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      ctx.sendCommand("tp @s " + (origin.getX() - 4) + " " + origin.getY() + " " + origin.getZ());
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        EnumObject<ArmorType, ModifiableArmorItem> slime = TinkerTools.slimesuit;
+        spawn(level, new ArmorStand(level, 0, 0, 0), -2,
+              armor(slime.get(ArmorType.HELMET), MaterialIds.bone, MaterialIds.skyslime), armor(slime.get(ArmorType.CHESTPLATE), MaterialIds.bone, MaterialIds.skyslime),
+              armor(slime.get(ArmorType.LEGGINGS), MaterialIds.bone, MaterialIds.skyslime), armor(slime.get(ArmorType.BOOTS), MaterialIds.bone, MaterialIds.skyslime));
+        EnumObject<ArmorType, ModifiableArmorItem> travelers = TinkerTools.travelersGear;
+        spawn(level, new ArmorStand(level, 0, 0, 0), 0,
+              armor(travelers.get(ArmorType.HELMET), MaterialIds.copper, MaterialIds.leather), armor(travelers.get(ArmorType.CHESTPLATE), MaterialIds.copper, MaterialIds.leather),
+              armor(travelers.get(ArmorType.LEGGINGS), MaterialIds.copper, MaterialIds.leather), armor(travelers.get(ArmorType.BOOTS), MaterialIds.copper, MaterialIds.leather));
+        Zombie zombie = new Zombie(level);
+        zombie.addTag(UiTestSuite.ALLOW_MOB_TAG);
+        zombie.setNoAi(true);
+        zombie.setSilent(true);
+        EnumObject<ArmorType, ModifiableArmorItem> plate = TinkerTools.plateArmor;
+        spawn(level, zombie, 2,
+              armor(plate.get(ArmorType.HELMET), MaterialIds.gold, MaterialIds.gold), armor(plate.get(ArmorType.CHESTPLATE), MaterialIds.gold, MaterialIds.gold),
+              armor(plate.get(ArmorType.LEGGINGS), MaterialIds.gold, MaterialIds.gold), armor(plate.get(ArmorType.BOOTS), MaterialIds.gold, MaterialIds.gold));
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20; // entity tracking sync
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ClientLevel level = Objects.requireNonNull(ctx.mc().level);
+      int found = 0;
+      for (Entity entity : level.entitiesForRendering()) {
+        if (entity instanceof ArmorStand || entity instanceof Zombie) {
+          found++;
+          if (!(ctx.mc().getEntityRenderDispatcher().getRenderer(entity) instanceof LivingEntityRenderer<?,?,?> renderer) || renderer.layers.stream().noneMatch(layer -> layer instanceof TinkerArmorLayer)) {
+            throw new IllegalStateException("worn_armor: the renderer of " + entity + " lacks the Tinkers armor layer");
+          }
+        }
+      }
+      if (found < 3) {
+        throw new IllegalStateException("worn_armor: expected 3 armored entities on the client, found " + found);
+      }
+      ctx.lookAt(origin.offset(0, 1, 0));
+    }
+
+    @Override
+    public void close(UiTestContext ctx) { /* nothing open */ }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      List<LivingEntity> entities = List.copyOf(spawned);
+      spawned.clear();
+      ctx.runOnServer(() -> entities.forEach(Entity::discard));
     }
   }
 
