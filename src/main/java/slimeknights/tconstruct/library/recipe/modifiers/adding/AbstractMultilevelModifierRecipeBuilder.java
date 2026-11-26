@@ -9,7 +9,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -154,13 +154,13 @@ public abstract class AbstractMultilevelModifierRecipeBuilder<T extends Abstract
   /* Saving */
 
   /** Saves all salvage recipes for this recipe */
-  public T saveSalvage(RecipeOutput consumer, ResourceLocation id) {
+  public T saveSalvage(RecipeOutput consumer, Identifier id) {
     if (levels.isEmpty()) {
       throw new IllegalStateException("Must have at least 1 level");
     }
     for (LevelEntry levelEntry : levels) {
       if (levelEntry.slots() != null) {
-        ResourceLocation salvageId = id.withSuffix("_level_" + levelEntry.level().min());
+        Identifier salvageId = id.withSuffix("_level_" + levelEntry.level().min());
         consumer.accept(ResourceKey.create(Registries.RECIPE, salvageId), new ModifierSalvage(
           salvageId,
           tools, maxToolSize, result, levelEntry.level(), levelEntry.slots()), null);

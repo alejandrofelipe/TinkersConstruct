@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import com.mojang.blaze3d.platform.NativeImage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
@@ -26,22 +26,22 @@ public class DataGenSpriteReader extends AbstractSpriteReader {
   private final String folder;
 
   /** Gets a location with the given extension under the folder */
-  private ResourceLocation getLocation(ResourceLocation base, String extension) {
-    return Objects.requireNonNull(ResourceLocation.tryBuild(base.getNamespace(), folder + "/" + base.getPath() + extension));
+  private Identifier getLocation(Identifier base, String extension) {
+    return Objects.requireNonNull(Identifier.tryBuild(base.getNamespace(), folder + "/" + base.getPath() + extension));
   }
 
   @Override
-  public boolean exists(ResourceLocation path) {
+  public boolean exists(Identifier path) {
     return resourceManager.getResource(getLocation(path, ".png")).isPresent();
   }
 
   @Override
-  public boolean metadataExists(ResourceLocation path) {
+  public boolean metadataExists(Identifier path) {
     return resourceManager.getResource(getLocation(path, ".png.mcmeta")).isPresent();
   }
 
   @Override
-  public NativeImage read(ResourceLocation path) throws IOException {
+  public NativeImage read(Identifier path) throws IOException {
     try {
       Resource resource = resourceManager.getResource(getLocation(path, ".png")).orElseThrow(FileNotFoundException::new);
       NativeImage image = NativeImage.read(resource.open());
@@ -54,7 +54,7 @@ public class DataGenSpriteReader extends AbstractSpriteReader {
   }
 
   @Override
-  public JsonObject readMetadata(ResourceLocation path) throws IOException {
+  public JsonObject readMetadata(Identifier path) throws IOException {
     try (BufferedReader reader = resourceManager.getResource(getLocation(path, ".png.mcmeta")).orElseThrow(FileNotFoundException::new).openAsReader()) {
       return GsonHelper.parse(reader);
     }

@@ -2,13 +2,13 @@ package slimeknights.tconstruct.common.data.loot;
 
 import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
 
-import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.advancements.critereon.EntityTypePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.EntityTypePredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -59,7 +59,7 @@ public class GlobalLootModifiersProvider extends GlobalLootModifierProvider {
   @Override
   protected void start() {
     add("wither_bone", ReplaceItemLootModifier.builder(Ingredient.of(Items.BONE), ItemOutput.fromItem(TinkerMaterials.necroticBone))
-      .addCondition(LootTableIdCondition.builder(ResourceLocation.parse("entities/wither_skeleton")).build())
+      .addCondition(LootTableIdCondition.builder(Identifier.parse("entities/wither_skeleton")).build())
       .addCondition(ConfigEnabledCondition.WITHER_BONE_DROP)
       .build());
 
@@ -105,7 +105,7 @@ public class GlobalLootModifiersProvider extends GlobalLootModifierProvider {
   /** Adds lustrous for an ore */
   private void addLustrous(String name, boolean optional) {
     TagKey<Item> nuggets = TagKey.create(Registries.ITEM, commonResource("nuggets/" + name));
-    ResourceLocation ores = commonResource("ores/" + name);
+    Identifier ores = commonResource("ores/" + name);
     AddEntryLootModifier.Builder builder = AddEntryLootModifier.builder(TagPreferenceLootEntry.tagPreference(nuggets));
     builder.addCondition(new BlockTagLootCondition(TagKey.create(Registries.BLOCK, ores)))
            .addCondition(new ContainsItemModifierLootCondition(LazyTagIngredient.of(TagKey.create(Registries.ITEM, ores))).inverted());

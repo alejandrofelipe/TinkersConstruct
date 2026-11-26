@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.library.recipe.tinkerstation.building;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -46,7 +46,7 @@ public class PartSwappingOverrideRecipe extends MaterialSwappingRecipe {
   /** Options of indexes to set the material */
   private final int[] indices;
 
-  protected PartSwappingOverrideRecipe(ResourceLocation id, Ingredient tools, int maxStackSize, IToolPart part, int[] indices, List<SizedIngredient> extraRequirements) {
+  protected PartSwappingOverrideRecipe(Identifier id, Ingredient tools, int maxStackSize, IToolPart part, int[] indices, List<SizedIngredient> extraRequirements) {
     super(id, tools, maxStackSize, extraRequirements);
     this.part = part;
     this.indices = indices;

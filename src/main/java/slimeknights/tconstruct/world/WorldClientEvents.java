@@ -1,13 +1,13 @@
 package slimeknights.tconstruct.world;
 
-import net.minecraft.client.model.PiglinHeadModel;
-import net.minecraft.client.model.SkullModel;
+import net.minecraft.client.model.object.skull.PiglinHeadModel;
+import net.minecraft.client.model.object.skull.SkullModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
@@ -95,7 +95,7 @@ public class WorldClientEvents extends ClientEventBase {
     // ModelPart->SkullModelBase factory and the event bakes the model itself.
     // 1.21.9: the event also takes the skull texture, which it adds to SkullBlockRenderer.SKIN_BY_TYPE (throws on duplicates)
     SkullModelHelper.HEAD_LAYERS.forEach((type, layer) -> {
-      ResourceLocation texture = HEAD_TEXTURES.get(type);
+      Identifier texture = HEAD_TEXTURES.get(type);
       if (type.isPiglin()) {
         event.registerSkullModel(type, layer, PiglinHeadModel::new, texture);
       } else {
@@ -123,21 +123,21 @@ public class WorldClientEvents extends ClientEventBase {
     event.enqueueWork(() -> {
       registerHeadModel(TinkerHeadType.BLAZE, MaterialIds.blaze);
       registerHeadModel(TinkerHeadType.ENDERMAN, MaterialIds.enderPearl);
-      SlimeskullArmorModel.registerHeadModel(MaterialIds.dragonScale, modelSet -> new DragonSkullModel(modelSet.bakeLayer(ModelLayers.DRAGON_SKULL)), ResourceLocation.parse("textures/entity/enderdragon/dragon.png"));
-      SlimeskullArmorModel.registerHeadModel(MaterialIds.glass, ModelLayers.CREEPER_HEAD, ResourceLocation.parse("textures/entity/creeper/creeper.png"));
+      SlimeskullArmorModel.registerHeadModel(MaterialIds.dragonScale, modelSet -> new DragonSkullModel(modelSet.bakeLayer(ModelLayers.DRAGON_SKULL)), Identifier.parse("textures/entity/enderdragon/dragon.png"));
+      SlimeskullArmorModel.registerHeadModel(MaterialIds.glass, ModelLayers.CREEPER_HEAD, Identifier.parse("textures/entity/creeper/creeper.png"));
       // skeleton
-      SlimeskullArmorModel.registerHeadModel(MaterialIds.bone, ModelLayers.SKELETON_SKULL, ResourceLocation.parse("textures/entity/skeleton/skeleton.png"));
-      SlimeskullArmorModel.registerHeadModel(MaterialIds.necroticBone, ModelLayers.WITHER_SKELETON_SKULL, ResourceLocation.parse("textures/entity/skeleton/wither_skeleton.png"));
+      SlimeskullArmorModel.registerHeadModel(MaterialIds.bone, ModelLayers.SKELETON_SKULL, Identifier.parse("textures/entity/skeleton/skeleton.png"));
+      SlimeskullArmorModel.registerHeadModel(MaterialIds.necroticBone, ModelLayers.WITHER_SKELETON_SKULL, Identifier.parse("textures/entity/skeleton/wither_skeleton.png"));
       registerHeadModel(TinkerHeadType.STRAY, MaterialIds.ice);
       // zombies
-      SlimeskullArmorModel.registerHeadModel(MaterialIds.leather, ModelLayers.ZOMBIE_HEAD, ResourceLocation.parse("textures/entity/zombie/zombie.png"));
+      SlimeskullArmorModel.registerHeadModel(MaterialIds.leather, ModelLayers.ZOMBIE_HEAD, Identifier.parse("textures/entity/zombie/zombie.png"));
       registerHeadModel(TinkerHeadType.HUSK, MaterialIds.iron);
       registerHeadModel(TinkerHeadType.DROWNED, MaterialIds.copper);
       // spider
       registerHeadModel(TinkerHeadType.SPIDER, MaterialIds.string);
       registerHeadModel(TinkerHeadType.CAVE_SPIDER, MaterialIds.darkthread);
       // piglins
-      SlimeskullArmorModel.registerPiglinHeadModel(MaterialIds.gold, ModelLayers.PIGLIN_HEAD, ResourceLocation.parse("textures/entity/piglin/piglin.png"));
+      SlimeskullArmorModel.registerPiglinHeadModel(MaterialIds.gold, ModelLayers.PIGLIN_HEAD, Identifier.parse("textures/entity/piglin/piglin.png"));
       registerPiglinHeadModel(TinkerHeadType.PIGLIN_BRUTE, MaterialIds.roseGold);
       registerPiglinHeadModel(TinkerHeadType.ZOMBIFIED_PIGLIN, MaterialIds.pigIron);
       // crafted
@@ -197,16 +197,16 @@ public class WorldClientEvents extends ClientEventBase {
   }
 
   /** Textures for each Tinkers head, registered with the skull models in {@link #registerSkullModels} */
-  private static final Map<TinkerHeadType, ResourceLocation> HEAD_TEXTURES = Util.make(new EnumMap<>(TinkerHeadType.class), map -> {
-    map.put(TinkerHeadType.BLAZE, ResourceLocation.parse("textures/entity/blaze.png"));
+  private static final Map<TinkerHeadType, Identifier> HEAD_TEXTURES = Util.make(new EnumMap<>(TinkerHeadType.class), map -> {
+    map.put(TinkerHeadType.BLAZE, Identifier.parse("textures/entity/blaze.png"));
     map.put(TinkerHeadType.ENDERMAN, TConstruct.getResource("textures/entity/skull/enderman.png"));
     map.put(TinkerHeadType.STRAY, TConstruct.getResource("textures/entity/skull/stray.png"));
-    map.put(TinkerHeadType.HUSK, ResourceLocation.parse("textures/entity/zombie/husk.png"));
+    map.put(TinkerHeadType.HUSK, Identifier.parse("textures/entity/zombie/husk.png"));
     map.put(TinkerHeadType.DROWNED, TConstruct.getResource("textures/entity/skull/drowned.png"));
-    map.put(TinkerHeadType.SPIDER, ResourceLocation.parse("textures/entity/spider/spider.png"));
-    map.put(TinkerHeadType.CAVE_SPIDER, ResourceLocation.parse("textures/entity/spider/cave_spider.png"));
-    map.put(TinkerHeadType.PIGLIN_BRUTE, ResourceLocation.parse("textures/entity/piglin/piglin_brute.png"));
-    map.put(TinkerHeadType.ZOMBIFIED_PIGLIN, ResourceLocation.parse("textures/entity/piglin/zombified_piglin.png"));
+    map.put(TinkerHeadType.SPIDER, Identifier.parse("textures/entity/spider/spider.png"));
+    map.put(TinkerHeadType.CAVE_SPIDER, Identifier.parse("textures/entity/spider/cave_spider.png"));
+    map.put(TinkerHeadType.PIGLIN_BRUTE, Identifier.parse("textures/entity/piglin/piglin_brute.png"));
+    map.put(TinkerHeadType.ZOMBIFIED_PIGLIN, Identifier.parse("textures/entity/piglin/zombified_piglin.png"));
     map.put(TinkerHeadType.VENOMBONE, TConstruct.getResource("textures/entity/skull/venombone.png"));
     map.put(TinkerHeadType.BLAZING_BONE, TConstruct.getResource("textures/entity/skull/blazing_bone.png"));
     map.put(TinkerHeadType.NECRONIUM, TConstruct.getResource("textures/entity/skull/necronium.png"));

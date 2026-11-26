@@ -13,15 +13,15 @@ import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.DisplayInfo;
-import net.minecraft.advancements.critereon.DataComponentMatchers;
-import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.advancements.critereon.InventoryChangeTrigger;
-import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.advancements.critereon.ItemUsedOnLocationTrigger;
-import net.minecraft.advancements.critereon.LocationPredicate;
-import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.advancements.critereon.PlayerInteractTrigger;
-import net.minecraft.advancements.critereon.PlayerTrigger;
+import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.InventoryChangeTrigger;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.ItemUsedOnLocationTrigger;
+import net.minecraft.advancements.criterion.LocationPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.criterion.PlayerInteractTrigger;
+import net.minecraft.advancements.criterion.PlayerTrigger;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
@@ -34,7 +34,7 @@ import net.minecraft.data.PackOutput.Target;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
@@ -113,7 +113,7 @@ public class AdvancementsProvider extends GenericDataProvider {
   private final CompletableFuture<HolderLookup.Provider> registries;
   private final List<AdvancementHolder> advancements = new ArrayList<>();
   /** Config-gating: conditions to attach to an advancement id via {@code neoforge:conditions} (replaces ConditionalAdvancement). */
-  private final Map<ResourceLocation, List<ICondition>> conditions = new HashMap<>();
+  private final Map<Identifier, List<ICondition>> conditions = new HashMap<>();
   /** Structure holder getter from the datagen registry set (island advancements resolve ResourceKey→Holder here). */
   private HolderGetter<Structure> structures;
   /** Item holder getter from the datagen registry set; resolves item tags lazily (BuiltInRegistries has none bound at datagen). */
@@ -495,22 +495,22 @@ public class AdvancementsProvider extends GenericDataProvider {
   /* Builder helpers */
 
   /** Root builder: has a background image and no parent */
-  protected AdvancementHolder builder(ItemLike display, ResourceLocation name, ResourceLocation background, AdvancementType frame, Consumer<Advancement.Builder> consumer) {
+  protected AdvancementHolder builder(ItemLike display, Identifier name, Identifier background, AdvancementType frame, Consumer<Advancement.Builder> consumer) {
     return builder(new ItemStack(display), name, null, background, frame, consumer);
   }
 
   /** Child builder from an item display, parented, no background */
-  protected AdvancementHolder builder(ItemLike display, ResourceLocation name, AdvancementHolder parent, AdvancementType frame, Consumer<Advancement.Builder> consumer) {
+  protected AdvancementHolder builder(ItemLike display, Identifier name, AdvancementHolder parent, AdvancementType frame, Consumer<Advancement.Builder> consumer) {
     return builder(new ItemStack(display), name, parent, null, frame, consumer);
   }
 
   /** Child builder from a stack display, parented, no background */
-  protected AdvancementHolder builder(ItemStack display, ResourceLocation name, AdvancementHolder parent, AdvancementType frame, Consumer<Advancement.Builder> consumer) {
+  protected AdvancementHolder builder(ItemStack display, Identifier name, AdvancementHolder parent, AdvancementType frame, Consumer<Advancement.Builder> consumer) {
     return builder(display, name, parent, null, frame, consumer);
   }
 
   /** Core builder: builds, registers into {@link #advancements}, and returns the holder for use as a parent */
-  protected AdvancementHolder builder(ItemStack display, ResourceLocation name, @Nullable AdvancementHolder parent, @Nullable ResourceLocation background, AdvancementType frame, Consumer<Advancement.Builder> consumer) {
+  protected AdvancementHolder builder(ItemStack display, Identifier name, @Nullable AdvancementHolder parent, @Nullable Identifier background, AdvancementType frame, Consumer<Advancement.Builder> consumer) {
     Advancement.Builder builder = Advancement.Builder.advancement();
     if (parent != null) {
       builder.parent(parent);
@@ -529,7 +529,7 @@ public class AdvancementsProvider extends GenericDataProvider {
   }
 
   /** Hidden, config-gated advancement (replaces the removed ConditionalAdvancement): no display, no parent. */
-  protected AdvancementHolder hiddenBuilder(ResourceLocation name, ICondition condition, Consumer<Advancement.Builder> consumer) {
+  protected AdvancementHolder hiddenBuilder(Identifier name, ICondition condition, Consumer<Advancement.Builder> consumer) {
     Advancement.Builder builder = Advancement.Builder.advancement();
     builder.requirements(AdvancementRequirements.Strategy.AND);
     consumer.accept(builder);
@@ -607,12 +607,12 @@ public class AdvancementsProvider extends GenericDataProvider {
   /* Misc helpers */
 
   /** Gets a tinkers resource location */
-  protected static ResourceLocation resource(String name) {
+  protected static Identifier resource(String name) {
     return TConstruct.getResource(name);
   }
 
   /** Makes an advancement translation key from the given ID */
-  private static String makeTranslationKey(ResourceLocation advancement) {
+  private static String makeTranslationKey(Identifier advancement) {
     return "advancements." + advancement.getNamespace() + "." + advancement.getPath().replace('/', '.');
   }
 }

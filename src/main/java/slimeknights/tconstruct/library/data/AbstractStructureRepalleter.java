@@ -14,7 +14,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -37,7 +37,7 @@ import java.util.concurrent.CompletableFuture;
  */
 @SuppressWarnings("deprecation")  // I wish IDEA let you declare a deprecation in a source is wrong globally
 public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
-  private final Multimap<ResourceLocation,RepaletteTask> structures = HashMultimap.create();
+  private final Multimap<Identifier,RepaletteTask> structures = HashMultimap.create();
 
   private final ResourceManager resourceManager;
   private final String modId;
@@ -47,7 +47,7 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
     this.modId = modId;
   }
 
-  /** Use {@link #repalette(ResourceLocation, String, boolean, Replacement...)} to add structures to process here */
+  /** Use {@link #repalette(Identifier, String, boolean, Replacement...)} to add structures to process here */
   public abstract void addStructures();
 
   private ListTag repaletteNBT(ListTag palette, Map<String,String> repalette) {
@@ -66,10 +66,10 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
   public CompletableFuture<?> run(CachedOutput cache) {
     addStructures();
     List<CompletableFuture<?>> tasks = new ArrayList<>();
-    for (Entry<ResourceLocation,Collection<RepaletteTask>> entry : structures.asMap().entrySet()) {
-      ResourceLocation original = entry.getKey();
+    for (Entry<Identifier,Collection<RepaletteTask>> entry : structures.asMap().entrySet()) {
+      Identifier original = entry.getKey();
 
-      ResourceLocation fullPath = ResourceLocation.fromNamespaceAndPath(original.getNamespace(), "structure/" + original.getPath() + ".nbt");
+      Identifier fullPath = Identifier.fromNamespaceAndPath(original.getNamespace(), "structure/" + original.getPath() + ".nbt");
       try (InputStream io = resourceManager.getResource(fullPath).orElseThrow(() -> new IOException("Missing structure " + fullPath)).open()) {
         CompoundTag inputNBT = NbtIo.readCompressed(io, NbtAccounter.unlimitedHeap());
         for (RepaletteTask task : entry.getValue()) {
@@ -95,7 +95,7 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
             template.load(BuiltInRegistries.BLOCK, newStructure);
             newStructure = template.save(new CompoundTag());
           }
-          tasks.add(saveNBT(cache, Objects.requireNonNull(ResourceLocation.tryBuild(modId, task.location)), newStructure));
+          tasks.add(saveNBT(cache, Objects.requireNonNull(Identifier.tryBuild(modId, task.location)), newStructure));
         }
       }
       catch (IOException e) {
@@ -117,7 +117,7 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
    * @param reprocess      If true, runs the structure through {@link StructureTemplate} to cleanup NBT. Will be slower but lets you compact the palette
    * @param replacements   List of replacements to make.
    */
-  protected void repalette(ResourceLocation original, String target, boolean reprocess, Replacement... replacements) {
+  protected void repalette(Identifier original, String target, boolean reprocess, Replacement... replacements) {
     if (replacements.length == 0) {
       throw new IllegalArgumentException("Must have at least 1 replacement");
     }
@@ -134,7 +134,7 @@ public abstract class AbstractStructureRepalleter extends GenericNBTProvider {
     private Map<String,String> built;
 
     /** Adds a mapping replacing from with to */
-    public Replacement addMapping(ResourceLocation from, ResourceLocation to) {
+    public Replacement addMapping(Identifier from, Identifier to) {
       built = null;
       builder.put(from.toString(), to.toString());
       return this;

@@ -8,7 +8,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
@@ -18,7 +18,7 @@ import slimeknights.tconstruct.library.materials.definition.MaterialId;
 
 @RequiredArgsConstructor(staticName = "item")
 public class ItemPartRecipeBuilder extends AbstractRecipeBuilder<ItemPartRecipeBuilder> {
-  private final ResourceLocation pattern;
+  private final Identifier pattern;
   private final ItemOutput result;
   @Setter @Accessors(chain = true)
   private Ingredient patternItem = IPartBuilderRecipe.DEFAULT_PATTERNS;
@@ -36,7 +36,7 @@ public class ItemPartRecipeBuilder extends AbstractRecipeBuilder<ItemPartRecipeB
   public void save(RecipeOutput consumer) {
     save(consumer, BuiltInRegistries.ITEM.getKey(result.get().getItem()));
   }
-  public void save(RecipeOutput consumer, ResourceLocation id) {
+  public void save(RecipeOutput consumer, Identifier id) {
     AdvancementHolder advancement = buildOptionalAdvancement(id, "parts");
     consumer.accept(ResourceKey.create(Registries.RECIPE, id), new ItemPartRecipe(id, materialId, new Pattern(pattern), patternItem, cost, result), advancement);
   }

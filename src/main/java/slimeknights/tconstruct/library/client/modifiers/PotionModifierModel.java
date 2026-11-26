@@ -10,7 +10,7 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.Tag;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
@@ -70,10 +70,10 @@ public class PotionModifierModel implements SimpleModifierModel {
   public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<Material,TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
     Material texture = isLarge ? large : small;
     if (texture != null) {
-      ResourceLocation key = modifier.getId().getLocation();
+      Identifier key = modifier.getId().getLocation();
       IModDataView toolData = tool.getPersistentData();
       if (toolData.contains(key, Tag.TAG_STRING)) {
-        ResourceLocation id = ResourceLocation.tryParse(toolData.getString(key));
+        Identifier id = Identifier.tryParse(toolData.getString(key));
         if (id != null) {
           Holder<Potion> potion = BuiltInRegistries.POTION.get(id).orElse(null);
           if (potion != null) {

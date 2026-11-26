@@ -7,7 +7,7 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import slimeknights.mantle.data.loadable.Loadables;
@@ -26,7 +26,7 @@ public class ToggleInteractionWorktableRecipeBuilder extends AbstractSizedIngred
     save(output, Loadables.ITEM.getKey(tools.items().findFirst().orElseThrow().value()));
   }
 
-  public void save(RecipeOutput output, ResourceLocation id) {
+  public void save(RecipeOutput output, Identifier id) {
     if (inputs.isEmpty()) {
       throw new IllegalStateException("Must have at least one ingredient");
     }

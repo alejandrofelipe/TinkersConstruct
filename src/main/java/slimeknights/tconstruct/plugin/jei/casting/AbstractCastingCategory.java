@@ -21,7 +21,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -40,7 +40,7 @@ public abstract class AbstractCastingCategory implements IRecipeCategory<IDispla
   private static final String KEY_COOLING_TIME = TConstruct.makeTranslationKey("jei", "time");
   private static final String KEY_CAST_KEPT = TConstruct.makeTranslationKey("jei", "casting.cast_kept");
   private static final String KEY_CAST_CONSUMED = TConstruct.makeTranslationKey("jei", "casting.cast_consumed");
-  protected static final ResourceLocation BACKGROUND_LOC = TConstruct.getResource("textures/gui/jei/casting.png");
+  protected static final Identifier BACKGROUND_LOC = TConstruct.getResource("textures/gui/jei/casting.png");
 
   private final IDrawable background;
 
@@ -139,7 +139,7 @@ public abstract class AbstractCastingCategory implements IRecipeCategory<IDispla
 
   @Nullable
   @Override
-  public ResourceLocation getRegistryName(IDisplayableCastingRecipe recipe) {
+  public Identifier getRegistryName(IDisplayableCastingRecipe recipe) {
     return recipe.getRecipeId();
   }
 }

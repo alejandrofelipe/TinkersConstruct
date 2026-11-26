@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
@@ -32,7 +32,7 @@ import slimeknights.tconstruct.tables.network.StationTabPacket;
 import java.util.List;
 
 public class TinkerTabsWidget implements Renderable, GuiEventListener, NarratableEntry {
-  private static final ResourceLocation TAB_IMAGE = TConstruct.getResource("textures/gui/icons.png");
+  private static final Identifier TAB_IMAGE = TConstruct.getResource("textures/gui/icons.png");
   protected static final ElementScreen TAB_ELEMENT = new ElementScreen(TAB_IMAGE, 0, 18, 26, 30, 256, 256);
   protected static final ElementScreen ACTIVE_TAB_L_ELEMENT = new ElementScreen(TAB_IMAGE, 26, 18, 26, 30, 256, 256);
   protected static final ElementScreen ACTIVE_TAB_C_ELEMENT = new ElementScreen(TAB_IMAGE, 52, 18, 26, 30, 256, 256);

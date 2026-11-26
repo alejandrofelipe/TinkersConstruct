@@ -16,7 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -46,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierRecipe> {
-  protected static final ResourceLocation BACKGROUND_LOC = TConstruct.getResource("textures/gui/jei/tinker_station.png");
+  protected static final Identifier BACKGROUND_LOC = TConstruct.getResource("textures/gui/jei/tinker_station.png");
   private static final Component TITLE = TConstruct.makeTranslation("jei", "modifiers.title");
 
   // translation
@@ -245,7 +245,7 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
 
   @Nullable
   @Override
-  public ResourceLocation getRegistryName(IDisplayModifierRecipe recipe) {
+  public Identifier getRegistryName(IDisplayModifierRecipe recipe) {
     return recipe.getRecipeId();
   }
 

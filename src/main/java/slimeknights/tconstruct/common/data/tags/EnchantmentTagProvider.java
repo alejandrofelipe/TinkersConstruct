@@ -7,7 +7,7 @@ import net.minecraft.tags.TagEntry;
 import net.minecraft.data.tags.KeyTagProvider;
 import net.minecraft.data.tags.TagAppender;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.enchantment.Enchantment;
 import slimeknights.tconstruct.TConstruct;
@@ -57,7 +57,7 @@ public class EnchantmentTagProvider extends KeyTagProvider<Enchantment> {
   private void modifierTag(ModifierId modifier, String... ids) {
     TagAppender<ResourceKey<Enchantment>,Enchantment> appender = tag(TagKey.create(Registries.ENCHANTMENT, TConstruct.getResource("modifier_like/" + modifier.getPath())));
     for (String id : ids) {
-      appender.add(TagEntry.optionalElement(ResourceLocation.parse(id)));
+      appender.add(TagEntry.optionalElement(Identifier.parse(id)));
     }
   }
 

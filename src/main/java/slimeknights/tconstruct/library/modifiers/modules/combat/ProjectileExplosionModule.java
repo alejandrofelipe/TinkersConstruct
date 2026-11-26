@@ -6,11 +6,11 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Explosion;
@@ -65,7 +65,7 @@ public record ProjectileExplosionModule(LevelingValue radius, float eflnBonus, L
     new EnumLoadable<>(Explosion.BlockInteraction.class).requiredField("block_interaction", ProjectileExplosionModule::blockInteraction),
     ProjectileExplosionModule::new);
   /** Datakey for EFLN style explosions, works underwater */
-  public static final ResourceLocation EFLN = TConstruct.getResource("efln");
+  public static final Identifier EFLN = TConstruct.getResource("efln");
 
   /** Use the builder via {@link #radius(float, float)}, directly calling the constructor is subject to break when we add new features. */
   @Internal

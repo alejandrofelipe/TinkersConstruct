@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.ExtraCodecs;
@@ -32,10 +32,10 @@ public class ToolDefinitionLoader extends SimpleJsonResourceReloadListener<JsonE
   private static final ToolDefinitionLoader INSTANCE = new ToolDefinitionLoader();
 
   /** Map of loaded tool definition data */
-  private Map<ResourceLocation,ToolDefinitionData> dataMap = Collections.emptyMap();
+  private Map<Identifier,ToolDefinitionData> dataMap = Collections.emptyMap();
 
   /** Tool definitions registered to be loaded */
-  private final Map<ResourceLocation,ToolDefinition> definitions = new HashMap<>();
+  private final Map<Identifier,ToolDefinition> definitions = new HashMap<>();
 
   /** Condition context */
   private IContext conditionContext = IContext.EMPTY;
@@ -59,9 +59,9 @@ public class ToolDefinitionLoader extends SimpleJsonResourceReloadListener<JsonE
    * Updates the tool data from the server.list. Should only be called client side
    * @param dataMap  Server data map
    */
-  protected void updateDataFromServer(Map<ResourceLocation,ToolDefinitionData> dataMap) {
+  protected void updateDataFromServer(Map<Identifier,ToolDefinitionData> dataMap) {
     this.dataMap = dataMap;
-    for (Entry<ResourceLocation,ToolDefinition> entry : definitions.entrySet()) {
+    for (Entry<Identifier,ToolDefinition> entry : definitions.entrySet()) {
       ToolDefinitionData data = dataMap.get(entry.getKey());
       ToolDefinition definition = entry.getValue();
       // errored serverside, so resolve without error here
@@ -74,16 +74,16 @@ public class ToolDefinitionLoader extends SimpleJsonResourceReloadListener<JsonE
   }
 
   /** Creates context for modifier parsing */
-  public static TypedMapBuilder contextBuilder(ResourceLocation key) {
+  public static TypedMapBuilder contextBuilder(Identifier key) {
     return TypedMapBuilder.builder().put(ContextKey.ID, key).put(ContextKey.DEBUG, "Tool Definition " + key);
   }
 
   @Override
-  protected void apply(Map<ResourceLocation,JsonElement> splashList, ResourceManager resourceManagerIn, ProfilerFiller profilerIn) {
+  protected void apply(Map<Identifier,JsonElement> splashList, ResourceManager resourceManagerIn, ProfilerFiller profilerIn) {
     long time = System.nanoTime();
-    ImmutableMap.Builder<ResourceLocation, ToolDefinitionData> builder = ImmutableMap.builder();
-    for (Entry<ResourceLocation,ToolDefinition> entry : definitions.entrySet()) {
-      ResourceLocation key = entry.getKey();
+    ImmutableMap.Builder<Identifier, ToolDefinitionData> builder = ImmutableMap.builder();
+    for (Entry<Identifier,ToolDefinition> entry : definitions.entrySet()) {
+      Identifier key = entry.getKey();
       ToolDefinition definition = entry.getValue();
       // first, need to have a json for the given name
       JsonElement element = splashList.get(key);
@@ -125,7 +125,7 @@ public class ToolDefinitionLoader extends SimpleJsonResourceReloadListener<JsonE
 
   /** Registers a tool definition with the loader */
   public synchronized void registerToolDefinition(ToolDefinition definition) {
-    ResourceLocation name = definition.getId();
+    Identifier name = definition.getId();
     if (definitions.containsKey(name)) {
       throw new IllegalArgumentException("Duplicate tool definition " + name);
     }

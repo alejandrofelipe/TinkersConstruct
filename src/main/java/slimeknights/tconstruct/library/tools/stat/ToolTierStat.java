@@ -11,7 +11,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ToolMaterial;
 import slimeknights.mantle.util.JsonHelper;
@@ -64,7 +64,7 @@ public class ToolTierStat implements IToolStat<ToolMaterial> {
   @Override
   public ToolMaterial read(Tag tag) {
     if (tag.getId() == Tag.TAG_STRING) {
-      ResourceLocation tierId = ResourceLocation.tryParse(tag.asString().orElse(""));
+      Identifier tierId = Identifier.tryParse(tag.asString().orElse(""));
       if (tierId != null) {
         // PORT M3: NeoForge 1.21 removed TierSortingRegistry; tier<->name lookup goes through tconstruct's HarvestTiers
         return HarvestTiers.byName(tierId);
@@ -75,7 +75,7 @@ public class ToolTierStat implements IToolStat<ToolMaterial> {
 
   @Override
   public Tag write(ToolMaterial value) {
-    ResourceLocation id = HarvestTiers.tierName(value);
+    Identifier id = HarvestTiers.tierName(value);
     if (id != null) {
       return StringTag.valueOf(id.toString());
     }
@@ -84,7 +84,7 @@ public class ToolTierStat implements IToolStat<ToolMaterial> {
 
   @Override
   public ToolMaterial deserialize(JsonElement json) {
-    ResourceLocation id = JsonHelper.convertToResourceLocation(json, getName().toString());
+    Identifier id = JsonHelper.convertToResourceLocation(json, getName().toString());
     ToolMaterial tier = HarvestTiers.byName(id);
     if (tier != null) {
       return tier;
@@ -99,7 +99,7 @@ public class ToolTierStat implements IToolStat<ToolMaterial> {
 
   @Override
   public ToolMaterial fromNetwork(FriendlyByteBuf buffer) {
-    ResourceLocation id = buffer.readResourceLocation();
+    Identifier id = buffer.readIdentifier();
     ToolMaterial tier = HarvestTiers.byName(id);
     if (tier != null) {
       return tier;
@@ -109,7 +109,7 @@ public class ToolTierStat implements IToolStat<ToolMaterial> {
 
   @Override
   public void toNetwork(FriendlyByteBuf buffer, ToolMaterial value) {
-    buffer.writeResourceLocation(Objects.requireNonNull(HarvestTiers.tierName(value)));
+    buffer.writeIdentifier(Objects.requireNonNull(HarvestTiers.tierName(value)));
   }
 
   @Override

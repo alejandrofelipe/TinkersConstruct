@@ -8,7 +8,7 @@ import com.mojang.serialization.JsonOps;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -94,7 +94,7 @@ public class MaterialRenderInfoLoader implements IEarlySafeManagerReloadListener
   }
 
   /** Gets the variant for the given render info path */
-  public static MaterialVariantId variant(ResourceLocation location) {
+  public static MaterialVariantId variant(Identifier location) {
     String path = location.getPath();
 
     // locate variant as a subfolder, and create final ID
@@ -115,16 +115,16 @@ public class MaterialRenderInfoLoader implements IEarlySafeManagerReloadListener
   @Override
   public void onReloadSafe(ResourceManager manager) {
     // first, we need to fetch all relevant JSON files
-    Map<ResourceLocation,JsonElement> jsons = new HashMap<>();
+    Map<Identifier,JsonElement> jsons = new HashMap<>();
     // PORT 1.21.4: the Gson+String scanDirectory overload was removed; use the FileToIdConverter + Codec<JsonElement> form
     SimpleJsonResourceReloadListener.scanDirectory(manager, FileToIdConverter.json(FOLDER), JsonOps.INSTANCE, ExtraCodecs.JSON, jsons);
     // final result map
     Map<MaterialVariantId,MaterialRenderInfo> map = new HashMap<>();
 
     // iterate the files, handling parenting thanks to the data map loader
-    for(Entry<ResourceLocation, JsonElement> entry : jsons.entrySet()) {
+    for(Entry<Identifier, JsonElement> entry : jsons.entrySet()) {
       // clean up ID by trimming off the extension and folder
-      ResourceLocation location = entry.getKey();
+      Identifier location = entry.getKey();
       MaterialVariantId id = variant(location);
 
       // read in the JSON data

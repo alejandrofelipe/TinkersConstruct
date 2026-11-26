@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import slimeknights.mantle.data.loadable.field.LoadableField;
 import slimeknights.mantle.data.loadable.primitive.IntLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
@@ -123,7 +123,7 @@ public class MaterialStatsModule implements ToolStatsHook, ToolTraitHook, ToolMa
       }
     }
     // next, figure out which of the matches repairs the most
-    ResourceLocation toolId = tool.getDefinition().getId();
+    Identifier toolId = tool.getDefinition().getId();
     int max = 0;
     for (MaterialStatsId stat : matchingStats) {
       // its possible a later stat type will repair more with this material

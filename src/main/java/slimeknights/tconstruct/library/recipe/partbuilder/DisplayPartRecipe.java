@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.recipe.partbuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -18,7 +18,7 @@ import java.util.List;
 @Getter
 public class DisplayPartRecipe implements IDisplayPartBuilderRecipe {
   /** ID of recipe; should generally match a real recipe JSON */
-  private final ResourceLocation id;
+  private final Identifier id;
   /** Material variant for name display */
   private final MaterialVariant material;
   /** Pattern button input */

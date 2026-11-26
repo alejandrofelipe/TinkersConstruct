@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import slimeknights.tconstruct.library.TinkerItemDisplays;
 import slimeknights.tconstruct.tools.client.material.ThrownToolRenderer.ToolProjectileRenderState;
 import slimeknights.tconstruct.tools.entity.ThrownTool;

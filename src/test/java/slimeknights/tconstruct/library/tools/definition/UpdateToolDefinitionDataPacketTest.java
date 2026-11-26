@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
@@ -51,8 +51,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 class UpdateToolDefinitionDataPacketTest extends BaseMcTest {
-  private static final ResourceLocation EMPTY_ID = ResourceLocation.fromNamespaceAndPath("test", "empty");
-  private static final ResourceLocation FILLED_ID = ResourceLocation.fromNamespaceAndPath("test", "filled");
+  private static final Identifier EMPTY_ID = Identifier.fromNamespaceAndPath("test", "empty");
+  private static final Identifier FILLED_ID = Identifier.fromNamespaceAndPath("test", "filled");
 
   @BeforeAll
   static void initialize() {
@@ -101,7 +101,7 @@ class UpdateToolDefinitionDataPacketTest extends BaseMcTest {
     UpdateToolDefinitionDataPacket decoded = UpdateToolDefinitionDataPacket.STREAM_CODEC.decode(buffer);
 
     // parse results
-    Map<ResourceLocation,ToolDefinitionData> parsedMap = decoded.dataMap();
+    Map<Identifier,ToolDefinitionData> parsedMap = decoded.dataMap();
     assertThat(parsedMap).hasSize(2);
 
     // first validate empty

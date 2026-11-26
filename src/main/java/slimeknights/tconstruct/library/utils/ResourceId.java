@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.library.utils;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import javax.annotation.Nullable;
 import java.util.function.BiFunction;
@@ -8,22 +8,22 @@ import java.util.function.BiFunction;
 /**
  * Helper for use with our extensions of resource location for some type safety in IDs.
  *
- * <p>PORT M3: {@link ResourceLocation} became {@code final} in 1.20.5/1.21, so this class can no longer extend it.
- * Instead, {@code ResourceId} now <em>wraps</em> a {@link ResourceLocation} and delegates the methods subclasses and
+ * <p>PORT M3: {@link Identifier} became {@code final} in 1.20.5/1.21, so this class can no longer extend it.
+ * Instead, {@code ResourceId} now <em>wraps</em> a {@link Identifier} and delegates the methods subclasses and
  * callers actually use ({@link #getNamespace()}, {@link #getPath()}, {@link #toString()}, equality, ordering). Use
- * {@link #getLocation()} to obtain the wrapped {@link ResourceLocation} where a bare one is required (e.g. when writing
+ * {@link #getLocation()} to obtain the wrapped {@link Identifier} where a bare one is required (e.g. when writing
  * to a buffer or building a translation key).
  * @see IdParser
  */
 public abstract class ResourceId implements Comparable<ResourceId> {
   /** Wrapped resource location backing this ID */
-  private final ResourceLocation location;
+  private final Identifier location;
 
   protected ResourceId(String namespace, String path) {
-    this.location = ResourceLocation.fromNamespaceAndPath(namespace, path);
+    this.location = Identifier.fromNamespaceAndPath(namespace, path);
   }
 
-  public ResourceId(ResourceLocation location) {
+  public ResourceId(Identifier location) {
     this.location = location;
   }
 
@@ -32,7 +32,7 @@ public abstract class ResourceId implements Comparable<ResourceId> {
   }
 
   /** {@return the wrapped resource location} */
-  public ResourceLocation getLocation() {
+  public Identifier getLocation() {
     return location;
   }
 
@@ -73,7 +73,7 @@ public abstract class ResourceId implements Comparable<ResourceId> {
   }
 
 
-  /* Parsing helpers, mirroring the removed ResourceLocation static helpers */
+  /* Parsing helpers, mirroring the removed Identifier static helpers */
 
   private static String splitNamespace(String location) {
     int colon = location.indexOf(':');
@@ -106,7 +106,7 @@ public abstract class ResourceId implements Comparable<ResourceId> {
    */
   @Nullable
   protected static <T extends ResourceId> T tryBuild(String namespace, String path, BiFunction<String,String,T> constructor) {
-    if (ResourceLocation.isValidNamespace(namespace) && ResourceLocation.isValidPath(path)) {
+    if (Identifier.isValidNamespace(namespace) && Identifier.isValidPath(path)) {
       return constructor.apply(namespace, path);
     }
     return null;

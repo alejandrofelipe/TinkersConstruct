@@ -3,7 +3,7 @@ package slimeknights.tconstruct.shared.effect;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,7 +18,7 @@ import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.library.utils.TeleportHelper;
 
 public class ReturningEffect extends TinkerEffect {
-  private static final ResourceLocation KEY = TConstruct.getResource("returning");
+  private static final Identifier KEY = TConstruct.getResource("returning");
   public ReturningEffect() {
     super(MobEffectCategory.NEUTRAL, 0xa92dff, true);
     NeoForge.EVENT_BUS.addListener(MobEffectEvent.Added.class, this::onEffectAdded);
@@ -47,7 +47,7 @@ public class ReturningEffect extends TinkerEffect {
     ModDataNBT data = PersistentDataCapability.getOrWarn(living);
     if (data.contains(KEY, Tag.TAG_COMPOUND)) {
       CompoundTag tag = data.getCompound(KEY);
-      ResourceLocation dimension = ResourceLocation.tryParse(tag.getStringOr("dimension", ""));
+      Identifier dimension = Identifier.tryParse(tag.getStringOr("dimension", ""));
       // no teleporting if you switched dimensions
       // TODO: look into cross dimensional teleport, its doable with entity#teleportTo
       if (dimension != null && dimension.equals(living.level().dimension().location())) {

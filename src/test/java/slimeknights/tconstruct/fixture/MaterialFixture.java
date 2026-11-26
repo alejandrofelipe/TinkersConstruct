@@ -2,7 +2,7 @@ package slimeknights.tconstruct.fixture;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.Material;
 import slimeknights.tconstruct.library.materials.definition.TestMaterial;
@@ -35,7 +35,7 @@ public final class MaterialFixture {
   }
 
   private static Material material(String mat, boolean craftable, IMaterialStats... stats) {
-    Material material = new TestMaterial(ResourceLocation.fromNamespaceAndPath("test", mat), craftable, false);
+    Material material = new TestMaterial(Identifier.fromNamespaceAndPath("test", mat), craftable, false);
     ALL_MATERIALS_BUILDER.add(material);
     ALL_MATERIAL_FIXTURES_BUILDER.put(material, ImmutableList.copyOf(stats));
     return material;

@@ -7,7 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -645,7 +645,7 @@ public class CapabilityGameTests {
     CastingBlockEntity table = placeTable(helper, pos);
     table.setItem(CastingBlockEntity.INPUT, new ItemStack(Items.WATER_BUCKET));
     Ingredient waterBucketCast = FluidContainerIngredient.fromIngredient(FluidIngredient.of(new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME))).toVanilla();
-    ResourceLocation id = TConstruct.getResource("gametest/fluid_container_cast");
+    Identifier id = TConstruct.getResource("gametest/fluid_container_cast");
     ItemCastingRecipe recipe = new ItemCastingRecipe(TinkerSmeltery.tableRecipeSerializer.get(), id, "", waterBucketCast,
                                                      FluidIngredient.of(new FluidStack(TinkerFluids.moltenIron.get(), FluidValues.INGOT)),
                                                      ItemOutput.fromItem(Items.IRON_INGOT), 20, false, false);

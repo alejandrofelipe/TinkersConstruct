@@ -6,7 +6,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Recipe;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
@@ -39,7 +39,7 @@ public class EntityMeltingRecipeBuilder extends AbstractRecipeBuilder<EntityMelt
   public void save(RecipeOutput recipeOutput) {
     save(recipeOutput, BuiltInRegistries.FLUID.getKey(output.get().getFluid()));
   }
-  public void save(RecipeOutput recipeOutput, ResourceLocation id) {
+  public void save(RecipeOutput recipeOutput, Identifier id) {
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "entity_melting");
     recipeOutput.accept(ResourceKey.create(Registries.RECIPE, id), new EntityMeltingRecipe(id, ingredient, output, damage), advancement);
   }

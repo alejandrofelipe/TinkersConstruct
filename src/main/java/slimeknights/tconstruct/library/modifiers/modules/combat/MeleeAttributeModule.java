@@ -6,7 +6,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -46,7 +46,7 @@ import java.util.function.Supplier;
  * @param amount     Amount of the attribute to apply
  * @param condition  Standard modifier conditions
  */
-public record MeleeAttributeModule(String unique, Attribute attribute, ResourceLocation id, Operation operation, LevelingValue amount, IJsonPredicate<LivingEntity> target, ModifierCondition<IToolStackView> condition) implements ModifierModule, MeleeHitModifierHook, ConditionalModule<IToolStackView> {
+public record MeleeAttributeModule(String unique, Attribute attribute, Identifier id, Operation operation, LevelingValue amount, IJsonPredicate<LivingEntity> target, ModifierCondition<IToolStackView> condition) implements ModifierModule, MeleeHitModifierHook, ConditionalModule<IToolStackView> {
   private static final List<ModuleHook<?>> DEFAULT_HOOKS = HookProvider.<MeleeAttributeModule>defaultHooks(ModifierHooks.MELEE_HIT);
   public static final RecordLoadable<MeleeAttributeModule> LOADER = RecordLoadable.create(
     new AttributeUniqueField<>(MeleeAttributeModule::unique),
@@ -65,9 +65,9 @@ public record MeleeAttributeModule(String unique, Attribute attribute, ResourceL
     this(unique, attribute, uniqueToId(unique), operation, amount, target, condition);
   }
 
-  /** Converts the unique name to a ResourceLocation id for the attribute modifier (1.21.1 uses ResourceLocation ids instead of UUIDs) */
-  private static ResourceLocation uniqueToId(String unique) {
-    return ResourceLocation.fromNamespaceAndPath("tconstruct", unique.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9/._-]", "_"));
+  /** Converts the unique name to a Identifier id for the attribute modifier (1.21.1 uses Identifier ids instead of UUIDs) */
+  private static Identifier uniqueToId(String unique) {
+    return Identifier.fromNamespaceAndPath("tconstruct", unique.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9/._-]", "_"));
   }
 
   @Override
@@ -137,7 +137,7 @@ public record MeleeAttributeModule(String unique, Attribute attribute, ResourceL
     /**
      * Sets the unique string using a resource location
      */
-    public Builder uniqueFrom(ResourceLocation id) {
+    public Builder uniqueFrom(Identifier id) {
       return unique(id.getNamespace() + ".modifier." + id.getPath());
     }
 

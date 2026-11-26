@@ -4,7 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -225,7 +225,7 @@ public class TankItem extends BlockTooltipItem {
   }
 
   /** Creates a stack with the given fluid and amount, not validated. */
-  private static ItemStack setTank(ItemLike item, ResourceLocation fluid, int amount) {
+  private static ItemStack setTank(ItemLike item, Identifier fluid, int amount) {
     Fluid fluidValue = BuiltInRegistries.FLUID.getValue(fluid);
     ItemStack stack = new ItemStack(item);
     return setTank(stack, new FluidStack(fluidValue, amount));
@@ -300,7 +300,7 @@ public class TankItem extends BlockTooltipItem {
         tank = TankType.FUEL_TANK;
         gauge = TankType.FUEL_GAUGE;
       }
-      ResourceLocation fluidName = holder.key().location();
+      Identifier fluidName = holder.key().location();
       output.accept(setTank(TinkerSmeltery.searedLantern, fluidName, FluidValues.LANTERN_CAPACITY));
       output.accept(fillTank(TinkerSmeltery.searedTank, tank, fluidName));
       output.accept(fillTank(TinkerSmeltery.searedTank, gauge, fluidName));
@@ -316,7 +316,7 @@ public class TankItem extends BlockTooltipItem {
   }
 
   /** Fills a tank stack with the given fluid */
-  public static ItemStack fillTank(EnumObject<TankType,? extends ItemLike> tank, TankType type, ResourceLocation fluid) {
+  public static ItemStack fillTank(EnumObject<TankType,? extends ItemLike> tank, TankType type, Identifier fluid) {
     return setTank(tank.get(type), fluid, type.getCapacity());
   }
 }

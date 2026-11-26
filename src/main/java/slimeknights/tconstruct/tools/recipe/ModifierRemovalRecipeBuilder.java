@@ -9,7 +9,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -27,7 +27,7 @@ import java.util.List;
 /** Builder for {@link ModifierRemovalRecipe} and {@link ExtractModifierRecipe} */
 @RequiredArgsConstructor(staticName = "removal")
 public class ModifierRemovalRecipeBuilder extends AbstractSizedIngredientRecipeBuilder<ModifierRemovalRecipeBuilder> {
-  private final Function6<ResourceLocation,String,SizedIngredient,List<SizedIngredient>,List<ItemStack>,IJsonPredicate<ModifierId>,ModifierRemovalRecipe> constructor;
+  private final Function6<Identifier,String,SizedIngredient,List<SizedIngredient>,List<ItemStack>,IJsonPredicate<ModifierId>,ModifierRemovalRecipe> constructor;
   private final List<ItemStack> leftovers = new ArrayList<>();
   @Accessors(chain = true)
   @Setter
@@ -85,7 +85,7 @@ public class ModifierRemovalRecipeBuilder extends AbstractSizedIngredientRecipeB
     save(output, BuiltInRegistries.ITEM.getKey(leftovers.get(0).getItem()));
   }
 
-  public void save(RecipeOutput output, ResourceLocation id) {
+  public void save(RecipeOutput output, Identifier id) {
     if (inputs.isEmpty()) {
       throw new IllegalStateException("Must have at least one input");
     }

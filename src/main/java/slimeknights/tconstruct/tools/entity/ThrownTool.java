@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
@@ -17,8 +17,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -68,9 +68,9 @@ public class ThrownTool extends ThrownTrident implements ToolProjectile {
   /** Whether the rendered tool should be enchanted; parent {@link ThrownTrident} field is private in 1.21 so we track our own */
   protected static final EntityDataAccessor<Boolean> ID_FOIL = SynchedEntityData.defineId(ThrownTool.class, EntityDataSerializers.BOOLEAN);
   /** Volatile integer key for the loyalty level */
-  public static final ResourceLocation LOYALTY = TConstruct.getResource("loyalty");
+  public static final Identifier LOYALTY = TConstruct.getResource("loyalty");
   /** Volatile integer key for the magnet level */
-  public static final ResourceLocation MAGNET = TConstruct.getResource("magnet");
+  public static final Identifier MAGNET = TConstruct.getResource("magnet");
 
   @Nullable
   private IToolStackView tool = null;

@@ -5,7 +5,7 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -32,7 +32,7 @@ class SwappableSlotModuleTest extends BaseMcTest {
 
   private static final SlotType MATCH_TYPE = SlotType.getOrCreate("p2t5_swap_match");
   private static final SlotType BONUS_TYPE = SlotType.getOrCreate("p2t5_swap_bonus");
-  private static final ResourceLocation CUSTOM_KEY = ResourceLocation.fromNamespaceAndPath("test", "swap_key");
+  private static final Identifier CUSTOM_KEY = Identifier.fromNamespaceAndPath("test", "swap_key");
 
   /* SwappableSlotModule */
 

@@ -7,7 +7,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
@@ -20,7 +20,7 @@ import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class ContainerFillingRecipeBuilder extends AbstractRecipeBuilder<ContainerFillingRecipeBuilder> {
-  private final ResourceLocation result;
+  private final Identifier result;
   private final int fluidAmount;
   private final TypeAwareRecipeSerializer<? extends ContainerFillingRecipe> recipeSerializer;
 
@@ -31,7 +31,7 @@ public class ContainerFillingRecipeBuilder extends AbstractRecipeBuilder<Contain
    * @param recipeSerializer  Serializer
    * @return  Builder instance
    */
-  public static ContainerFillingRecipeBuilder castingRecipe(ResourceLocation result, int fluidAmount, TypeAwareRecipeSerializer<? extends ContainerFillingRecipe> recipeSerializer) {
+  public static ContainerFillingRecipeBuilder castingRecipe(Identifier result, int fluidAmount, TypeAwareRecipeSerializer<? extends ContainerFillingRecipe> recipeSerializer) {
     return new ContainerFillingRecipeBuilder(result, fluidAmount, recipeSerializer);
   }
 
@@ -52,7 +52,7 @@ public class ContainerFillingRecipeBuilder extends AbstractRecipeBuilder<Contain
    * @param fluidAmount       Container size
    * @return  Builder instance
    */
-  public static ContainerFillingRecipeBuilder basinRecipe(ResourceLocation result, int fluidAmount) {
+  public static ContainerFillingRecipeBuilder basinRecipe(Identifier result, int fluidAmount) {
     return castingRecipe(result, fluidAmount, TinkerSmeltery.basinFillingRecipeSerializer.get());
   }
 
@@ -72,7 +72,7 @@ public class ContainerFillingRecipeBuilder extends AbstractRecipeBuilder<Contain
    * @param fluidAmount       Container size
    * @return  Builder instance
    */
-  public static ContainerFillingRecipeBuilder tableRecipe(ResourceLocation result, int fluidAmount) {
+  public static ContainerFillingRecipeBuilder tableRecipe(Identifier result, int fluidAmount) {
     return castingRecipe(result, fluidAmount, TinkerSmeltery.tableFillingRecipeSerializer.get());
   }
 
@@ -90,7 +90,7 @@ public class ContainerFillingRecipeBuilder extends AbstractRecipeBuilder<Contain
   public void save(RecipeOutput consumer) {
     this.save(consumer, this.result);
   }
-  public void save(RecipeOutput consumerIn, ResourceLocation id) {
+  public void save(RecipeOutput consumerIn, Identifier id) {
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "casting");
     consumerIn.accept(ResourceKey.create(Registries.RECIPE, id), new ContainerFillingRecipe(recipeSerializer, id, group, fluidAmount, BuiltInRegistries.ITEM.getValue(result)), advancement);
   }

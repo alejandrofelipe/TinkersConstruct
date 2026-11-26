@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.recipe.molding;
 
 import lombok.Getter;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -37,7 +37,7 @@ public class MoldingRecipe implements ICommonRecipe<IMoldingContainer> {
   @Getter
   private final RecipeSerializer<? extends Recipe<IMoldingContainer>> serializer;
   @Getter
-  private final ResourceLocation id;
+  private final Identifier id;
   @Getter
   private final Ingredient material;
   /** Pattern ingredient; null if this recipe has no pattern (1.21.4 removed the empty ingredient) */
@@ -48,7 +48,7 @@ public class MoldingRecipe implements ICommonRecipe<IMoldingContainer> {
   private final ItemOutput recipeOutput;
 
   @SuppressWarnings("unchecked")
-  public MoldingRecipe(TypeAwareRecipeSerializer<?> serializer, ResourceLocation id, Ingredient material, @Nullable Ingredient pattern, boolean patternConsumed, ItemOutput recipeOutput) {
+  public MoldingRecipe(TypeAwareRecipeSerializer<?> serializer, Identifier id, Ingredient material, @Nullable Ingredient pattern, boolean patternConsumed, ItemOutput recipeOutput) {
     this.type = (RecipeType<? extends Recipe<IMoldingContainer>>) serializer.getType();
     this.serializer = (RecipeSerializer<? extends Recipe<IMoldingContainer>>) serializer;
     this.id = id;

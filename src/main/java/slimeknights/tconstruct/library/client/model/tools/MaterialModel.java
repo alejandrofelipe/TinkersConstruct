@@ -21,7 +21,7 @@ import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvedModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -133,9 +133,9 @@ public class MaterialModel {
   }
 
   /** Unbaked item model */
-  public record Unbaked(ResourceLocation model, int index, Optional<MaterialVariantId> material, Vec2 offset) implements ItemModel.Unbaked {
+  public record Unbaked(Identifier model, int index, Optional<MaterialVariantId> material, Vec2 offset) implements ItemModel.Unbaked {
     public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-      ResourceLocation.CODEC.fieldOf("model").forGetter(Unbaked::model),
+      Identifier.CODEC.fieldOf("model").forGetter(Unbaked::model),
       Codec.INT.optionalFieldOf("index", 0).forGetter(Unbaked::index),
       MATERIAL_CODEC.optionalFieldOf("material").forGetter(Unbaked::material),
       OFFSET_CODEC.optionalFieldOf("offset", Vec2.ZERO).forGetter(Unbaked::offset)

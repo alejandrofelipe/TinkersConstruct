@@ -7,13 +7,13 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.entity.state.SlimeRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.Slime;
 import slimeknights.tconstruct.TConstruct;
 
 public class TerracubeRenderer extends MobRenderer<Slime, SlimeRenderState, LavaSlimeModel> {
-  private static final ResourceLocation TEXTURE = TConstruct.getResource("textures/entity/terracube.png");
+  private static final Identifier TEXTURE = TConstruct.getResource("textures/entity/terracube.png");
   public TerracubeRenderer(EntityRendererProvider.Context context) {
     // PORT 1.21.4: LavaSlimeModel is no longer generic (typed to SlimeRenderState internally); MobRenderer gained the
     // render-state type parameter.
@@ -34,7 +34,7 @@ public class TerracubeRenderer extends MobRenderer<Slime, SlimeRenderState, Lava
   }
 
   @Override
-  public ResourceLocation getTextureLocation(SlimeRenderState state) {
+  public Identifier getTextureLocation(SlimeRenderState state) {
     return TEXTURE;
   }
 

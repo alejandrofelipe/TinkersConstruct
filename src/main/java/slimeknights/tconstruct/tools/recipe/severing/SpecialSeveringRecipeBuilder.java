@@ -9,7 +9,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor(staticName = "serializer")
 public class SpecialSeveringRecipeBuilder extends AbstractRecipeBuilder<SpecialSeveringRecipeBuilder> {
   private final Supplier<? extends RecipeSerializer<? extends SeveringRecipe>> serializer;
-  private final Function3<ResourceLocation,Float,Float,? extends SeveringRecipe> constructor;
+  private final Function3<Identifier,Float,Float,? extends SeveringRecipe> constructor;
   private float baseChance = 0.05f;
   private float lootingBonus = 0.01f;
 
@@ -41,7 +41,7 @@ public class SpecialSeveringRecipeBuilder extends AbstractRecipeBuilder<SpecialS
     save(output, Objects.requireNonNull(BuiltInRegistries.RECIPE_SERIALIZER.getKey(serializer.get())));
   }
 
-  public void save(RecipeOutput output, ResourceLocation id) {
+  public void save(RecipeOutput output, Identifier id) {
     AdvancementHolder advancement = buildOptionalAdvancement(id, "severing");
     output.accept(ResourceKey.create(Registries.RECIPE, id), constructor.apply(id, baseChance, lootingBonus), advancement);
   }

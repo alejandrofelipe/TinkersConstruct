@@ -7,11 +7,11 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.block.Block;
@@ -35,7 +35,7 @@ public class IslandStructure extends Structure {
   public static final MapCodec<IslandStructure> CODEC = RecordCodecBuilder.mapCodec(inst ->
     inst.group(settingsCodec(inst)).and(inst.group(
           IslandPlacement.CODEC.fieldOf("placement").forGetter(s -> s.placement),
-          WeightedList.codec(ResourceLocation.CODEC).fieldOf("templates").forGetter(s -> s.templates),
+          WeightedList.codec(Identifier.CODEC).fieldOf("templates").forGetter(s -> s.templates),
           WeightedList.codec(ConfiguredFeature.CODEC).fieldOf("trees").forGetter(s -> s.trees),
           BuiltInRegistries.BLOCK.byNameCodec().optionalFieldOf("vines").forGetter(s -> s.vines),
           WeightedList.codec(BuiltInRegistries.BLOCK.byNameCodec()).fieldOf("grasses").forGetter(s -> s.grasses)))
@@ -43,13 +43,13 @@ public class IslandStructure extends Structure {
 
   @Getter
   private final IslandPlacement placement;
-  private final WeightedList<ResourceLocation> templates;
+  private final WeightedList<Identifier> templates;
   private final WeightedList<Holder<ConfiguredFeature<?,?>>> trees;
   private final Optional<Block> vines;
   @Getter
   private final WeightedList<Block> grasses;
 
-  public IslandStructure(StructureSettings settings, IslandPlacement placement, WeightedList<ResourceLocation> templates, WeightedList<Holder<ConfiguredFeature<?,?>>> trees, Optional<Block> vines, WeightedList<Block> grasses) {
+  public IslandStructure(StructureSettings settings, IslandPlacement placement, WeightedList<Identifier> templates, WeightedList<Holder<ConfiguredFeature<?,?>>> trees, Optional<Block> vines, WeightedList<Block> grasses) {
     super(settings);
     this.placement = placement;
     this.templates = templates;
@@ -84,7 +84,7 @@ public class IslandStructure extends Structure {
 
   private void generatePieces(StructurePiecesBuilder builder, Structure.GenerationContext context) {
     RandomSource random = context.random();
-    Optional<ResourceLocation> template = templates.getRandom(random);
+    Optional<Identifier> template = templates.getRandom(random);
     if (template.isPresent()) {
       Rotation rotation = Rotation.getRandom(random);
       int height = placement.getHeight(context.chunkPos(), context.chunkGenerator(), context.heightAccessor(), rotation, random, context.randomState());
@@ -113,7 +113,7 @@ public class IslandStructure extends Structure {
     private static final String[] SIZES = new String[] { "0x1x0", "2x2x4", "4x1x6", "8x1x11", "11x1x11" };
 
     private final IslandPlacement placement;
-    private final WeightedList.Builder<ResourceLocation> templates = WeightedList.builder();
+    private final WeightedList.Builder<Identifier> templates = WeightedList.builder();
     private final WeightedList.Builder<Holder<ConfiguredFeature<?,?>>> trees = WeightedList.builder();
     private final WeightedList.Builder<Block> grasses = WeightedList.builder();
     @Nullable
@@ -121,13 +121,13 @@ public class IslandStructure extends Structure {
     private Block vines;
 
     /** Adds the given template to the builder */
-    public Builder addTemplate(ResourceLocation template, int weight) {
+    public Builder addTemplate(Identifier template, int weight) {
       this.templates.add(template, weight);
       return this;
     }
 
     /** Adds the default 5 templates around the given prefix to the builder */
-    public Builder addDefaultTemplates(ResourceLocation prefix) {
+    public Builder addDefaultTemplates(Identifier prefix) {
       for (String size : SIZES) {
         addTemplate(prefix.withSuffix(size), 1);
       }

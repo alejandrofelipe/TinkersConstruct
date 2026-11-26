@@ -5,7 +5,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
@@ -33,7 +33,7 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
   protected static final Component TITLE = TConstruct.makeTranslation("gui", "modifier_worktable.title");
   protected static final Component TABLE_INFO = TConstruct.makeTranslation("gui", "modifier_worktable.info");
   private static final Component MODIFIERS = TConstruct.makeTranslation("gui", "tinker_station.modifiers");
-  private static final ResourceLocation BACKGROUND = TConstruct.getResource("textures/gui/worktable.png");
+  private static final Identifier BACKGROUND = TConstruct.getResource("textures/gui/worktable.png");
   private static final Pattern[] INPUT_PATTERNS = {
     new Pattern(TConstruct.MOD_ID, "pickaxe"),
     new Pattern(TConstruct.MOD_ID, "ingot"),

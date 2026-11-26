@@ -10,8 +10,8 @@ import lombok.experimental.Accessors;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
 import slimeknights.tconstruct.library.client.armor.AbstractArmorModel;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.ArmorTexture;
 
@@ -23,13 +23,13 @@ import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier
 public class TintedArmorTexture implements ArmorTexture {
   private static final int MAX_LIGHT = LightTexture.pack(15, 15);
 
-  private final ResourceLocation texture;
+  private final Identifier texture;
   @Getter
   private int color = -1;
   @Getter
   private int luminosity = 0;
 
-  public TintedArmorTexture(ResourceLocation texture, int color) {
+  public TintedArmorTexture(Identifier texture, int color) {
     this(texture, color, 0);
   }
 

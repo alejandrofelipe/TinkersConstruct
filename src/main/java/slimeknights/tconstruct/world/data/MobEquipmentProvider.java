@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.world.data;
 
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Items;
@@ -60,7 +60,7 @@ public class MobEquipmentProvider extends AbstractMobEquipmentProvider {
     // twilight forest compat
     String tf = "twilightforest";
     // the minotaur entity is absent in dev, so reference it by id directly instead of faking a registry entry
-    ResourceLocation minotaur = ResourceLocation.fromNamespaceAndPath(tf, "minotaur");
+    Identifier minotaur = Identifier.fromNamespaceAndPath(tf, "minotaur");
     equip(minotaur.getPath(), minotaur, new ModLoadedCondition(tf))
       .slot(EquipmentSlot.MAINHAND)
       .tool(ItemNameOutput.fromName(TinkerTools.minotaurAxe.getId()))

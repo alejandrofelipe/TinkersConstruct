@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -29,7 +29,7 @@ public enum InteractWithAirPacket implements IThreadsafePacket {
 
   private final InteractionHand hand;
 
-  public static final CustomPacketPayload.Type<InteractWithAirPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(TConstruct.MOD_ID, "interact_with_air"));
+  public static final CustomPacketPayload.Type<InteractWithAirPacket> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(TConstruct.MOD_ID, "interact_with_air"));
   public static final StreamCodec<RegistryFriendlyByteBuf, InteractWithAirPacket> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(InteractWithAirPacket.class);
 
   /** Gets the packet for the given hand */

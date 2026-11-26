@@ -8,7 +8,7 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -149,8 +149,8 @@ public class ModifierClientEvents {
   private static final int MAP_SIZE = 2 * MAP_PADDING + 128;
   /** Map background textures, same as {@code ItemInHandRenderer.MAP_BACKGROUND} and {@code MAP_BACKGROUND_CHECKERBOARD} */
   // the blit passes MAP_SIZE as the texture width/height so the UVs span 0..1 regardless of the PNG size (as the old setUv(0..1) quad)
-  private static final ResourceLocation MAP_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/map/map_background.png");
-  private static final ResourceLocation MAP_BACKGROUND_CHECKERBOARD = ResourceLocation.withDefaultNamespace("textures/map/map_background_checkerboard.png");
+  private static final Identifier MAP_BACKGROUND = Identifier.withDefaultNamespace("textures/map/map_background.png");
+  private static final Identifier MAP_BACKGROUND_CHECKERBOARD = Identifier.withDefaultNamespace("textures/map/map_background_checkerboard.png");
 
   @Nonnull
   private static ItemStack nextOffhand = ItemStack.EMPTY;

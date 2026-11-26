@@ -12,7 +12,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.data.AtlasIds;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -42,7 +42,7 @@ public final class GuiUtil {
    * @param screen      Parent screen
    * @param background  Background location
    */
-  public static void drawBackground(GuiGraphics graphics, AbstractContainerScreen<?> screen, ResourceLocation background) {
+  public static void drawBackground(GuiGraphics graphics, AbstractContainerScreen<?> screen, Identifier background) {
     graphics.blit(RenderPipelines.GUI_TEXTURED, background, screen.leftPos, screen.topPos, 0.0F, 0.0F, screen.imageWidth, screen.imageHeight, 256, 256);
   }
 

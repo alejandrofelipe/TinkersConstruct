@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -19,15 +19,15 @@ import slimeknights.tconstruct.shared.TinkerCommons;
 @Deprecated(forRemoval = true)
 @RequiredArgsConstructor
 public class TagNotEmptyCondition<T> implements LootItemCondition, ICondition {
-  private static final ResourceLocation NAME = TConstruct.getResource("tag_not_empty");
+  private static final Identifier NAME = TConstruct.getResource("tag_not_empty");
   /**
    * Codec serving as both the loot condition codec and the data load condition codec.
    * Serializes the registry and the tag.
    */
   @SuppressWarnings("unchecked")
   public static final MapCodec<TagNotEmptyCondition<?>> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-    ResourceLocation.CODEC.fieldOf("registry").forGetter(c -> c.tag.registry().location()),
-    ResourceLocation.CODEC.fieldOf("tag").forGetter(c -> c.tag.location())
+    Identifier.CODEC.fieldOf("registry").forGetter(c -> c.tag.registry().location()),
+    Identifier.CODEC.fieldOf("tag").forGetter(c -> c.tag.location())
   ).apply(inst, (registry, tag) -> new TagNotEmptyCondition<Object>(TagKey.create(ResourceKey.createRegistryKey(registry), tag))));
 
   private final TagKey<T> tag;

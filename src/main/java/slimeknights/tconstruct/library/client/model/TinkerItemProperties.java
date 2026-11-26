@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.item.properties.conditional.ConditionalItem
 import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperty;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -38,15 +38,15 @@ import javax.annotation.Nullable;
  */
 public class TinkerItemProperties {
   /** Boolean property: the tool is broken */
-  public static final ResourceLocation BROKEN_ID = TConstruct.getResource("broken");
+  public static final Identifier BROKEN_ID = TConstruct.getResource("broken");
   /** Boolean property: a fishing rod is cast */
-  public static final ResourceLocation CAST_ID = TConstruct.getResource("cast");
+  public static final Identifier CAST_ID = TConstruct.getResource("cast");
   /** Float property: charge/draw animation stage */
-  public static final ResourceLocation CHARGING_ID = TConstruct.getResource("charging");
+  public static final Identifier CHARGING_ID = TConstruct.getResource("charging");
   /** Float property: bow pull amount */
-  public static final ResourceLocation CHARGE_ID = TConstruct.getResource("charge");
+  public static final Identifier CHARGE_ID = TConstruct.getResource("charge");
   /** Float property: crossbow ammo type (0 none, 1 arrow, 2 firework) */
-  public static final ResourceLocation AMMO_ID = TConstruct.getResource("ammo");
+  public static final Identifier AMMO_ID = TConstruct.getResource("ammo");
 
   /* Conditional properties */
 

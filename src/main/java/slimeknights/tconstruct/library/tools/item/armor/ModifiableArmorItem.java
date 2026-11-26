@@ -6,7 +6,7 @@ import lombok.Getter;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -67,13 +67,13 @@ import java.util.function.Consumer;
 
 public class ModifiableArmorItem extends Item implements IModifiableDisplay {
   /** Volatile modifier tag to make piglins neutal when worn */
-  public static final ResourceLocation PIGLIN_NEUTRAL = TConstruct.getResource("piglin_neutral");
+  public static final Identifier PIGLIN_NEUTRAL = TConstruct.getResource("piglin_neutral");
   /** Volatile modifier tag to make this item an elytra */
-  public static final ResourceLocation ELYTRA = TConstruct.getResource("elyta");
+  public static final Identifier ELYTRA = TConstruct.getResource("elyta");
   /** Volatile flag for a boot item to walk on powdered snow. Cold immunity is handled through a tag */
-  public static final ResourceLocation SNOW_BOOTS = TConstruct.getResource("snow_boots");
+  public static final Identifier SNOW_BOOTS = TConstruct.getResource("snow_boots");
   /** Volatile flag for an item to act as an enderman mask, stopping them from getting angry. */
-  public static final ResourceLocation ENDERMASK = TConstruct.getResource("endermask");
+  public static final Identifier ENDERMASK = TConstruct.getResource("endermask");
 
   @Getter
   private final ToolDefinition toolDefinition;
@@ -301,8 +301,8 @@ public class ModifiableArmorItem extends Item implements IModifiableDisplay {
       // base stats
       StatsNBT statsNBT = tool.getStats();
       // PORT M3 (attributes): vanilla's ARMOR_MODIFIER_UUID_PER_TYPE was removed; AttributeModifier ids are now
-      // ResourceLocation. Using a per-slot resource id derived from the type until the attribute redesign lands.
-      ResourceLocation id = TConstruct.getResource("armor." + type.getName());
+      // Identifier. Using a per-slot resource id derived from the type until the attribute redesign lands.
+      Identifier id = TConstruct.getResource("armor." + type.getName());
       float armor = statsNBT.get(ToolStats.ARMOR);
       if (armor > 0) {
         builder.put(Attributes.ARMOR.value(), new AttributeModifier(id, armor, AttributeModifier.Operation.ADD_VALUE));
@@ -327,7 +327,7 @@ public class ModifiableArmorItem extends Item implements IModifiableDisplay {
 
   // PORT M3 (attributes): the getAttributeModifiers(EquipmentSlot, ItemStack) Forge override and the
   // Attribute/AttributeModifier multimap (built above with UUID-keyed modifiers and Operation.ADDITION) are replaced in
-  // 1.21 by the ItemAttributeModifiers data component keyed by Holder<Attribute> with ResourceLocation ids and
+  // 1.21 by the ItemAttributeModifiers data component keyed by Holder<Attribute> with Identifier ids and
   // Operation.ADD_VALUE. Part of the module-wide attribute redesign; left for that pass.
   public Multimap<Attribute,AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
     if (slot != getEquipmentSlot() || !ToolStack.isInitialized(stack)) {

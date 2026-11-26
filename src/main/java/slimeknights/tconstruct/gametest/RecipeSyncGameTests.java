@@ -8,7 +8,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -85,7 +85,7 @@ public class RecipeSyncGameTests {
    * client side (JEI categories, book pages, GUI block entities, recipe packets). A new recipe type fails
    * {@link #client_synced_recipe_types_complete} until it is either added to {@link RecipeLookupPopulator}'s client synced types or listed here.
    */
-  private static final Map<ResourceLocation, String> SERVER_ONLY = Map.of();
+  private static final Map<Identifier, String> SERVER_ONLY = Map.of();
   /**
    * Recipe types of other namespaces that Tinkers client code reads from the synced recipes, with the reader. Vanilla only syncs recipe
    * displays since 1.21.2, so these must be requested like the Tinkers types.
@@ -93,7 +93,7 @@ public class RecipeSyncGameTests {
   private static final Map<RecipeType<?>, String> CLIENT_READ_FOREIGN = Map.of(
     RecipeType.CRAFTING, "book crafting pages (Mantle ContentCrafting, Tinkers ContentTool) and the crafting station");
   /** Client synced Tinkers recipe types allowed to have no recipe in the default datapacks, each with the reason. */
-  private static final Map<ResourceLocation, String> NO_RECIPES_EXPECTED = Map.of(
+  private static final Map<Identifier, String> NO_RECIPES_EXPECTED = Map.of(
     TConstruct.getResource("molding_basin"), "no shipped recipe molds in a basin (datagen only builds table molding for sand casts); the type serves datapacks and addons, and JEI lists it with table molding");
 
   /** Recipe types the server actually requests for clients: fires the datapack sync event (with no players) and reads what the listeners asked for */
@@ -104,7 +104,7 @@ public class RecipeSyncGameTests {
   }
 
   private static String typeName(RecipeType<?> type) {
-    ResourceLocation id = BuiltInRegistries.RECIPE_TYPE.getKey(type);
+    Identifier id = BuiltInRegistries.RECIPE_TYPE.getKey(type);
     return id == null ? type.toString() : id.toString();
   }
 
@@ -123,7 +123,7 @@ public class RecipeSyncGameTests {
     List<RecipeType<?>> declared = RecipeLookupPopulator.clientSyncedTypes();
     List<String> failures = new ArrayList<>();
     int tinkerTypes = 0;
-    for (ResourceLocation id : new TreeSet<>(BuiltInRegistries.RECIPE_TYPE.keySet())) {
+    for (Identifier id : new TreeSet<>(BuiltInRegistries.RECIPE_TYPE.keySet())) {
       if (!TConstruct.MOD_ID.equals(id.getNamespace())) {
         continue;
       }

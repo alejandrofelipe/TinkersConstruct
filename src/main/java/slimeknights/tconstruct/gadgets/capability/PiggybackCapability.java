@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.gadgets.capability;
 
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.IEventBus;
@@ -21,7 +21,7 @@ import java.util.function.Supplier;
  * mod's {@code RegisterCapabilitiesEvent} handler (see {@link #provider(Entity, Direction)}).
  */
 public class PiggybackCapability {
-  private static final ResourceLocation ID = TConstruct.getResource("piggyback");
+  private static final Identifier ID = TConstruct.getResource("piggyback");
 
   /** Entity capability lookup replacing the old Forge {@code Capability} token */
   public static final EntityCapability<PiggybackHandler, Direction> PIGGYBACK =

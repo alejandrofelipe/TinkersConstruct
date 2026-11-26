@@ -7,7 +7,7 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -62,7 +62,7 @@ public class PartBuilderRecycleBuilder extends AbstractRecipeBuilder<PartBuilder
   public void save(RecipeOutput consumer) {
     save(consumer, Loadables.ITEM.getKey(tool.items().findFirst().orElseThrow().value()));
   }
-  public void save(RecipeOutput consumer, ResourceLocation id) {
+  public void save(RecipeOutput consumer, Identifier id) {
     AdvancementHolder advancement = buildOptionalAdvancement(id, "parts");
     consumer.accept(ResourceKey.create(Registries.RECIPE, id), new PartBuilderRecycle(id, tool, pattern, results), advancement);
   }

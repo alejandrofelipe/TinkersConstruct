@@ -27,7 +27,7 @@ public interface IPartBuilderContainer extends ISingleStackContainer {
    * Gets the currently selected pattern item
    * @return
    */
-  //ResourceLocation getPattern();
+  //Identifier getPattern();
 
   /** @deprecated use {{@link #getStack()}} */
   @Deprecated

@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -73,7 +73,7 @@ import static slimeknights.tconstruct.library.modifiers.hook.interaction.General
 /** Base class for any items that launch projectiles */
 public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implements IModifiableDisplay {
   /** Persistent data key for the ammo being used on drawing back the bow. */
-  public static final ResourceLocation KEY_DRAWBACK_AMMO = TConstruct.getResource("drawback_ammo");
+  public static final Identifier KEY_DRAWBACK_AMMO = TConstruct.getResource("drawback_ammo");
 
   /** Tool definition for the given tool */
   @Getter

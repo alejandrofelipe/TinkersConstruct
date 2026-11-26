@@ -8,7 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -436,7 +436,7 @@ public class TooltipUtil {
 
   // PORT M3 (attributes): the attribute helpers below still use the 1.20 attribute API (raw Attribute, AttributeModifier
   // #getOperation/#getAmount/#getId, Operation.ADDITION/MULTIPLY_BASE, UUID ids, raw Attributes.* constants, and the
-  // ItemStack.TooltipPart masks above). 1.21 keys attributes by Holder<Attribute>, identifies modifiers by ResourceLocation,
+  // ItemStack.TooltipPart masks above). 1.21 keys attributes by Holder<Attribute>, identifies modifiers by Identifier,
   // renamed Operation.ADDITION->ADD_VALUE / MULTIPLY_BASE->ADD_MULTIPLIED_BASE, and moved hidden-tooltip control to data
   // components. This is part of the module-wide attribute redesign (shared with IModifiable/ITinkerStationDisplay
   // #getAttributeModifiers and TooltipBuilder) and is left for that coordinated pass.
@@ -481,7 +481,7 @@ public class TooltipUtil {
    * @param player     Player instance
    * @param tooltip    Tooltip list
    */
-  public static void addAttribute(Attribute attribute, Operation operation, double amount, @Nullable ResourceLocation id, @Nullable Player player, List<Component> tooltip) {
+  public static void addAttribute(Attribute attribute, Operation operation, double amount, @Nullable Identifier id, @Nullable Player player, List<Component> tooltip) {
     // find value
     boolean showEquals = false;
     if (player != null) {

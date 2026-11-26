@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.tools.modifiers.traits.skull;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -56,7 +56,7 @@ public class SelfDestructiveModifier extends NoLevelsModifier implements Keybind
     public SelfDestructiveEffect() {
       super(MobEffectCategory.HARMFUL, 0x59D24A, true);
       // make the player slow
-      addAttributeModifier(Attributes.MOVEMENT_SPEED, ResourceLocation.fromNamespaceAndPath("tconstruct", "self_destructing"), -0.9f, Operation.ADD_MULTIPLIED_TOTAL);
+      addAttributeModifier(Attributes.MOVEMENT_SPEED, Identifier.fromNamespaceAndPath("tconstruct", "self_destructing"), -0.9f, Operation.ADD_MULTIPLIED_TOTAL);
     }
 
     @Override

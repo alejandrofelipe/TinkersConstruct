@@ -2,7 +2,7 @@ package slimeknights.tconstruct.tools.modules;
 
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -55,7 +55,7 @@ import static slimeknights.tconstruct.library.tools.capability.fluid.ToolTankHel
 public record MeltingModule(LevelingInt temperature, LevelingInt nuggetsPerMetal, LevelingInt shardsPerGem, ModifierCondition<IToolStackView> condition) implements ModifierModule, MeleeHitModifierHook, MonsterMeleeHitModifierHook.RedirectAfter, LauncherHitModifierHook, ProcessLootModifierHook, ConditionalModule<IToolStackView>, IMeltingContainer, IOreRate {
   private static final List<ModuleHook<?>> DEFAULT_HOOKS = HookProvider.<MeltingModule>defaultHooks(ModifierHooks.MELEE_HIT, ModifierHooks.MONSTER_MELEE_HIT, ModifierHooks.LAUNCHER_HIT, ModifierHooks.PROCESS_LOOT);
   /** Volatile data flag which makes a tool always melt regardless of tank space */
-  public static final ResourceLocation FORCE_MELTING = TConstruct.getResource("force_melting");
+  public static final Identifier FORCE_MELTING = TConstruct.getResource("force_melting");
 
   public static final RecordLoadable<MeltingModule> LOADER = RecordLoadable.create(
     LevelingInt.LOADABLE.requiredField("temperature", MeltingModule::temperature),

@@ -4,7 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -21,7 +21,7 @@ import java.util.Objects;
 
 public record SyncProjectileModifiersPacket(int entityId, ModifierNBT modifiers, CompoundTag persistentData) implements IThreadsafePacket {
   private static final Streamable<ModifierNBT> MODIFIER_LIST = ModifierEntry.LOADABLE.list(0).flatXmap(ModifierNBT::new, ModifierNBT::getModifiers);
-  public static final CustomPacketPayload.Type<SyncProjectileModifiersPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(TConstruct.MOD_ID, "sync_projectile_modifiers"));
+  public static final CustomPacketPayload.Type<SyncProjectileModifiersPacket> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(TConstruct.MOD_ID, "sync_projectile_modifiers"));
   public static final StreamCodec<RegistryFriendlyByteBuf, SyncProjectileModifiersPacket> STREAM_CODEC = StreamCodec.of(
     (buffer, packet) -> {
       buffer.writeVarInt(packet.entityId);

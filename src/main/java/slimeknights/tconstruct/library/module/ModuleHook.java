@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.module;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import slimeknights.mantle.registration.object.IdAwareObject;
 
 import javax.annotation.Nullable;
@@ -11,10 +11,10 @@ import java.util.function.Function;
 
 /** Class implementing a modifier hook, used as a key for {@link ModuleHookMap )} */
 @RequiredArgsConstructor
-public class ModuleHook<T> implements IdAwareObject<ResourceLocation> {
+public class ModuleHook<T> implements IdAwareObject<Identifier> {
   /** Unique name of this hook, used for serialization */
   @Getter
-  private final ResourceLocation id;
+  private final Identifier id;
   /** Filter to check if an object is valid for this hook */
   private final Class<T> filter;
   /** Logic to merge multiple instances into a single instance */
@@ -24,7 +24,7 @@ public class ModuleHook<T> implements IdAwareObject<ResourceLocation> {
   @Getter
   private final T defaultInstance;
 
-  public ModuleHook(ResourceLocation name, Class<T> filter, T defaultInstance) {
+  public ModuleHook(Identifier name, Class<T> filter, T defaultInstance) {
     this(name, filter, null, defaultInstance);
   }
 

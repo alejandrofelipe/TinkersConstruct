@@ -22,7 +22,7 @@ import java.util.List;
  * returns 0), which would hide the very failure under test. In 1.21 {@code TranslatableContents}'s
  * constructor throws {@link IllegalArgumentException} in a dev environment ({@code !FMLEnvironment.production})
  * when handed an argument that is not a Component, Number, Boolean, or String. Several Mantle commands passed a
- * raw {@code ResourceLocation}/{@code ResourceKey}/{@code Path} to {@code Component.translatable}, so building
+ * raw {@code Identifier}/{@code ResourceKey}/{@code Path} to {@code Component.translatable}, so building
  * their feedback message threw and aborted the command. Executing through the dispatcher lets that exception
  * propagate and fail the test; a fixed command completes and reaches {@link GameTestHelper#succeed()}.
  *

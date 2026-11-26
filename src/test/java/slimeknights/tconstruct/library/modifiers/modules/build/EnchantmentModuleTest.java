@@ -5,7 +5,7 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -43,10 +43,10 @@ import static org.mockito.Mockito.when;
  * {@link EnchantmentModule.MainHandHarvest}, {@link EnchantmentModule.ArmorHarvest}, and {@link EnchantmentModule.Builder}.
  */
 class EnchantmentModuleTest extends BaseMcTest {
-  private static final ResourceKey<Enchantment> SHARPNESS = ResourceKey.create(Registries.ENCHANTMENT, ResourceLocation.withDefaultNamespace("sharpness"));
-  private static final ResourceKey<Enchantment> UNBREAKING = ResourceKey.create(Registries.ENCHANTMENT, ResourceLocation.withDefaultNamespace("unbreaking"));
+  private static final ResourceKey<Enchantment> SHARPNESS = ResourceKey.create(Registries.ENCHANTMENT, Identifier.withDefaultNamespace("sharpness"));
+  private static final ResourceKey<Enchantment> UNBREAKING = ResourceKey.create(Registries.ENCHANTMENT, Identifier.withDefaultNamespace("unbreaking"));
   private static final ModifierId ID = new ModifierId("test", "foo");
-  private static final ResourceLocation FLAG = ResourceLocation.fromNamespaceAndPath("test", "enchant_flag");
+  private static final Identifier FLAG = Identifier.fromNamespaceAndPath("test", "enchant_flag");
 
   @SuppressWarnings("unchecked")
   private static IJsonPredicate<BlockState> blockPredicate(boolean result) {

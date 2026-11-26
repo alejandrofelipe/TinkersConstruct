@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import slimeknights.tconstruct.TConstruct;
@@ -17,12 +17,12 @@ import java.util.List;
 /** @deprecated use {@link slimeknights.mantle.recipe.condition.TagCombinationCondition#intersection(TagKey[])} */
 @Deprecated(forRemoval = true)
 public class TagIntersectionPresentCondition<T> implements ICondition {
-  private static final ResourceLocation NAME = TConstruct.getResource("tag_intersection_present");
+  private static final Identifier NAME = TConstruct.getResource("tag_intersection_present");
   /** Codec serializing the registry and the list of tags */
   @SuppressWarnings("unchecked")
   public static final MapCodec<TagIntersectionPresentCondition<?>> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-    ResourceLocation.CODEC.fieldOf("registry").forGetter(c -> c.names.get(0).registry().location()),
-    ResourceLocation.CODEC.listOf().fieldOf("tags").forGetter(c -> c.names.stream().map(TagKey::location).toList())
+    Identifier.CODEC.fieldOf("registry").forGetter(c -> c.names.get(0).registry().location()),
+    Identifier.CODEC.listOf().fieldOf("tags").forGetter(c -> c.names.stream().map(TagKey::location).toList())
   ).apply(inst, (registry, tags) -> {
     ResourceKey<Registry<Object>> key = ResourceKey.createRegistryKey(registry);
     return new TagIntersectionPresentCondition<>(tags.stream().map(id -> TagKey.create(key, id)).toList());
@@ -44,7 +44,7 @@ public class TagIntersectionPresentCondition<T> implements ICondition {
   }
 
   /** Creates a condition from a registry and a set of names */
-  public static <T> TagIntersectionPresentCondition<T> ofNames(ResourceKey<? extends Registry<T>> registry, ResourceLocation... names) {
+  public static <T> TagIntersectionPresentCondition<T> ofNames(ResourceKey<? extends Registry<T>> registry, Identifier... names) {
     return new TagIntersectionPresentCondition<>(Arrays.stream(names).map(name -> TagKey.create(registry, name)).toList());
   }
 

@@ -9,7 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
@@ -173,7 +173,7 @@ public class WorldgenGameTests {
     List<String> failures = new ArrayList<>();
     templateGrass().forEach((folder, grass) -> {
       for (String size : TEMPLATE_SIZES) {
-        ResourceLocation id = TConstruct.getResource("islands/" + folder + "/" + size);
+        Identifier id = TConstruct.getResource("islands/" + folder + "/" + size);
         Optional<StructureTemplate> template = level.getStructureManager().get(id);
         if (template.isEmpty()) {
           failures.add("template " + id + " missing");

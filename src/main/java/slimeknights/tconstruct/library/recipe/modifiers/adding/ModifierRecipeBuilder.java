@@ -4,7 +4,7 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -106,7 +106,7 @@ public class ModifierRecipeBuilder extends AbstractModifierRecipeBuilder<Modifie
 
   /* Building */
 
-  public void save(RecipeOutput consumer, ResourceLocation id) {
+  public void save(RecipeOutput consumer, Identifier id) {
     if (inputs.isEmpty() && !allowCrystal) {
       throw new IllegalStateException("Must have at least 1 input");
     }

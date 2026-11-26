@@ -4,7 +4,7 @@ import com.mojang.math.Transformation;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.joml.Vector3f;
@@ -29,7 +29,7 @@ import java.util.function.Function;
 @SuppressWarnings("removal")
 public class FluidModifierModel extends NormalModifierModel {
   /** Location used for baking dynamic models, name does not matter so just using a constant */
-  private static final ResourceLocation BAKE_LOCATION = TConstruct.getResource("dynamic_fluid_model");
+  private static final Identifier BAKE_LOCATION = TConstruct.getResource("dynamic_fluid_model");
 
   /**
    * The vanilla model bakery uses an orgin of 0.5,0.5,0.5, and forges dynamic fluid code uses the vanilla model bakery. (see{@link net.minecraft.client.renderer.block.model.FaceBakery} {@code #rotateVertexBy()} for vanilla bakery)

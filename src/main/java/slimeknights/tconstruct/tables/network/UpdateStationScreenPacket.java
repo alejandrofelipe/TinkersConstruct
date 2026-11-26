@@ -5,7 +5,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import slimeknights.mantle.network.packet.IThreadsafePacket;
 import slimeknights.tconstruct.TConstruct;
@@ -13,7 +13,7 @@ import slimeknights.tconstruct.tables.client.inventory.BaseTabbedScreen;
 
 public record UpdateStationScreenPacket() implements IThreadsafePacket {
   public static final UpdateStationScreenPacket INSTANCE = new UpdateStationScreenPacket();
-  public static final CustomPacketPayload.Type<UpdateStationScreenPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(TConstruct.MOD_ID, "update_station_screen"));
+  public static final CustomPacketPayload.Type<UpdateStationScreenPacket> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(TConstruct.MOD_ID, "update_station_screen"));
   public static final StreamCodec<RegistryFriendlyByteBuf, UpdateStationScreenPacket> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
   @Override

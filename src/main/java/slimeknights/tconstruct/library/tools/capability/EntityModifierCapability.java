@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.tools.capability;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.neoforged.neoforge.capabilities.EntityCapability;
@@ -42,7 +42,7 @@ public class EntityModifierCapability {
   private static final List<Predicate<Entity>> ENTITY_PREDICATES = new ArrayList<>();
 
   /** Capability ID */
-  private static final ResourceLocation ID = TConstruct.getResource("modifiers");
+  private static final Identifier ID = TConstruct.getResource("modifiers");
   /**
    * Capability instance. Under NeoForge this is an {@link EntityCapability} registered for supported entity types on
    * {@link RegisterCapabilitiesEvent}.

@@ -2,7 +2,7 @@ package slimeknights.tconstruct.gametest;
 
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.equipment.ArmorType;
@@ -44,7 +44,7 @@ public class DatapackTagGapGameTests {
     // raw steel has no item in this pack, so the condition-gated raw-ore recipes must stay out rather than error
     List<String> unexpected = new ArrayList<>();
     for (String raw : List.of("raw", "raw_block")) {
-      ResourceLocation id = TConstruct.getResource("smeltery/melting/metal/steel/" + raw);
+      Identifier id = TConstruct.getResource("smeltery/melting/metal/steel/" + raw);
       if (TinkerRecipeAccess.byKey(helper.getLevel(), id).isPresent()) {
         unexpected.add(id.toString());
       }
@@ -78,14 +78,14 @@ public class DatapackTagGapGameTests {
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void ore_loot_modifiers_load(GameTestHelper helper) {
     // NeoForge exposes no public accessor for the loaded modifiers by id, so read them reflectively
-    Map<ResourceLocation, ?> loaded;
+    Map<Identifier, ?> loaded;
     try {
       Method getter = Class.forName("net.neoforged.neoforge.common.NeoForgeEventHandler").getDeclaredMethod("getLootModifierManager");
       getter.setAccessible(true);
       Field mods = LootModifierManager.class.getDeclaredField("registeredLootModifiers");
       mods.setAccessible(true);
       @SuppressWarnings("unchecked")
-      Map<ResourceLocation, ?> map = (Map<ResourceLocation, ?>) mods.get(getter.invoke(null));
+      Map<Identifier, ?> map = (Map<Identifier, ?>) mods.get(getter.invoke(null));
       loaded = map;
     } catch (ReflectiveOperationException | RuntimeException e) {
       helper.fail(Component.literal("could not read NeoForge's loaded loot modifiers: " + e));
@@ -131,7 +131,7 @@ public class DatapackTagGapGameTests {
 
   /** Records the recipe as missing if the recipe manager does not have it */
   private static void requireRecipe(GameTestHelper helper, String path, List<String> missing) {
-    ResourceLocation id = TConstruct.getResource(path);
+    Identifier id = TConstruct.getResource(path);
     if (TinkerRecipeAccess.byKey(helper.getLevel(), id).isEmpty()) {
       missing.add(id.toString());
     }

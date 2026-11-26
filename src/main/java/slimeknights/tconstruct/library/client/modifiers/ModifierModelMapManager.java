@@ -3,10 +3,10 @@ package slimeknights.tconstruct.library.client.modifiers;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.ResourceLocationException;
+import net.minecraft.IdentifierException;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.neoforged.fml.ModLoader;
@@ -45,7 +45,7 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
   public static final ModifierModelMapManager INSTANCE = new ModifierModelMapManager();
 
   /** List of loaded models */
-  private Map<ResourceLocation, ModifierModelMap> models = new HashMap<>();
+  private Map<Identifier, ModifierModelMap> models = new HashMap<>();
 
   private ModifierModelMapManager() {
     super(JsonHelper.DEFAULT_GSON, FOLDER, id -> new Builder());
@@ -70,7 +70,7 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
   }
 
   /** Inserts the given element into the map */
-  private static <T> void insert(Map<T, JsonElement> map, T key, JsonElement value, String errorPrefix, ResourceLocation id) {
+  private static <T> void insert(Map<T, JsonElement> map, T key, JsonElement value, String errorPrefix, Identifier id) {
     // null means discard this model
     if (value.isJsonNull()) {
       map.remove(key);
@@ -80,7 +80,7 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
   }
 
   @Override
-  protected void parse(Builder builder, ResourceLocation id, JsonElement element) throws JsonSyntaxException {
+  protected void parse(Builder builder, Identifier id, JsonElement element) throws JsonSyntaxException {
     JsonObject json = GsonHelper.convertToJsonObject(element, id.toString());
 
     // fixed entries merge at a top level
@@ -104,7 +104,7 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
   }
 
   /** Creates context for constant key parsing */
-  private static TypedMap context(ResourceLocation file, String key) {
+  private static TypedMap context(Identifier file, String key) {
     return TypedMapBuilder.builder()
       .put(ContextKey.ID, file)
       .put(ContextKey.DEBUG, "Model Map " + file + " for constant key " + key)
@@ -112,7 +112,7 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
   }
 
   /** Creates context for modifier parsing */
-  private static TypedMap context(ResourceLocation file, ModifierId modifier) {
+  private static TypedMap context(Identifier file, ModifierId modifier) {
     return TypedMapBuilder.builder()
       .put(ContextKey.ID, file)
       .put(ModifierId.CONTEXT_KEY, modifier)
@@ -122,7 +122,7 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
 
   /** Parses the given model from the map */
   @SuppressWarnings("removal")
-  private static <T> void parseModel(Map<T, ModifierModel> map, T key, JsonElement value, String errorPrefix, ResourceLocation id, BiFunction<ResourceLocation, T,TypedMap> context) {
+  private static <T> void parseModel(Map<T, ModifierModel> map, T key, JsonElement value, String errorPrefix, Identifier id, BiFunction<Identifier, T,TypedMap> context) {
     try {
       // if it's an object, it's a single model
       ModifierModel model;
@@ -130,7 +130,7 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
         // for simplicity, treat an array as a compound
         model = CompoundModifierModel.create(CompoundModifierModel.LIST_LOADABLE.convert(value, key.toString(), context.apply(id, key)));
       } else if (value.isJsonPrimitive()) {
-        model = new NormalModifierModel(ModifierModel.blockAtlas(ResourceLocation.parse(value.getAsString())), null);
+        model = new NormalModifierModel(ModifierModel.blockAtlas(Identifier.parse(value.getAsString())), null);
       } else {
         JsonObject json = value.getAsJsonObject();
         if (!json.has("type")) {
@@ -140,19 +140,19 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
         }
       }
       map.put(key, model);
-    } catch (JsonSyntaxException | ResourceLocationException e) {
+    } catch (JsonSyntaxException | IdentifierException e) {
       TConstruct.LOG.error("Failed to parse modifier model map {} for {} {}", id, errorPrefix, key, e);
     }
   }
 
   @Override
-  protected void finishLoad(Map<ResourceLocation, Builder> map, ResourceManager manager) {
-    BiFunction<ResourceLocation,String,TypedMap> constantContext = ModifierModelMapManager::context;
-    BiFunction<ResourceLocation,ModifierId,TypedMap> modifierContext = ModifierModelMapManager::context;
+  protected void finishLoad(Map<Identifier, Builder> map, ResourceManager manager) {
+    BiFunction<Identifier,String,TypedMap> constantContext = ModifierModelMapManager::context;
+    BiFunction<Identifier,ModifierId,TypedMap> modifierContext = ModifierModelMapManager::context;
 
-    Map<ResourceLocation, ModifierModelMap> modelMaps = new HashMap<>();
-    for (Entry<ResourceLocation, Builder> file : map.entrySet()) {
-      ResourceLocation id = file.getKey();
+    Map<Identifier, ModifierModelMap> modelMaps = new HashMap<>();
+    for (Entry<Identifier, Builder> file : map.entrySet()) {
+      Identifier id = file.getKey();
       Map<String, ModifierModel> constant = new LinkedHashMap<>();
       Map<ModifierId, ModifierModel> modifiers = new HashMap<>();
       for (Entry<String,JsonElement> entry : file.getValue().constant.entrySet()) {
@@ -193,7 +193,7 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
   }
 
   /** Gets a map of modifier models for the given tool */
-  public ModifierModelMap getModelsForTool(Function<Material, TextureAtlasSprite> spriteGetter, List<ResourceLocation> options) {
+  public ModifierModelMap getModelsForTool(Function<Material, TextureAtlasSprite> spriteGetter, List<Identifier> options) {
     // quick exit: no options
     if (options.isEmpty()) {
       return ModifierModelMap.EMPTY;
@@ -235,7 +235,7 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
   }
 
   /** Gets a map of modifier models for the given tool, considering the legacy model system */
-  public ModifierModelMap getModelsForTool(Function<Material, TextureAtlasSprite> spriteGetter, List<ResourceLocation> options, List<ResourceLocation> smallRoots, List<ResourceLocation> largeRoots, ResourceLocation modelLocation) {
+  public ModifierModelMap getModelsForTool(Function<Material, TextureAtlasSprite> spriteGetter, List<Identifier> options, List<Identifier> smallRoots, List<Identifier> largeRoots, Identifier modelLocation) {
     ModifierModelMap models = getModelsForTool(spriteGetter, options);
     // if not using the legacy system, we are done
     if (smallRoots.isEmpty() && largeRoots.isEmpty()) {

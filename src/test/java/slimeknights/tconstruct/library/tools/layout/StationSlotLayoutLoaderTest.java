@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.tools.layout;
 
 import com.google.gson.JsonElement;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Item;
@@ -35,7 +35,7 @@ class StationSlotLayoutLoaderTest extends BaseMcTest {
 
   @Test
   void minimal_noTool() {
-    Map<ResourceLocation,JsonElement> splashList = fileLoader.loadFilesAsSplashlist("minimal");
+    Map<Identifier,JsonElement> splashList = fileLoader.loadFilesAsSplashlist("minimal");
     StationSlotLayoutLoader.getInstance().apply(splashList, mock(ResourceManager.class), mock(ProfilerFiller.class));
 
     StationSlotLayout layout = StationSlotLayoutLoader.getInstance().get(TConstruct.getResource("minimal"));
@@ -61,7 +61,7 @@ class StationSlotLayoutLoaderTest extends BaseMcTest {
 
   @Test
   void minimal_withTool() {
-    Map<ResourceLocation,JsonElement> splashList = fileLoader.loadFilesAsSplashlist("minimal_with_tool");
+    Map<Identifier,JsonElement> splashList = fileLoader.loadFilesAsSplashlist("minimal_with_tool");
     StationSlotLayoutLoader.getInstance().apply(splashList, mock(ResourceManager.class), mock(ProfilerFiller.class));
 
     StationSlotLayout layout = StationSlotLayoutLoader.getInstance().get(TConstruct.getResource("minimal_with_tool"));
@@ -95,7 +95,7 @@ class StationSlotLayoutLoaderTest extends BaseMcTest {
 
   @Test
   void full() {
-    Map<ResourceLocation,JsonElement> splashList = fileLoader.loadFilesAsSplashlist("full");
+    Map<Identifier,JsonElement> splashList = fileLoader.loadFilesAsSplashlist("full");
     StationSlotLayoutLoader.getInstance().apply(splashList, mock(ResourceManager.class), mock(ProfilerFiller.class));
 
     StationSlotLayout layout = StationSlotLayoutLoader.getInstance().get(TConstruct.getResource("full"));
@@ -162,7 +162,7 @@ class StationSlotLayoutLoaderTest extends BaseMcTest {
 
   @Test
   void tooFewSlots_defaults() {
-    Map<ResourceLocation,JsonElement> splashList = fileLoader.loadFilesAsSplashlist("too_few_slots");
+    Map<Identifier,JsonElement> splashList = fileLoader.loadFilesAsSplashlist("too_few_slots");
     StationSlotLayoutLoader.getInstance().apply(splashList, mock(ResourceManager.class), mock(ProfilerFiller.class));
     StationSlotLayout layout = StationSlotLayoutLoader.getInstance().get(TConstruct.getResource("too_few_slots"));
     assertThat(layout).isSameAs(StationSlotLayout.EMPTY);
@@ -170,7 +170,7 @@ class StationSlotLayoutLoaderTest extends BaseMcTest {
 
   @Test
   void tooFewSlots_withTool_defaults() {
-    Map<ResourceLocation,JsonElement> splashList = fileLoader.loadFilesAsSplashlist("too_few_slots_with_tool");
+    Map<Identifier,JsonElement> splashList = fileLoader.loadFilesAsSplashlist("too_few_slots_with_tool");
     StationSlotLayoutLoader.getInstance().apply(splashList, mock(ResourceManager.class), mock(ProfilerFiller.class));
     StationSlotLayout layout = StationSlotLayoutLoader.getInstance().get(TConstruct.getResource("too_few_slots_with_tool"));
     assertThat(layout).isSameAs(StationSlotLayout.EMPTY);

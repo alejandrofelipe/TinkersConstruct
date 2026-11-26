@@ -5,14 +5,14 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -66,7 +66,7 @@ public enum TippedModule implements ModifierModule, ProjectileLaunchModifierHook
 
   @Override
   public void onProjectileShoot(IToolStackView tool, ModifierEntry modifier, @Nullable LivingEntity shooter, ItemStack ammo, Projectile projectile, @Nullable AbstractArrow arrow, ModDataNBT persistentData, boolean primary) {
-    ResourceLocation key = modifier.getId().getLocation();
+    Identifier key = modifier.getId().getLocation();
     IModDataView toolData = tool.getPersistentData();
     if (toolData.contains(key, Tag.TAG_STRING)) {
       persistentData.putString(key, toolData.getString(key));
@@ -90,9 +90,9 @@ public enum TippedModule implements ModifierModule, ProjectileLaunchModifierHook
 
   @Override
   public boolean onProjectileHitEntity(ModifierNBT modifiers, ModDataNBT persistentData, ModifierEntry modifier, Projectile projectile, EntityHitResult hit, @Nullable LivingEntity attacker, @Nullable LivingEntity target) {
-    ResourceLocation key = modifier.getId().getLocation();
+    Identifier key = modifier.getId().getLocation();
     if (target != null && persistentData.contains(key, Tag.TAG_STRING)) {
-      ResourceLocation id = ResourceLocation.tryParse(persistentData.getString(key));
+      Identifier id = Identifier.tryParse(persistentData.getString(key));
       if (id != null) {
         Entity source = projectile.getEffectSource();
         int divisor = getDivisor(modifier);
@@ -121,10 +121,10 @@ public enum TippedModule implements ModifierModule, ProjectileLaunchModifierHook
 
   @Override
   public void addTooltip(IToolStackView tool, ModifierEntry modifier, @Nullable Player player, List<Component> tooltip, TooltipKey tooltipKey, TooltipFlag tooltipFlag) {
-    ResourceLocation key = modifier.getId().getLocation();
+    Identifier key = modifier.getId().getLocation();
     IModDataView toolData = tool.getPersistentData();
     if (toolData.contains(key, Tag.TAG_STRING)) {
-      ResourceLocation id = ResourceLocation.tryParse(toolData.getString(key));
+      Identifier id = Identifier.tryParse(toolData.getString(key));
       if (id != null) {
         Potion potion = BuiltInRegistries.POTION.getValue(id);
         if (potion != null) {
@@ -136,10 +136,10 @@ public enum TippedModule implements ModifierModule, ProjectileLaunchModifierHook
 
   @Override
   public Component getDisplayName(IToolStackView tool, ModifierEntry entry, Component name, @Nullable RegistryAccess access) {
-    ResourceLocation key = entry.getId().getLocation();
+    Identifier key = entry.getId().getLocation();
     IModDataView toolData = tool.getPersistentData();
     if (toolData.contains(key, Tag.TAG_STRING)) {
-      ResourceLocation id = ResourceLocation.tryParse(toolData.getString(key));
+      Identifier id = Identifier.tryParse(toolData.getString(key));
       if (id != null) {
         Potion potion = BuiltInRegistries.POTION.getValue(id);
         if (potion != null) {

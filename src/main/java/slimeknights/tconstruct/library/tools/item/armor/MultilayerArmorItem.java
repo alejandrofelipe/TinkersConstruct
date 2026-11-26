@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.library.tools.item.armor;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -16,21 +16,21 @@ import java.util.function.Consumer;
 
 /** Armor model that applies multiple texture layers in order */
 public class MultilayerArmorItem extends ModifiableArmorItem {
-  private final ResourceLocation name;
+  private final Identifier name;
   public MultilayerArmorItem(ModifiableArmorMaterial material, ArmorType slot, Properties properties) {
     this(material, slot, properties, material.getId());
   }
 
-  public MultilayerArmorItem(ModifiableArmorMaterial material, ArmorType slot, Properties properties, ResourceLocation name) {
+  public MultilayerArmorItem(ModifiableArmorMaterial material, ArmorType slot, Properties properties, Identifier name) {
     super(material, slot, properties);
     this.name = name;
   }
 
   public MultilayerArmorItem(DummyArmorMaterial material, ArmorType slot, Properties properties, ToolDefinition toolDefinition) {
-    this(material, slot, properties, toolDefinition, ResourceLocation.parse(material.getName()));
+    this(material, slot, properties, toolDefinition, Identifier.parse(material.getName()));
   }
 
-  public MultilayerArmorItem(DummyArmorMaterial material, ArmorType slot, Properties properties, ToolDefinition toolDefinition, ResourceLocation name) {
+  public MultilayerArmorItem(DummyArmorMaterial material, ArmorType slot, Properties properties, ToolDefinition toolDefinition, Identifier name) {
     super(material, slot, properties, toolDefinition);
     this.name = name;
   }
@@ -48,7 +48,7 @@ public class MultilayerArmorItem extends ModifiableArmorItem {
   public void initializeClient(Consumer<IClientItemExtensions> consumer) {
     consumer.accept(new ArmorModelDispatcher() {
       @Override
-      protected ResourceLocation getName() {
+      protected Identifier getName() {
         return name;
       }
     });

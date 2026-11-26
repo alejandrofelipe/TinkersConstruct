@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.tools.capability;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -29,7 +29,7 @@ public class PersistentDataCapability {
   private PersistentDataCapability() {}
 
   /** Capability ID */
-  private static final ResourceLocation ID = TConstruct.getResource("persistent_data");
+  private static final Identifier ID = TConstruct.getResource("persistent_data");
   /**
    * Capability instance. Under NeoForge this is an {@link EntityCapability} registered for supported entity types on
    * {@link RegisterCapabilitiesEvent}.

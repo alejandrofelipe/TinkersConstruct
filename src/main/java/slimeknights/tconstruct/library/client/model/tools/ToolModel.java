@@ -9,7 +9,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -22,7 +22,7 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -82,7 +82,7 @@ public class ToolModel {
   }
 
   /** Builds a Material on the block atlas for the given texture location */
-  private static Material material(ResourceLocation texture) {
+  private static Material material(Identifier texture) {
     return new Material(TextureAtlas.LOCATION_BLOCKS, texture);
   }
 
@@ -135,7 +135,7 @@ public class ToolModel {
   /** Modifier that may be forced */
   record FirstModifier(ModifierId id, boolean forced) {
     public static final Codec<FirstModifier> CODEC = RecordCodecBuilder.create(inst -> inst.group(
-      ResourceLocation.CODEC.xmap(ModifierId::new, ModifierId::getLocation).fieldOf("name").forGetter(FirstModifier::id),
+      Identifier.CODEC.xmap(ModifierId::new, ModifierId::getLocation).fieldOf("name").forGetter(FirstModifier::id),
       Codec.BOOL.optionalFieldOf("forced", false).forGetter(FirstModifier::forced)
     ).apply(inst, FirstModifier::new));
 
@@ -282,16 +282,16 @@ public class ToolModel {
   }
 
   /** Unbaked tool item model */
-  public record Unbaked(ResourceLocation transformModel, Map<String,ResourceLocation> textures, List<ToolPart> parts,
-                        boolean large, net.minecraft.world.phys.Vec2 offset, List<ResourceLocation> modifierModels,
+  public record Unbaked(Identifier transformModel, Map<String,Identifier> textures, List<ToolPart> parts,
+                        boolean large, net.minecraft.world.phys.Vec2 offset, List<Identifier> modifierModels,
                         List<FirstModifier> firstModifiers, boolean showTraits) implements ItemModel.Unbaked {
     public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-      ResourceLocation.CODEC.fieldOf("transform_model").forGetter(Unbaked::transformModel),
-      Codec.unboundedMap(Codec.STRING, ResourceLocation.CODEC).optionalFieldOf("textures", Map.of()).forGetter(Unbaked::textures),
+      Identifier.CODEC.fieldOf("transform_model").forGetter(Unbaked::transformModel),
+      Codec.unboundedMap(Codec.STRING, Identifier.CODEC).optionalFieldOf("textures", Map.of()).forGetter(Unbaked::textures),
       ToolPart.CODEC.listOf().optionalFieldOf("parts", List.of()).forGetter(Unbaked::parts),
       Codec.BOOL.optionalFieldOf("large", false).forGetter(Unbaked::large),
       MaterialModel.OFFSET_CODEC.optionalFieldOf("large_offset", net.minecraft.world.phys.Vec2.ZERO).forGetter(Unbaked::offset),
-      ResourceLocation.CODEC.listOf().optionalFieldOf("modifier_maps", List.of()).forGetter(Unbaked::modifierModels),
+      Identifier.CODEC.listOf().optionalFieldOf("modifier_maps", List.of()).forGetter(Unbaked::modifierModels),
       FirstModifier.CODEC.listOf().optionalFieldOf("first_modifiers", List.of()).forGetter(Unbaked::firstModifiers),
       Codec.BOOL.optionalFieldOf("show_traits", false).forGetter(Unbaked::showTraits)
     ).apply(inst, Unbaked::new));
@@ -323,7 +323,7 @@ public class ToolModel {
   }
 
   /** Location used for modifier model lookup, since bake no longer receives the model location */
-  private static final ResourceLocation BAKE_LOCATION = TConstruct.getResource("dynamic_tool");
+  private static final Identifier BAKE_LOCATION = TConstruct.getResource("dynamic_tool");
 
   /** Baked tool item model: resolves and caches the composited variants per stack */
   public static final class Baked implements ItemModel {

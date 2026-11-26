@@ -10,7 +10,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
 import slimeknights.mantle.data.loadable.Loadables;
@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /** Modifier model that renders all banner patterns on a tool */
-public record BannerModifierModel(@Nullable ResourceLocation smallPrefix, @Nullable ResourceLocation largePrefix) implements ModifierModel {
+public record BannerModifierModel(@Nullable Identifier smallPrefix, @Nullable Identifier largePrefix) implements ModifierModel {
   public static final RecordLoadable<BannerModifierModel> LOADER = RecordLoadable.create(
     Loadables.RESOURCE_LOCATION.nullableField("prefix", BannerModifierModel::smallPrefix),
     Loadables.RESOURCE_LOCATION.nullableField("prefix_large", BannerModifierModel::largePrefix),
@@ -59,10 +59,10 @@ public record BannerModifierModel(@Nullable ResourceLocation smallPrefix, @Nulla
 
   @Override
   public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<Material, TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
-    ResourceLocation prefix = isLarge ? largePrefix : smallPrefix;
+    Identifier prefix = isLarge ? largePrefix : smallPrefix;
     if (prefix != null) {
       IModDataView modData = tool.getPersistentData();
-      ResourceLocation key = BannerModule.patternKey(modifier.getId());
+      Identifier key = BannerModule.patternKey(modifier.getId());
       if (modData.contains(key, CompoundTag.TAG_LIST)) {
         ListTag list = modData.getList(key, ListTag.TAG_COMPOUND);
         List<BakedQuad> quads = new ArrayList<>(list.size());
@@ -72,8 +72,8 @@ public record BannerModifierModel(@Nullable ResourceLocation smallPrefix, @Nulla
           // map that back to the pattern
           CompoundTag tag = list.getCompoundOrEmpty(i);
           // PORT M3: BannerPattern.byHash was removed in 1.21 (BannerPattern is now a record without hashname);
-          // patterns are now referenced by ResourceLocation/Holder. Blocked on the BannerModule data-format port in the tools bucket.
-          ResourceLocation patternId = ResourceLocation.tryParse(tag.getStringOr(BannerModule.KEY_PATTERN, ""));
+          // patterns are now referenced by Identifier/Holder. Blocked on the BannerModule data-format port in the tools bucket.
+          Identifier patternId = Identifier.tryParse(tag.getStringOr(BannerModule.KEY_PATTERN, ""));
           // PORT M3: BannerPattern moved to the datapack registry Registries.BANNER_PATTERN in 1.21; resolving a Holder
           // needs a RegistryAccess that isn't available here. Blocked on the BannerModule data-format port in the tools bucket.
           Holder<BannerPattern> pattern = null;

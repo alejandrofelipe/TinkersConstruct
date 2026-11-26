@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.tools.nbt;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.library.tools.SlotType;
 import slimeknights.tconstruct.library.utils.TagUtil;
@@ -11,8 +11,8 @@ import slimeknights.tconstruct.test.BaseMcTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ToolDataNBTTest extends BaseMcTest {
-  private static final ResourceLocation testKey = ResourceLocation.parse("test");
-  private static final ResourceLocation testKey2 = ResourceLocation.parse("test2");
+  private static final Identifier testKey = Identifier.parse("test");
+  private static final Identifier testKey2 = Identifier.parse("test2");
 
   @Test
   void empty() {

@@ -1,9 +1,9 @@
 package slimeknights.tconstruct.library.modifiers.fluid.entity;
 
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -21,7 +21,7 @@ import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext.Entity
  * @param stat    Stat to award
  * @param amount  Amount to reward, can be negative
  */
-public record AwardStatFluidEffect(ResourceLocation stat, int amount) implements FluidEffect<FluidEffectContext.Entity> {
+public record AwardStatFluidEffect(Identifier stat, int amount) implements FluidEffect<FluidEffectContext.Entity> {
   public static final RecordLoadable<AwardStatFluidEffect> LOADER = RecordLoadable.create(
     TinkerLoadables.CUSTOM_STAT.requiredField("stat", e -> e.stat),
     IntLoadable.ANY_SHORT.requiredField("amount", e -> e.amount),

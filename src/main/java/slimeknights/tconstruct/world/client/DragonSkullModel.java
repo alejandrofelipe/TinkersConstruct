@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.world.client;
 
-import net.minecraft.client.model.SkullModelBase;
+import net.minecraft.client.model.object.skull.SkullModelBase;
 import net.minecraft.client.model.geom.ModelPart;
 
 /** Recreation of {@link net.minecraft.client.model.dragon.DragonHeadModel} but adjusted for slimeskulls. */

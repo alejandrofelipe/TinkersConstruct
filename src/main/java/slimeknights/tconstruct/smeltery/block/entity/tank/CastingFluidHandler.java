@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.ValueInput;
@@ -198,7 +198,7 @@ public class CastingFluidHandler implements ResourceHandler<FluidResource> {
     // saving skips an empty fluid and filter, so a missing key means empty (a client copy may still hold the previous ones)
     // OPTIONAL_CODEC treats an empty compound as empty like the old parseOptional
     setFluid(nbt.read(TAG_FLUID, FluidStack.OPTIONAL_CODEC).orElse(FluidStack.EMPTY));
-    filter = nbt.getString(TAG_FILTER).map(ResourceLocation::tryParse).map(BuiltInRegistries.FLUID::getValue).orElse(Fluids.EMPTY);
+    filter = nbt.getString(TAG_FILTER).map(Identifier::tryParse).map(BuiltInRegistries.FLUID::getValue).orElse(Fluids.EMPTY);
   }
 
   /** Write the tank from NBT */

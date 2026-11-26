@@ -35,7 +35,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -205,7 +205,7 @@ public class TinkerUiTestScenarios {
   /** Places a single block and opens its GUI. */
   private record BlockGuiScenario(String name, BlockPos pos, Supplier<BlockState> state) implements UiTestScenario {
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource(name);
     }
 
@@ -236,7 +236,7 @@ public class TinkerUiTestScenarios {
     private volatile BlockPos controller;
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("smeltery");
     }
 
@@ -268,7 +268,7 @@ public class TinkerUiTestScenarios {
     private final BlockPos pos = SITE.offset(20, 1, 0);
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("melter");
     }
 
@@ -298,7 +298,7 @@ public class TinkerUiTestScenarios {
     private volatile SmelteryRigs.CastingRig rig;
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("casting_pour");
     }
 
@@ -334,7 +334,7 @@ public class TinkerUiTestScenarios {
   /** Opens "Materials and You" and captures the rendered page (first real run of Mantle's book system). */
   private static class BookScenario implements UiTestScenario {
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("book_materials_and_you");
     }
 
@@ -371,7 +371,7 @@ public class TinkerUiTestScenarios {
   /** Opens the book and advances past the cover to a two-page spread (guards interior pages against the 1.21 blur pass). */
   private static class BookInteriorScenario implements UiTestScenario {
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("book_interior");
     }
 
@@ -410,7 +410,7 @@ public class TinkerUiTestScenarios {
   /** No GUI: asserts the JEI runtime cleanup left no modifier crystal / creative slot item entries. */
   private static class JeiItemListCleanupScenario implements UiTestScenario {
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("jei_item_list_cleanup");
     }
 
@@ -446,7 +446,7 @@ public class TinkerUiTestScenarios {
    */
   private static class JeiCategoryTooltipsScenario implements UiTestScenario {
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("jei_category_tooltips");
     }
 
@@ -557,7 +557,7 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("jei_" + name + "_category");
     }
 
@@ -608,7 +608,7 @@ public class TinkerUiTestScenarios {
     private static final String PAGE = "smeltery.structure";
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("book_structure");
     }
 
@@ -663,7 +663,7 @@ public class TinkerUiTestScenarios {
     private boolean rotated = false;
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("crafting_tweaks_rotate");
     }
 
@@ -768,7 +768,7 @@ public class TinkerUiTestScenarios {
     private int restoreW = 1280, restoreH = 720;
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("station_reflow");
     }
 
@@ -820,7 +820,7 @@ public class TinkerUiTestScenarios {
     private int restoreW = 1280, restoreH = 720;
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("station_collapsed");
     }
 
@@ -881,7 +881,7 @@ public class TinkerUiTestScenarios {
     private final Consumer<ClientTickEvent.Post> overlayPoller = this::openOverlayWhenReady;
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("station_collapsed_overlay");
     }
 
@@ -946,7 +946,7 @@ public class TinkerUiTestScenarios {
     private final BlockPos origin = SITE.offset(90, 0, 0);
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("dynamic_block_models");
     }
 
@@ -1002,7 +1002,7 @@ public class TinkerUiTestScenarios {
    */
   private static class HeadItemsScenario implements UiTestScenario {
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("head_items");
     }
 
@@ -1034,7 +1034,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void open(UiTestContext ctx) {
       for (ItemLike egg : SPAWN_EGGS) {
-        ResourceLocation texture = BuiltInRegistries.ITEM.getKey(egg.asItem()).withPath(path -> "textures/item/" + path + ".png");
+        Identifier texture = BuiltInRegistries.ITEM.getKey(egg.asItem()).withPath(path -> "textures/item/" + path + ".png");
         if (ctx.mc().getResourceManager().getResource(texture).isEmpty()) {
           throw new IllegalStateException("missing spawn egg texture " + texture);
         }
@@ -1063,7 +1063,7 @@ public class TinkerUiTestScenarios {
    */
   private static class DynamicItemIconsScenario implements UiTestScenario {
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("dynamic_item_icons");
     }
 
@@ -1166,7 +1166,7 @@ public class TinkerUiTestScenarios {
     private final BlockPos pos = SITE.offset(80, 0, 0);
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("tool_inventory");
     }
 
@@ -1240,7 +1240,7 @@ public class TinkerUiTestScenarios {
     private final BlockPos pos = SITE.offset(60, 0, 0);
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource("extra_hearts");
     }
 
@@ -1307,7 +1307,7 @@ public class TinkerUiTestScenarios {
     private final BlockPos basin = origin.offset(0, 0, 4);
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource(NAME);
     }
 
@@ -1400,7 +1400,7 @@ public class TinkerUiTestScenarios {
     private boolean frozen = false;
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource(NAME);
     }
 
@@ -1519,7 +1519,7 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource(name);
     }
 
@@ -1627,7 +1627,7 @@ public class TinkerUiTestScenarios {
     private int step = 0;
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource(NAME);
     }
 
@@ -1759,7 +1759,7 @@ public class TinkerUiTestScenarios {
     private String failure = null;
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource(NAME);
     }
 
@@ -1873,7 +1873,7 @@ public class TinkerUiTestScenarios {
    */
   private static class JeiRecipeTransferScenario implements UiTestScenario {
     private static final String NAME = "jei_recipe_transfer";
-    private static final ResourceLocation STICK = ResourceLocation.withDefaultNamespace("stick");
+    private static final Identifier STICK = Identifier.withDefaultNamespace("stick");
     private final BlockPos pos = SITE.offset(150, 0, 0);
     private final BlockPos chest = pos.south();
     private final Consumer<ClientTickEvent.Post> poller = this::transferWhenReady;
@@ -1882,7 +1882,7 @@ public class TinkerUiTestScenarios {
     private String failure = null;
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource(NAME);
     }
 
@@ -2053,7 +2053,7 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
       return TConstruct.getResource(name);
     }
 

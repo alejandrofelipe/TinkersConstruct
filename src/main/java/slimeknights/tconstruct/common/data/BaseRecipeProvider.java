@@ -45,7 +45,7 @@ public abstract class BaseRecipeProvider extends RecipeProvider implements IReci
   }
 
   /** Wraps a recipe id in the {@code ResourceKey<Recipe<?>>} now required by {@code RecipeBuilder#save} and {@code RecipeOutput#accept}. */
-  public net.minecraft.resources.ResourceKey<net.minecraft.world.item.crafting.Recipe<?>> recipeKey(net.minecraft.resources.ResourceLocation id) {
+  public net.minecraft.resources.ResourceKey<net.minecraft.world.item.crafting.Recipe<?>> recipeKey(net.minecraft.resources.Identifier id) {
     return net.minecraft.resources.ResourceKey.create(Registries.RECIPE, id);
   }
 

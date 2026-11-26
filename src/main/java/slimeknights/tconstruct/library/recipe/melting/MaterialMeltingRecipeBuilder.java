@@ -6,7 +6,7 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -81,7 +81,7 @@ public class MaterialMeltingRecipeBuilder extends AbstractRecipeBuilder<Material
   public void save(RecipeOutput output) {
     save(output, inputId.getId().getLocation());
   }
-  public void save(RecipeOutput output, ResourceLocation id) {
+  public void save(RecipeOutput output, Identifier id) {
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "melting");
     output.accept(ResourceKey.create(Registries.RECIPE, id), new MaterialMeltingRecipe(id, inputId, temperature, result, byproducts), advancement);
   }

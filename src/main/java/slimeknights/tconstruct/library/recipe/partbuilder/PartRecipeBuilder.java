@@ -8,7 +8,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
@@ -25,7 +25,7 @@ public class PartRecipeBuilder extends AbstractRecipeBuilder<PartRecipeBuilder> 
   @Setter
   private int cost = 1;
   @Setter
-  private ResourceLocation pattern = null;
+  private Identifier pattern = null;
   @Setter
   private Ingredient patternItem = IPartBuilderRecipe.DEFAULT_PATTERNS;
   @Setter
@@ -44,7 +44,7 @@ public class PartRecipeBuilder extends AbstractRecipeBuilder<PartRecipeBuilder> 
   public void save(RecipeOutput consumerIn) {
     this.save(consumerIn, BuiltInRegistries.ITEM.getKey(this.output.asItem()));
   }
-  public void save(RecipeOutput consumerIn, ResourceLocation id) {
+  public void save(RecipeOutput consumerIn, Identifier id) {
     if (this.outputAmount <= 0) {
       throw new IllegalStateException("recipe " + id + " must output at least 1");
     }

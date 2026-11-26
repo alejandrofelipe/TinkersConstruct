@@ -6,7 +6,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.RandomSource;
@@ -149,7 +149,7 @@ public final class ModifierUtil {
   }
 
   /** Shortcut to get a volatile flag when the tool stack is not needed otherwise */
-  public static boolean checkVolatileFlag(ItemStack stack, ResourceLocation flag) {
+  public static boolean checkVolatileFlag(ItemStack stack, Identifier flag) {
     CompoundTag nbt = getStackTag(stack);
     if (nbt != null && TagUtil.contains(nbt, ToolStack.TAG_VOLATILE_MOD_DATA, Tag.TAG_COMPOUND)) {
       return nbt.getCompoundOrEmpty(ToolStack.TAG_VOLATILE_MOD_DATA).getBooleanOr(flag.toString(), false);
@@ -158,7 +158,7 @@ public final class ModifierUtil {
   }
 
   /** Shortcut to get a persistent flag when the tool stack is not needed otherwise */
-  public static boolean checkPersistentPresent(ItemStack stack, ResourceLocation key) {
+  public static boolean checkPersistentPresent(ItemStack stack, Identifier key) {
     CompoundTag nbt = getStackTag(stack);
     if (nbt != null && TagUtil.contains(nbt, ToolStack.TAG_VOLATILE_MOD_DATA, Tag.TAG_COMPOUND)) {
       return nbt.getCompoundOrEmpty(ToolStack.TAG_VOLATILE_MOD_DATA).contains(key.toString());
@@ -167,7 +167,7 @@ public final class ModifierUtil {
   }
 
   /** Shortcut to get a volatile int value when the tool stack is not needed otherwise */
-  public static int getVolatileInt(ItemStack stack, ResourceLocation flag) {
+  public static int getVolatileInt(ItemStack stack, Identifier flag) {
     CompoundTag nbt = getStackTag(stack);
     if (nbt != null && TagUtil.contains(nbt, ToolStack.TAG_VOLATILE_MOD_DATA, Tag.TAG_COMPOUND)) {
       return nbt.getCompoundOrEmpty(ToolStack.TAG_VOLATILE_MOD_DATA).getIntOr(flag.toString(), 0);
@@ -176,7 +176,7 @@ public final class ModifierUtil {
   }
 
   /** Shortcut to get a volatile int value when the tool stack is not needed otherwise */
-  public static int getPersistentInt(ItemStack stack, ResourceLocation flag, int defealtValue) {
+  public static int getPersistentInt(ItemStack stack, Identifier flag, int defealtValue) {
     CompoundTag nbt = getStackTag(stack);
     if (nbt != null && TagUtil.contains(nbt, ToolStack.TAG_PERSISTENT_MOD_DATA, Tag.TAG_COMPOUND)) {
       CompoundTag persistent = nbt.getCompoundOrEmpty(ToolStack.TAG_PERSISTENT_MOD_DATA);
@@ -189,7 +189,7 @@ public final class ModifierUtil {
   }
 
   /** Shortcut to get a persistent string value when the tool stack is not needed otherwise */
-  public static String getPersistentString(ItemStack stack, ResourceLocation flag) {
+  public static String getPersistentString(ItemStack stack, Identifier flag) {
     CompoundTag nbt = getStackTag(stack);
     if (nbt != null && TagUtil.contains(nbt, ToolStack.TAG_PERSISTENT_MOD_DATA, Tag.TAG_COMPOUND)) {
       return nbt.getCompoundOrEmpty(ToolStack.TAG_PERSISTENT_MOD_DATA).getStringOr(flag.toString(), "");

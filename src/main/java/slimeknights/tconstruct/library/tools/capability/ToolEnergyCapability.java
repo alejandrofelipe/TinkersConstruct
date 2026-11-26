@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.library.tools.capability;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ItemCapability;
@@ -37,7 +37,7 @@ public final class ToolEnergyCapability {
   /** Stat marking the max capacity */
   public static final CapacityStat MAX_STAT = new CapacityStat(new ToolStatId(TConstruct.MOD_ID, "max_energy"), 0xa00000, ENERGY_FORMAT);
   /** Persistent data key for fetching the current energy */
-  public static final ResourceLocation ENERGY_KEY = TConstruct.getResource("energy");
+  public static final Identifier ENERGY_KEY = TConstruct.getResource("energy");
   /** Include this module in a modifier adding energy capacity or functionality to ensure capacity changes are properly cleaned up */
   public static final ModifierModule ENERGY_HANDLER = new ModifierTraitModule(TinkerModifiers.energyHandler.getId(), 1, true);
 

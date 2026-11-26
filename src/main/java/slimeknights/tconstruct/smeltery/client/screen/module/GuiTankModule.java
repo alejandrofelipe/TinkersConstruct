@@ -7,7 +7,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
@@ -39,11 +39,11 @@ public class GuiTankModule implements IScreenWithFluidTank, ClickableTankModule 
   private final Rect2i fluidLoc;
   private final BiConsumer<Integer,List<Component>> formatter;
 
-  public GuiTankModule(AbstractContainerScreen<?> screen, ResourceHandler<FluidResource> tank, int x, int y, int width, int height, @Nullable ResourceLocation tooltipId) {
+  public GuiTankModule(AbstractContainerScreen<?> screen, ResourceHandler<FluidResource> tank, int x, int y, int width, int height, @Nullable Identifier tooltipId) {
     this(screen, tank, x, y, width, height, false, tooltipId);
   }
 
-  public GuiTankModule(AbstractContainerScreen<?> screen, ResourceHandler<FluidResource> tank, int x, int y, int width, int height, boolean horizontal, @Nullable ResourceLocation tooltipId) {
+  public GuiTankModule(AbstractContainerScreen<?> screen, ResourceHandler<FluidResource> tank, int x, int y, int width, int height, boolean horizontal, @Nullable Identifier tooltipId) {
     this.screen = screen;
     this.tank = tank;
     this.x = x;

@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.tools.modules;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -25,7 +25,7 @@ public interface InventorySelectionModule {
    * Helper to call in {@link slimeknights.tconstruct.library.modifiers.hook.interaction.GeneralInteractionModifierHook#onToolUse(IToolStackView, ModifierEntry, Player, InteractionHand, InteractionSource)}
    * or {@link slimeknights.tconstruct.library.modifiers.hook.interaction.KeybindInteractModifierHook#startInteract(IToolStackView, ModifierEntry, Player, EquipmentSlot, TooltipKey)}
    */
-  default boolean selectNext(IToolStackView tool, ModifierEntry modifier, Player player, ResourceLocation selectedSlot) {
+  default boolean selectNext(IToolStackView tool, ModifierEntry modifier, Player player, Identifier selectedSlot) {
     // first, find the new number
     ModDataNBT data = tool.getPersistentData();
     InventoryModifierHook inventory = modifier.getHook(ToolInventoryCapability.HOOK);

@@ -3,7 +3,7 @@ package slimeknights.tconstruct.common.multiblock;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -114,7 +114,7 @@ public class ServantTileEntity extends MantleBlockEntity implements IServantLogi
     Block masterBlock = null;
     // if the master position is valid, get the master block
     if (masterPos != null) {
-      ResourceLocation masterBlockName = tags.getString(TAG_MASTER_BLOCK).map(ResourceLocation::tryParse).orElse(null);
+      Identifier masterBlockName = tags.getString(TAG_MASTER_BLOCK).map(Identifier::tryParse).orElse(null);
       if (masterBlockName != null && BuiltInRegistries.BLOCK.containsKey(masterBlockName)) {
         masterBlock = BuiltInRegistries.BLOCK.getValue(masterBlockName);
       }

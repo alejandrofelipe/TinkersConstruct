@@ -14,7 +14,7 @@ import slimeknights.mantle.client.ResourceColorManager;
 import slimeknights.mantle.data.listener.ISafeManagerReloadListener;
 import slimeknights.tconstruct.TConstruct;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -32,13 +32,13 @@ public class HarvestTiers {
 
   // PORT 1.21.4: ToolMaterial is an unnamed record, so we keep the 1.20 Tiers registry names here to preserve
   // serialized data. Only vanilla materials resolve; modded tiers need the central tier-ordering replacement.
-  private static final Map<ToolMaterial, ResourceLocation> TIER_NAMES = Map.of(
-    ToolMaterial.WOOD, ResourceLocation.withDefaultNamespace("wood"),
-    ToolMaterial.STONE, ResourceLocation.withDefaultNamespace("stone"),
-    ToolMaterial.IRON, ResourceLocation.withDefaultNamespace("iron"),
-    ToolMaterial.DIAMOND, ResourceLocation.withDefaultNamespace("diamond"),
-    ToolMaterial.GOLD, ResourceLocation.withDefaultNamespace("gold"),
-    ToolMaterial.NETHERITE, ResourceLocation.withDefaultNamespace("netherite"));
+  private static final Map<ToolMaterial, Identifier> TIER_NAMES = Map.of(
+    ToolMaterial.WOOD, Identifier.withDefaultNamespace("wood"),
+    ToolMaterial.STONE, Identifier.withDefaultNamespace("stone"),
+    ToolMaterial.IRON, Identifier.withDefaultNamespace("iron"),
+    ToolMaterial.DIAMOND, Identifier.withDefaultNamespace("diamond"),
+    ToolMaterial.GOLD, Identifier.withDefaultNamespace("gold"),
+    ToolMaterial.NETHERITE, Identifier.withDefaultNamespace("netherite"));
 
   /** Stand-in for {@code getSortedTiers()} */
   private static List<ToolMaterial> getSortedTiers() {
@@ -46,8 +46,8 @@ public class HarvestTiers {
   }
 
   /** Stand-in for {@code TierSortingRegistry.getName(Tier)} */
-  private static ResourceLocation getTierName(ToolMaterial tier) {
-    return TIER_NAMES.getOrDefault(tier, ResourceLocation.withDefaultNamespace("unknown"));
+  private static Identifier getTierName(ToolMaterial tier) {
+    return TIER_NAMES.getOrDefault(tier, Identifier.withDefaultNamespace("unknown"));
   }
 
   /**
@@ -57,19 +57,19 @@ public class HarvestTiers {
    * @return  Tier name, or null if the tier is not registered
    */
   @Nullable
-  public static ResourceLocation tierName(ToolMaterial tier) {
+  public static Identifier tierName(ToolMaterial tier) {
     return TIER_NAMES.get(tier);
   }
 
   /**
    * Deserializes a tier from its registry name.
-   * PORT M3: stand-in for the removed {@code TierSortingRegistry.byName(ResourceLocation)}. Currently only
+   * PORT M3: stand-in for the removed {@code TierSortingRegistry.byName(Identifier)}. Currently only
    * resolves vanilla tiers; modded tiers need the central tier-ordering replacement.
    * @return  Tier, or null if no tier matches the name
    */
   @Nullable
-  public static ToolMaterial byName(ResourceLocation id) {
-    for (Map.Entry<ToolMaterial, ResourceLocation> entry : TIER_NAMES.entrySet()) {
+  public static ToolMaterial byName(Identifier id) {
+    for (Map.Entry<ToolMaterial, Identifier> entry : TIER_NAMES.entrySet()) {
       if (entry.getValue().equals(id)) {
         return entry.getKey();
       }

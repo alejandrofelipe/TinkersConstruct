@@ -5,7 +5,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -19,7 +19,7 @@ import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.tables.block.ITabbedBlock;
 
 public record StationTabPacket(BlockPos pos) implements IThreadsafePacket {
-  public static final CustomPacketPayload.Type<StationTabPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(TConstruct.MOD_ID, "station_tab"));
+  public static final CustomPacketPayload.Type<StationTabPacket> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(TConstruct.MOD_ID, "station_tab"));
   public static final StreamCodec<RegistryFriendlyByteBuf, StationTabPacket> STREAM_CODEC = StreamCodec.composite(
     BlockPos.STREAM_CODEC, StationTabPacket::pos,
     StationTabPacket::new);

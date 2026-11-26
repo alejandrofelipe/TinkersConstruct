@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -68,7 +68,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   private static final int STILL_FILLED_SPACING = 18;
 
   // texture
-  private static final ResourceLocation TINKER_TEXTURE = TConstruct.getResource("textures/gui/tinker.png");
+  private static final Identifier TINKER_TEXTURE = TConstruct.getResource("textures/gui/tinker.png");
   // texture elements
   private static final ElementScreen ACTIVE_TEXT_FIELD = new ElementScreen(TINKER_TEXTURE, 0, 232, 90, 12, 256, 256);
   private static final ElementScreen ITEM_COVER = ACTIVE_TEXT_FIELD.move(176, 18, 70, 64);

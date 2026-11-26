@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.fixture;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.ItemAbility;
 import slimeknights.mantle.data.predicate.block.BlockPredicate;
@@ -11,7 +11,7 @@ import slimeknights.tconstruct.library.tools.definition.module.material.PartStat
 import slimeknights.tconstruct.library.tools.definition.module.mining.IsEffectiveModule;
 
 public final class ToolDefinitionFixture {
-  private static final ResourceLocation DEFINITION_ID = ResourceLocation.fromNamespaceAndPath("test", "test_tool");
+  private static final Identifier DEFINITION_ID = Identifier.fromNamespaceAndPath("test", "test_tool");
 
   /** Standard tool definition for testing */
   private static final ToolDefinition STANDARD_TOOL_DEFINITION = new ToolDefinition(DEFINITION_ID);

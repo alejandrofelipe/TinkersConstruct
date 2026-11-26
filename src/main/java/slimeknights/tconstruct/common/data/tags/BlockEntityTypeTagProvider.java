@@ -7,7 +7,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.tags.TagEntry;
 import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
 import net.minecraft.data.tags.TagAppender;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import slimeknights.mantle.datagen.MantleTags;
 import slimeknights.tconstruct.TConstruct;
@@ -28,10 +28,10 @@ public class BlockEntityTypeTagProvider extends IntrinsicHolderTagsProvider<Bloc
 
   /** Creates a RL for iron chests */
   private static void ironchest(TagAppender<BlockEntityType<?>,BlockEntityType<?>> appender, String name) {
-    ResourceLocation chest = ResourceLocation.fromNamespaceAndPath("ironchest", name + "_chest");
+    Identifier chest = Identifier.fromNamespaceAndPath("ironchest", name + "_chest");
     appender.add(TagEntry.optionalElement(chest)).add(TagEntry.optionalElement(chest.withPrefix("trapped_")));
     if (!"dirt".equals(name)) {
-      appender.add(TagEntry.optionalElement(ResourceLocation.fromNamespaceAndPath("ironshulkerbox", name + "_shulker_box")));
+      appender.add(TagEntry.optionalElement(Identifier.fromNamespaceAndPath("ironshulkerbox", name + "_shulker_box")));
     }
   }
 
@@ -42,7 +42,7 @@ public class BlockEntityTypeTagProvider extends IntrinsicHolderTagsProvider<Bloc
       BlockEntityType.CHEST, BlockEntityType.TRAPPED_CHEST, BlockEntityType.BARREL, BlockEntityType.SHULKER_BOX,
       BlockEntityType.DISPENSER, BlockEntityType.DROPPER, BlockEntityType.HOPPER);
     // TODO 1.21: verify if BlockEntityType.CHISELED_BOOKSHELF has fixed the bug where setItem(ItemStack.EMPTY) doesn't work so it can be whitelisted.
-    sideInventories.add(TagEntry.optionalElement(ResourceLocation.fromNamespaceAndPath("immersiveengineering", "woodencrate")));
+    sideInventories.add(TagEntry.optionalElement(Identifier.fromNamespaceAndPath("immersiveengineering", "woodencrate")));
     ironchest(sideInventories, "iron");
     ironchest(sideInventories, "gold");
     ironchest(sideInventories, "diamond");

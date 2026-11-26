@@ -28,7 +28,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -138,7 +138,7 @@ import static slimeknights.mantle.Mantle.commonResource;
 @JeiPlugin
 public class JEIPlugin implements IModPlugin {
   /** Recipes that are meant as jokes and tend to confuse players, so are hidden */
-  private static final ResourceLocation[] EASTER_EGG_RECIPES = {
+  private static final Identifier[] EASTER_EGG_RECIPES = {
     TConstruct.getResource("tables/tinkers_forge"),
     TConstruct.getResource("tables/scorched_forge"),
     TConstruct.getResource("tables/seared_forge_material"),
@@ -149,7 +149,7 @@ public class JEIPlugin implements IModPlugin {
   public static volatile IJeiRuntime runtime;
 
   @Override
-  public ResourceLocation getPluginUid() {
+  public Identifier getPluginUid() {
     return TConstructJEIConstants.PLUGIN;
   }
 
@@ -182,7 +182,7 @@ public class JEIPlugin implements IModPlugin {
       modifiers = ModifierRecipeLookup.getRecipeModifierList();
     }
     registration.register(TConstructJEIConstants.MODIFIER_TYPE, modifiers, new ModifierIngredientHelper(), ModifierBookmarkIngredientRenderer.INSTANCE, ModifierEntry.LOADABLE.codec());
-    registration.register(TConstructJEIConstants.PATTERN_TYPE, Collections.emptyList(), new PatternIngredientHelper(), PatternIngredientRenderer.INSTANCE, ResourceLocation.CODEC.xmap(Pattern::new, Pattern::getLocation));
+    registration.register(TConstructJEIConstants.PATTERN_TYPE, Collections.emptyList(), new PatternIngredientHelper(), PatternIngredientRenderer.INSTANCE, Identifier.CODEC.xmap(Pattern::new, Pattern::getLocation));
     List<SlotCount> slots = SlotType.getAllSlotTypes().stream().map(type -> new SlotCount(type, 1)).toList();
     SlotIngredientRenderer.clearCache();
     registration.register(TConstructJEIConstants.SLOT_TYPE, slots, new SlotIngredientHelper(), SlotIngredientRenderer.INGREDIENT, SlotCount.LOADABLE.codec());

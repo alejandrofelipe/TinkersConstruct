@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -34,7 +34,7 @@ public record FluidModifierModel(Material small, @Nullable Material large, ToolT
     FluidModifierModel::new);
 
   /** Location used for baking dynamic models, name does not matter so just using a constant */
-  private static final ResourceLocation BAKE_LOCATION = TConstruct.getResource("dynamic_fluid_model");
+  private static final Identifier BAKE_LOCATION = TConstruct.getResource("dynamic_fluid_model");
 
   /** Instance with default tank helper */
   public FluidModifierModel(Material small, @Nullable Material large) {

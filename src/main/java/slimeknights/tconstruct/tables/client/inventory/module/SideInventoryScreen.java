@@ -3,7 +3,7 @@ package slimeknights.tconstruct.tables.client.inventory.module;
 import lombok.Getter;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
@@ -37,7 +37,7 @@ public class SideInventoryScreen<P extends MultiModuleScreen<?>, C extends Abstr
   protected ElementScreen sliderBottom = GenericScreen.sliderBottom;
   protected ScalableElementScreen sliderBackground = GenericScreen.sliderBackground;
 
-  protected static final ResourceLocation GENERIC_INVENTORY = TConstruct.getResource("textures/gui/generic.png");
+  protected static final Identifier GENERIC_INVENTORY = TConstruct.getResource("textures/gui/generic.png");
 
   protected BorderWidget border = new BorderWidget();
 

@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
@@ -56,7 +56,7 @@ public class TinkerStationPartSwappingBuilder extends AbstractRecipeBuilder<Tink
     save(output, Loadables.ITEM.getKey(tools.items().findFirst().orElseThrow().value()));
   }
 
-  public void save(RecipeOutput output, ResourceLocation id) {
+  public void save(RecipeOutput output, Identifier id) {
     if (fromTool) {
       output.accept(ResourceKey.create(Registries.RECIPE, id), new ToolMaterialSwappingRecipe(id, tools, maxStackSize, extraRequirements), null);
     } else {

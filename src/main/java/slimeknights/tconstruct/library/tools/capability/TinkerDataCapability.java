@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.tools.capability;
 
 import lombok.Getter;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.capabilities.EntityCapability;
@@ -25,7 +25,7 @@ public class TinkerDataCapability {
   private TinkerDataCapability() {}
 
   /** Capability ID */
-  private static final ResourceLocation ID = TConstruct.getResource("modifier_data");
+  private static final Identifier ID = TConstruct.getResource("modifier_data");
   /**
    * Capability instance. Under NeoForge, Forge's attached capability providers and {@code AttachCapabilitiesEvent}
    * no longer exist; this is exposed as an {@link EntityCapability} registered for all living entity types on
@@ -63,17 +63,17 @@ public class TinkerDataCapability {
 
   /** Class for generic keys */
   @SuppressWarnings("unused")
-  public static class TinkerDataKey<T> implements IdAwareObject<ResourceLocation> {
+  public static class TinkerDataKey<T> implements IdAwareObject<Identifier> {
     /** Name for debug */
     @Getter
-    private final ResourceLocation id;
+    private final Identifier id;
 
-    protected TinkerDataKey(ResourceLocation id) {
+    protected TinkerDataKey(Identifier id) {
       this.id = id;
     }
 
     /** Creates a new key */
-    public static <T> TinkerDataKey<T> of(ResourceLocation id) {
+    public static <T> TinkerDataKey<T> of(Identifier id) {
       return new TinkerDataKey<>(id);
     }
 
@@ -86,13 +86,13 @@ public class TinkerDataCapability {
   /** Extension key that can automatically create an instance if missing */
   public static class ComputableDataKey<T> extends TinkerDataKey<T> implements Function<TinkerDataKey<?>, T> {
     private final Supplier<T> constructor;
-    private ComputableDataKey(ResourceLocation name, Supplier<T> constructor) {
+    private ComputableDataKey(Identifier name, Supplier<T> constructor) {
       super(name);
       this.constructor = constructor;
     }
 
     /** Creates a new instance */
-    public static <T> ComputableDataKey<T> of(ResourceLocation name, Supplier<T> constructor) {
+    public static <T> ComputableDataKey<T> of(Identifier name, Supplier<T> constructor) {
       return new ComputableDataKey<>(name, constructor);
     }
 

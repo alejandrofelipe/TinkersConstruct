@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import slimeknights.mantle.client.book.data.BookData;
@@ -52,23 +52,23 @@ import java.util.stream.Stream;
  * Section transformer to show a range of materials tiers in the book
  */
 public class TierRangeMaterialSectionTransformer extends BookTransformer {
-  private static final ResourceLocation KEY = TConstruct.getResource("material_tier");
+  private static final Identifier KEY = TConstruct.getResource("material_tier");
   private static final IntRange TIER = new IntRange(0, Short.MAX_VALUE);
   private static final TypedMap CONTEXT = TypedMapBuilder.builder().put(ContextKey.CONDITION_CONTEXT, DataLoadedConditionContext.INSTANCE).build();
 
-  private static final Map<ResourceLocation,MaterialType> MATERIAL_TYPES = new HashMap<>();
+  private static final Map<Identifier,MaterialType> MATERIAL_TYPES = new HashMap<>();
 
   public static final TierRangeMaterialSectionTransformer INSTANCE = new TierRangeMaterialSectionTransformer();
 
   /** Registers a new group of stat types to show on a page */
-  public static void registerMaterialType(ResourceLocation id, BiFunction<MaterialVariantId,Boolean,AbstractMaterialContent> constructor, @Nullable Comparator<IMaterial> sortComparator, MaterialStatsId... stats) {
+  public static void registerMaterialType(Identifier id, BiFunction<MaterialVariantId,Boolean,AbstractMaterialContent> constructor, @Nullable Comparator<IMaterial> sortComparator, MaterialStatsId... stats) {
     if (MATERIAL_TYPES.putIfAbsent(id, new MaterialType(constructor, ImmutableSet.copyOf(stats), sortComparator)) != null) {
       throw new IllegalArgumentException("Duplicate material stat group " + id);
     }
   }
 
   /** Registers a new group of stat types to show on a page */
-  public static void registerMaterialType(ResourceLocation id, BiFunction<MaterialVariantId,Boolean,AbstractMaterialContent> constructor, MaterialStatsId... stats) {
+  public static void registerMaterialType(Identifier id, BiFunction<MaterialVariantId,Boolean,AbstractMaterialContent> constructor, MaterialStatsId... stats) {
     registerMaterialType(id, constructor, null, stats);
   }
 
@@ -92,7 +92,7 @@ public class TierRangeMaterialSectionTransformer extends BookTransformer {
           }
 
           // load in type specific data
-          ResourceLocation type = JsonHelper.getResourceLocation(json, "type");
+          Identifier type = JsonHelper.getResourceLocation(json, "type");
           MaterialType typeData = MATERIAL_TYPES.get(type);
           if (typeData == null) {
             throw new JsonSyntaxException("Invalid material section type " + type);
@@ -145,7 +145,7 @@ public class TierRangeMaterialSectionTransformer extends BookTransformer {
   }
 
   /** Helper to add a page to the section */
-  private static PageData createPage(SectionData data, String name, ResourceLocation type, PageContent content) {
+  private static PageData createPage(SectionData data, String name, Identifier type, PageContent content) {
     PageData page = new PageData(true);
     page.source = data.source;
     page.parent = data;

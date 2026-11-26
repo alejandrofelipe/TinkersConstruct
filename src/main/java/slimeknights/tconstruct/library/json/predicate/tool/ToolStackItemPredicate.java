@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.json.predicate.tool;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.tconstruct.TConstruct;
@@ -16,7 +16,7 @@ import slimeknights.tconstruct.library.utils.JsonUtils;
 /**
  * Variant of ItemPredicate for matching Tinker tools using {@link ToolStackPredicate}.
  *
- * <p>PORT 1.21.1: {@code net.minecraft.advancements.critereon.ItemPredicate} became a {@code final}
+ * <p>PORT 1.21.1: {@code net.minecraft.advancements.criterion.ItemPredicate} became a {@code final}
  * record in 1.20.5, so this can no longer extend it, and the Forge {@code ItemPredicate.register(...)}
  * extension is gone. The advancement system now matches via {@code ItemSubPredicate}/{@code DataComponentPredicate}.
  * This class is kept as a standalone tool-matching predicate; the advancement-trigger wiring that used to
@@ -24,7 +24,7 @@ import slimeknights.tconstruct.library.utils.JsonUtils;
  */
 @RequiredArgsConstructor(staticName = "ofTool")
 public class ToolStackItemPredicate {
-  public static final ResourceLocation ID = TConstruct.getResource("tool_stack");
+  public static final Identifier ID = TConstruct.getResource("tool_stack");
 
   private final IJsonPredicate<IToolStackView> predicate;
 

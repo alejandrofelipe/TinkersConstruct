@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.recipe.alloying;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -35,7 +35,7 @@ public class AlloyRecipe implements ICustomOutputRecipe<IAlloyTank> {
     AlloyRecipe::new);
 
   @Getter
-  private final ResourceLocation id;
+  private final Identifier id;
   /**
    * List of input ingredients.
    * Order matters, as if a fluid matches multiple ingredients it may produce unexpected behavior.

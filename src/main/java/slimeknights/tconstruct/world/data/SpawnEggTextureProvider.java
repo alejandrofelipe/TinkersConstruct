@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.data.GenericTextureGenerator;
@@ -84,7 +84,7 @@ public class SpawnEggTextureProvider extends GenericTextureGenerator {
 
   /** Saves the tinted template as the texture named after the egg item, {@code tconstruct:item/<egg name>} */
   private CompletableFuture<?> egg(CachedOutput cache, NativeImage base, NativeImage overlay, SpawnEggColors egg) {
-    ResourceLocation item = TConstruct.getResource(egg.getEggName());
+    Identifier item = TConstruct.getResource(egg.getEggName());
     if (!BuiltInRegistries.ITEM.containsKey(item)) {
       return CompletableFuture.failedFuture(new IllegalStateException("Spawn egg colors for " + item + ", which is not a registered item"));
     }

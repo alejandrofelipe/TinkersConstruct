@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.library.modifiers.hook.ranged;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -19,9 +19,9 @@ import java.util.function.Predicate;
 /** Hook to find ammo on a bow.*/
 public interface BowAmmoModifierHook {
   /** Volatile data int for extra shots to fire. */
-  ResourceLocation MULTISHOT = TConstruct.getResource("multishot");
+  Identifier MULTISHOT = TConstruct.getResource("multishot");
   /** Volatile data key telling the tool to not fetch ammo from the inventory. */
-  ResourceLocation SKIP_INVENTORY_AMMO = TConstruct.getResource("skip_inventory_ammo");
+  Identifier SKIP_INVENTORY_AMMO = TConstruct.getResource("skip_inventory_ammo");
 
   /** Default instance */
   BowAmmoModifierHook EMPTY = (tool, modifier, shooter, standardAmmo, ammoPredicate) -> ItemStack.EMPTY;

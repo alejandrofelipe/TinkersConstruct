@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.modifiers.modules.build;
 import com.google.gson.JsonObject;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.library.json.LevelingValue;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.mock;
 
 /** Tests {@link VolatileFloatModule}: adds a leveled float to volatile data, accumulating across multiple applications. */
 class VolatileFloatModuleTest extends BaseMcTest {
-  private static final ResourceLocation FLAG = ResourceLocation.fromNamespaceAndPath("test", "float_flag");
+  private static final Identifier FLAG = Identifier.fromNamespaceAndPath("test", "float_flag");
   private static final ModifierId ID = new ModifierId("test", "foo");
 
   @Test

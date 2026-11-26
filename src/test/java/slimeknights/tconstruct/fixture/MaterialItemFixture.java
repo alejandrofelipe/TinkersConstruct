@@ -5,7 +5,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
 import slimeknights.tconstruct.library.tools.part.ToolPartItem;
@@ -38,7 +38,7 @@ public class MaterialItemFixture {
   // PORT 1.21.4: Item.Properties now requires an id (Item#<init> reads it); outside the registration
   // framework a bare unit test must set it explicitly, matching the registry key.
   private static ToolPartItem register(String name, MaterialStatsId statsId) {
-    ResourceLocation id = ResourceLocation.fromNamespaceAndPath("test", name);
+    Identifier id = Identifier.fromNamespaceAndPath("test", name);
     ToolPartItem item = new ToolPartItem(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id)), statsId);
     Registry.register(BuiltInRegistries.ITEM, id, item);
     return item;

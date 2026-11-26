@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import slimeknights.mantle.network.packet.IThreadsafePacket;
@@ -25,7 +25,7 @@ public record UpdateMaterialsPacket(Map<MaterialId,IMaterial> materials, Map<Mat
     int materialCount = buffer.readInt();
     ImmutableMap.Builder<MaterialId,IMaterial> materials = ImmutableMap.builder();
     for (int i = 0; i < materialCount; i++) {
-      MaterialId id = new MaterialId(buffer.readResourceLocation());
+      MaterialId id = new MaterialId(buffer.readIdentifier());
       int tier = buffer.readVarInt();
       int sortOrder = buffer.readVarInt();
       boolean craftable = buffer.readBoolean();
@@ -51,7 +51,7 @@ public record UpdateMaterialsPacket(Map<MaterialId,IMaterial> materials, Map<Mat
   private static void encode(RegistryFriendlyByteBuf buffer, UpdateMaterialsPacket packet) {
     buffer.writeInt(packet.materials.size());
     packet.materials.values().forEach(material -> {
-      buffer.writeResourceLocation(material.getIdentifier().getLocation());
+      buffer.writeIdentifier(material.getIdentifier().getLocation());
       buffer.writeVarInt(material.getTier());
       buffer.writeVarInt(material.getSortOrder());
       buffer.writeBoolean(material.isCraftable());

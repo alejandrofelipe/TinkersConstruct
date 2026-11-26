@@ -7,7 +7,7 @@ import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.PathProvider;
 import net.minecraft.data.PackOutput.Target;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.equipment.ArmorType;
@@ -42,9 +42,9 @@ public class TinkerItemModelProvider implements DataProvider {
   private final PathProvider itemPath;
   private final PathProvider modelPath;
   /** Item-model definitions, keyed by item id -> {@code {"model": ...}} */
-  private final Map<ResourceLocation,JsonObject> items = new LinkedHashMap<>();
+  private final Map<Identifier,JsonObject> items = new LinkedHashMap<>();
   /** Backing item models, keyed by model id (item/<id>) -> model json */
-  private final Map<ResourceLocation,JsonObject> models = new LinkedHashMap<>();
+  private final Map<Identifier,JsonObject> models = new LinkedHashMap<>();
 
   @SuppressWarnings("unused") // resourceManager kept for ctor parity with the client GatherDataEvent wiring
   public TinkerItemModelProvider(PackOutput output, ResourceManager resourceManager) {
@@ -168,10 +168,10 @@ public class TinkerItemModelProvider implements DataProvider {
     registerModels();
     CompletableFuture<?>[] tasks = new CompletableFuture<?>[items.size() + models.size()];
     int i = 0;
-    for (Map.Entry<ResourceLocation,JsonObject> entry : items.entrySet()) {
+    for (Map.Entry<Identifier,JsonObject> entry : items.entrySet()) {
       tasks[i++] = DataProvider.saveStable(cache, entry.getValue(), itemPath.json(entry.getKey()));
     }
-    for (Map.Entry<ResourceLocation,JsonObject> entry : models.entrySet()) {
+    for (Map.Entry<Identifier,JsonObject> entry : models.entrySet()) {
       tasks[i++] = DataProvider.saveStable(cache, entry.getValue(), modelPath.json(entry.getKey()));
     }
     return CompletableFuture.allOf(tasks);
@@ -183,18 +183,18 @@ public class TinkerItemModelProvider implements DataProvider {
   }
 
   @SuppressWarnings("deprecation") // registry lookup for the item id
-  private static ResourceLocation id(ItemLike item) {
+  private static Identifier id(ItemLike item) {
     return BuiltInRegistries.ITEM.getKey(item.asItem());
   }
 
   /** Backing model id for an item id: {@code <ns>:item/<path>} */
-  private static ResourceLocation modelId(ResourceLocation item) {
-    return ResourceLocation.fromNamespaceAndPath(item.getNamespace(), "item/" + item.getPath());
+  private static Identifier modelId(Identifier item) {
+    return Identifier.fromNamespaceAndPath(item.getNamespace(), "item/" + item.getPath());
   }
 
   /** Emits a {@code minecraft:item/generated} backing model with the given layer0 texture, returns its id */
-  private ResourceLocation generatedModel(ResourceLocation item, ResourceLocation texture) {
-    ResourceLocation model = modelId(item);
+  private Identifier generatedModel(Identifier item, Identifier texture) {
+    Identifier model = modelId(item);
     JsonObject json = new JsonObject();
     json.addProperty("parent", "minecraft:item/generated");
     JsonObject textures = new JsonObject();
@@ -205,15 +205,15 @@ public class TinkerItemModelProvider implements DataProvider {
   }
 
   /** Wraps an unbaked item model object in a {@link net.minecraft.client.renderer.item.ClientItem} definition */
-  private void itemDefinition(ResourceLocation item, JsonObject model) {
+  private void itemDefinition(Identifier item, JsonObject model) {
     JsonObject json = new JsonObject();
     json.add("model", model);
     items.put(item, json);
   }
 
   /** Creates a material part model with the given texture (under {@code item/tool/}) */
-  private MaterialModelBuilder part(ResourceLocation part, String texture) {
-    ResourceLocation base = generatedModel(part, getResource("item/tool/" + texture));
+  private MaterialModelBuilder part(Identifier part, String texture) {
+    Identifier base = generatedModel(part, getResource("item/tool/" + texture));
     JsonObject material = new JsonObject();
     itemDefinition(part, material);
     return new MaterialModelBuilder(material, base);
@@ -235,8 +235,8 @@ public class TinkerItemModelProvider implements DataProvider {
   }
 
   /** Simple generated item with the given full texture path */
-  private void generated(ResourceLocation item, ResourceLocation texture) {
-    ResourceLocation base = generatedModel(item, texture);
+  private void generated(Identifier item, Identifier texture) {
+    Identifier base = generatedModel(item, texture);
     JsonObject model = new JsonObject();
     model.addProperty("type", "minecraft:model");
     model.addProperty("model", base.toString());
@@ -244,8 +244,8 @@ public class TinkerItemModelProvider implements DataProvider {
   }
 
   /** Simple generated item with the given texture path relative to the item namespace */
-  private void generated(ResourceLocation item, String texture) {
-    generated(item, ResourceLocation.fromNamespaceAndPath(item.getNamespace(), texture));
+  private void generated(Identifier item, String texture) {
+    generated(item, Identifier.fromNamespaceAndPath(item.getNamespace(), texture));
   }
 
   /** Simple generated item with the given texture path relative to the item namespace */
@@ -254,7 +254,7 @@ public class TinkerItemModelProvider implements DataProvider {
   }
 
   /** Simple generated item with a texture under {@code item/} */
-  private void basicItem(ResourceLocation item, String texture) {
+  private void basicItem(Identifier item, String texture) {
     generated(item, "item/" + texture);
   }
 
@@ -267,7 +267,7 @@ public class TinkerItemModelProvider implements DataProvider {
    * Head item rendered by the {@code tconstruct:head} special model, mirroring vanilla's head items. A plain
    * {@code template_skull} model has no geometry, so the item was invisible.
    */
-  private void head(ResourceLocation item, TinkerHeadType type) {
+  private void head(Identifier item, TinkerHeadType type) {
     JsonObject special = new JsonObject();
     special.addProperty("type", TConstruct.resourceString("head"));
     special.addProperty("kind", type.getSerializedName());
@@ -280,7 +280,7 @@ public class TinkerItemModelProvider implements DataProvider {
 
   /** Spawn egg with its own texture named after the item, like vanilla eggs since 1.21.5 */
   private void spawnEgg(ItemLike egg) {
-    ResourceLocation item = id(egg);
+    Identifier item = id(egg);
     basicItem(item, item.getPath());
   }
 

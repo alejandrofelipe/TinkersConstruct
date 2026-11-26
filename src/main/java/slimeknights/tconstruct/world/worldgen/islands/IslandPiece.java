@@ -7,7 +7,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelAccessor;
@@ -40,7 +40,7 @@ public class IslandPiece extends TemplateStructurePiece {
   private int numberOfTreesPlaced;
   private ChunkGenerator chunkGenerator;
 
-  public IslandPiece(StructureTemplateManager manager, IslandStructure structure, ResourceLocation templateName, BlockPos templatePos, @Nullable ConfiguredFeature<?,?> tree, Rotation rotation, Mirror mirror) {
+  public IslandPiece(StructureTemplateManager manager, IslandStructure structure, Identifier templateName, BlockPos templatePos, @Nullable ConfiguredFeature<?,?> tree, Rotation rotation, Mirror mirror) {
     super(TinkerStructures.islandPiece.get(), 0, manager, templateName, templateName.toString(), makeSettings(rotation, mirror), templatePos);
     this.structure = structure;
     this.numberOfTreesPlaced = 0;
@@ -67,7 +67,7 @@ public class IslandPiece extends TemplateStructurePiece {
   protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
     super.addAdditionalSaveData(context, tag);
     RegistryAccess access = context.registryAccess();
-    ResourceLocation structure = access.lookupOrThrow(Registries.STRUCTURE).getKey(this.structure);
+    Identifier structure = access.lookupOrThrow(Registries.STRUCTURE).getKey(this.structure);
     if (structure != null) {
       tag.putString("Structure", structure.toString());
     }
@@ -75,7 +75,7 @@ public class IslandPiece extends TemplateStructurePiece {
     tag.putString("Mi", this.placeSettings.getMirror().name());
     tag.putInt("NumberOfTreesPlaced", this.numberOfTreesPlaced);
     if (tree != null) {
-      ResourceLocation key = access.lookupOrThrow(Registries.CONFIGURED_FEATURE).getKey(tree);
+      Identifier key = access.lookupOrThrow(Registries.CONFIGURED_FEATURE).getKey(tree);
       if (key != null) {
         tag.putString("Tree", key.toString());
       }
@@ -160,7 +160,7 @@ public class IslandPiece extends TemplateStructurePiece {
   /** Finds a registry object */
   @Nullable
   private static <T> T find(Registry<T> registry, String key) {
-    ResourceLocation id = ResourceLocation.tryParse(key);
+    Identifier id = Identifier.tryParse(key);
     if (id != null) {
       return registry.getValue(id);
     }

@@ -5,7 +5,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.mantle.data.loadable.primitive.StringLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
@@ -54,7 +54,7 @@ public interface ModifierModel extends IBakedModifierModel, IHaveLoader {
   /** Validates that all textures in this model exist. */
   void validate(Function<Material, TextureAtlasSprite> spriteGetter);
 
-  static Material blockAtlas(ResourceLocation path) {
+  static Material blockAtlas(Identifier path) {
     return new Material(TextureAtlas.LOCATION_BLOCKS, path);
   }
 }

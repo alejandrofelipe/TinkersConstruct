@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.state.SlimeRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.Slime;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.world.entity.ArmoredSlimeEntity;
@@ -15,8 +15,8 @@ public class TinkerSlimeRenderer extends SlimeRenderer {
   public static final Factory SKY_SLIME_FACTORY = new Factory(TConstruct.getResource("textures/entity/sky_slime.png"), TConstruct.getResource("textures/entity/steel_slime.png"));
   public static final Factory ENDER_SLIME_FACTORY = new Factory(TConstruct.getResource("textures/entity/ender_slime.png"), TConstruct.getResource("textures/entity/knightmetal_slime.png"));
 
-  private final ResourceLocation slime, metal;
-  public TinkerSlimeRenderer(EntityRendererProvider.Context context, ResourceLocation slime, ResourceLocation metal) {
+  private final Identifier slime, metal;
+  public TinkerSlimeRenderer(EntityRendererProvider.Context context, Identifier slime, Identifier metal) {
     super(context);
     this.slime = slime;
     this.metal = metal;
@@ -39,15 +39,15 @@ public class TinkerSlimeRenderer extends SlimeRenderer {
   }
 
   @Override
-  public ResourceLocation getTextureLocation(SlimeRenderState state) {
+  public Identifier getTextureLocation(SlimeRenderState state) {
     if (slime != metal && state instanceof ArmoredSlimeRenderState armored && armored.isMetal) {
       return metal;
     }
     return slime;
   }
 
-  private record Factory(ResourceLocation slime, ResourceLocation metal) implements EntityRendererProvider<Slime> {
-    public Factory(ResourceLocation texture) {
+  private record Factory(Identifier slime, Identifier metal) implements EntityRendererProvider<Slime> {
+    public Factory(Identifier texture) {
       this(texture, texture);
     }
 

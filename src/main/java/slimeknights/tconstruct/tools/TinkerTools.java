@@ -2,7 +2,7 @@ package slimeknights.tconstruct.tools;
 
 import net.minecraft.world.item.equipment.ArmorType;
 
-import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;

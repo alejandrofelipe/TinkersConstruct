@@ -2,7 +2,7 @@ package slimeknights.tconstruct.tables.client.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import slimeknights.tconstruct.tables.block.entity.table.CraftingStationBlockEntity;
 import slimeknights.tconstruct.tables.menu.CraftingStationContainerMenu;
@@ -10,7 +10,7 @@ import slimeknights.tconstruct.tables.menu.CraftingStationContainerMenu;
 import java.util.Objects;
 
 public class CraftingStationScreen extends BaseTabbedScreen<CraftingStationBlockEntity,CraftingStationContainerMenu> {
-  private static final ResourceLocation CRAFTING_TABLE_GUI_TEXTURES = Objects.requireNonNull(ResourceLocation.tryBuild("minecraft", "textures/gui/container/crafting_table.png"));
+  private static final Identifier CRAFTING_TABLE_GUI_TEXTURES = Objects.requireNonNull(Identifier.tryBuild("minecraft", "textures/gui/container/crafting_table.png"));
 
   public CraftingStationScreen(CraftingStationContainerMenu container, Inventory playerInventory, Component title) {
     super(container, playerInventory, title);

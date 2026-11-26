@@ -1,7 +1,7 @@
 package slimeknights.mantle.data.listener;
 
 import com.google.gson.JsonElement;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import slimeknights.tconstruct.test.JsonFileLoader;
 
@@ -29,16 +29,16 @@ public class MergingJsonFileLoader<B> extends JsonFileLoader {
    * @param mergeFolder  If nonnull, subfolder to load as a "second datapack", for testing merging behavior. If null, skips the merging
    * @param files  List of files
    */
-  public void loadAndParseFiles(@Nullable String mergeFolder, ResourceLocation... files) {
-    Map<ResourceLocation,B> parsedMap = new HashMap<>();
-    for (Entry<ResourceLocation, JsonElement> entry : loadFilesAsSplashlist(files).entrySet()) {
-      ResourceLocation id = entry.getKey();
+  public void loadAndParseFiles(@Nullable String mergeFolder, Identifier... files) {
+    Map<Identifier,B> parsedMap = new HashMap<>();
+    for (Entry<Identifier, JsonElement> entry : loadFilesAsSplashlist(files).entrySet()) {
+      Identifier id = entry.getKey();
       dataLoader.parse(parsedMap.computeIfAbsent(id, dataLoader.builderConstructor), id, entry.getValue());
     }
     if (mergeFolder != null) {
       JsonFileLoader fakeSecondDataPack = new JsonFileLoader(dataLoader.gson, dataLoader.folder + "/" + mergeFolder);
-      for (Entry<ResourceLocation, JsonElement> entry : fakeSecondDataPack.loadFilesAsSplashlist(files).entrySet()) {
-        ResourceLocation id = entry.getKey();
+      for (Entry<Identifier, JsonElement> entry : fakeSecondDataPack.loadFilesAsSplashlist(files).entrySet()) {
+        Identifier id = entry.getKey();
         dataLoader.parse(parsedMap.computeIfAbsent(id, dataLoader.builderConstructor), id, entry.getValue());
       }
     }

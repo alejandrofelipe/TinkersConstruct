@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.library.tools.capability;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -22,7 +22,7 @@ import java.util.List;
 public interface BlockItemProviderCapability {
 
   /** Capability ID */
-  ResourceLocation ID = TConstruct.getResource("block_provider");
+  Identifier ID = TConstruct.getResource("block_provider");
   /**
    * Capability instance. Under NeoForge this is an {@link ItemCapability} resolved via
    * {@code stack.getCapability(CAPABILITY)} and registered on {@link RegisterCapabilitiesEvent}.

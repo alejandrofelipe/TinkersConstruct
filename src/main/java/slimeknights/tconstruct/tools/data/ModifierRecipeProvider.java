@@ -5,7 +5,7 @@ import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
@@ -1801,7 +1801,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
                                 .save(consumer, location(worktableFolder + "modifier_sorting"));
 
     // invisible ink
-    ResourceLocation hiddenModifiers = TConstruct.getResource("invisible_modifiers");
+    Identifier hiddenModifiers = TConstruct.getResource("invisible_modifiers");
     IJsonPredicate<ModifierId> blacklist = ModifierPredicate.tag(TinkerTags.Modifiers.INVISIBLE_INK_BLACKLIST).inverted();
     ModifierSetWorktableRecipeBuilder.setAdding(hiddenModifiers)
                                      .modifierPredicate(blacklist)
@@ -1851,7 +1851,7 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
 
     // compatability
     String theOneProbe = "theoneprobe";
-    ResourceLocation probe = ResourceLocation.fromNamespaceAndPath(theOneProbe, "probe");
+    Identifier probe = Identifier.fromNamespaceAndPath(theOneProbe, "probe");
     RecipeOutput topConsumer = withCondition(consumer, new ModLoadedCondition(theOneProbe));
     ModifierRecipeBuilder.modifier(ModifierIds.theOneProbe)
                          .setTools(ingredientFromTags(TinkerTags.Items.HELMETS, TinkerTags.Items.HELD))
@@ -2089,12 +2089,12 @@ public class ModifierRecipeProvider extends BaseRecipeProvider {
   }
 
   /** Prefixes the modifier ID with the given prefix */
-  public ResourceLocation prefix(LazyModifier modifier, String prefix) {
+  public Identifier prefix(LazyModifier modifier, String prefix) {
     return prefix(modifier.getId().getLocation(), prefix);
   }
 
   /** Prefixes the modifier ID with the given prefix and suffix */
-  public ResourceLocation wrap(LazyModifier modifier, String prefix, String suffix) {
+  public Identifier wrap(LazyModifier modifier, String prefix, String suffix) {
     return wrap(modifier.getId().getLocation(), prefix, suffix);
   }
 

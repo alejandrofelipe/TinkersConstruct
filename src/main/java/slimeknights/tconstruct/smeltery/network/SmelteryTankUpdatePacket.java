@@ -6,7 +6,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import slimeknights.mantle.network.packet.IThreadsafePacket;
@@ -21,7 +21,7 @@ import java.util.List;
  * Packet sent whenever the contents of the smeltery tank change
  */
 public record SmelteryTankUpdatePacket(BlockPos pos, List<FluidStack> fluids) implements IThreadsafePacket {
-  public static final CustomPacketPayload.Type<SmelteryTankUpdatePacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(TConstruct.MOD_ID, "smeltery_tank_update"));
+  public static final CustomPacketPayload.Type<SmelteryTankUpdatePacket> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(TConstruct.MOD_ID, "smeltery_tank_update"));
   public static final StreamCodec<RegistryFriendlyByteBuf, SmelteryTankUpdatePacket> STREAM_CODEC = StreamCodec.composite(
     BlockPos.STREAM_CODEC, SmelteryTankUpdatePacket::pos,
     ByteBufCodecs.<RegistryFriendlyByteBuf, FluidStack, List<FluidStack>>collection(ArrayList::new, FluidStack.OPTIONAL_STREAM_CODEC), SmelteryTankUpdatePacket::fluids,

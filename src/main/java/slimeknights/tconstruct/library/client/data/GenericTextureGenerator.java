@@ -6,7 +6,7 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import slimeknights.mantle.data.GenericDataProvider;
 
@@ -34,12 +34,12 @@ public abstract class GenericTextureGenerator extends GenericDataProvider {
   }
 
   /** Saves the given image to the given location through the data cache, so the data run keeps it as an output of this provider */
-  protected CompletableFuture<?> saveImage(CachedOutput cache, ResourceLocation location, NativeImage image) {
+  protected CompletableFuture<?> saveImage(CachedOutput cache, Identifier location, NativeImage image) {
     return slimeknights.mantle.data.client.GenericTextureGenerator.saveImage(cache, this.pathProvider, location, image);
   }
 
   /** Saves metadata for the given image */
-  protected CompletableFuture<?> saveMetadata(CachedOutput cache, ResourceLocation location, JsonObject metadata) {
+  protected CompletableFuture<?> saveMetadata(CachedOutput cache, Identifier location, JsonObject metadata) {
     return DataProvider.saveStable(cache, metadata, this.pathProvider.file(location, "png.mcmeta"));
   }
 }

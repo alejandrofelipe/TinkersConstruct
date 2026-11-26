@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
@@ -38,7 +38,7 @@ public enum TinkerControlPacket implements IThreadsafePacket {
 
   private final TooltipKey modifier;
 
-  public static final CustomPacketPayload.Type<TinkerControlPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(TConstruct.MOD_ID, "control"));
+  public static final CustomPacketPayload.Type<TinkerControlPacket> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(TConstruct.MOD_ID, "control"));
   public static final StreamCodec<RegistryFriendlyByteBuf, TinkerControlPacket> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(TinkerControlPacket.class);
 
   TinkerControlPacket() {

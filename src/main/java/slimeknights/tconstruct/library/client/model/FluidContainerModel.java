@@ -17,7 +17,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ResolvedModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -54,7 +54,7 @@ public final class FluidContainerModel {
   public static final Transformation FLUID_TRANSFORM = new Transformation(new Vector3f(), new Quaternionf(), new Vector3f(1, 1, 1.002f), new Quaternionf());
 
   /** Builds a block-atlas material */
-  private static Material material(ResourceLocation texture) {
+  private static Material material(Identifier texture) {
     return new Material(TextureAtlas.LOCATION_BLOCKS, texture);
   }
 
@@ -64,13 +64,13 @@ public final class FluidContainerModel {
   }
 
   /** Unbaked fluid container item model */
-  public record Unbaked(ResourceLocation transformModel, Optional<ResourceLocation> base, Optional<ResourceLocation> fluidMask,
-                        Optional<ResourceLocation> particle, FluidStack fluid, boolean flipGas) implements ItemModel.Unbaked {
+  public record Unbaked(Identifier transformModel, Optional<Identifier> base, Optional<Identifier> fluidMask,
+                        Optional<Identifier> particle, FluidStack fluid, boolean flipGas) implements ItemModel.Unbaked {
     public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-      ResourceLocation.CODEC.fieldOf("transform_model").forGetter(Unbaked::transformModel),
-      ResourceLocation.CODEC.optionalFieldOf("base").forGetter(Unbaked::base),
-      ResourceLocation.CODEC.optionalFieldOf("fluid").forGetter(Unbaked::fluidMask),
-      ResourceLocation.CODEC.optionalFieldOf("particle").forGetter(Unbaked::particle),
+      Identifier.CODEC.fieldOf("transform_model").forGetter(Unbaked::transformModel),
+      Identifier.CODEC.optionalFieldOf("base").forGetter(Unbaked::base),
+      Identifier.CODEC.optionalFieldOf("fluid").forGetter(Unbaked::fluidMask),
+      Identifier.CODEC.optionalFieldOf("particle").forGetter(Unbaked::particle),
       FluidStack.OPTIONAL_CODEC.optionalFieldOf("contained_fluid", FluidStack.EMPTY).forGetter(Unbaked::fluid),
       Codec.BOOL.optionalFieldOf("flip_gas", true).forGetter(Unbaked::flipGas)
     ).apply(inst, Unbaked::new));

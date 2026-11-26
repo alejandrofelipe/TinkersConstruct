@@ -10,7 +10,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SmithingTemplateItem;
@@ -53,7 +53,7 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
 
   /** PORT M3 (recipes): 1.21 recipes no longer carry an id; retained for JEI display only. */
   @Getter
-  private final ResourceLocation id = TConstruct.getResource("armor_trim_modifier");
+  private final Identifier id = TConstruct.getResource("armor_trim_modifier");
 
   public ArmorTrimRecipe() {}
 
@@ -71,7 +71,7 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
    * so this matches the vanilla template naming convention {@code <pattern>_armor_trim_smithing_template}.
    */
   private static Optional<Reference<TrimPattern>> getPattern(HolderLookup.Provider access, ItemStack template) {
-    ResourceLocation id = BuiltInRegistries.ITEM.getKey(template.getItem());
+    Identifier id = BuiltInRegistries.ITEM.getKey(template.getItem());
     String path = id.getPath();
     if (path.endsWith(TEMPLATE_SUFFIX)) {
       return access.lookupOrThrow(Registries.TRIM_PATTERN).get(ResourceKey.create(Registries.TRIM_PATTERN, id.withPath(path.substring(0, path.length() - TEMPLATE_SUFFIX.length()))));
@@ -182,7 +182,7 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
       List<ItemStack> toolInputs = RegistryHelper.getTagValueStream(BuiltInRegistries.ITEM, TinkerTags.Items.TRIM)
                                                  .map(IModifiableDisplay::getDisplayStack).toList();
       if (!trims.isEmpty() && !toolInputs.isEmpty()) {
-        ResourceLocation id = getId();
+        Identifier id = getId();
         displayRecipes = access.lookupOrThrow(Registries.TRIM_MATERIAL).listElements()
           .map(material -> new DisplayRecipe(id, toolInputs, trims, material, access))
           .collect(Collectors.toList());
@@ -198,7 +198,7 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
     private final ModifierEntry RESULT = new ModifierEntry(TinkerModifiers.trim, 1);
 
     @Getter
-    private final ResourceLocation recipeId;
+    private final Identifier recipeId;
     @Getter
     private final List<ItemStack> toolWithoutModifier;
     @Getter
@@ -208,7 +208,7 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
     @Getter
     private final Component variant;
 
-    public DisplayRecipe(ResourceLocation id, List<ItemStack> tools, List<ItemStack> trim, Reference<TrimMaterial> holder, HolderLookup.Provider access) {
+    public DisplayRecipe(Identifier id, List<ItemStack> tools, List<ItemStack> trim, Reference<TrimMaterial> holder, HolderLookup.Provider access) {
       this.recipeId = id;
       TrimMaterial material = holder.value();
       toolWithoutModifier = tools;
@@ -223,7 +223,7 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
 
       String materialName = holder.key().location().toString();
       List<ModifierEntry> results = List.of(RESULT);
-      ResourceLocation key = TrimModule.materialKey(TinkerModifiers.trim.getId());
+      Identifier key = TrimModule.materialKey(TinkerModifiers.trim.getId());
       toolWithModifier = tools.stream().map(stack -> IDisplayModifierRecipe.withModifiers(stack, results, data -> data.putString(key, materialName))).toList();
 
     }

@@ -7,7 +7,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.data.GenericDataProvider;
 import slimeknights.tconstruct.library.module.ModuleHook;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 /** Base datagenerator to generate tool definition data */
 public abstract class AbstractToolDefinitionDataProvider extends GenericDataProvider {
-  private final Map<ResourceLocation,ToolDefinitionDataBuilder> allTools = new HashMap<>();
+  private final Map<Identifier,ToolDefinitionDataBuilder> allTools = new HashMap<>();
   /** Mod ID to filter definitions we care about */
   private final String modId;
 
@@ -45,7 +45,7 @@ public abstract class AbstractToolDefinitionDataProvider extends GenericDataProv
   protected abstract void addToolDefinitions();
 
   /** Defines the given ID as a tool definition */
-  protected ToolDefinitionDataBuilder define(ResourceLocation id) {
+  protected ToolDefinitionDataBuilder define(Identifier id) {
     return allTools.computeIfAbsent(id, i -> ToolDefinitionDataBuilder.builder());
   }
 
@@ -68,20 +68,20 @@ public abstract class AbstractToolDefinitionDataProvider extends GenericDataProv
   @Override
   public CompletableFuture<?> run(CachedOutput cache) {
     addToolDefinitions();
-    Map<ResourceLocation,ToolDefinition> relevantDefinitions = ToolDefinitionLoader.getInstance().getRegisteredToolDefinitions().stream()
+    Map<Identifier,ToolDefinition> relevantDefinitions = ToolDefinitionLoader.getInstance().getRegisteredToolDefinitions().stream()
                                                                                    .filter(def -> def.getId().getNamespace().equals(modId))
                                                                                    .collect(Collectors.toMap(ToolDefinition::getId, Function.identity()));
     // ensure all required definitions are included
     for (ToolDefinition definition : relevantDefinitions.values()) {
-      ResourceLocation name = definition.getId();
+      Identifier name = definition.getId();
       if (!allTools.containsKey(name)) {
         throw new IllegalStateException(String.format("Missing tool definition for '%s'", name));
       }
     }
     // ensure all included ones are required, and the built ones are valid
     List<CompletableFuture<?>> tasks = new ArrayList<>();
-    for (Entry<ResourceLocation,ToolDefinitionDataBuilder> entry : allTools.entrySet()) {
-      ResourceLocation id = entry.getKey();
+    for (Entry<Identifier,ToolDefinitionDataBuilder> entry : allTools.entrySet()) {
+      Identifier id = entry.getKey();
       ToolDefinition definition = relevantDefinitions.get(id);
       if (definition == null) {
         throw new IllegalStateException("Unknown tool definition with ID " + id);
@@ -94,7 +94,7 @@ public abstract class AbstractToolDefinitionDataProvider extends GenericDataProv
   /** Builder for an armor material to batch certain hooks */
   @SuppressWarnings("UnusedReturnValue")
   protected class ArmorDataBuilder {
-    private final ResourceLocation name;
+    private final Identifier name;
     private final ToolDefinitionDataBuilder[] builders;
     private final List<ArmorType> slotTypes;
     private ArmorDataBuilder(ModifiableArmorMaterial armorMaterial) {

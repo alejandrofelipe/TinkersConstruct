@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.common.data.tags;
 
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.data.tinkering.AbstractMaterialTagProvider;
@@ -15,9 +15,9 @@ public class MaterialTagProvider extends AbstractMaterialTagProvider {
     super(packOutput, TConstruct.MOD_ID);
   }
 
-  /** Maps typed IDs (MaterialId) to the wrapped resource locations for the {@code add(ResourceLocation...)} overload */
-  private static ResourceLocation[] ids(ResourceId... ids) {
-    return Stream.of(ids).map(ResourceId::getLocation).toArray(ResourceLocation[]::new);
+  /** Maps typed IDs (MaterialId) to the wrapped resource locations for the {@code add(Identifier...)} overload */
+  private static Identifier[] ids(ResourceId... ids) {
+    return Stream.of(ids).map(ResourceId::getLocation).toArray(Identifier[]::new);
   }
 
   @Override

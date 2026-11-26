@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.tables.recipe;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -33,13 +33,13 @@ import java.util.stream.IntStream;
 public class TinkerStationPartSwapping extends MaterialSwappingRecipe {
   public static final RecordLoadable<TinkerStationPartSwapping> LOADER = RecordLoadable.create(ContextKey.ID.nullableField(), TOOLS_FIELD, STACK_SIZE_FIELD, EXTRA_REQUIREMENTS_FIELD, TinkerStationPartSwapping::new);
 
-  public TinkerStationPartSwapping(ResourceLocation id, Ingredient tools, int maxStackSize, List<SizedIngredient> extraRequirements) {
+  public TinkerStationPartSwapping(Identifier id, Ingredient tools, int maxStackSize, List<SizedIngredient> extraRequirements) {
     super(id, tools, maxStackSize, extraRequirements);
   }
 
-  /** @deprecated use {@link #TinkerStationPartSwapping(ResourceLocation, Ingredient, int, List)} */
+  /** @deprecated use {@link #TinkerStationPartSwapping(Identifier, Ingredient, int, List)} */
   @Deprecated(forRemoval = true)
-  public TinkerStationPartSwapping(ResourceLocation id, Ingredient tools, int maxStackSize) {
+  public TinkerStationPartSwapping(Identifier id, Ingredient tools, int maxStackSize) {
     this(id, tools, maxStackSize, List.of());
   }
 

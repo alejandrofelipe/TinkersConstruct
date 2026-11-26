@@ -4,7 +4,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import slimeknights.mantle.client.screen.ElementScreen;
@@ -39,7 +39,7 @@ public class GuiMeltingModule {
     this.progressBars = progressBars;
   }
 
-  public GuiMeltingModule(AbstractContainerScreen<?> screen, MeltingModuleInventory inventory, int indexOffset, IntSupplier temperature, Predicate<Slot> slotPredicate, ResourceLocation background) {
+  public GuiMeltingModule(AbstractContainerScreen<?> screen, MeltingModuleInventory inventory, int indexOffset, IntSupplier temperature, Predicate<Slot> slotPredicate, Identifier background) {
     this(screen, inventory, indexOffset, temperature, slotPredicate, makeProgressBars(background));
   }
 
@@ -153,7 +153,7 @@ public class GuiMeltingModule {
   }
 
   /** Creates all 4 progress bars at the common location */
-  public static ProgressBars makeProgressBars(ResourceLocation background) {
+  public static ProgressBars makeProgressBars(Identifier background) {
     return new ProgressBars(
       new ScalableElementScreen(background, 176, 150, 3, 16, 256, 256),
       new ScalableElementScreen(background, 179, 150, 3, 16, 256, 256),

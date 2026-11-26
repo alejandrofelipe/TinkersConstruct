@@ -8,7 +8,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -83,7 +83,7 @@ public class BlockEntityRoundTripGameTests {
    * Valid blocks of a {@code tconstruct} block entity type that are intended to never have a block entity, beyond the slabs, stairs,
    * fences and walls of the smeltery component building sets. Any other such block fails the test.
    */
-  private static final Set<ResourceLocation> NO_BLOCK_ENTITY = Set.of();
+  private static final Set<Identifier> NO_BLOCK_ENTITY = Set.of();
 
   /**
    * Places every block of every {@code tconstruct} block entity type on its own and round-trips its block entity, empty and filled.
@@ -97,7 +97,7 @@ public class BlockEntityRoundTripGameTests {
     List<String> failures = new ArrayList<>();
     List<String> skipped = new ArrayList<>();
     int checked = 0;
-    for (ResourceLocation id : new TreeSet<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.keySet())) {
+    for (Identifier id : new TreeSet<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.keySet())) {
       if (!TConstruct.MOD_ID.equals(id.getNamespace())) {
         continue;
       }
@@ -117,7 +117,7 @@ public class BlockEntityRoundTripGameTests {
         }
         // the smeltery component type lists whole building block sets, whose slabs, stairs, fences and walls never have one
         if (!state.hasBlockEntity()) {
-          ResourceLocation key = BuiltInRegistries.BLOCK.getKey(block);
+          Identifier key = BuiltInRegistries.BLOCK.getKey(block);
           if (block instanceof SlabBlock || block instanceof StairBlock || block instanceof FenceBlock || block instanceof WallBlock || NO_BLOCK_ENTITY.contains(key)) {
             skipped.add(key.toString());
           } else {

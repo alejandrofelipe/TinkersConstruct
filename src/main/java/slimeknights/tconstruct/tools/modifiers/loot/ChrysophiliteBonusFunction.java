@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -31,10 +31,10 @@ import java.util.stream.Stream;
 /** Loot modifier to boost drops based on teh chrysophilite amount */
 public class ChrysophiliteBonusFunction extends LootItemConditionalFunction {
   /** Map of all known formula types by id, used to build the dispatch codec since the vanilla map is private */
-  private static final Map<ResourceLocation, FormulaType> FORMULAS = Stream.of(BinomialWithBonusCount.TYPE, OreDrops.TYPE, UniformBonusCount.TYPE)
+  private static final Map<Identifier, FormulaType> FORMULAS = Stream.of(BinomialWithBonusCount.TYPE, OreDrops.TYPE, UniformBonusCount.TYPE)
     .collect(Collectors.toMap(FormulaType::id, type -> type));
   /** Codec for the formula type, mirroring the private vanilla codec */
-  private static final Codec<FormulaType> FORMULA_TYPE_CODEC = ResourceLocation.CODEC.comapFlatMap(
+  private static final Codec<FormulaType> FORMULA_TYPE_CODEC = Identifier.CODEC.comapFlatMap(
     id -> {
       FormulaType type = FORMULAS.get(id);
       return type != null

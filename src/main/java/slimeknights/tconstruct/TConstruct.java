@@ -6,7 +6,7 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
@@ -261,8 +261,8 @@ public class TConstruct {
    * @return  Location for tinkers
    */
   @SuppressWarnings("removal")
-  public static ResourceLocation getResource(String name) {
-    return ResourceLocation.fromNamespaceAndPath(MOD_ID, name);
+  public static Identifier getResource(String name) {
+    return Identifier.fromNamespaceAndPath(MOD_ID, name);
   }
 
   /**

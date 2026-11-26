@@ -4,7 +4,7 @@ import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -61,7 +61,7 @@ public interface ICastCreationHelper extends IRecipeHelper {
                         .setPattern(input, false)
                         .save(consumer, location(folder + "red_sand/molding/" + name));
     // make sand casts in the part builder
-    ResourceLocation pattern = cast.getName();
+    Identifier pattern = cast.getName();
     ItemPartRecipeBuilder.item(pattern, ItemOutput.fromItem(cast.getSand()))
                          .setPatternItem(LazyTagIngredient.of(TinkerTags.Items.SAND_CASTS))
                          .save(consumer, location(folder + "sand/builder_cast/" + name));

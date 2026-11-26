@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.library.recipe.casting;
 
 import lombok.Getter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -24,7 +24,7 @@ public abstract class AbstractCastingRecipe implements ICastingRecipe {
   @Getter @Nonnull
   private final RecipeType<? extends Recipe<ICastingContainer>> type;
   @Getter
-  private final ResourceLocation id;
+  private final Identifier id;
   @Getter
   private final String group;
   /** 'cast' item for recipe (doesn't have to be an actual 'cast'); null if this recipe has no cast */
@@ -40,7 +40,7 @@ public abstract class AbstractCastingRecipe implements ICastingRecipe {
   }
 
   @SuppressWarnings("unchecked")
-  protected AbstractCastingRecipe(RecipeType<?> type, ResourceLocation id, String group, @Nullable Ingredient cast, boolean consumed, boolean switchSlots) {
+  protected AbstractCastingRecipe(RecipeType<?> type, Identifier id, String group, @Nullable Ingredient cast, boolean consumed, boolean switchSlots) {
     this.type = (RecipeType<? extends Recipe<ICastingContainer>>) type;
     this.id = id;
     this.group = group;

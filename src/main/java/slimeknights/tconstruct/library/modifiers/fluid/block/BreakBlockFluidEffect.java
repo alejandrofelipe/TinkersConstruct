@@ -150,7 +150,7 @@ public record BreakBlockFluidEffect(float hardness, Map<ResourceKey<Enchantment>
       Component enchantments = enchantments().entrySet().stream().<Component>map(entry -> {
         ResourceKey<Enchantment> enchantment = entry.getKey();
         // PORT M3: enchantment is a datapack registry; build the translation key from the ResourceKey rather than the (registry-bound) Enchantment.
-        MutableComponent component = Component.translatable(net.minecraft.Util.makeDescriptionId("enchantment", enchantment.location()));
+        MutableComponent component = Component.translatable(net.minecraft.util.Util.makeDescriptionId("enchantment", enchantment.location()));
         component.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + entry.getValue()));
         return component;
       }).reduce(MERGE_COMPONENT_LIST).orElse(Component.empty());

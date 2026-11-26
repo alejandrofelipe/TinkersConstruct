@@ -6,7 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
@@ -88,9 +88,9 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
   /** Current in progress recipe */
   private ICastingRecipe currentRecipe;
   /** ID of the current in progress recipe, since recipes no longer carry their own ID in 1.21 */
-  private ResourceLocation currentRecipeName;
+  private Identifier currentRecipeName;
   /** Name of the current recipe, fetched from Tag. Used since Tag is read before recipe manager access */
-  private ResourceLocation recipeName;
+  private Identifier recipeName;
   /** Cache recipe to reduce time during recipe lookups. Not saved to Tag */
   private ICastingRecipe lastCastingRecipe;
   /** ID matching {@link #lastCastingRecipe}; 1.21.4: {@link RecipeHolder#id()} is now a {@link ResourceKey} */
@@ -553,7 +553,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
    * @param level  Nonnull level instance
    * @param name   Recipe name to load
    */
-  private void loadRecipe(Level level, ResourceLocation name) {
+  private void loadRecipe(Level level, Identifier name) {
     // if the tank is empty, ignore old recipe
     FluidStack fluid = tank.getFluid();
     if(!fluid.isEmpty()) {
@@ -607,7 +607,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
     timer = tags.getIntOr(TAG_TIMER, 0);
     Optional<String> recipe = tags.getString(TAG_RECIPE);
     if (recipe.isPresent()) {
-      ResourceLocation name = ResourceLocation.parse(recipe.get());
+      Identifier name = Identifier.parse(recipe.get());
       // if we have a level, fetch the recipe
       if (level != null) {
         loadRecipe(level, name);

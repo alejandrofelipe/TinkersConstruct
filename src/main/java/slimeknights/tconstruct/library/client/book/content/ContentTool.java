@@ -8,7 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Holder;
 import net.minecraft.locale.Language;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -55,7 +55,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ContentTool extends PageContent {
-  public static final ResourceLocation ID = TConstruct.getResource("tool");
+  public static final Identifier ID = TConstruct.getResource("tool");
   private static final String KEY_PROPERTIES = TConstruct.makeTranslationKey("book", "tool.properties");
 
   /* Slot backgrounds */
@@ -133,7 +133,7 @@ public class ContentTool extends PageContent {
         this.toolName = this.parent.name;
       }
       // PORT 1.21.4: Registry#get now returns Optional<Holder.Reference<T>>; unwrap to the value, null when absent
-      Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(this.toolName)).map(Holder::value).orElse(null);
+      Item item = BuiltInRegistries.ITEM.get(Identifier.parse(this.toolName)).map(Holder::value).orElse(null);
       if (item instanceof IModifiableDisplay tool) {
         this.tool = tool;
       } else {

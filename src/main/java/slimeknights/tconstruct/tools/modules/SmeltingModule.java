@@ -7,7 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -17,7 +17,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -94,11 +94,11 @@ public record SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeT
     Pattern.PARSER.defaultField("output_pattern", Patterns.RESULT, true, m -> m.output.pattern()),
     SmeltingModule::new);
 
-  /** @apiNote use {@link #SmeltingModule(RecipeType, float, InventoryModule, ResourceLocation, Pattern)} */
+  /** @apiNote use {@link #SmeltingModule(RecipeType, float, InventoryModule, Identifier, Pattern)} */
   @Internal
   public SmeltingModule {}
 
-  public SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeType, float multiplier, InventoryModule inventory, @Nullable ResourceLocation outputKey, Pattern outputPattern) {
+  public SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeType, float multiplier, InventoryModule inventory, @Nullable Identifier outputKey, Pattern outputPattern) {
     this(recipeType, multiplier, inventory, InventoryModule.builder().from(inventory).key(outputKey).pattern(outputPattern).filter(ItemPredicate.NONE).slots(inventory.slots()));
   }
 
@@ -156,7 +156,7 @@ public record SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeT
     }
     // first, fetch the inventory, ensure it exists
     ModDataNBT data = tool.getPersistentData();
-    ResourceLocation key = input.getKey(modifier.getModifier());
+    Identifier key = input.getKey(modifier.getModifier());
 
     if (data.contains(key, Tag.TAG_LIST)) {
       // going to cook each slot until we used up all the cooking power
@@ -331,7 +331,7 @@ public record SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeT
   }
 
   /** Custom field instance for the output key field, allows defaulting to the context key. */
-  private enum OutputKeyField implements LoadableField<ResourceLocation,SmeltingModule> {
+  private enum OutputKeyField implements LoadableField<Identifier,SmeltingModule> {
     INSTANCE;
 
     @Override
@@ -340,12 +340,12 @@ public record SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeT
     }
 
     @Override
-    public ResourceLocation get(JsonObject json, String key, TypedMap context) {
+    public Identifier get(JsonObject json, String key, TypedMap context) {
       if (json.has(key)) {
         return JsonHelper.getResourceLocation(json, key);
       }
       // default to modifier name with an output suffix
-      ResourceLocation id = context.get(ContextKey.ID);
+      Identifier id = context.get(ContextKey.ID);
       if (id != null) {
         return id.withSuffix("_output");
       }
@@ -354,20 +354,20 @@ public record SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeT
 
     @Override
     public void serialize(SmeltingModule module, JsonObject json) {
-      ResourceLocation key = module.output.key();
+      Identifier key = module.output.key();
       if (key != null) {
         json.addProperty(key(), key.toString());
       }
     }
 
     @Override
-    public ResourceLocation decode(FriendlyByteBuf buffer, TypedMap context) {
-      return buffer.readResourceLocation();
+    public Identifier decode(FriendlyByteBuf buffer, TypedMap context) {
+      return buffer.readIdentifier();
     }
 
     @Override
     public void encode(FriendlyByteBuf buffer, SmeltingModule module) {
-      buffer.writeResourceLocation(Objects.requireNonNull(module.output.key()));
+      buffer.writeIdentifier(Objects.requireNonNull(module.output.key()));
     }
   }
 }

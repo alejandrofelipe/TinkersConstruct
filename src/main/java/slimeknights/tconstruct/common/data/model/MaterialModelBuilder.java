@@ -2,7 +2,7 @@ package slimeknights.tconstruct.common.data.model;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 
 /**
@@ -18,7 +18,7 @@ public class MaterialModelBuilder {
   /** The {@code tconstruct:material} model object; held live so fluent setters mutate the already-stored definition. */
   private final JsonObject model;
 
-  public MaterialModelBuilder(JsonObject model, ResourceLocation baseModel) {
+  public MaterialModelBuilder(JsonObject model, Identifier baseModel) {
     this.model = model;
     model.addProperty("type", "tconstruct:material");
     model.addProperty("model", baseModel.toString());

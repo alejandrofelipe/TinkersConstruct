@@ -2,7 +2,7 @@ package slimeknights.tconstruct.common.recipe;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -62,13 +62,13 @@ public final class TinkerRecipeAccess {
     return getRecipeMap(level).byType(type);
   }
 
-  /** Looks up a recipe holder by id, mirroring the removed {@code RecipeManager#byKey(ResourceLocation)}. */
-  public static Optional<RecipeHolder<?>> byKey(Level level, ResourceLocation id) {
+  /** Looks up a recipe holder by id, mirroring the removed {@code RecipeManager#byKey(Identifier)}. */
+  public static Optional<RecipeHolder<?>> byKey(Level level, Identifier id) {
     return Optional.ofNullable(getRecipeMap(level).byKey(ResourceKey.create(Registries.RECIPE, id)));
   }
 
   /** Looks up a recipe of a specific class by id, mirroring {@code RecipeHelper#getRecipe}. */
-  public static <C extends Recipe<?>> Optional<C> getRecipe(Level level, ResourceLocation id, Class<C> clazz) {
+  public static <C extends Recipe<?>> Optional<C> getRecipe(Level level, Identifier id, Class<C> clazz) {
     return byKey(level, id).map(RecipeHolder::value).filter(clazz::isInstance).map(clazz::cast);
   }
 }

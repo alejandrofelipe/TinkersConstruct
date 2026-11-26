@@ -4,7 +4,7 @@ import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.DataSlot;
@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public class AlloyerContainerMenu extends TriggeringBaseContainerMenu<AlloyerBlockEntity> {
-  public static final ResourceLocation TOOLTIP_FORMAT = TConstruct.getResource("alloyer");
+  public static final Identifier TOOLTIP_FORMAT = TConstruct.getResource("alloyer");
 
   @Getter
   private boolean hasFuelSlot = false;

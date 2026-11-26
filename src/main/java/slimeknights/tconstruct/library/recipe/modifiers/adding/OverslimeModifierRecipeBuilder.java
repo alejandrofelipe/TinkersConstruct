@@ -12,7 +12,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -46,7 +46,7 @@ public class OverslimeModifierRecipeBuilder extends AbstractRecipeBuilder<Oversl
                            .orElseThrow(() -> new IllegalStateException("Empty ingredient not allowed"));
     save(consumer, BuiltInRegistries.ITEM.getKey(first));
   }
-  public void save(RecipeOutput consumer, ResourceLocation id) {
+  public void save(RecipeOutput consumer, Identifier id) {
     if (ingredient.items().findAny().isEmpty()) {
       throw new IllegalStateException("Empty ingredient not allowed");
     }
@@ -60,7 +60,7 @@ public class OverslimeModifierRecipeBuilder extends AbstractRecipeBuilder<Oversl
   }
 
   /** Creates a crafting table overslime repair recipe */
-  public OverslimeModifierRecipeBuilder saveCrafting(RecipeOutput consumer, ResourceLocation id) {
+  public OverslimeModifierRecipeBuilder saveCrafting(RecipeOutput consumer, Identifier id) {
     if (ingredient.items().findAny().isEmpty()) {
       throw new IllegalStateException("Empty ingredient not allowed");
     }

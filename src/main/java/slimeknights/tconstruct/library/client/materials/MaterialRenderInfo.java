@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.client.materials;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import slimeknights.mantle.data.loadable.common.ColorLoadable;
 import slimeknights.mantle.data.loadable.primitive.IntLoadable;
@@ -19,7 +19,7 @@ import java.util.function.Function;
  * Determines the type of texture used for rendering a specific material.
  * TODO: rename luminosity to emissivity, need a fallback field type
  */
-public record MaterialRenderInfo(MaterialVariantId id, @Nullable ResourceLocation texture, String[] fallbacks, int vertexColor, int luminosity) {
+public record MaterialRenderInfo(MaterialVariantId id, @Nullable Identifier texture, String[] fallbacks, int vertexColor, int luminosity) {
   public static final RecordLoadable<MaterialRenderInfo> LOADABLE = RecordLoadable.create(
     MaterialVariantId.CONTEXT_KEY.requiredField(),
     MaterialTextureField.INSTANCE,
@@ -73,7 +73,7 @@ public record MaterialRenderInfo(MaterialVariantId id, @Nullable ResourceLocatio
    * @param material  Material ID
    * @return  Sprite name
    */
-  public static String getSuffix(ResourceLocation material) {
+  public static String getSuffix(Identifier material) {
     // namespace will only be minecraft for a texture override, so this lets you select to always use an untinted base texture as the materials texture
     String namespace = material.getNamespace();
     if ("minecraft".equals(namespace)) {
@@ -88,8 +88,8 @@ public record MaterialRenderInfo(MaterialVariantId id, @Nullable ResourceLocatio
    * @param suffix    Material or fallback suffix name
    * @return  Material instance
    */
-  private static Material getMaterial(ResourceLocation texture, String suffix) {
-    return new Material(TextureAtlas.LOCATION_BLOCKS, Objects.requireNonNull(ResourceLocation.tryBuild(texture.getNamespace(), texture.getPath() + "_" + suffix)));
+  private static Material getMaterial(Identifier texture, String suffix) {
+    return new Material(TextureAtlas.LOCATION_BLOCKS, Objects.requireNonNull(Identifier.tryBuild(texture.getNamespace(), texture.getPath() + "_" + suffix)));
   }
 
   /**

@@ -3,11 +3,11 @@ package slimeknights.tconstruct.shared.inventory;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -34,7 +34,7 @@ public class BlockContainerOpenedTrigger extends SimpleCriterionTrigger<BlockCon
   public record Instance(Optional<ContextAwarePredicate> player, BlockEntityType<?> type) implements SimpleCriterionTrigger.SimpleInstance {
     public static final Codec<Instance> CODEC = RecordCodecBuilder.create(inst -> inst.group(
       EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(Instance::player),
-      ResourceLocation.CODEC.fieldOf("type").<BlockEntityType<?>>xmap(
+      Identifier.CODEC.fieldOf("type").<BlockEntityType<?>>xmap(
         id -> BuiltInRegistries.BLOCK_ENTITY_TYPE.getOptional(id).orElseThrow(() -> new IllegalArgumentException("Unknown tile entity '" + id + "'")),
         type -> BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(type)
       ).forGetter(Instance::type)

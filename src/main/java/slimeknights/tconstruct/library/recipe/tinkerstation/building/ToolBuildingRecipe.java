@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -64,7 +64,7 @@ public class ToolBuildingRecipe implements ITinkerStationRecipe {
   protected static final RecipeResult<LazyToolStack> NO_COUNT = RecipeResult.failure(TConstruct.makeTranslationKey("recipe", "tool_build.no_count"));
   // loadable fields
   protected static final LoadableField<IModifiable,ToolBuildingRecipe> RESULT_FIELD = TinkerLoadables.MODIFIABLE_ITEM.requiredField("result", r -> r.output);
-  protected static final LoadableField<ResourceLocation,ToolBuildingRecipe> LAYOUT_FIELD = Loadables.RESOURCE_LOCATION.nullableField("slot_layout",  r -> r.layoutSlot);
+  protected static final LoadableField<Identifier,ToolBuildingRecipe> LAYOUT_FIELD = Loadables.RESOURCE_LOCATION.nullableField("slot_layout",  r -> r.layoutSlot);
   /** Loader instance */
   public static final RecordLoadable<ToolBuildingRecipe> LOADER = RecordLoadable.create(
     ContextKey.ID.nullableField(), LoadableRecipeSerializer.RECIPE_GROUP, RESULT_FIELD,
@@ -76,7 +76,7 @@ public class ToolBuildingRecipe implements ITinkerStationRecipe {
     ToolBuildingRecipe::new);
 
   @Getter
-  protected final ResourceLocation id;
+  protected final Identifier id;
   @Getter
   protected final String group;
   /** Tool result */
@@ -86,7 +86,7 @@ public class ToolBuildingRecipe implements ITinkerStationRecipe {
   protected final int outputCount;
   /** Layout for slots in JEI */
   @Nullable
-  protected final ResourceLocation layoutSlot;
+  protected final Identifier layoutSlot;
   /** List of input ingredients required in addition to the parts */
   protected final List<Ingredient> ingredients;
   /** If nonnull, uses these parts to craft the tool. If null, parts are pulled from the tool definition */
@@ -100,7 +100,7 @@ public class ToolBuildingRecipe implements ITinkerStationRecipe {
   protected List<ItemStack> displayOutput;
 
   @Deprecated(forRemoval = true)
-  public ToolBuildingRecipe(ResourceLocation id, String group, IModifiable output, int outputCount, @Nullable ResourceLocation layoutSlot, List<Ingredient> ingredients) {
+  public ToolBuildingRecipe(Identifier id, String group, IModifiable output, int outputCount, @Nullable Identifier layoutSlot, List<Ingredient> ingredients) {
     this(id, group, output, outputCount, layoutSlot, ingredients, null, List.of());
   }
 
@@ -228,7 +228,7 @@ public class ToolBuildingRecipe implements ITinkerStationRecipe {
    * Gets the ID of the station slot layout for displaying this recipe.
    * Typically matches the output definition ID, but some tool recipes share a single layout.
    */
-  public ResourceLocation getLayoutSlotId() {
+  public Identifier getLayoutSlotId() {
     return Objects.requireNonNullElse(layoutSlot, output.getToolDefinition().getId());
   }
 

@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.library.json.predicate.tool;
 
 import com.google.gson.JsonObject;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.common.ItemAbilities;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.library.tools.definition.ToolDefinition;
@@ -31,7 +31,7 @@ class HasToolHookPredicateTest extends BaseMcTest {
 
   @Test
   void matches_trueWhenAModuleContributesTheHook() {
-    ToolDefinition definition = new ToolDefinition(ResourceLocation.fromNamespaceAndPath("test", "hook_test"));
+    ToolDefinition definition = new ToolDefinition(Identifier.fromNamespaceAndPath("test", "hook_test"));
     definition.setData(ToolDefinitionDataBuilder.builder().module(ToolActionsModule.of(ItemAbilities.SHOVEL_FLATTEN)).build());
 
     HasToolHookPredicate predicate = new HasToolHookPredicate(ToolHooks.TOOL_ACTION);
@@ -40,7 +40,7 @@ class HasToolHookPredicateTest extends BaseMcTest {
 
   @Test
   void matches_falseForAnUnrelatedHook() {
-    ToolDefinition definition = new ToolDefinition(ResourceLocation.fromNamespaceAndPath("test", "hook_test_2"));
+    ToolDefinition definition = new ToolDefinition(Identifier.fromNamespaceAndPath("test", "hook_test_2"));
     definition.setData(ToolDefinitionDataBuilder.builder().module(ToolActionsModule.of(ItemAbilities.SHOVEL_FLATTEN)).build());
 
     HasToolHookPredicate predicate = new HasToolHookPredicate(ToolHooks.VOLATILE_DATA);

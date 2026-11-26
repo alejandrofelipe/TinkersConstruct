@@ -109,16 +109,16 @@ public class UpdateModifiersPacket implements IThreadsafePacket {
     size = buffer.readVarInt();
     for (int i = 0; i < size; i++) {
       enchantmentBuilder.put(
-        ResourceKey.create(Registries.ENCHANTMENT, buffer.readResourceLocation()),
-        getModifier(modifiers, new ModifierId(buffer.readResourceLocation())));
+        ResourceKey.create(Registries.ENCHANTMENT, buffer.readIdentifier()),
+        getModifier(modifiers, new ModifierId(buffer.readIdentifier())));
     }
     enchantmentMap = enchantmentBuilder.build();
     ImmutableMap.Builder<TagKey<Enchantment>, Modifier> enchantmentTagBuilder = ImmutableMap.builder();
     size = buffer.readVarInt();
     for (int i = 0; i < size; i++) {
       enchantmentTagBuilder.put(
-        TagKey.create(Registries.ENCHANTMENT, buffer.readResourceLocation()),
-        getModifier(modifiers, new ModifierId(buffer.readResourceLocation())));
+        TagKey.create(Registries.ENCHANTMENT, buffer.readIdentifier()),
+        getModifier(modifiers, new ModifierId(buffer.readIdentifier())));
     }
     enchantmentTagMappings = enchantmentTagBuilder.build();
   }
@@ -128,27 +128,27 @@ public class UpdateModifiersPacket implements IThreadsafePacket {
     // write modifiers
     buffer.writeVarInt(modifiers.size());
     for (ComposableModifier modifier : modifiers) {
-      buffer.writeResourceLocation(modifier.getId().getLocation());
+      buffer.writeIdentifier(modifier.getId().getLocation());
       ComposableModifier.LOADER.encode(buffer, modifier);
     }
     // write redirects
     buffer.writeVarInt(redirects.size());
     for (Entry<ModifierId,ModifierId> entry : redirects.entrySet()) {
-      buffer.writeResourceLocation(entry.getKey().getLocation());
-      buffer.writeResourceLocation(entry.getValue().getLocation());
+      buffer.writeIdentifier(entry.getKey().getLocation());
+      buffer.writeIdentifier(entry.getValue().getLocation());
     }
     GenericTagUtil.encodeTags(buffer, m -> m.getId().getLocation(), this.tags);
 
     // enchantment mapping
     buffer.writeVarInt(enchantmentMap.size());
     for (Entry<ResourceKey<Enchantment>,Modifier> entry : enchantmentMap.entrySet()) {
-      buffer.writeResourceLocation(entry.getKey().location());
-      buffer.writeResourceLocation(entry.getValue().getId().getLocation());
+      buffer.writeIdentifier(entry.getKey().location());
+      buffer.writeIdentifier(entry.getValue().getId().getLocation());
     }
     buffer.writeVarInt(enchantmentTagMappings.size());
     for (Entry<TagKey<Enchantment>, Modifier> entry : enchantmentTagMappings.entrySet()) {
-      buffer.writeResourceLocation(entry.getKey().location());
-      buffer.writeResourceLocation(entry.getValue().getId().getLocation());
+      buffer.writeIdentifier(entry.getKey().location());
+      buffer.writeIdentifier(entry.getValue().getId().getLocation());
     }
   }
 

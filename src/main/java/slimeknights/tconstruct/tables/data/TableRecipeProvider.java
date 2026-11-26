@@ -11,7 +11,7 @@ import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -386,10 +386,10 @@ public class TableRecipeProvider extends BaseRecipeProvider {
 
     // twilight forest
     String tfId = "twilightforest";
-    Function<String,ResourceLocation> tf = name -> ResourceLocation.fromNamespaceAndPath(tfId, name);
+    Function<String,Identifier> tf = name -> Identifier.fromNamespaceAndPath(tfId, name);
     RecipeOutput tfConsumer = withCondition(consumer, new ModLoadedCondition(tfId));
     // naga scale armor
-    ResourceLocation nagaScale = tf.apply("naga_scale");
+    Identifier nagaScale = tf.apply("naga_scale");
     PartBuilderRecycleBuilder.tool(ItemNameIngredient.from(tf.apply("naga_chestplate")).toVanilla())      .result(scale, ItemNameOutput.fromName(nagaScale, 8))
       .save(tfConsumer, location(folder + "twilightforest/naga_chestplate"));
     PartBuilderRecycleBuilder.tool(ItemNameIngredient.from(tf.apply("naga_leggings")).toVanilla())      .result(scale, ItemNameOutput.fromName(nagaScale, 7))
@@ -411,7 +411,7 @@ public class TableRecipeProvider extends BaseRecipeProvider {
     PartBuilderRecycleBuilder.tool(ItemNameIngredient.from(tf.apply("ironwood_boots")).toVanilla())      .result(ingot, ironwoodIngot, 4)
       .save(tfConsumer, location(folder + "twilightforest/ironwood_boots"));
     // arctic
-    ResourceLocation arcticFur = tf.apply("arctic_fur");
+    Identifier arcticFur = tf.apply("arctic_fur");
     PartBuilderRecycleBuilder.tool(ItemNameIngredient.from(tf.apply("arctic_helmet")).toVanilla())      .result(leather, ItemNameOutput.fromName(arcticFur, 5))
       .save(tfConsumer, location(folder + "twilightforest/arctic_helmet"));
     PartBuilderRecycleBuilder.tool(ItemNameIngredient.from(tf.apply("arctic_chestplate")).toVanilla())      .result(leather, ItemNameOutput.fromName(arcticFur, 8))
@@ -421,7 +421,7 @@ public class TableRecipeProvider extends BaseRecipeProvider {
     PartBuilderRecycleBuilder.tool(ItemNameIngredient.from(tf.apply("arctic_boots")).toVanilla())      .result(leather, ItemNameOutput.fromName(arcticFur, 4))
       .save(tfConsumer, location(folder + "twilightforest/arctic_boots"));
     // arctic
-    ResourceLocation alphaYetiFur = tf.apply("alpha_yeti_fur");
+    Identifier alphaYetiFur = tf.apply("alpha_yeti_fur");
     PartBuilderRecycleBuilder.tool(ItemNameIngredient.from(tf.apply("yeti_helmet")).toVanilla())      .result(leather, ItemNameOutput.fromName(alphaYetiFur, 5))
       .save(tfConsumer, location(folder + "twilightforest/yeti_helmet"));
     PartBuilderRecycleBuilder.tool(ItemNameIngredient.from(tf.apply("yeti_chestplate")).toVanilla())      .result(leather, ItemNameOutput.fromName(alphaYetiFur, 8))

@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.recipe.casting;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -32,7 +32,7 @@ public class TipClearingCastingRecipe extends PotionCastingRecipe {
     TipClearingCastingRecipe::new);
 
   private final ModifierId modifier;
-  public TipClearingCastingRecipe(TypeAwareRecipeSerializer<?> serializer, ResourceLocation id, String group, Ingredient tool, FluidIngredient fluid, int coolingTime, ModifierId modifier) {
+  public TipClearingCastingRecipe(TypeAwareRecipeSerializer<?> serializer, Identifier id, String group, Ingredient tool, FluidIngredient fluid, int coolingTime, ModifierId modifier) {
     super(serializer, id, group, tool, fluid, Items.AIR, coolingTime);
     this.modifier = modifier;
   }

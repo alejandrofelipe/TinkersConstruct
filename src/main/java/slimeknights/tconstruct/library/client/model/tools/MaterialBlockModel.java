@@ -30,7 +30,7 @@ import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -458,14 +458,14 @@ public class MaterialBlockModel extends SimpleBlockModel {
 
   /** Model that supports both block and material textures. */
   public static class BakedAnvil extends BakedSingleMaterial<MaterialVariantId> {
-    private final Map<ResourceLocation, SimpleModelWrapper> blockCache = new ConcurrentHashMap<>();
-    private final Function<ResourceLocation, SimpleModelWrapper> blockBaker = this::bakeWithBlock;
+    private final Map<Identifier, SimpleModelWrapper> blockCache = new ConcurrentHashMap<>();
+    private final Function<Identifier, SimpleModelWrapper> blockBaker = this::bakeWithBlock;
     private BakedAnvil(ElementModelData data, Set<String> retexture) {
       super(data, retexture, ModelProperties.MATERIAL);
     }
 
     /** Rebakes the model with a specific block texture. See also {@link RetexturedModel} */
-    private SimpleModelWrapper bakeWithBlock(ResourceLocation texture) {
+    private SimpleModelWrapper bakeWithBlock(Identifier texture) {
       Material material = new Material(TextureAtlas.LOCATION_BLOCKS, texture);
       Map<String,Material> replacements = new HashMap<>();
       for (String name : retexture) {
@@ -607,9 +607,9 @@ public class MaterialBlockModel extends SimpleBlockModel {
    * PORT 1.21.4: replaces the item-side {@code ItemOverrides}. Registered via {@code RegisterItemModelsEvent}; the item
    * JSON is {@code {"model":{"type":"tconstruct:material_block","model":"<block model>"}}}.
    */
-  public record ItemUnbaked(ResourceLocation model) implements ItemModel.Unbaked {
+  public record ItemUnbaked(Identifier model) implements ItemModel.Unbaked {
     public static final MapCodec<ItemUnbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-      ResourceLocation.CODEC.fieldOf("model").forGetter(ItemUnbaked::model)
+      Identifier.CODEC.fieldOf("model").forGetter(ItemUnbaked::model)
     ).apply(inst, ItemUnbaked::new));
 
     @Override

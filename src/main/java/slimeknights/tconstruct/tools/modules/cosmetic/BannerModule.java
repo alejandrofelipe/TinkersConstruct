@@ -6,7 +6,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.TooltipFlag;
@@ -93,12 +93,12 @@ public enum BannerModule implements ModifierModule, DisplayNameModifierHook, Too
   }
 
   /** Gets the key for the cache used in the model */
-  public static ResourceLocation cacheKey(ModifierId modifier) {
+  public static Identifier cacheKey(ModifierId modifier) {
     return modifier.getLocation().withSuffix("_cache");
   }
 
   /** Gets the key for the pattern list in NBT */
-  public static ResourceLocation patternKey(ModifierId modifier) {
+  public static Identifier patternKey(ModifierId modifier) {
     return modifier.getLocation().withSuffix("_patterns");
   }
 

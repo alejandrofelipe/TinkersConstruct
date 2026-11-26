@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -58,7 +58,7 @@ public interface TrimModifierModel extends ModifierModel {
   Map<String, TrimTexture> getCache(boolean isLarge);
 
   /** Gets the root texture for the given tool */
-  ResourceLocation getRoot(boolean isLarge);
+  Identifier getRoot(boolean isLarge);
 
   /** If true, missing textures warn. If false, missing textures log to debug. */
   boolean warnOnMissingTexture();
@@ -78,12 +78,12 @@ public interface TrimModifierModel extends ModifierModel {
           Level level = Minecraft.getInstance().level;
           if (level != null) {
             // find the material, if missing we use the base texture
-            TrimMaterial material = level.registryAccess().lookupOrThrow(Registries.TRIM_MATERIAL).getValue(ResourceLocation.tryParse(materialId));
+            TrimMaterial material = level.registryAccess().lookupOrThrow(Registries.TRIM_MATERIAL).getValue(Identifier.tryParse(materialId));
             if (material != null) {
               // base location is based on the armor type
-              ResourceLocation root = getRoot(isLarge);
+              Identifier root = getRoot(isLarge);
               // specific location based on the material
-              ResourceLocation path = root.withSuffix("_" + material.assets().base().suffix());
+              Identifier path = root.withSuffix("_" + material.assets().base().suffix());
 
               // ensure the material sprite exists, if not we will tint the base sprite
               TextureAtlasSprite sprite = spriteGetter.apply(ModifierModel.blockAtlas(path));
@@ -122,10 +122,10 @@ public interface TrimModifierModel extends ModifierModel {
     public static final RecordLoadable<Armor> LOADER = new SimpleRecordLoadable<>(new EnumLoadable<>(Armor.class), "slot", null, false);
 
     @Getter
-    private final ResourceLocation root;
+    private final Identifier root;
     private final Map<String, TrimTexture> cache;
     Armor(ArmorType type) {
-      root = ResourceLocation.parse("trims/items/" + type.getName() + "_trim");
+      root = Identifier.parse("trims/items/" + type.getName() + "_trim");
       cache = new HashMap<>();
     }
 
@@ -148,7 +148,7 @@ public interface TrimModifierModel extends ModifierModel {
     }
 
     @Override
-    public ResourceLocation getRoot(boolean isLarge) {
+    public Identifier getRoot(boolean isLarge) {
       return root;
     }
 
@@ -173,12 +173,12 @@ public interface TrimModifierModel extends ModifierModel {
 
     /** Base texture for this model */
     @Nonnull
-    private final ResourceLocation smallRoot, largeRoot;
+    private final Identifier smallRoot, largeRoot;
     /** Cache of textures for each material. */
     private final Map<String, TrimTexture> smallCache, largeCache ;
 
     /** Creates a model using the given custom texture and a unique cache. */
-    public Custom(ResourceLocation smallRoot, @Nullable ResourceLocation largeRoot) {
+    public Custom(Identifier smallRoot, @Nullable Identifier largeRoot) {
       this.smallRoot = smallRoot;
       this.smallCache = new HashMap<>();
       // if we have a large root, create a cache for it
@@ -204,7 +204,7 @@ public interface TrimModifierModel extends ModifierModel {
     }
 
     @Override
-    public ResourceLocation getRoot(boolean isLarge) {
+    public Identifier getRoot(boolean isLarge) {
       return isLarge ? largeRoot : smallRoot;
     }
 

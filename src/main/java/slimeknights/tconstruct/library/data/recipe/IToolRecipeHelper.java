@@ -4,7 +4,7 @@ import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.crafting.CompoundIngredient;
@@ -48,7 +48,7 @@ public interface IToolRecipeHelper extends ICastCreationHelper {
    * @param folder     Folder for recipe
    * @param layoutSlot StationLayoutSlot id
    */
-  default void toolBuilding(RecipeOutput consumer, IModifiable tool, String folder, ResourceLocation layoutSlot) {
+  default void toolBuilding(RecipeOutput consumer, IModifiable tool, String folder, Identifier layoutSlot) {
     ToolBuildingRecipeBuilder.toolBuildingRecipe(tool)
       .layoutSlot(layoutSlot)
       .save(consumer, prefix(id(tool), folder));
@@ -112,7 +112,7 @@ public interface IToolRecipeHelper extends ICastCreationHelper {
    * @param partFolder   Folder for recipes
    */
   default void uncastablePart(RecipeOutput consumer, IMaterialItem part, int cost, @Nullable MaterialStatsId castingStatConflict, String partFolder) {
-    ResourceLocation id = id(part);
+    Identifier id = id(part);
     PartRecipeBuilder.partRecipe(part)
                      .setPattern(id)
                      .setPatternItem(LazyTagIngredient.of(TinkerTags.Items.DEFAULT_PATTERNS))
@@ -154,7 +154,7 @@ public interface IToolRecipeHelper extends ICastCreationHelper {
    * @param partFolder   Folder for recipes
    */
   default void partRecipes(RecipeOutput consumer, IMaterialItem part, CastItemObject cast, int cost, String partFolder, String castFolder) {
-    ResourceLocation id = id(part);
+    Identifier id = id(part);
     // Part Builder
     PartRecipeBuilder.partRecipe(part)
                      .setPattern(id)

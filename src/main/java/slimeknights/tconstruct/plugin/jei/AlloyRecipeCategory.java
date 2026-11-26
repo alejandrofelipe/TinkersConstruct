@@ -19,7 +19,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.fluid.tooltip.FluidTooltipHandler;
@@ -39,7 +39,7 @@ import java.util.function.Function;
  * Alloy recipe category for JEI display
  */
 public class AlloyRecipeCategory implements IRecipeCategory<AlloyRecipe> {
-  private static final ResourceLocation BACKGROUND_LOC = TConstruct.getResource("textures/gui/jei/alloy.png");
+  private static final Identifier BACKGROUND_LOC = TConstruct.getResource("textures/gui/jei/alloy.png");
   private static final Component TITLE = TConstruct.makeTranslation("jei", "alloy.title");
   private static final Component CATALYST = TConstruct.makeTranslation("jei", "alloy.catalyst").withStyle(ChatFormatting.ITALIC);
   private static final String KEY_TEMPERATURE = TConstruct.makeTranslationKey("jei", "temperature");
@@ -175,7 +175,7 @@ public class AlloyRecipeCategory implements IRecipeCategory<AlloyRecipe> {
   }
 
   @Override
-  public ResourceLocation getRegistryName(AlloyRecipe recipe) {
+  public Identifier getRegistryName(AlloyRecipe recipe) {
     return recipe.getId();
   }
 }

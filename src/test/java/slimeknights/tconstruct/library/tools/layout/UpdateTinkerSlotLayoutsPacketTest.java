@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.tools.layout;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.network.connection.ConnectionType;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
@@ -27,7 +27,7 @@ class UpdateTinkerSlotLayoutsPacketTest extends BaseMcTest {
       .addInputSlot(null, 3, 4)
       .addInputSlot(null, 5, 6)
       .build();
-    layout.setName(ResourceLocation.parse("test:main_layout"));
+    layout.setName(Identifier.parse("test:main_layout"));
     UpdateTinkerSlotLayoutsPacket packetToEncode = new UpdateTinkerSlotLayoutsPacket(Arrays.asList(StationSlotLayout.EMPTY, layout));
     // PORT M6: packets are records with STREAM_CODEC over RegistryFriendlyByteBuf now
     RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY, ConnectionType.OTHER);

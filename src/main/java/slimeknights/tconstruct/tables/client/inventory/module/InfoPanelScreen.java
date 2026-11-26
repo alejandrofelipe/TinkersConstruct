@@ -7,7 +7,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
@@ -38,7 +38,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
   /** Help marker drawn in the top right corner when the panel has tooltips */
   protected static final FormattedCharSequence HELP_MARKER = Component.literal("?").getVisualOrderText();
 
-  protected static ResourceLocation BACKGROUND_IMAGE = TConstruct.getResource("textures/gui/panel.png");
+  protected static Identifier BACKGROUND_IMAGE = TConstruct.getResource("textures/gui/panel.png");
 
   protected static final ElementScreen TOP_LEFT = new ElementScreen(BACKGROUND_IMAGE, 0, 0, 4, 4, 256, 256);
   protected static final ElementScreen TOP_RIGHT = TOP_LEFT.move(resW + 4, 0, 4, 4);

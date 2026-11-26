@@ -4,7 +4,7 @@ import lombok.Getter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -63,7 +63,7 @@ public enum OverburnModule implements ModifierModule, InventoryTickModifierHook,
 
     /** Reads the info from the tool */
     @Nullable
-    public static FuelInfo read(IToolStackView tool, ResourceLocation location) {
+    public static FuelInfo read(IToolStackView tool, Identifier location) {
       ModDataNBT persistentData = tool.getPersistentData();
       if (persistentData.contains(location, Tag.TAG_COMPOUND)) {
         CompoundTag tag = persistentData.getCompound(location);
@@ -73,7 +73,7 @@ public enum OverburnModule implements ModifierModule, InventoryTickModifierHook,
     }
 
     /** Writes the info to the tool */
-    public void write(IToolStackView tool, ResourceLocation location) {
+    public void write(IToolStackView tool, Identifier location) {
       CompoundTag tag = new CompoundTag();
       tag.putLong(EXPIRATION, expiration);
       tag.putInt(RATE, rate);
@@ -95,7 +95,7 @@ public enum OverburnModule implements ModifierModule, InventoryTickModifierHook,
       // must have overslime and space to fill
       if (OverslimeModule.INSTANCE.getAmount(tool) < OverslimeModule.getCapacity(tool)) {
         // find current fuel info
-        ResourceLocation key = modifier.getId().getLocation();
+        Identifier key = modifier.getId().getLocation();
         FuelInfo info = FuelInfo.read(tool, key);
 
         // if we have no fuel, try and find some

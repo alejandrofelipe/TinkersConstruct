@@ -4,11 +4,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -32,8 +32,8 @@ import slimeknights.tconstruct.tools.stats.HeadMaterialStats;
 public class JsonThingsGameTests {
   private static final String NAMESPACE = "tconstruct_gametest";
 
-  private static ResourceLocation id(String path) {
-    return ResourceLocation.fromNamespaceAndPath(NAMESPACE, path);
+  private static Identifier id(String path) {
+    return Identifier.fromNamespaceAndPath(NAMESPACE, path);
   }
 
   /** Gets a thing from the item registry, failing if the thingpack did not register it */

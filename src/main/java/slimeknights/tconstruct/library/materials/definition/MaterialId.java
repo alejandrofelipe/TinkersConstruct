@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.library.materials.definition;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 import slimeknights.tconstruct.library.utils.IdParser;
@@ -9,7 +9,7 @@ import slimeknights.tconstruct.library.utils.ResourceId;
 import javax.annotation.Nullable;
 
 /**
- * This is just a copy of ResourceLocation for type safety in material JSON.
+ * This is just a copy of Identifier for type safety in material JSON.
  */
 public final class MaterialId extends ResourceId implements MaterialVariantId {
   public static final IdParser<MaterialId> PARSER = new IdParser<>(MaterialId::new, "Material");
@@ -22,7 +22,7 @@ public final class MaterialId extends ResourceId implements MaterialVariantId {
     super(namespaceIn, pathIn);
   }
 
-  public MaterialId(ResourceLocation location) {
+  public MaterialId(Identifier location) {
     super(location);
   }
 
@@ -52,7 +52,7 @@ public final class MaterialId extends ResourceId implements MaterialVariantId {
   }
 
   @Override
-  public ResourceLocation getLocation(char separator) {
+  public Identifier getLocation(char separator) {
     return getLocation();
   }
 

@@ -6,7 +6,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import slimeknights.mantle.client.screen.ElementScreen;
@@ -28,7 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class HeatingStructureScreen extends MultiModuleScreen<HeatingStructureContainerMenu> implements IScreenWithFluidTank {
-  public static final ResourceLocation BACKGROUND = TConstruct.getResource("textures/gui/heating_structure.png");
+  public static final Identifier BACKGROUND = TConstruct.getResource("textures/gui/heating_structure.png");
   private static final ElementScreen SCALA = new ElementScreen(BACKGROUND, 176, 0, 80, 106, 256, 256);
   // slot modes
   private static final ElementScreen MODE_AUTO = SCALA.move(176, 186, 16, 16);

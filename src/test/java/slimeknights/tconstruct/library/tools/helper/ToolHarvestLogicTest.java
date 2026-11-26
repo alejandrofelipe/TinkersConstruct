@@ -4,7 +4,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
@@ -34,7 +34,7 @@ class ToolHarvestLogicTest extends ToolItemTest {
   synchronized static void beforeAllToolLogic() {
     MaterialItemFixture.init();
     if (pickaxeTool == null) {
-      ResourceLocation id = ResourceLocation.fromNamespaceAndPath("test", "pickaxe");
+      Identifier id = Identifier.fromNamespaceAndPath("test", "pickaxe");
       pickaxeTool = new ModifiableItem(new Item.Properties().stacksTo(1).setId(ResourceKey.create(Registries.ITEM, id)), ToolDefinitionFixture.getStandardToolDefinition());
       Registry.register(BuiltInRegistries.ITEM, id, pickaxeTool);
     }
@@ -82,7 +82,7 @@ class ToolHarvestLogicTest extends ToolItemTest {
   void calcSpeed_effective_withMiningModifier() {
     float modifier = 2f;
 
-    ToolDefinition definition = new ToolDefinition(ResourceLocation.fromNamespaceAndPath("test", "mining_tool"));
+    ToolDefinition definition = new ToolDefinition(Identifier.fromNamespaceAndPath("test", "mining_tool"));
     definition.setData(ToolDefinitionDataBuilder
                          .builder()
                          .module(new IsEffectiveModule(BlockPredicate.set(Blocks.COBBLESTONE), true))
@@ -93,7 +93,7 @@ class ToolHarvestLogicTest extends ToolItemTest {
                          .module(new MultiplyStatsModule(MultiplierNBT.builder().set(ToolStats.MINING_SPEED, modifier).build()))
                          .build());
 
-    ResourceLocation toolId = ResourceLocation.fromNamespaceAndPath("test", "tool_with_mining_modifier");
+    Identifier toolId = Identifier.fromNamespaceAndPath("test", "tool_with_mining_modifier");
     ModifiableItem toolWithMiningModifier = new ModifiableItem(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, toolId)), definition);
     Registry.register(BuiltInRegistries.ITEM, toolId, toolWithMiningModifier);
     ItemStack tool = buildTestTool(toolWithMiningModifier);

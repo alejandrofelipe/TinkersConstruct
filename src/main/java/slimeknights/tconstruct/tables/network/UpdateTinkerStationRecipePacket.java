@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -22,11 +22,11 @@ import java.util.Optional;
 /**
  * Packet to send the current crafting recipe to a player who opens the tinker station
  */
-public record UpdateTinkerStationRecipePacket(BlockPos pos, ResourceLocation recipe) implements IThreadsafePacket {
-  public static final CustomPacketPayload.Type<UpdateTinkerStationRecipePacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(TConstruct.MOD_ID, "update_tinker_station_recipe"));
+public record UpdateTinkerStationRecipePacket(BlockPos pos, Identifier recipe) implements IThreadsafePacket {
+  public static final CustomPacketPayload.Type<UpdateTinkerStationRecipePacket> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(TConstruct.MOD_ID, "update_tinker_station_recipe"));
   public static final StreamCodec<RegistryFriendlyByteBuf, UpdateTinkerStationRecipePacket> STREAM_CODEC = StreamCodec.composite(
     BlockPos.STREAM_CODEC, UpdateTinkerStationRecipePacket::pos,
-    ResourceLocation.STREAM_CODEC, UpdateTinkerStationRecipePacket::recipe,
+    Identifier.STREAM_CODEC, UpdateTinkerStationRecipePacket::recipe,
     UpdateTinkerStationRecipePacket::new);
 
   @Override

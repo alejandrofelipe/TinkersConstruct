@@ -7,7 +7,7 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -35,7 +35,7 @@ import java.util.List;
 
 /** Page type to display a fluid effect in the encyclopedia */
 public class FluidEffectContent extends PageContent {
-  public static final transient ResourceLocation ID = TConstruct.getResource("fluid_effect");
+  public static final transient Identifier ID = TConstruct.getResource("fluid_effect");
   private static final transient String KEY_BLOCK_EFFECTS = TConstruct.makeTranslationKey("book", "fluid_effects.block");
   private static final transient String KEY_ENTITY_EFFECTS = TConstruct.makeTranslationKey("book", "fluid_effects.entity");
 
@@ -57,7 +57,7 @@ public class FluidEffectContent extends PageContent {
   private transient List<ItemStack> fluidItems = List.of();
 
   /** Updates the fluids from the page info */
-  public void loadEffectData(ResourceLocation name, FluidEffects effects, List<FluidStack> fluids, List<ItemStack> fluidItems) {
+  public void loadEffectData(Identifier name, FluidEffects effects, List<FluidStack> fluids, List<ItemStack> fluidItems) {
     // set ingredient data
     this.fluids = fluids;
     this.fluidItems = fluidItems;

@@ -1,8 +1,8 @@
 package slimeknights.tconstruct.tools.recipe.severing;
 
 import com.google.common.collect.Maps;
-import net.minecraft.Util;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Util;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.sheep.Sheep;
@@ -41,7 +41,7 @@ public class SheepShearingRecipe extends SeveringRecipe {
   });
   public static final RecordLoadable<SheepShearingRecipe> LOADER = RecordLoadable.create(ContextKey.ID.nullableField(), BASE_CHANCE_FIELD, LOOTING_BONUS_FIELD, SheepShearingRecipe::new);
 
-  public SheepShearingRecipe(ResourceLocation id, float baseChance, float lootingBonus) {
+  public SheepShearingRecipe(Identifier id, float baseChance, float lootingBonus) {
     super(id, EntityIngredient.of(EntityType.SHEEP), ItemOutput.fromItem(Blocks.WHITE_WOOL, 2), baseChance, lootingBonus);
   }
 

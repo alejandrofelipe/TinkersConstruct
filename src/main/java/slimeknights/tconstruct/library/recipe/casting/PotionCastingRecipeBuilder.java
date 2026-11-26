@@ -11,7 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -177,7 +177,7 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
   public void save(RecipeOutput consumerIn) {
     this.save(consumerIn, BuiltInRegistries.ITEM.getKey(this.result));
   }
-  public void save(RecipeOutput consumer, ResourceLocation id) {
+  public void save(RecipeOutput consumer, Identifier id) {
     if (this.fluid == FluidIngredient.EMPTY) {
       throw new IllegalStateException("Casting recipes require a fluid input");
     }
@@ -200,6 +200,6 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
   /** Factory for the tipping/tip-clearing recipe variant; both recipe constructors share this signature */
   @FunctionalInterface
   public interface TippingRecipeFactory {
-    PotionCastingRecipe create(TypeAwareRecipeSerializer<?> serializer, ResourceLocation id, String group, Ingredient bottle, FluidIngredient fluid, int coolingTime, ModifierId modifier);
+    PotionCastingRecipe create(TypeAwareRecipeSerializer<?> serializer, Identifier id, String group, Ingredient bottle, FluidIngredient fluid, int coolingTime, ModifierId modifier);
   }
 }

@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -53,7 +53,7 @@ public class PartRecipe implements IPartBuilderRecipe, IMultiRecipe<IDisplayPart
     PartRecipe::new);
 
   @Getter
-  protected final ResourceLocation id;
+  protected final Identifier id;
   @Getter
   protected final String group;
   @Getter
@@ -71,9 +71,9 @@ public class PartRecipe implements IPartBuilderRecipe, IMultiRecipe<IDisplayPart
   /** Count for the recipe output */
   protected final int outputCount;
 
-  /** @deprecated use {@link #PartRecipe(ResourceLocation, String, Pattern, Ingredient, int, boolean, IMaterialItem, int)} */
+  /** @deprecated use {@link #PartRecipe(Identifier, String, Pattern, Ingredient, int, boolean, IMaterialItem, int)} */
   @Deprecated(forRemoval = true)
-  public PartRecipe(ResourceLocation id, String group, Pattern pattern, Ingredient patternItem, int cost, IMaterialItem output, int outputCount) {
+  public PartRecipe(Identifier id, String group, Pattern pattern, Ingredient patternItem, int cost, IMaterialItem output, int outputCount) {
     this(id, group, pattern, patternItem, cost, false, output, outputCount);
   }
 

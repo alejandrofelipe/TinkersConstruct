@@ -9,7 +9,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.test.JsonFileLoader;
@@ -55,7 +55,7 @@ class IslandTemplateResourceTest {
 
       for (JsonElement element : templates) {
         String data = element.getAsJsonObject().get("data").getAsString();
-        ResourceLocation id = ResourceLocation.parse(data);
+        Identifier id = Identifier.parse(data);
         // MC 1.21 StructureTemplateManager resolves templates under the singular structure/ directory
         String nbtPath = "data/" + id.getNamespace() + "/structure/" + id.getPath() + ".nbt";
         checked++;

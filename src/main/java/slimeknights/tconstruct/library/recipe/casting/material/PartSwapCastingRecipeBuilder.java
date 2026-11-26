@@ -8,7 +8,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
@@ -55,7 +55,7 @@ public class PartSwapCastingRecipeBuilder extends AbstractRecipeBuilder<PartSwap
   public void save(RecipeOutput consumer) {
     save(consumer, BuiltInRegistries.ITEM.getKey(tools.items().findFirst().orElseThrow().value()));
   }
-  public void save(RecipeOutput consumer, ResourceLocation id) {
+  public void save(RecipeOutput consumer, Identifier id) {
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "materials");
     consumer.accept(ResourceKey.create(Registries.RECIPE, id), new PartSwapCastingRecipe(recipeSerializer, id, group, tools, itemCost, index, allowedMaterials), advancement);
   }

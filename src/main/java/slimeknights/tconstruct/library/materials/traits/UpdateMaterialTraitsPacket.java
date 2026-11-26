@@ -20,7 +20,7 @@ public record UpdateMaterialTraitsPacket(Map<MaterialId,MaterialTraits> material
     int materialCount = buffer.readInt();
     Map<MaterialId,MaterialTraits> materialToTraits = new HashMap<>(materialCount);
     for (int i = 0; i < materialCount; i++) {
-      MaterialId id = new MaterialId(buffer.readResourceLocation());
+      MaterialId id = new MaterialId(buffer.readIdentifier());
       MaterialTraits traits = MaterialTraits.read(buffer);
       materialToTraits.put(id, traits);
     }
@@ -30,7 +30,7 @@ public record UpdateMaterialTraitsPacket(Map<MaterialId,MaterialTraits> material
   private static void encode(RegistryFriendlyByteBuf buffer, UpdateMaterialTraitsPacket packet) {
     buffer.writeInt(packet.materialToTraits.size());
     packet.materialToTraits.forEach((materialId, traits) -> {
-      buffer.writeResourceLocation(materialId.getLocation());
+      buffer.writeIdentifier(materialId.getLocation());
       traits.write(buffer);
     });
   }

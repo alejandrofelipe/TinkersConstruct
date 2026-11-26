@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.common.data.tags;
 
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.data.tinkering.AbstractModifierTagProvider;
 import slimeknights.tconstruct.library.utils.ResourceId;
@@ -71,9 +71,9 @@ public class ModifierTagProvider extends AbstractModifierTagProvider {
     super(packOutput, TConstruct.MOD_ID);
   }
 
-  /** Maps typed IDs (ModifierId) to the wrapped resource locations for the {@code add(ResourceLocation...)} overload */
-  private static ResourceLocation[] ids(ResourceId... ids) {
-    return Stream.of(ids).map(ResourceId::getLocation).toArray(ResourceLocation[]::new);
+  /** Maps typed IDs (ModifierId) to the wrapped resource locations for the {@code add(Identifier...)} overload */
+  private static Identifier[] ids(ResourceId... ids) {
+    return Stream.of(ids).map(ResourceId::getLocation).toArray(Identifier[]::new);
   }
 
   @Override

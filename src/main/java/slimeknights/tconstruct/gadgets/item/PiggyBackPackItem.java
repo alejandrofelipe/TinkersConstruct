@@ -5,7 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -158,7 +158,7 @@ public class PiggyBackPackItem extends TooltipItem {
 
   public static class CarryPotionEffect extends TinkerEffect {
     /** Attribute modifier ID for the slowdown applied while carrying entities */
-    static final ResourceLocation ID = TConstruct.getResource("carry");
+    static final Identifier ID = TConstruct.getResource("carry");
 
     public CarryPotionEffect() {
       super(MobEffectCategory.NEUTRAL, true);
@@ -192,7 +192,7 @@ public class PiggyBackPackItem extends TooltipItem {
     // (e.g. event.registerMobEffect(ext, effect)) from a client mod-bus handler. Kept here as the extension factory.
     public void initializeClient(Consumer<IClientMobEffectExtensions> consumer) {
       consumer.accept(new IClientMobEffectExtensions() {
-        private static final ResourceLocation[] ICONS = {
+        private static final Identifier[] ICONS = {
           TConstruct.getResource("mob_effect/carry"),
           TConstruct.getResource("mob_effect/carry_2"),
           TConstruct.getResource("mob_effect/carry_3")

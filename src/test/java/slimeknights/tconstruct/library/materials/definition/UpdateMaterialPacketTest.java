@@ -23,7 +23,7 @@ class UpdateMaterialPacketTest extends BaseMcTest {
 
   @Test
   void testGenericEncodeDecode() {
-    // PORT M6: MaterialId no longer IS-A ResourceLocation; Material's ctor takes the wrapped location
+    // PORT M6: MaterialId no longer IS-A Identifier; Material's ctor takes the wrapped location
     IMaterial material1 = new Material(MATERIAL_ID_1.getLocation(), 1, 2, true, false);
     IMaterial material2 = new Material(MATERIAL_ID_2.getLocation(), 3, 4, false, true);
     Map<MaterialId,IMaterial> materials = ImmutableMap.of(MATERIAL_ID_1, material1, MATERIAL_ID_2, material2);

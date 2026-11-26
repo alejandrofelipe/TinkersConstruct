@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.json;
 
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
@@ -47,7 +47,7 @@ public class TinkerLoadables {
   public static final StringLoadable<TooltipKey> TOOLTIP_KEY = new EnumLoadable<>(TooltipKey.class);
 
   /* Registries */
-  public static final StringLoadable<ResourceLocation> CUSTOM_STAT = new RegistryLoadable<>(BuiltInRegistries.CUSTOM_STAT);
+  public static final StringLoadable<Identifier> CUSTOM_STAT = new RegistryLoadable<>(BuiltInRegistries.CUSTOM_STAT);
   public static final StringLoadable<RecipeType<?>> RECIPE_TYPE = new RegistryLoadable<>(BuiltInRegistries.RECIPE_TYPE);
 
   /* Tag keys */
@@ -64,7 +64,7 @@ public class TinkerLoadables {
   /**
    * Tier loadable resolving harvest tiers by name.
    * PORT M3: {@code TierSortingRegistry} (and {@code forge:item_tier_ordering.json}) were removed in 1.20.5+.
-   * The replacement tier-name lookup is rebuilt centrally on {@link HarvestTiers} as {@code byName(ResourceLocation)}
+   * The replacement tier-name lookup is rebuilt centrally on {@link HarvestTiers} as {@code byName(Identifier)}
    * and {@code tierName(ToolMaterial)}; this is the same dependency shared by {@code ToolTierStat} and {@code MaxTierModule}.
    * PORT 1.21.4: vanilla {@code Tier}/{@code Tiers} were removed; harvest tiers are now modeled with {@link ToolMaterial}.
    * (Mantle harvest-tier dependency.)
@@ -76,7 +76,7 @@ public class TinkerLoadables {
     }
     throw error.create("Unknown harvest tier " + id);
   }, (tier, error) -> {
-    ResourceLocation id = HarvestTiers.tierName(tier);
+    Identifier id = HarvestTiers.tierName(tier);
     if (id != null) {
       return id;
     }

@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.tools.capability.inventory;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
@@ -55,13 +55,13 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class ToolInventoryCapability extends InventoryModifierHookIterator<ModifierEntry> {
   /** Boolean key to set in volatile mod data for the total slot count across all modifiers */
-  public static final ResourceLocation TOTAL_SLOTS = TConstruct.getResource("total_item_slots");
+  public static final Identifier TOTAL_SLOTS = TConstruct.getResource("total_item_slots");
   /** Boolean key to set in volatile mod data to show the offand in the inventory menu */
-  public static final ResourceLocation INCLUDE_OFFHAND = TConstruct.getResource("inventory_show_offhand");
+  public static final Identifier INCLUDE_OFFHAND = TConstruct.getResource("inventory_show_offhand");
   /** Boolean key to set to enable the 3x3 crafting table in the tool inventory */
-  public static final ResourceLocation CRAFTING_TABLE = TConstruct.getResource("crafting_table");
+  public static final Identifier CRAFTING_TABLE = TConstruct.getResource("crafting_table");
   /** Boolean key to set to enable the 2x2 crafting table in the tool inventory */
-  public static final ResourceLocation INVENTORY_CRAFTING = TConstruct.getResource("inventory_crafting");
+  public static final Identifier INVENTORY_CRAFTING = TConstruct.getResource("inventory_crafting");
 
   /** Modifier hook instance to make an inventory modifier */
   public static final ModuleHook<InventoryModifierHook> HOOK = ModifierHooks.register(TConstruct.getResource("inventory"), InventoryModifierHook.class, InventoryModifierHookMerger::new, new InventoryModifierHook() {

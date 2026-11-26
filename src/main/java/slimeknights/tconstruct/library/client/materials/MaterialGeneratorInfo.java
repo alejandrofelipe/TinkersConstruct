@@ -7,7 +7,7 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import slimeknights.mantle.data.gson.ResourceLocationSerializer;
 import slimeknights.mantle.data.loadable.common.GsonLoadable;
 import slimeknights.mantle.data.loadable.field.LegacyField;
@@ -27,7 +27,7 @@ import java.util.Set;
 public class MaterialGeneratorInfo {
   /** GSON adapter for generator deserializing. TODO: migrate ISpriteTransformer to loadables? */
   private static final Gson GSON = (new GsonBuilder())
-    .registerTypeAdapter(ResourceLocation.class, ResourceLocationSerializer.resourceLocation(TConstruct.MOD_ID))
+    .registerTypeAdapter(Identifier.class, ResourceLocationSerializer.resourceLocation(TConstruct.MOD_ID))
     .registerTypeAdapter(MaterialStatsId.class, (JsonDeserializer<MaterialStatsId>) (element, type, context) -> {
       String loc = element.getAsString();
       if (!loc.contains(":")) {

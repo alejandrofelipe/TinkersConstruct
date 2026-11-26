@@ -7,7 +7,7 @@ import io.netty.handler.codec.DecoderException;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -43,7 +43,7 @@ class SwappableToolTraitsModuleTest extends BaseMcTest {
     ModifierFixture.init();
   }
 
-  private static final ResourceLocation CUSTOM_KEY = ResourceLocation.fromNamespaceAndPath("test", "traits_key");
+  private static final Identifier CUSTOM_KEY = Identifier.fromNamespaceAndPath("test", "traits_key");
 
   @SuppressWarnings("unchecked")
   private static ModuleHook<ToolTraitHook> mockHookKey() {

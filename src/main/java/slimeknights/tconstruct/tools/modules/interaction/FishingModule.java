@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.tools.modules.interaction;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -49,7 +49,7 @@ public enum FishingModule implements ModifierModule, GeneralInteractionModifierH
   INSTANCE;
 
   private static final List<ModuleHook<?>> DEFAULT_HOOKS = HookProvider.<FishingModule>defaultHooks(ModifierHooks.GENERAL_INTERACT, ModifierHooks.TOOL_ACTION, ModifierHooks.EQUIPMENT_CHANGE);
-  public static final ResourceLocation HOOK_MATERIAL = TConstruct.getResource("hook_material");
+  public static final Identifier HOOK_MATERIAL = TConstruct.getResource("hook_material");
   public static final RecordLoadable<FishingModule> LOADER = new SingletonLoader<>(INSTANCE);
 
   @Override

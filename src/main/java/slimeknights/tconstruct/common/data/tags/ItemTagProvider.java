@@ -8,7 +8,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.TagAppender;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagEntry;
@@ -132,8 +132,8 @@ import static slimeknights.tconstruct.common.TinkerTags.Items.WORN_ARMOR;
 @SuppressWarnings({"unchecked", "removal"})
 public class ItemTagProvider extends BlockTagCopyingItemTagProvider {
   /** Twlight forest uncrafting table blacklist */
-  private static final TagKey<Item> BANNED_UNCRAFTABLE = ItemTags.create(ResourceLocation.fromNamespaceAndPath("twilightforest", "banned_uncraftables"));
-  private final Function<ResourceLocation,TagAppender<Item,Item>> MAKE_TAG = tag -> tag(ItemTags.create(tag));
+  private static final TagKey<Item> BANNED_UNCRAFTABLE = ItemTags.create(Identifier.fromNamespaceAndPath("twilightforest", "banned_uncraftables"));
+  private final Function<Identifier,TagAppender<Item,Item>> MAKE_TAG = tag -> tag(ItemTags.create(tag));
 
   public ItemTagProvider(PackOutput output, CompletableFuture<Provider> lookupProvider, CompletableFuture<TagLookup<Block>> blockTagProvider) {
     super(output, lookupProvider, blockTagProvider, TConstruct.MOD_ID);
@@ -187,7 +187,7 @@ public class ItemTagProvider extends BlockTagCopyingItemTagProvider {
     TagAppender<Item,Item> smithingTemplates = this.tag(TinkerTags.Items.SMITHING_TEMPLATES);
     BuiltInRegistries.ITEM.keySet().stream()
                           .filter(id -> "minecraft".equals(id.getNamespace()) && id.getPath().endsWith("_armor_trim_smithing_template"))
-                          .sorted(Comparator.comparing(ResourceLocation::toString))
+                          .sorted(Comparator.comparing(Identifier::toString))
                           .forEach(id -> smithingTemplates.add(TagEntry.optionalElement(id)));
 
     // ores
@@ -215,7 +215,7 @@ public class ItemTagProvider extends BlockTagCopyingItemTagProvider {
     copy(Tags.Blocks.GLASS_BLOCKS_COLORLESS, Tags.Items.GLASS_BLOCKS_COLORLESS);
     copy(Tags.Blocks.GLASS_PANES_COLORLESS, Tags.Items.GLASS_PANES_COLORLESS);
     for (DyeColor color : DyeColor.values()) {
-      ResourceLocation name = commonResource("glass/" + color.getSerializedName());
+      Identifier name = commonResource("glass/" + color.getSerializedName());
       copy(TagKey.create(Registries.BLOCK, name), TagKey.create(Registries.ITEM, name));
       name = commonResource("glass_panes/" + color.getSerializedName());
       copy(TagKey.create(Registries.BLOCK, name), TagKey.create(Registries.ITEM, name));
@@ -447,13 +447,13 @@ public class ItemTagProvider extends BlockTagCopyingItemTagProvider {
     this.tag(UNSWAPPABLE_TOOLS).addTag(UNSWAPPABLE);
     this.tag(UNSWAPPABLE_PARTS).addTag(UNSWAPPABLE);
     // headlight support
-    this.tag(ItemTags.create(ResourceLocation.fromNamespaceAndPath("headlight", "headlight_helmets"))).addTag(HELMETS);
+    this.tag(ItemTags.create(Identifier.fromNamespaceAndPath("headlight", "headlight_helmets"))).addTag(HELMETS);
 
     // general
     this.tag(MULTIPART_TOOL).addTag(SINGLEPART_TOOL);
     this.tag(MODIFIABLE).addTags(MULTIPART_TOOL, DURABILITY, MELEE, HARVEST, RANGED, AMMO, AOE, HELD, BONUS_SLOTS);
     // disable parry mod on our items, we have our own modifier for that
-    this.tag(TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("parry", "excluded_shields"))).addTag(HELD);
+    this.tag(TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("parry", "excluded_shields"))).addTag(HELD);
 
     // kamas are a shear type, when broken we don't pass it to loot tables
     this.tag(Tags.Items.TOOLS_SHEAR).add(TinkerTools.kama.get());
@@ -551,7 +551,7 @@ public class ItemTagProvider extends BlockTagCopyingItemTagProvider {
       TinkerTables.tinkersAnvil.asItem(), TinkerTables.scorchedAnvil.asItem(), TinkerTables.modifierWorktable.asItem()
     );
     String tf = "twilightforest";
-    Function<String,ResourceLocation> trophy = name -> ResourceLocation.fromNamespaceAndPath(tf, name + "_trophy");
+    Function<String,Identifier> trophy = name -> Identifier.fromNamespaceAndPath(tf, name + "_trophy");
     this.tag(TinkerTags.Items.BOSS_TROPHIES)
       .add(TagEntry.optionalElement(trophy.apply("naga")))
       .add(TagEntry.optionalElement(trophy.apply("lich")))
@@ -563,8 +563,8 @@ public class ItemTagProvider extends BlockTagCopyingItemTagProvider {
       .add(TagEntry.optionalElement(trophy.apply("snow_queen")))
       .add(TagEntry.optionalElement(trophy.apply("quest_ram")));
     this.tag(TinkerTags.Items.THROWABLE)
-      .add(TagEntry.optionalElement(ResourceLocation.fromNamespaceAndPath(tf, "ice_bomb")));
-    this.tag(TinkerTags.Items.KNIGHTMETAL_SHARD).add(TagEntry.optionalElement(ResourceLocation.fromNamespaceAndPath(tf, "armor_shard")));
+      .add(TagEntry.optionalElement(Identifier.fromNamespaceAndPath(tf, "ice_bomb")));
+    this.tag(TinkerTags.Items.KNIGHTMETAL_SHARD).add(TagEntry.optionalElement(Identifier.fromNamespaceAndPath(tf, "armor_shard")));
   }
 
   private void addSmeltery() {
@@ -679,7 +679,7 @@ public class ItemTagProvider extends BlockTagCopyingItemTagProvider {
 
     // melting tags //
     // ores
-    Function<String,ResourceLocation> ie = path -> ResourceLocation.fromNamespaceAndPath("immersiveengineering", path);
+    Function<String,Identifier> ie = path -> Identifier.fromNamespaceAndPath("immersiveengineering", path);
     String tf = "twilightforest";
     moltenTools(TinkerFluids.moltenCopper).add(1, Items.BRUSH).toolTags().toolsComplement();
     moltenTools(TinkerFluids.moltenIron).minecraft()
@@ -688,9 +688,9 @@ public class ItemTagProvider extends BlockTagCopyingItemTagProvider {
       .add(2, true, ie.apply("hammer"))
       .crowbar().excavatorSpikeMaul();
     moltenTools(TinkerFluids.moltenGold).minecraft("golden")
-      .add(1, true,  ResourceLocation.fromNamespaceAndPath("farmersdelight", "golden_knife"))
-      .add(4, false, ResourceLocation.parse("golden_boots"))
-      .add(4, true,  ResourceLocation.fromNamespaceAndPath(tf, "gold_minotaur_axe"));
+      .add(1, true,  Identifier.fromNamespaceAndPath("farmersdelight", "golden_knife"))
+      .add(4, false, Identifier.parse("golden_boots"))
+      .add(4, true,  Identifier.fromNamespaceAndPath(tf, "gold_minotaur_axe"));
     moltenTools(TinkerFluids.moltenSteel).toolTags().leggingsPaxel().crowbar()
       .toolTag(1, "shovel")
       .add(1, true, ie.apply("shovel_steel"))
@@ -706,8 +706,8 @@ public class ItemTagProvider extends BlockTagCopyingItemTagProvider {
       .optionalMetal(7, tf, "leggings", "shield");
     // gems
     moltenTools(TinkerFluids.moltenDiamond).minecraft().excavatorSpikeMaul().crowbar().fdKnife()
-      .add(4, false, ResourceLocation.parse("diamond_boots"))
-      .add(4, true,  ResourceLocation.fromNamespaceAndPath(tf, "diamond_minotaur_axe"));
+      .add(4, false, Identifier.parse("diamond_boots"))
+      .add(4, true,  Identifier.fromNamespaceAndPath(tf, "diamond_minotaur_axe"));
     // mod ores
     moltenTools(TinkerFluids.moltenTin).toolTags().toolsComplement();
     moltenTools(TinkerFluids.moltenLead).toolTags().toolsComplement();
@@ -771,8 +771,8 @@ public class ItemTagProvider extends BlockTagCopyingItemTagProvider {
   }
 
   @SafeVarargs
-  private void optionalToolTags(IdAwareObject<ResourceLocation> tool, TagKey<Item>... tags) {
-    ResourceLocation id = tool.getId();
+  private void optionalToolTags(IdAwareObject<Identifier> tool, TagKey<Item>... tags) {
+    Identifier id = tool.getId();
     for (TagKey<Item> tag : tags) {
       this.tag(tag).add(TagEntry.optionalElement(id));
     }

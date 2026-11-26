@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.modifiers.modules.build;
 import com.google.gson.JsonObject;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.library.json.LevelingInt;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.mock;
 
 /** Tests {@link VolatileIntModule}: adds a leveled integer to volatile data, accumulating across multiple applications. */
 class VolatileIntModuleTest extends BaseMcTest {
-  private static final ResourceLocation FLAG = ResourceLocation.fromNamespaceAndPath("test", "int_flag");
+  private static final Identifier FLAG = Identifier.fromNamespaceAndPath("test", "int_flag");
   private static final ModifierId ID = new ModifierId("test", "foo");
 
   @Test

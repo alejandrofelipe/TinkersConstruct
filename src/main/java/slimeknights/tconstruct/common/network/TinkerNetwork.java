@@ -86,7 +86,7 @@ public class TinkerNetwork extends NetworkWrapper {
   public static void registerPayloads(RegisterPayloadHandlersEvent event) {
     setup();
     // NOTE: RegisterPayloadHandlersEvent#registrar(String) takes the network VERSION (not a namespace);
-    // the payload namespace comes from each packet's CustomPacketPayload.Type ResourceLocation.
+    // the payload namespace comes from each packet's CustomPacketPayload.Type Identifier.
     PayloadRegistrar registrar = event.registrar(instance.version);
 
     // shared

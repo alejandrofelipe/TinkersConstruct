@@ -5,7 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.client.screen.ScalableElementScreen;
@@ -47,7 +47,7 @@ public class GuiFuelModule implements IScreenWithFluidTank, ClickableTankModule 
 
   private FuelInfo fuelInfo = FuelInfo.EMPTY;
 
-  public GuiFuelModule(AbstractContainerScreen<?> screen, FuelModule fuelModule, int x, int y, int width, int height, int fireX, int fireY, boolean hasFuelSlot, ResourceLocation background) {
+  public GuiFuelModule(AbstractContainerScreen<?> screen, FuelModule fuelModule, int x, int y, int width, int height, int fireX, int fireY, boolean hasFuelSlot, Identifier background) {
     this.screen = screen;
     this.fuelModule = fuelModule;
     this.x = x;
@@ -192,7 +192,7 @@ public class GuiFuelModule implements IScreenWithFluidTank, ClickableTankModule 
   }
 
   /** Creates the fire element from the standard location */
-  public static ScalableElementScreen makeFire(ResourceLocation background) {
+  public static ScalableElementScreen makeFire(Identifier background) {
     return new ScalableElementScreen(background, 176, 136, 14, 14, 256, 256);
   }
 }

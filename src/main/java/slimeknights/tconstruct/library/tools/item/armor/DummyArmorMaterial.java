@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.tools.item.armor;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import slimeknights.mantle.registration.object.IdAwareObject;
 
@@ -17,8 +17,8 @@ import slimeknights.mantle.registration.object.IdAwareObject;
  */
 @RequiredArgsConstructor
 @Getter
-public class DummyArmorMaterial implements IdAwareObject<ResourceLocation> {
-  private final ResourceLocation id;
+public class DummyArmorMaterial implements IdAwareObject<Identifier> {
+  private final Identifier id;
   private final SoundEvent equipSound;
 
   public String getName() {

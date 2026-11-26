@@ -11,7 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.SlotAccess;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import net.minecraft.world.entity.player.Player;
@@ -67,7 +67,7 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
   /** NBT key to store the slot for a stack */
   public static final String TAG_SLOT = "Slot";
   // fields
-  protected static final LoadableField<ResourceLocation,? super InventoryModule> KEY_FIELD = ModuleWithKey.FIELD;
+  protected static final LoadableField<Identifier,? super InventoryModule> KEY_FIELD = ModuleWithKey.FIELD;
   protected static final LoadableField<LevelingInt, InventoryModule> SLOTS_FIELD = LevelingInt.LOADABLE.requiredField("slots", InventoryModule::slots);
   protected static final LoadableField<LevelingInt, InventoryModule> LIMIT_FIELD = LevelingInt.LOADABLE.defaultField("limit", LevelingInt.flat(64), InventoryModule::slotLimit);
   protected static final LoadableField<IJsonPredicate<Item>, InventoryModule> FILTER_FIELD = ItemPredicate.LOADER.defaultField("filter", InventoryModule::filter);
@@ -77,7 +77,7 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
   public static final RecordLoadable<InventoryModule> LOADER = RecordLoadable.create(KEY_FIELD, SLOTS_FIELD, LIMIT_FIELD, FILTER_FIELD, PATTERN_FIELD, ModifierCondition.CONTEXT_FIELD, VALIDATION_FIELD, InventoryModule::new);
 
   /** Module adding an inventory to a tool */
-  private final @Nullable ResourceLocation key;
+  private final @Nullable Identifier key;
   /** Location to save the inventory */
   private final LevelingInt slots;
   /** Slots to add to the tool */
@@ -143,7 +143,7 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
   @Override
   public ItemStack getStack(IToolStackView tool, ModifierEntry modifier, int slot) {
     IModDataView modData = tool.getPersistentData();
-    ResourceLocation key = getKey(modifier.getModifier());
+    Identifier key = getKey(modifier.getModifier());
     if (slot < getSlots(tool, modifier) && modData.contains(key, Tag.TAG_LIST)) {
       ListTag list = tool.getPersistentData().get(key, GET_COMPOUND_LIST);
       for (int i = 0; i < list.size(); i++) {
@@ -162,7 +162,7 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
       ListTag list;
       ModDataNBT modData = tool.getPersistentData();
       // if the tag exists, fetch it
-      ResourceLocation key = getKey(modifier.getModifier());
+      Identifier key = getKey(modifier.getModifier());
       int insertIndex = 0;
       if (modData.contains(key, Tag.TAG_LIST)) {
         list = modData.get(key, GET_COMPOUND_LIST);
@@ -213,7 +213,7 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
     // don't validate if the module is not running
     if (condition.tool().matches(tool) && validationLevel.test(modifier.getLevel())) {
       IModDataView persistentData = tool.getPersistentData();
-      ResourceLocation key = getKey(modifier.getModifier());
+      Identifier key = getKey(modifier.getModifier());
       int maxSlots = getSlots(tool, modifier);
       if (persistentData.contains(key, Tag.TAG_LIST)) {
         ListTag listNBT = persistentData.get(key, GET_COMPOUND_LIST);
@@ -250,7 +250,7 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
   public Component onRemoved(IToolStackView tool, Modifier modifier) {
     // if we currently have item data, then return an error
     ModDataNBT persistentData = tool.getPersistentData();
-    ResourceLocation key = getKey(modifier);
+    Identifier key = getKey(modifier);
     if (persistentData.contains(key, Tag.TAG_LIST) && !persistentData.get(key, GET_COMPOUND_LIST).isEmpty()) {
       return HAS_ITEMS;
     }
@@ -305,7 +305,7 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
     int max = getSlots(tool, modifier);
     if (max > 0) {
       IModDataView persistentData = tool.getPersistentData();
-      ResourceLocation key = getKey(modifier.getModifier());
+      Identifier key = getKey(modifier.getModifier());
       ListTag slots = persistentData.get(key, GET_COMPOUND_LIST);
       if (!slots.isEmpty()) {
         // search all slots for the first match
@@ -331,7 +331,7 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
     int max = getSlots(tool, entry);
     if (max > 0) {
       IModDataView modData = tool.getPersistentData();
-      ResourceLocation key = getKey(entry.getModifier());
+      Identifier key = getKey(entry.getModifier());
       if (modData.contains(key, Tag.TAG_LIST)) {
         ListTag list = modData.get(key, GET_COMPOUND_LIST);
 
@@ -378,7 +378,7 @@ public class InventoryModule implements ModifierModule, InventoryModifierHook, V
   @Setter
   public static class Builder extends ModuleBuilder.Context<Builder> {
     @Nullable
-    protected ResourceLocation key = null;
+    protected Identifier key = null;
     protected LevelingInt slotLimit = LevelingInt.flat(64);
     protected IJsonPredicate<Item> filter = ItemPredicate.ANY;
     @Nullable

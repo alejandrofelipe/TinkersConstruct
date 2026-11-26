@@ -4,7 +4,7 @@ import dev.gigaherz.jsonthings.things.IFlexBlock;
 import dev.gigaherz.jsonthings.things.serializers.FlexBlockType;
 import dev.gigaherz.jsonthings.things.serializers.IBlockSerializer;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -35,7 +35,7 @@ import java.util.function.Supplier;
  */
 public class FlexBlockTypes {
   /** Creates the supplier for a fluid in a fluid block */
-  private static Supplier<FlowingFluid> fluidSupplier(ResourceLocation name) {
+  private static Supplier<FlowingFluid> fluidSupplier(Identifier name) {
     return Lazy.of(() -> {
       if (Loadables.FLUID.fromKey(name, "fluid") instanceof FlowingFluid flowing) {
         return flowing;
@@ -48,7 +48,7 @@ public class FlexBlockTypes {
   /** Initializes the block types */
   public static void init() {
     register("burning_liquid", data -> {
-      ResourceLocation fluidField = Loadables.RESOURCE_LOCATION.getOrDefault(data, "fluid", null);
+      Identifier fluidField = Loadables.RESOURCE_LOCATION.getOrDefault(data, "fluid", null);
       int burnTime = GsonHelper.getAsInt(data, "burn_time");
       float damage = GsonHelper.getAsFloat(data, "damage");
       return (props, builder) -> {
@@ -63,8 +63,8 @@ public class FlexBlockTypes {
       };
     });
     register("mob_effect_liquid", data -> {
-      ResourceLocation fluidField = Loadables.RESOURCE_LOCATION.getOrDefault(data, "fluid", null);
-      ResourceLocation effectName = Loadables.RESOURCE_LOCATION.getIfPresent(data, "effect");
+      Identifier fluidField = Loadables.RESOURCE_LOCATION.getOrDefault(data, "fluid", null);
+      Identifier effectName = Loadables.RESOURCE_LOCATION.getIfPresent(data, "effect");
       // legacy thingpacks set the level in burn_time, which upstream read it from
       int effectLevel = data.has("level") ? GsonHelper.getAsInt(data, "level") : GsonHelper.getAsInt(data, "burn_time");
       return (props, builder) -> {

@@ -34,7 +34,7 @@ public record UpdateMaterialStatsPacket(Map<MaterialId,Collection<IMaterialStats
     int materialCount = buffer.readInt();
     Map<MaterialId,Collection<IMaterialStats>> materialToStats = new HashMap<>(materialCount);
     for (int i = 0; i < materialCount; i++) {
-      MaterialId id = new MaterialId(buffer.readResourceLocation());
+      MaterialId id = new MaterialId(buffer.readIdentifier());
       int statCount = buffer.readInt();
       List<IMaterialStats> statList = new ArrayList<>();
       for (int j = 0; j < statCount; j++) {
@@ -53,7 +53,7 @@ public record UpdateMaterialStatsPacket(Map<MaterialId,Collection<IMaterialStats
   private static void encode(RegistryFriendlyByteBuf buffer, UpdateMaterialStatsPacket packet) {
     buffer.writeInt(packet.materialToStats.size());
     packet.materialToStats.forEach((materialId, stats) -> {
-      buffer.writeResourceLocation(materialId.getLocation());
+      buffer.writeIdentifier(materialId.getLocation());
       buffer.writeInt(stats.size());
       stats.forEach(stat -> encodeStat(buffer, stat, stat.getType()));
     });

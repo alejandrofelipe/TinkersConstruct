@@ -19,7 +19,7 @@ import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -159,7 +159,7 @@ public class FluidTextureModel extends ColoredBlockModel {
   }
 
   /** Cache key, compares fluids by fluid and components as fluid stacks have no equality */
-  private record BakedCacheKey(FluidStack fluid, @Nullable ResourceLocation texture) {
+  private record BakedCacheKey(FluidStack fluid, @Nullable Identifier texture) {
     @Override
     public boolean equals(Object other) {
       if (this == other) {

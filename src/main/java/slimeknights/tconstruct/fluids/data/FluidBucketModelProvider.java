@@ -6,7 +6,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BucketItem;
 import slimeknights.mantle.data.GenericDataProvider;
 
@@ -93,8 +93,8 @@ public class FluidBucketModelProvider extends GenericDataProvider {
       .filter(entry -> entry.getKey().location().getNamespace().equals(modId) && entry.getValue() instanceof BucketItem)
       .map(entry -> saveJson(cache, entry.getKey().location(), makeBucket((BucketItem)entry.getValue())))
       .collect(Collectors.toCollection(ArrayList::new));
-    tasks.add(saveJson(cache, ResourceLocation.fromNamespaceAndPath(modId, "copper_can"), makeCopperCan()));
-    tasks.add(saveJson(cache, ResourceLocation.fromNamespaceAndPath(modId, "potion_bucket"), makePotionBucket()));
+    tasks.add(saveJson(cache, Identifier.fromNamespaceAndPath(modId, "copper_can"), makeCopperCan()));
+    tasks.add(saveJson(cache, Identifier.fromNamespaceAndPath(modId, "potion_bucket"), makePotionBucket()));
     return allOf(tasks);
   }
 

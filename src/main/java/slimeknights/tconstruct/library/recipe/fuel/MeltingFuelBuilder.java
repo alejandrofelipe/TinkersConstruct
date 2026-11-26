@@ -9,7 +9,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Recipe;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -63,7 +63,7 @@ public class MeltingFuelBuilder extends AbstractRecipeBuilder<MeltingFuelBuilder
     }
     save(output, BuiltInRegistries.FLUID.getKey(input.getFluids().get(0).getFluid()));
   }
-  public void save(RecipeOutput output, ResourceLocation id) {
+  public void save(RecipeOutput output, Identifier id) {
     AdvancementHolder advancement = this.buildOptionalAdvancement(id, "melting_fuel");
     output.accept(ResourceKey.create(Registries.RECIPE, id), new MeltingFuel(id, input, duration, temperature, rate), advancement);
   }

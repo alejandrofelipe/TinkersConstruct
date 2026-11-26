@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.json.predicate.tool;
 import com.google.gson.JsonObject;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 
 /** Tests {@link VolatileDataPredicate}: checks whether a key is present in a tool's volatile mod data. */
 class VolatileDataPredicateTest extends BaseMcTest {
-  private static final ResourceLocation KEY = ResourceLocation.fromNamespaceAndPath("test", "some_key");
+  private static final Identifier KEY = Identifier.fromNamespaceAndPath("test", "some_key");
 
   @Test
   void matches_trueWhenKeyPresent() {

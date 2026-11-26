@@ -5,7 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -162,7 +162,7 @@ public class HandlerRegistrationGameTests {
     List<String> failures = new ArrayList<>();
     Set<String> seen = new HashSet<>();
     int checked = 0;
-    for (ResourceLocation id : new TreeSet<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.keySet())) {
+    for (Identifier id : new TreeSet<>(BuiltInRegistries.BLOCK_ENTITY_TYPE.keySet())) {
       if (!TConstruct.MOD_ID.equals(id.getNamespace())) {
         continue;
       }
@@ -263,7 +263,7 @@ public class HandlerRegistrationGameTests {
         if (be == null) {
           continue;
         }
-        ResourceLocation id = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(be.getType());
+        Identifier id = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(be.getType());
         if (id == null || !TConstruct.MOD_ID.equals(id.getNamespace())) {
           continue;
         }
@@ -354,7 +354,7 @@ public class HandlerRegistrationGameTests {
     List<String> failures = new ArrayList<>();
     int withHandlers = 0;
     int checked = 0;
-    for (ResourceLocation id : new TreeSet<>(BuiltInRegistries.ITEM.keySet())) {
+    for (Identifier id : new TreeSet<>(BuiltInRegistries.ITEM.keySet())) {
       if (!TConstruct.MOD_ID.equals(id.getNamespace())) {
         continue;
       }
@@ -391,7 +391,7 @@ public class HandlerRegistrationGameTests {
     List<String> failures = new ArrayList<>();
     RandomSource random = RandomSource.create(0);
     int checked = 0;
-    for (ResourceLocation id : new TreeSet<>(BuiltInRegistries.ITEM.keySet())) {
+    for (Identifier id : new TreeSet<>(BuiltInRegistries.ITEM.keySet())) {
       Item item = BuiltInRegistries.ITEM.getValue(id);
       if (!TConstruct.MOD_ID.equals(id.getNamespace()) || !(item instanceof IModifiable modifiable)) {
         continue;

@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.library.client.model;
 
 import com.google.common.base.Suppliers;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.item.BlockModelWrapper;

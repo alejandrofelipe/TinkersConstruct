@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.materials.stats;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import slimeknights.mantle.data.loadable.field.ContextKey;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.data.loadable.record.SingletonLoader;
@@ -19,14 +19,14 @@ import java.util.function.Function;
  * <p>Each instance of this class should be unique. If two instances with the same id exist, internal systems might break.</p>
  */
 @Getter
-public class MaterialStatType<T extends IMaterialStats> implements IdAwareObject<ResourceLocation> {
+public class MaterialStatType<T extends IMaterialStats> implements IdAwareObject<Identifier> {
   /** Context key to use if you want the recipe serializer passed into your recipe */
   public static final ContextKey<MaterialStatType<?>> CONTEXT_KEY = new ContextKey<>("material_stat_type");
 
   /**
    * Typed ID of this stat type. Exposed through {@link #getStatId()} rather than {@link #getId()}, since
    * {@link IdAwareObject} (and the {@link slimeknights.mantle.data.registry.IdAwareComponentRegistry} this type is
-   * registered in) keys by {@link ResourceLocation}.
+   * registered in) keys by {@link Identifier}.
    */
   @Getter(AccessLevel.NONE)
   private final MaterialStatsId id;
@@ -60,7 +60,7 @@ public class MaterialStatType<T extends IMaterialStats> implements IdAwareObject
 
   /** {@return the wrapped resource location for this stat type, used as the registry key} */
   @Override
-  public ResourceLocation getId() {
+  public Identifier getId() {
     return this.id.getLocation();
   }
 

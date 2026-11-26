@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.library.recipe.tinkerstation.building;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -48,7 +48,7 @@ public class FixedMaterialSwappingRecipe extends MaterialSwappingRecipe {
   /** Amount this swapping repairs the tool */
   private final int repairValue;
 
-  protected FixedMaterialSwappingRecipe(ResourceLocation id, Ingredient tools, int maxStackSize, SizedIngredient ingredient, MaterialVariantId material, int[] indices, int repairValue, List<SizedIngredient> extraRequirements) {
+  protected FixedMaterialSwappingRecipe(Identifier id, Ingredient tools, int maxStackSize, SizedIngredient ingredient, MaterialVariantId material, int[] indices, int repairValue, List<SizedIngredient> extraRequirements) {
     super(id, tools, maxStackSize, extraRequirements);
     this.ingredient = ingredient;
     this.material = material;

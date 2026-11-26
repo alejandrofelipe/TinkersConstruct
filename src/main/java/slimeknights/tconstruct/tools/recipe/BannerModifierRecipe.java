@@ -9,7 +9,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.DyeColor;
@@ -47,7 +47,7 @@ import java.util.stream.Stream;
 public class BannerModifierRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisplayModifierRecipe>, ILookupRegistrar {
   /** PORT M3 (recipes): 1.21 recipes no longer carry an id; retained for JEI display only. */
   @Getter
-  private final ResourceLocation id = TConstruct.getResource("banner_modifier");
+  private final Identifier id = TConstruct.getResource("banner_modifier");
 
   public BannerModifierRecipe() {}
 
@@ -151,7 +151,7 @@ public class BannerModifierRecipe implements ITinkerStationRecipe, IMultiRecipe<
           return stack;
         }).toList();
       if (!toolInputs.isEmpty()) {
-        ResourceLocation id = getId();
+        Identifier id = getId();
         displayRecipes = RegistryHelper.getTagValueStream(BuiltInRegistries.ITEM, ItemTags.BANNERS)
           .flatMap(item -> {
             if (item instanceof BannerItem banner) {
@@ -172,7 +172,7 @@ public class BannerModifierRecipe implements ITinkerStationRecipe, IMultiRecipe<
     private final ModifierEntry RESULT = new ModifierEntry(TinkerModifiers.banner, 1);
 
     @Getter
-    private final ResourceLocation recipeId;
+    private final Identifier recipeId;
     private final List<ItemStack> banner;
     @Getter
     private final List<ItemStack> toolWithoutModifier;
@@ -180,7 +180,7 @@ public class BannerModifierRecipe implements ITinkerStationRecipe, IMultiRecipe<
     private final List<ItemStack> toolWithModifier;
     @Getter
     private final Component variant;
-    public DisplayRecipe(ResourceLocation recipeId, List<ItemStack> tools, BannerItem banner) {
+    public DisplayRecipe(Identifier recipeId, List<ItemStack> tools, BannerItem banner) {
       this.recipeId = recipeId;
       this.toolWithoutModifier = tools;
       this.banner = List.of(new ItemStack(banner));

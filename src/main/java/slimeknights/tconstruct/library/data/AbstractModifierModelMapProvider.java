@@ -11,7 +11,7 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import slimeknights.mantle.data.GenericDataProvider;
 import slimeknights.mantle.data.loadable.Loadables;
@@ -44,7 +44,7 @@ import java.util.concurrent.CompletableFuture;
 
 /** Data provider for modifier model maps */
 public abstract class AbstractModifierModelMapProvider extends GenericDataProvider {
-  private final Map<ResourceLocation, Builder> models = new HashMap<>();
+  private final Map<Identifier, Builder> models = new HashMap<>();
 
   /** Argument for {@code largeSeparator} to disable large textures entirely. */
   protected static final char SMALL = '\0';
@@ -56,14 +56,14 @@ public abstract class AbstractModifierModelMapProvider extends GenericDataProvid
   }
 
   /** Creates a new material for the given texture */
-  protected Material material(ResourceLocation texture) {
+  protected Material material(Identifier texture) {
     return ModifierModel.blockAtlas(texture);
   }
 
   /** Creates a new material for the given texture */
   @SuppressWarnings("removal")
   protected Material material(String texture) {
-    return ModifierModel.blockAtlas(ResourceLocation.fromNamespaceAndPath(modId, texture));
+    return ModifierModel.blockAtlas(Identifier.fromNamespaceAndPath(modId, texture));
   }
 
   /** Creates a tool texture for the given name */
@@ -86,33 +86,33 @@ public abstract class AbstractModifierModelMapProvider extends GenericDataProvid
   /* Builder */
 
   /** Gets the builder for the given tool */
-  protected Builder tool(ResourceLocation tool, ResourceLocation base) {
+  protected Builder tool(Identifier tool, Identifier base) {
     return this.models.computeIfAbsent(tool, id -> new Builder(base));
   }
 
   /** Gets the builder for the given tool */
-  protected Builder tool(ResourceLocation tool) {
+  protected Builder tool(Identifier tool) {
     return tool(tool, tool);
   }
 
   /** Gets the builder for the given tool */
   @SuppressWarnings("removal")
   protected Builder tool(String tool) {
-    return tool(ResourceLocation.fromNamespaceAndPath(modId, tool));
+    return tool(Identifier.fromNamespaceAndPath(modId, tool));
   }
 
   /** Adds the given model to the tool variant */
-  protected Builder tool(ResourceLocation tool, String variant) {
+  protected Builder tool(Identifier tool, String variant) {
     return tool(tool.withSuffix(variant), tool);
   }
 
   /** Adds the given model to the tool */
-  protected Builder tool(IdAwareObject<ResourceLocation> tool) {
+  protected Builder tool(IdAwareObject<Identifier> tool) {
     return tool(tool.getId());
   }
 
   /** Adds the given model to the tool variant */
-  protected Builder tool(IdAwareObject<ResourceLocation> tool, String variant) {
+  protected Builder tool(IdAwareObject<Identifier> tool, String variant) {
     return tool(tool.getId(), variant);
   }
 
@@ -137,7 +137,7 @@ public abstract class AbstractModifierModelMapProvider extends GenericDataProvid
   protected class Builder {
     private final Map<String, ModifierModel> constant = new LinkedHashMap<>();
     private final Map<ModifierId, ModifierModel> modifiers = new LinkedHashMap<>();
-    private final ResourceLocation id;
+    private final Identifier id;
 
     /** Merges the variable arguments */
     private static ModifierModel merge(ModifierModel model, ModifierModel... models) {

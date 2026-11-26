@@ -16,7 +16,7 @@ import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.event.RenderItemInFrameEvent;
 import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.neoforged.neoforge.common.NeoForge;
@@ -41,12 +41,12 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
   }
 
   /** Gets the block model location for the given frame type */
-  private static ResourceLocation modelId(FrameType type, boolean map) {
+  private static Identifier modelId(FrameType type, boolean map) {
     String name = type == FrameType.REVERSED_GOLD ? FrameType.GOLD.getSerializedName() : type.getSerializedName();
     return TConstruct.getResource("block/frame/" + name + (map ? "_map" : ""));
   }
 
-  private static StandaloneModelKey<BlockStateModel> key(ResourceLocation id) {
+  private static StandaloneModelKey<BlockStateModel> key(Identifier id) {
     return new StandaloneModelKey<>(id::toString);
   }
 

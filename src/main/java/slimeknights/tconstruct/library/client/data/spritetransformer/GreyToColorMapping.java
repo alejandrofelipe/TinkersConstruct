@@ -10,7 +10,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 import slimeknights.mantle.data.loadable.common.ColorLoadable;
 import slimeknights.tconstruct.TConstruct;
@@ -32,7 +32,7 @@ import static net.minecraft.util.ARGB.red;
 /** Maps a greyscale value to a color from a palette */
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class GreyToColorMapping implements IColorMapping {
-  public static final ResourceLocation NAME = TConstruct.getResource("grey_to_color");
+  public static final Identifier NAME = TConstruct.getResource("grey_to_color");
   public static final Deserializer DESERIALIZER = new Deserializer();
 
   private final List<ColorMapping> mappings;

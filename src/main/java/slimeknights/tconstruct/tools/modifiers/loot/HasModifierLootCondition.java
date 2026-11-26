@@ -2,7 +2,7 @@ package slimeknights.tconstruct.tools.modifiers.loot;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -17,7 +17,7 @@ import slimeknights.tconstruct.tools.TinkerModifiers;
 public record HasModifierLootCondition(ModifierId modifier) implements LootItemCondition {
   /** Codec for the condition */
   public static final MapCodec<HasModifierLootCondition> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-    ResourceLocation.CODEC.xmap(ModifierId::new, ModifierId::getLocation).fieldOf("modifier").forGetter(HasModifierLootCondition::modifier)
+    Identifier.CODEC.xmap(ModifierId::new, ModifierId::getLocation).fieldOf("modifier").forGetter(HasModifierLootCondition::modifier)
   ).apply(inst, HasModifierLootCondition::new));
 
   @Override

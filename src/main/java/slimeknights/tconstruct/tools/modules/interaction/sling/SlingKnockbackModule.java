@@ -3,7 +3,7 @@ package slimeknights.tconstruct.tools.modules.interaction.sling;
 import net.minecraft.world.item.ItemStack;
 
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -67,7 +67,7 @@ public record SlingKnockbackModule(LevelingValue forceMultiplier, float drawtime
     TARGET_FIELD, ModifierCondition.TOOL_FIELD,
     SlingKnockbackModule::new);
   /** Temporary boolean in persistent data. Means bonking is in progress, suppresses knockback and boosts damage. */
-  public static final ResourceLocation IS_BONKING = TConstruct.getResource("is_bonking");
+  public static final Identifier IS_BONKING = TConstruct.getResource("is_bonking");
 
   @Override
   public RecordLoadable<SlingKnockbackModule> getLoader() {

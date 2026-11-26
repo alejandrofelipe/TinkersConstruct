@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.tools.logic;
 
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,7 +20,7 @@ import slimeknights.tconstruct.shared.TinkerAttributes;
 /** Logic to run the double jump attribute */
 @EventBusSubscriber(modid = TConstruct.MOD_ID)
 public class DoubleJumpHandler {
-  private static final ResourceLocation JUMPS = TConstruct.getResource("jumps");
+  private static final Identifier JUMPS = TConstruct.getResource("jumps");
 
   private DoubleJumpHandler() {}
 

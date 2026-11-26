@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 import slimeknights.tconstruct.TConstruct;
 
@@ -34,22 +34,22 @@ public class JsonFileLoader {
     this.folder = folder;
   }
 
-  public Map<ResourceLocation,JsonElement> loadFilesAsSplashlist(String... files) {
-    ResourceLocation[] resourceLocations = Arrays.stream(files)
+  public Map<Identifier,JsonElement> loadFilesAsSplashlist(String... files) {
+    Identifier[] resourceLocations = Arrays.stream(files)
       .map(TConstruct::getResource)
-      .toArray(ResourceLocation[]::new);
+      .toArray(Identifier[]::new);
 
     return loadFilesAsSplashlist(resourceLocations);
   }
 
-  public Map<ResourceLocation, JsonElement> loadFilesAsSplashlist(ResourceLocation... files) {
-    Map<ResourceLocation, JsonElement> splashlist = Arrays.stream(files)
+  public Map<Identifier, JsonElement> loadFilesAsSplashlist(Identifier... files) {
+    Map<Identifier, JsonElement> splashlist = Arrays.stream(files)
       .collect(Collectors.toMap(Function.identity(), this::loadJson));
 
     return ImmutableMap.copyOf(splashlist);
   }
 
-  public JsonObject loadJson(ResourceLocation file) {
+  public JsonObject loadJson(Identifier file) {
     return loadJson(file.getNamespace(), file.getPath());
   }
 

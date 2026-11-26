@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.library.recipe.casting.material;
 
 import lombok.Getter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -39,7 +39,7 @@ public class MaterialFluidRecipe implements ICustomOutputRecipe<ICastingContaine
   public static final MaterialFluidRecipe EMPTY = new MaterialFluidRecipe(TConstruct.getResource("missingno"), FluidIngredient.EMPTY, 0, null, IMaterial.UNKNOWN_ID);
 
   @Getter
-  private final ResourceLocation id;
+  private final Identifier id;
   private final FluidIngredient fluid;
   @Getter
   private final int temperature;
@@ -50,7 +50,7 @@ public class MaterialFluidRecipe implements ICustomOutputRecipe<ICastingContaine
   @Getter
   private final MaterialVariant output;
 
-  public MaterialFluidRecipe(ResourceLocation id, FluidIngredient fluid, int temperature, @Nullable MaterialVariantId inputId, MaterialVariantId outputId) {
+  public MaterialFluidRecipe(Identifier id, FluidIngredient fluid, int temperature, @Nullable MaterialVariantId inputId, MaterialVariantId outputId) {
     this.id = id;
     this.fluid = fluid;
     this.temperature = temperature;

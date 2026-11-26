@@ -1,12 +1,12 @@
 package slimeknights.tconstruct.tools.modifiers.traits.general;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -43,7 +43,7 @@ import slimeknights.tconstruct.library.utils.TeleportHelper;
 import javax.annotation.Nullable;
 
 public class EnderportingModifier extends NoLevelsModifier implements PlantHarvestModifierHook, ProjectileHitModifierHook, ProjectileLaunchModifierHook, BlockHarvestModifierHook, MeleeHitModifierHook, MonsterMeleeHitModifierHook.RedirectAfter, ProjectileFuseModifierHook {
-  private static final ResourceLocation SECONDARY_ARROW = TConstruct.getResource("enderporting_secondary");
+  private static final Identifier SECONDARY_ARROW = TConstruct.getResource("enderporting_secondary");
 
   @Override
   protected void registerHooks(Builder hookBuilder) {

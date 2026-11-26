@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.recipe.partbuilder;
 
 import lombok.Getter;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -42,7 +42,7 @@ public class ItemPartRecipe implements IDisplayPartBuilderRecipe {
     });
 
   @Getter
-  private final ResourceLocation id;
+  private final Identifier id;
   @Getter
   private final MaterialVariant material;
   @Getter
@@ -52,7 +52,7 @@ public class ItemPartRecipe implements IDisplayPartBuilderRecipe {
   private final int cost;
   private final ItemOutput result;
 
-  public ItemPartRecipe(ResourceLocation id, MaterialVariantId material, Pattern pattern, Ingredient patternItem, int cost, ItemOutput result) {
+  public ItemPartRecipe(Identifier id, MaterialVariantId material, Pattern pattern, Ingredient patternItem, int cost, ItemOutput result) {
     this.id = id;
     this.material = MaterialVariant.of(material);
     this.pattern = pattern;
