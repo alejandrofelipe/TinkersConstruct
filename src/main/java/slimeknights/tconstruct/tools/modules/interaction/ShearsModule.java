@@ -36,6 +36,7 @@ import slimeknights.tconstruct.library.tools.helper.ToolDamageUtil;
 import slimeknights.tconstruct.library.tools.item.IModifiable;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.utils.Util;
+import slimeknights.tconstruct.library.tools.helper.ToolAttackUtil;
 
 import java.util.List;
 
@@ -125,7 +126,7 @@ public record ShearsModule(float flatBonus, float perLevelBonus, float expandedB
     if (shearEntity(stack, tool, world, player, target, looting)) {
       boolean broken = ToolDamageUtil.damageAnimated(tool, 1, player, slotType, modifier.getId());
       player.swing(hand);
-      player.sweepAttack();
+      ToolAttackUtil.spawnSweepParticle(player);
       runShearHook(tool, player, target, true);
 
       // AOE shearing

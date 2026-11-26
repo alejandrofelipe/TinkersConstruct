@@ -16,7 +16,7 @@ public class TinkerItemPredicates {
 
   /** Matches a Tinker tool against a tool predicate. */
   public static final DeferredHolder<DataComponentPredicate.Type<?>, DataComponentPredicate.Type<ToolItemSubPredicate>> TOOL =
-    ITEM_SUB_PREDICATES.register("tool", () -> new DataComponentPredicate.Type<>(ToolItemSubPredicate.CODEC));
+    ITEM_SUB_PREDICATES.register("tool", () -> new DataComponentPredicate.ConcreteType<>(ToolItemSubPredicate.CODEC));
 
   /** Call from the mod constructor with the mod bus. */
   public static void init(IEventBus bus) {

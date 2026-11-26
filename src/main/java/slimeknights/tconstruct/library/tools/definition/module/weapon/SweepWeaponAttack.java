@@ -19,6 +19,7 @@ import slimeknights.tconstruct.library.tools.definition.module.ToolHooks;
 import slimeknights.tconstruct.library.tools.definition.module.ToolModule;
 import slimeknights.tconstruct.library.tools.item.IModifiable;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
+import slimeknights.tconstruct.library.tools.helper.ToolAttackUtil;
 
 import java.util.List;
 
@@ -82,7 +83,7 @@ public record SweepWeaponAttack(LevelingValue range) implements MeleeHitToolHook
 
       level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, attacker.getSoundSource(), 1.0F, 1.0F);
       if (attacker instanceof Player player) {
-        player.sweepAttack();
+        ToolAttackUtil.spawnSweepParticle(player);
       }
     }
   }

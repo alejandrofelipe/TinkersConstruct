@@ -19,6 +19,7 @@ import slimeknights.tconstruct.library.modifiers.modules.behavior.ShowOffhandMod
 import slimeknights.tconstruct.library.module.ModuleHookMap.Builder;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.tools.modules.interaction.ShearsModule;
+import slimeknights.tconstruct.library.tools.helper.ToolAttackUtil;
 
 import javax.annotation.Nullable;
 
@@ -60,7 +61,7 @@ public class ShearsAbilityModifier extends NoLevelsModifier implements EntityInt
   @Deprecated(forRemoval = true)
   protected void swingTool(Player player, InteractionHand hand) {
     player.swing(hand);
-    player.sweepAttack();
+    ToolAttackUtil.spawnSweepParticle(player);
   }
 
   @Override

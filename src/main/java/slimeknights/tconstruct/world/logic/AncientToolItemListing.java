@@ -2,6 +2,7 @@ package slimeknights.tconstruct.world.logic;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.villager.VillagerTrades.ItemListing;
@@ -29,7 +30,7 @@ public enum AncientToolItemListing implements ItemListing {
   @SuppressWarnings("deprecation")
   @Nullable
   @Override
-  public MerchantOffer getOffer(Entity trader, RandomSource random) {
+  public MerchantOffer getOffer(ServerLevel level, Entity trader, RandomSource random) {
     // step 1: select ancient tool
     Optional<Holder<Item>> selected = BuiltInRegistries.ITEM.getOrThrow(TinkerTags.Items.TRADER_TOOLS).getRandomElement(random);
     if (selected.isPresent() && selected.get().value() instanceof IModifiable toolItem) {

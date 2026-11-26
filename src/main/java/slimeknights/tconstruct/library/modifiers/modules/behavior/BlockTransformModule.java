@@ -22,6 +22,7 @@ import slimeknights.tconstruct.library.tools.definition.module.aoe.AreaOfEffectI
 import slimeknights.tconstruct.library.tools.helper.ToolDamageUtil;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.utils.MutableUseOnContext;
+import slimeknights.tconstruct.library.tools.helper.ToolAttackUtil;
 
 import java.util.Iterator;
 import java.util.List;
@@ -119,7 +120,7 @@ public interface BlockTransformModule extends ModifierModule, BlockInteractionMo
 
         // sweep attack if we transformed any
         if (totalTransformed > 0 && player != null) {
-          player.sweepAttack();
+          ToolAttackUtil.spawnSweepParticle(player);
         }
       }
     }

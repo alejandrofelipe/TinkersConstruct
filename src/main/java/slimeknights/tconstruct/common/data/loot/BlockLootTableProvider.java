@@ -431,7 +431,7 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
   }
 
   /** Copies a material block texture */
-  private final LootItemFunction.Builder COPY_NAME = CopyNameFunction.copyName(new CopyNameFunction.Source(LootContext.BlockEntityTarget.BLOCK_ENTITY.getParam()));
+  private final LootItemFunction.Builder COPY_NAME = CopyNameFunction.copyName(LootContext.BlockEntityTarget.BLOCK_ENTITY);
   /** Copies a material block texture */
   private final LootItemFunction.Builder COPY_MATERIAL = CopyCustomDataFunction.copyData(BLOCK_ENTITY_NBT).copy(IMaterialItem.MATERIAL_TAG, IMaterialItem.MATERIAL_TAG);
   /** Properties for a standard table */

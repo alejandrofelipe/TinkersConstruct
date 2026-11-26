@@ -182,7 +182,7 @@ public class ModifierEvents {
     }
     // this is the latest we can add slot markers to the items so we can return them to slots
     LivingEntity entity = event.getEntity();
-    if (entity.level() instanceof net.minecraft.server.level.ServerLevel keepInvLevel && !keepInvLevel.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) && entity instanceof Player player && !(player instanceof FakePlayer)) {
+    if (entity.level() instanceof net.minecraft.server.level.ServerLevel keepInvLevel && !keepInvLevel.getGameRules().get(GameRules.KEEP_INVENTORY) && entity instanceof Player player && !(player instanceof FakePlayer)) {
       // start with the hotbar, must be soulbound or soul belt
       boolean soulBelt = ArmorLevelModule.getLevel(player, TinkerDataKeys.SOUL_BELT) > 0;
       Inventory inventory = player.getInventory();
@@ -339,7 +339,7 @@ public class ModifierEvents {
     // update airborn status
     event.setDistance(0.0F);
     if (!living.level().isClientSide()) {
-      living.hasImpulse = true;
+      living.needsSync = true;
       event.setCanceled(true);
       living.setOnGround(false); // need to be on ground for server to process this event
     }

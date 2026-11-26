@@ -386,6 +386,19 @@ public class ToolAttackUtil {
   }
 
   /**
+   * Spawns the sweep attack particle in front of the entity, replacing the removed {@code Player#sweepAttack()}.
+   * Same math as the particle at the end of vanilla's private {@code Player#doSweepAttack}.
+   * @param entity  Entity performing the sweep
+   */
+  public static void spawnSweepParticle(Entity entity) {
+    if (entity.level() instanceof ServerLevel server) {
+      double xd = -Mth.sin(entity.getYRot() * (float) (Math.PI / 180.0));
+      double zd = Mth.cos(entity.getYRot() * (float) (Math.PI / 180.0));
+      server.sendParticles(ParticleTypes.SWEEP_ATTACK, entity.getX() + xd, entity.getY(0.5), entity.getZ() + zd, 0, xd, 0.0, zd, 0.0);
+    }
+  }
+
+  /**
    * Disables knockback on the given entity.
    * @return Attribute instance to enable knockback later with {@link #enableKnockback(AttributeInstance)}, or null if no knockback was disabled.
    */

@@ -34,6 +34,7 @@ import slimeknights.tconstruct.library.tools.definition.module.ToolHooks;
 import slimeknights.tconstruct.library.tools.definition.module.aoe.AreaOfEffectIterator;
 import slimeknights.tconstruct.library.tools.helper.ToolDamageUtil;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
+import slimeknights.tconstruct.library.tools.helper.ToolAttackUtil;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -261,7 +262,7 @@ public enum HarvestModule implements ModifierModule, BlockInteractionModifierHoo
         // animations
         if (player != null) {
           if (didHarvest) {
-            player.sweepAttack();
+            ToolAttackUtil.spawnSweepParticle(player);
           }
           if (broken) {
             player.onEquippedItemBroken(stack.getItem(), context.getHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
