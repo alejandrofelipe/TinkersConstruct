@@ -120,6 +120,8 @@ import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.TextureType;
 import slimeknights.tconstruct.library.client.armor.texture.TintedArmorTexture;
 import slimeknights.tconstruct.library.client.armor.texture.TrimArmorTextureSupplier.TrimArmorTexture;
+import slimeknights.tconstruct.library.client.materials.MaterialRenderInfo;
+import slimeknights.tconstruct.library.client.materials.MaterialRenderInfoLoader;
 import slimeknights.tconstruct.library.client.modifiers.ModifierIconManager;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
@@ -185,9 +187,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -1407,8 +1411,14 @@ public class TinkerUiTestScenarios {
     private static final List<String> EXTRA_PALETTES = List.of("iron_darker", "gold_darker");
     /** Worn helmet region of the player preview in GUI pixels, relative to the inventory corner: front left of the head above the eyes, left of the sentry trim */
     private static final Rect2i HELMET_REGION = new Rect2i(42, 15, 5, 4);
+    /** Iron sentry trim on the worn helmet in GUI pixels, relative to the inventory corner: the stripe down the middle of the front */
+    private static final Rect2i HELMET_TRIM_REGION = new Rect2i(49, 15, 2, 5);
     /** Worn leggings region of the player preview in GUI pixels, relative to the inventory corner: front of the legs below the dune trim */
     private static final Rect2i LEGGINGS_REGION = new Rect2i(44, 58, 12, 3);
+    /** Copper plating: hue 12-16 and saturation 0.48-0.71 as captured; skin tones are mostly above that hue or below that saturation */
+    private static final IntPredicate COPPER = hued(5, 18, 0.45f, 110);
+    /** Gold plating: hue 45-52 and saturation 0.67-0.84 as captured */
+    private static final IntPredicate GOLD = hued(40, 60, 0.5f, 110);
 
     @Override
     public Identifier id() {
@@ -1498,9 +1508,13 @@ public class TinkerUiTestScenarios {
         .map(layer -> layer.getArmorTexture(worn, textureType, access))
         .filter(texture -> texture != ArmorTexture.EMPTY)
         .toList();
-      // plating textures are greyscale, tinted by the material
-      if (textures.isEmpty() || !(textures.getFirst() instanceof TintedArmorTexture plating) || plating.color() == -1 && !plating.texture().getPath().endsWith(trim.material.getPath() + ".png")) {
-        throw new IllegalStateException("trimmed_armor: worn " + trim.type + " lacks a " + trim.material + " material texture, layers give " + textures);
+      // the plating layer is the material's untinted texture, or a greyscale one tinted by the material's color
+      MaterialRenderInfo info = MaterialRenderInfoLoader.INSTANCE.getRenderInfo(trim.material).orElseThrow(() -> new IllegalStateException("trimmed_armor: no render info for " + trim.material));
+      Identifier untinted = info.texture();
+      if (textures.isEmpty() || !(textures.getFirst() instanceof TintedArmorTexture plating)
+          || !(plating.color() == info.vertexColor() || plating.color() == -1 && untinted != null && plating.texture().getPath().endsWith('_' + untinted.getNamespace() + '_' + untinted.getPath() + ".png"))) {
+        String found = textures.isEmpty() ? "nothing" : textures.getFirst() instanceof TintedArmorTexture tinted ? tinted.texture() + " #" + Integer.toHexString(tinted.color()) : textures.getFirst().toString();
+        throw new IllegalStateException("trimmed_armor: worn " + trim.type + " plating is not the " + trim.material + " texture (color #" + Integer.toHexString(info.vertexColor()) + "), found " + found);
       }
       if (textures.stream().noneMatch(texture -> texture instanceof TrimArmorTexture)) {
         throw new IllegalStateException("trimmed_armor: worn " + trim.type + " lacks a trim texture, layers give " + textures);
@@ -1527,8 +1541,10 @@ public class TinkerUiTestScenarios {
       if (ctx.mc().screen instanceof InventoryScreen screen) {
         try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
           double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
-          assertHue(image, scale, screen, HELMET_REGION, "copper helmet", 5, 40);
-          assertHue(image, scale, screen, LEGGINGS_REGION, "gold leggings", 40, 65);
+          // the copper plating beside a neutral stripe: grey (vanilla iron) armor fails the first, skin or hair fails at least one of them
+          assertGuiRegion(image, scale, screen, HELMET_REGION, "trimmed_armor: worn copper helmet", COPPER);
+          assertGuiRegion(image, scale, screen, HELMET_TRIM_REGION, "trimmed_armor: iron trim on the worn helmet", NEUTRAL);
+          assertGuiRegion(image, scale, screen, LEGGINGS_REGION, "trimmed_armor: worn gold leggings", GOLD);
         }
       } else {
         throw new IllegalStateException("trimmed_armor: the inventory closed before the capture, found " + ctx.mc().screen);
@@ -1536,65 +1552,12 @@ public class TinkerUiTestScenarios {
       ctx.mc().setScreen(null);
     }
 
-    /**
-     * Fails unless 3/4 of the region is bright and saturated within the hue range, which grey (vanilla iron) or missing armor is not.
-     * @param scale   Image pixels per GUI pixel
-     * @param region  Region in GUI pixels, relative to the inventory corner
-     * @param minHue  Minimum hue in degrees
-     * @param maxHue  Maximum hue in degrees
-     */
-    private static void assertHue(NativeImage image, double scale, AbstractContainerScreen<?> screen, Rect2i region, String name, float minHue, float maxHue) {
-      int x0 = (int) Math.round((screen.leftPos + region.getX()) * scale);
-      int y0 = (int) Math.round((screen.topPos + region.getY()) * scale);
-      int x1 = (int) Math.round((screen.leftPos + region.getX() + region.getWidth()) * scale);
-      int y1 = (int) Math.round((screen.topPos + region.getY() + region.getHeight()) * scale);
-      int matching = 0;
-      long red = 0, green = 0, blue = 0;
-      for (int y = y0; y < y1; y++) {
-        for (int x = x0; x < x1; x++) {
-          int color = image.getPixel(x, y);
-          int r = ARGB.red(color), g = ARGB.green(color), b = ARGB.blue(color);
-          red += r;
-          green += g;
-          blue += b;
-          int max = Math.max(r, Math.max(g, b));
-          int min = Math.min(r, Math.min(g, b));
-          float hue = hue(r, g, b, max, min);
-          // bright enough to not be a dark skin or hair pixel, saturated enough to not be grey
-          if (max >= 110 && max - min >= 0.35f * max && hue >= minHue && hue <= maxHue) {
-            matching++;
-          }
-        }
-      }
-      int total = Math.max(1, (x1 - x0) * (y1 - y0));
-      int average = ARGB.color(255, (int) (red / total), (int) (green / total), (int) (blue / total));
-      int spread = Math.max(ARGB.red(average), Math.max(ARGB.green(average), ARGB.blue(average))) - Math.min(ARGB.red(average), Math.min(ARGB.green(average), ARGB.blue(average)));
-      String stats = String.format("%d of %d pixels in hue %.0f-%.0f, average #%06X", matching, total, minHue, maxHue, average & 0xFFFFFF);
-      TConstruct.LOG.info("trimmed_armor: worn {} region {}", name, stats);
-      if (spread < 20) {
-        throw new IllegalStateException("trimmed_armor: worn " + name + " is desaturated (grey or missing armor): " + stats);
-      }
-      if (matching * 4 < total * 3) {
-        throw new IllegalStateException("trimmed_armor: worn " + name + " has the wrong color: " + stats);
-      }
-    }
-
-    /** Hue in degrees of the color, 0 for grey */
-    private static float hue(int r, int g, int b, int max, int min) {
-      if (max == min) {
-        return 0;
-      }
-      float delta = max - min;
-      float hue;
-      if (max == r) {
-        hue = (g - b) / delta;
-      } else if (max == g) {
-        hue = 2 + (b - r) / delta;
-      } else {
-        hue = 4 + (r - g) / delta;
-      }
-      hue *= 60;
-      return hue < 0 ? hue + 360 : hue;
+    /** Asserts a region of the screen given in GUI pixels relative to the inventory corner, see {@link #assertRegion} */
+    private static void assertGuiRegion(NativeImage image, double scale, AbstractContainerScreen<?> screen, Rect2i region, String description, IntPredicate test) {
+      assertRegion(image,
+        (int) Math.round((screen.leftPos + region.getX()) * scale), (int) Math.round((screen.topPos + region.getY()) * scale),
+        (int) Math.round((screen.leftPos + region.getX() + region.getWidth()) * scale), (int) Math.round((screen.topPos + region.getY() + region.getHeight()) * scale),
+        description, test);
     }
 
     @Override
@@ -1609,12 +1572,13 @@ public class TinkerUiTestScenarios {
   /**
    * No menu: Tinkers armor worn by entities other than the player, drawn by {@code TinkerArmorLayer} on their renderers (M6 Phase 4): an armor
    * stand with the slimeskull (bone skull on skyslime) and slime suit, an armor stand with travelers gear and a zombie with plate armor. Asserts
-   * the renderer of each entity has the Tinkers armor layer, then captures them for a visual check of the skull, slime and travelers layers.
+   * the renderer of each spawned entity has the Tinkers armor layer, then samples the frame: the slime suit must be teal, the travelers cuirass
+   * leather brown and the zombie's plate gold, which the bare stands and zombie are not.
    */
   private static class WornArmorScenario implements UiTestScenario {
     private final BlockPos origin = SITE.offset(100, 0, 0);
-    /** Entities spawned by this scenario, removed on cleanup */
-    private final List<LivingEntity> spawned = new ArrayList<>();
+    /** Entities spawned by this scenario (on the server thread), removed on cleanup */
+    private final List<LivingEntity> spawned = new CopyOnWriteArrayList<>();
 
     @Override
     public Identifier id() {
@@ -1672,23 +1636,47 @@ public class TinkerUiTestScenarios {
     @Override
     public void open(UiTestContext ctx) {
       ClientLevel level = Objects.requireNonNull(ctx.mc().level);
-      int found = 0;
-      for (Entity entity : level.entitiesForRendering()) {
-        if (entity instanceof ArmorStand || entity instanceof Zombie) {
-          found++;
-          if (!(ctx.mc().getEntityRenderDispatcher().getRenderer(entity) instanceof LivingEntityRenderer<?,?,?> renderer) || renderer.layers.stream().noneMatch(layer -> layer instanceof TinkerArmorLayer)) {
-            throw new IllegalStateException("worn_armor: the renderer of " + entity + " lacks the Tinkers armor layer");
-          }
-        }
+      if (spawned.size() != 3) {
+        throw new IllegalStateException("worn_armor: expected 3 spawned entities, found " + spawned);
       }
-      if (found < 3) {
-        throw new IllegalStateException("worn_armor: expected 3 armored entities on the client, found " + found);
+      // the client copies of the entities this scenario spawned (the integrated server and client share entity ids)
+      for (LivingEntity spawnedEntity : spawned) {
+        Entity entity = level.getEntity(spawnedEntity.getId());
+        if (entity == null) {
+          throw new IllegalStateException("worn_armor: " + spawnedEntity + " is not on the client");
+        }
+        if (!(ctx.mc().getEntityRenderDispatcher().getRenderer(entity) instanceof LivingEntityRenderer<?,?,?> renderer) || renderer.layers.stream().noneMatch(layer -> layer instanceof TinkerArmorLayer)) {
+          throw new IllegalStateException("worn_armor: the renderer of " + entity + " lacks the Tinkers armor layer");
+        }
       }
       ctx.lookAt(origin.offset(0, 1, 0));
     }
 
+    /** Chest of the slime suit stand, as fractions of the frame: skyslime is dark teal in this light, hue 178-180 and saturation 0.39-0.46 as captured */
+    private static final float[] SLIME_REGION = {350 / 1280f, 390 / 720f, 400 / 1280f, 490 / 720f};
+    private static final IntPredicate SKYSLIME = hued(165, 195, 0.3f, 40);
+    /** Leather cuirass of the travelers stand: hue 10-25, saturation from 0.48; the bare stand's oak is about hue 38 */
+    private static final float[] TRAVELERS_REGION = {615 / 1280f, 440 / 720f, 645 / 1280f, 500 / 720f};
+    private static final IntPredicate LEATHER = hued(0, 25, 0.4f, 30);
+    /** Gold chestplate of the zombie: hue 44-58, saturation from 0.61; the bare zombie is green and blue */
+    private static final float[] ZOMBIE_REGION = {865 / 1280f, 420 / 720f, 925 / 1280f, 510 / 720f};
+    private static final IntPredicate GOLD = hued(40, 60, 0.5f, 60);
+
     @Override
-    public void close(UiTestContext ctx) { /* nothing open */ }
+    public void close(UiTestContext ctx) {
+      // the frame just captured is still in the main target
+      try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+        assertFrameRegion(image, SLIME_REGION, "worn_armor: skyslime suit on the armor stand", SKYSLIME);
+        assertFrameRegion(image, TRAVELERS_REGION, "worn_armor: travelers cuirass on the armor stand", LEATHER);
+        assertFrameRegion(image, ZOMBIE_REGION, "worn_armor: gold plate on the zombie", GOLD);
+      }
+    }
+
+    /** Asserts a region given in fractions of the frame, see {@link #assertRegion} */
+    private static void assertFrameRegion(NativeImage image, float[] region, String description, IntPredicate test) {
+      int width = image.getWidth(), height = image.getHeight();
+      assertRegion(image, Math.round(region[0] * width), Math.round(region[1] * height), Math.round(region[2] * width), Math.round(region[3] * height), description, test);
+    }
 
     @Override
     public void cleanup(UiTestContext ctx) {
@@ -1753,6 +1741,82 @@ public class TinkerUiTestScenarios {
       }
       ctx.mc().setScreen(new GridScreen(stacks(), modifiers));
       ctx.parkMouse();
+    }
+  }
+
+  /* Pixel asserts on a captured frame */
+
+  /** Bright neutral (grey to white) pixels, such as an iron trim */
+  private static final IntPredicate NEUTRAL = color -> {
+    int max = Math.max(ARGB.red(color), Math.max(ARGB.green(color), ARGB.blue(color)));
+    int min = Math.min(ARGB.red(color), Math.min(ARGB.green(color), ARGB.blue(color)));
+    return max >= 120 && max - min < 0.2f * max;
+  };
+
+  /**
+   * Pixels of a hue range that are bright and saturated enough, so grey (vanilla iron armor) and dark (shadow, hair) pixels fail.
+   * @param minHue         Minimum hue in degrees
+   * @param maxHue         Maximum hue in degrees
+   * @param minSaturation  Minimum saturation, {@code (max - min) / max}
+   * @param minBrightness  Minimum value of the brightest channel
+   */
+  private static IntPredicate hued(float minHue, float maxHue, float minSaturation, int minBrightness) {
+    return color -> {
+      int r = ARGB.red(color), g = ARGB.green(color), b = ARGB.blue(color);
+      int max = Math.max(r, Math.max(g, b));
+      int min = Math.min(r, Math.min(g, b));
+      if (max < minBrightness || max - min < minSaturation * max) {
+        return false;
+      }
+      float hue = hue(r, g, b, max, min);
+      return hue >= minHue && hue <= maxHue;
+    };
+  }
+
+  /** Hue in degrees of the color, 0 for grey */
+  private static float hue(int r, int g, int b, int max, int min) {
+    if (max == min) {
+      return 0;
+    }
+    float delta = max - min;
+    float hue;
+    if (max == r) {
+      hue = (g - b) / delta;
+    } else if (max == g) {
+      hue = 2 + (b - r) / delta;
+    } else {
+      hue = 4 + (r - g) / delta;
+    }
+    hue *= 60;
+    return hue < 0 ? hue + 360 : hue;
+  }
+
+  /**
+   * Fails unless 3/4 of the pixels in the image region pass the test. Logs the counts and average color, to recalibrate the regions.
+   * @param x0  First column in image pixels
+   * @param y0  First row in image pixels
+   * @param x1  Column after the last
+   * @param y1  Row after the last
+   */
+  private static void assertRegion(NativeImage image, int x0, int y0, int x1, int y1, String description, IntPredicate test) {
+    int matching = 0;
+    long red = 0, green = 0, blue = 0;
+    for (int y = y0; y < y1; y++) {
+      for (int x = x0; x < x1; x++) {
+        int color = image.getPixel(x, y);
+        red += ARGB.red(color);
+        green += ARGB.green(color);
+        blue += ARGB.blue(color);
+        if (test.test(color)) {
+          matching++;
+        }
+      }
+    }
+    int total = Math.max(1, (x1 - x0) * (y1 - y0));
+    String stats = String.format("%d of %d pixels match in [%d,%d..%d,%d], average #%02X%02X%02X", matching, total, x0, y0, x1, y1, red / total, green / total, blue / total);
+    TConstruct.LOG.info("{}: {}", description, stats);
+    if (matching * 4 < total * 3) {
+      throw new IllegalStateException(description + " has the wrong color: " + stats);
     }
   }
 
