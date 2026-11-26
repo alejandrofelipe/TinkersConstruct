@@ -6,6 +6,7 @@ import mezz.jei.api.gui.IRecipeLayoutDrawable;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.neoforge.NeoForgeTypes;
+import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.IRecipeManager;
 import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
@@ -145,6 +146,7 @@ import slimeknights.tconstruct.tools.client.ToolContainerScreen;
 import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
 import slimeknights.tconstruct.tools.modules.cosmetic.TrimModule;
+import slimeknights.tconstruct.tools.recipe.severing.PlayerBeheadingRecipe;
 import slimeknights.tconstruct.world.TinkerHeadType;
 import slimeknights.tconstruct.world.TinkerWorld;
 import org.lwjgl.glfw.GLFW;
@@ -201,10 +203,12 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new JeiCategoryScenario<>("molding", TConstructJEIConstants.MOLDING, "a recipe without pattern", recipe -> recipe.getPattern() == null));
     UiTestScenarios.register(new JeiCategoryScenario<>("alloy", TConstructJEIConstants.ALLOY));
     // the generated default recipe is always there, so require a datapack recipe (synced to the client)
-    UiTestScenarios.register(new JeiCategoryScenario<>("entity_melting", TConstructJEIConstants.ENTITY_MELTING, "a datapack recipe", recipe -> !(recipe instanceof DefaultEntityMeltingRecipe)));
+    // entity melting and severing must also lay out every recipe: 1.21.11 broke the ones with an entity without spawn egg
+    // (e.g. the player) as JEI 27 checks the entity/egg focus link sizes
+    UiTestScenarios.register(new JeiCategoryScenario<>("entity_melting", TConstructJEIConstants.ENTITY_MELTING, "a datapack recipe", recipe -> !(recipe instanceof DefaultEntityMeltingRecipe), true));
     UiTestScenarios.register(new JeiCategoryScenario<>("foundry", TConstructJEIConstants.FOUNDRY));
     UiTestScenarios.register(new JeiCategoryScenario<>("modifiers", TConstructJEIConstants.MODIFIERS));
-    UiTestScenarios.register(new JeiCategoryScenario<>("severing", TConstructJEIConstants.SEVERING));
+    UiTestScenarios.register(new JeiCategoryScenario<>("severing", TConstructJEIConstants.SEVERING, "the player beheading recipe", recipe -> recipe instanceof PlayerBeheadingRecipe, true));
     UiTestScenarios.register(new JeiCategoryScenario<>("tool_building", TConstructJEIConstants.TOOL_BUILDING));
     UiTestScenarios.register(new JeiCategoryScenario<>("part_builder", TConstructJEIConstants.PART_BUILDER));
     UiTestScenarios.register(new JeiCategoryScenario<>("worktable", TConstructJEIConstants.MODIFIER_WORKTABLE));
@@ -555,8 +559,9 @@ public class TinkerUiTestScenarios {
 
   /**
    * Opens the JEI recipes GUI on one Tinkers recipe category and captures its first page. Fails when the runtime is missing,
-   * the category is not registered, no recipe of the type matches {@code mustShow} (any recipe by default), or the recipes
-   * GUI did not open. The mouse is parked in the corner every tick while open, so no hover tooltip covers the recipes.
+   * the category is not registered, no recipe of the type matches {@code mustShow} (any recipe by default), a recipe does not
+   * lay out (when {@code allMustLayOut}), or the recipes GUI did not open. The mouse is parked in the corner every tick while
+   * open, so no hover tooltip covers the recipes.
    */
   private static class JeiCategoryScenario<T> implements UiTestScenario {
     private final String name;
@@ -564,14 +569,24 @@ public class TinkerUiTestScenarios {
     private final String mustShowDescription;
     /** A recipe JEI must list, e.g. one kind the category dropped before (JEI only logs recipes that fail to lay out) */
     private final Predicate<T> mustShow;
+    /**
+     * If true, every recipe of the category must lay out. JEI keeps a recipe whose setRecipe throws, but only logs
+     * "Found a broken recipe": its ingredients after the throw are never indexed and its layout fails, so the recipes GUI skips it.
+     */
+    private final boolean allMustLayOut;
     /** Re-parks every tick: a recentering cursor event from opening the screen may land after open() */
     private final Consumer<ClientTickEvent.Post> mouseParker = event -> new UiTestContext(Minecraft.getInstance()).parkMouse();
 
-    private JeiCategoryScenario(String name, IRecipeType<T> type, String mustShowDescription, Predicate<T> mustShow) {
+    private JeiCategoryScenario(String name, IRecipeType<T> type, String mustShowDescription, Predicate<T> mustShow, boolean allMustLayOut) {
       this.name = name;
       this.type = type;
       this.mustShowDescription = mustShowDescription;
       this.mustShow = mustShow;
+      this.allMustLayOut = allMustLayOut;
+    }
+
+    private JeiCategoryScenario(String name, IRecipeType<T> type, String mustShowDescription, Predicate<T> mustShow) {
+      this(name, type, mustShowDescription, mustShow, false);
     }
 
     private JeiCategoryScenario(String name, IRecipeType<T> type) {
@@ -597,6 +612,16 @@ public class TinkerUiTestScenarios {
       Objects.requireNonNull(recipes.getRecipeCategory(type), () -> "no JEI category for " + type.getUid());
       if (recipes.createRecipeLookup(type).get().noneMatch(mustShow)) {
         throw new IllegalStateException("JEI category " + type.getUid() + " is missing " + mustShowDescription);
+      }
+      if (allMustLayOut) {
+        IRecipeCategory<T> category = recipes.getRecipeCategory(type);
+        IFocusGroup noFocus = runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup();
+        List<T> broken = recipes.createRecipeLookup(type).includeHidden().get()
+          .filter(recipe -> recipes.createRecipeLayoutDrawable(category, recipe, noFocus).isEmpty())
+          .toList();
+        if (!broken.isEmpty()) {
+          throw new IllegalStateException("JEI could not lay out " + broken.size() + " " + type.getUid() + " recipe(s), see the log for a broken recipe, first: " + broken.get(0));
+        }
       }
       runtime.getRecipesGui().showTypes(List.of(type));
       ctx.parkMouse();
