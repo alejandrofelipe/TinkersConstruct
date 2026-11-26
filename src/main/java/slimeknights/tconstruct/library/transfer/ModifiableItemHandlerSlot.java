@@ -1,12 +1,15 @@
 package slimeknights.tconstruct.library.transfer;
 
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.IndexModifier;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.transfer.ModifiableItemHandler.TransactionalModifier;
 
 import javax.annotation.Nullable;
@@ -202,7 +205,8 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
    * Over a transactional setter, vanilla calls this after already taking the new stack from the cursor or another slot (and, for a swap,
    * handing out the old one), so a refused set would lose those items: the part of the new stack the slot did not take goes back to the
    * player instead (server side; the client's prediction is corrected by the server). For a swap, whose old stack vanilla already handed
-   * out, the slot is still emptied when the handler allows it, so the old stack is not duplicated.
+   * out, the slot is still emptied when the handler allows it, so the old stack is not duplicated; when it refuses that too (contradicting
+   * what {@link #mayPickup} simulated), the slot keeps the old stack and the copy vanilla handed out is taken back from the player.
    * <p>
    * A new stack of the slot's own item is not always "the slot's stack plus what the player gave": a number key swap from a smaller hotbar
    * stack of the same item hands the whole old stack to the hotbar and sets the slot to the smaller stack, so a new stack smaller than the
@@ -227,16 +231,53 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
       } else {
         refused = newStack.getCount();
         // a swap (a smaller stack of the same item included): vanilla already handed out the old stack
-        if (!current.isEmpty()) {
-          transactional.trySet(index, ItemResource.EMPTY, 0);
+        if (!current.isEmpty() && !transactional.trySet(index, ItemResource.EMPTY, 0)) {
+          // nor can the slot be emptied, although mayPickup simulated it: the slot keeps the old stack, so take back the copy vanilla handed out
+          takeBack(current);
         }
       }
-      if (refused > 0 && player != null && !player.level().isClientSide()) {
+      if (refused > 0 && isServerPlayer()) {
         TransferUtil.giveItemToPlayer(player, newStack.copyWithCount(refused));
       }
     }
     // the menu may write back the last stack handed out by getItem, so refresh it to the real contents
     getItem();
+  }
+
+  /** Checks if items can be given to or taken from the player: server side only, the client's prediction is corrected by the server */
+  private boolean isServerPlayer() {
+    return player != null && !player.level().isClientSide();
+  }
+
+  /**
+   * Takes back a stack vanilla handed to the player before the slot refused to give it up: from the cursor (a cursor swap puts it there)
+   * and the player's inventory (a number key swap). The same item with the same components is interchangeable, so any matching stack will
+   * do. Logs an error if the player no longer holds all of it.
+   */
+  private void takeBack(ItemStack stack) {
+    if (!isServerPlayer()) {
+      return;
+    }
+    int remaining = stack.getCount();
+    AbstractContainerMenu menu = player.containerMenu;
+    ItemStack carried = menu.getCarried();
+    if (ItemStack.isSameItemSameComponents(carried, stack)) {
+      int taken = Math.min(remaining, carried.getCount());
+      menu.setCarried(taken == carried.getCount() ? ItemStack.EMPTY : carried.copyWithCount(carried.getCount() - taken));
+      remaining -= taken;
+    }
+    Inventory inventory = player.getInventory();
+    for (int i = 0; remaining > 0 && i < inventory.getContainerSize(); i++) {
+      ItemStack item = inventory.getItem(i);
+      if (ItemStack.isSameItemSameComponents(item, stack)) {
+        int taken = Math.min(remaining, item.getCount());
+        inventory.removeItem(i, taken);
+        remaining -= taken;
+      }
+    }
+    if (remaining > 0) {
+      TConstruct.LOG.error("Menu slot {} kept {} after handing it out, but {} of it could not be taken back from {}", index, stack, remaining, player.getName().getString());
+    }
   }
 
 

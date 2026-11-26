@@ -746,6 +746,89 @@ public class MenuSlotGameTests {
     helper.succeed();
   }
 
+  /**
+   * Native handler counting its extracts, one of which (1-based, -1 for none) takes nothing although the very same extract was simulated
+   * successfully just before, like a handler whose state changed in between. Optionally spreads inserts like {@link #spreadingInventory()}.
+   */
+  private static class FlakyInventory extends ItemStacksResourceHandler {
+    private final boolean spreading;
+    private final int failAt;
+    int extracts = 0;
+
+    FlakyInventory(boolean spreading, int failAt) {
+      super(3);
+      this.spreading = spreading;
+      this.failAt = failAt;
+    }
+
+    @Override
+    protected int getCapacity(int index, ItemResource resource) {
+      return 16;
+    }
+
+    @Override
+    public int insert(int index, ItemResource resource, int amount, TransactionContext transaction) {
+      if (!spreading || index >= 2) {
+        return super.insert(index, resource, amount, transaction);
+      }
+      int here = amount / 2;
+      int inserted = super.insert(index, resource, here, transaction);
+      return inserted + super.insert(index + 1, resource, amount - here, transaction);
+    }
+
+    @Override
+    public int extract(int index, ItemResource resource, int amount, TransactionContext transaction) {
+      extracts++;
+      return extracts == failAt ? 0 : super.extract(index, resource, amount, transaction);
+    }
+  }
+
+  /** Sets up a flaky inventory and its menu, then runs a click on them */
+  @FunctionalInterface
+  private interface FlakyScenario {
+    void run(FlakyInventory inventory, MovingSideInventory menu);
+  }
+
+  /**
+   * Runs the scenario once counting the extracts, then again on a fresh inventory and menu whose last extract fails. Every simulation
+   * comes before the final write, so only the real change of the slot contradicts what the slot simulated.
+   * @return  Menu of the second run
+   */
+  private static MovingSideInventory withFailingFinalExtract(GameTestHelper helper, boolean spreading, FlakyScenario scenario) {
+    FlakyInventory counting = new FlakyInventory(spreading, -1);
+    scenario.run(counting, transactionalMenu(helper, counting));
+    helper.assertTrue(counting.extracts > 0, Component.literal("scenario made no extract"));
+    FlakyInventory failing = new FlakyInventory(spreading, counting.extracts);
+    MovingSideInventory menu = transactionalMenu(helper, failing);
+    scenario.run(failing, menu);
+    return menu;
+  }
+
+  /** Swapping into a spreading slot refuses the set, and then emptying the slot fails too: the old stack must not be duplicated */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_swap_refused_not_emptied(GameTestHelper helper) {
+    // cursor swap: vanilla put the old stack on the cursor
+    FlakyInventory[] inventory = new FlakyInventory[1];
+    MovingSideInventory menu = withFailingFinalExtract(helper, true, (inv, m) -> {
+      inventory[0] = inv;
+      inv.set(0, ItemResource.of(Items.DIRT), 3);
+      click(m, m.player, 0, 0, new ItemStack(Items.APPLE, 6));
+    });
+    assertCount(helper, inventory[0], menu, Items.DIRT, 3, "after the cursor swap");
+    assertCount(helper, inventory[0], menu, Items.APPLE, 6, "after the cursor swap");
+
+    // number key swap: vanilla put the old stack in the hotbar
+    menu = withFailingFinalExtract(helper, true, (inv, m) -> {
+      inventory[0] = inv;
+      inv.set(0, ItemResource.of(Items.DIRT), 3);
+      m.player.getInventory().setItem(0, new ItemStack(Items.APPLE, 6));
+      m.clicked(0, 0, ClickType.SWAP, m.player);
+    });
+    assertCount(helper, inventory[0], menu, Items.DIRT, 3, "after the hotbar swap");
+    assertCount(helper, inventory[0], menu, Items.APPLE, 6, "after the hotbar swap");
+    helper.succeed();
+  }
+
   /** Tinkers chest menu: slots report their chest index, respect the slot limit, and shift clicking moves stacks out of the chest. */
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void chest_menu_slots(GameTestHelper helper) {
