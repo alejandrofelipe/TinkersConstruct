@@ -7,6 +7,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.types.IRecipeType;
+import mezz.jei.api.recipe.transfer.IRecipeTransferContext;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
@@ -26,6 +27,7 @@ import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 /** Implements transfer info for crafting from a tool inventory. Based partially on {@code mezz.jei.library.transfer.PlayerRecipeTransferHandler} */
 @Internal
@@ -57,7 +59,22 @@ public class ToolInventoryTransferInfo implements IRecipeTransferHandler<ToolCon
 
   @Nullable
   @Override
+  public IRecipeTransferError transferRecipe(IRecipeTransferContext<RecipeHolder<CraftingRecipe>, ToolContainerMenu> context, boolean doTransfer) {
+    IRecipeSlotsView recipeSlots = context.getRecipeSlots();
+    return transfer(context.getContainer(), recipeSlots, slots -> handler.transferRecipe(slots == recipeSlots ? context : new FilteredRecipeTransferContext<>(context, slots), doTransfer));
+  }
+
+  /** JEI 27 still declares this overload abstract, but only calls the context one above */
+  @SuppressWarnings("removal")
+  @Nullable
+  @Override
   public IRecipeTransferError transferRecipe(ToolContainerMenu container, RecipeHolder<CraftingRecipe> recipe, IRecipeSlotsView recipeSlotsView, Player player, boolean maxTransfer, boolean doTransfer) {
+    return transfer(container, recipeSlotsView, slots -> handler.transferRecipe(container, recipe, slots, player, maxTransfer, doTransfer));
+  }
+
+  /** Validates the recipe fits in the tool's crafting grid, then runs the transfer with the recipe slots trimmed to a small grid */
+  @Nullable
+  private IRecipeTransferError transfer(ToolContainerMenu container, IRecipeSlotsView recipeSlotsView, Function<IRecipeSlotsView, IRecipeTransferError> transfer) {
     // if we have no crafting slots, nothing to do
     int slots = container.getToolInventoryStart() - 1;
     if (slots <= 0) {
@@ -71,7 +88,7 @@ public class ToolInventoryTransferInfo implements IRecipeTransferHandler<ToolCon
 
     // if we have a full crafting grid, just do the normal transfer
     if (slots >= 9) {
-      return handler.transferRecipe(container, recipe, recipeSlotsView, player, maxTransfer, doTransfer);
+      return transfer.apply(recipeSlotsView);
     }
 
     // if we have a small grid, recipe must fit in the 2x2
@@ -86,7 +103,7 @@ public class ToolInventoryTransferInfo implements IRecipeTransferHandler<ToolCon
     // filter the crafting table input slots to player inventory input slots
     List<IRecipeSlotView> filteredSlotViews = filterSlots(slotViews);
     IRecipeSlotsView filteredRecipeSlots = this.handlerHelper.createRecipeSlotsView(filteredSlotViews);
-    return this.handler.transferRecipe(container, recipe, filteredRecipeSlots, player, maxTransfer, doTransfer);
+    return transfer.apply(filteredRecipeSlots);
   }
 
   @Override

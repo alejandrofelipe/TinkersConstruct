@@ -7,6 +7,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.types.IRecipeType;
+import mezz.jei.api.recipe.transfer.IRecipeTransferContext;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
@@ -23,6 +24,7 @@ import slimeknights.tconstruct.tables.menu.TinkerStationContainerMenu;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 /** Implements recipe transfer in the tinker station. */
 @Internal
@@ -55,7 +57,22 @@ public class TinkerStationTransferInfo<T> implements IRecipeTransferInfo<TinkerS
 
   @Nullable
   @Override
+  public IRecipeTransferError transferRecipe(IRecipeTransferContext<T,TinkerStationContainerMenu> context, boolean doTransfer) {
+    IRecipeSlotsView recipeSlots = context.getRecipeSlots();
+    return transfer(context.getContainer(), recipeSlots, slots -> handler.transferRecipe(slots == recipeSlots ? context : new FilteredRecipeTransferContext<>(context, slots), doTransfer));
+  }
+
+  /** JEI 27 still declares this overload abstract, but only calls the context one above */
+  @SuppressWarnings("removal")
+  @Nullable
+  @Override
   public IRecipeTransferError transferRecipe(TinkerStationContainerMenu container, T recipe, IRecipeSlotsView recipeSlotsView, Player player, boolean maxTransfer, boolean doTransfer) {
+    return transfer(container, recipeSlotsView, slots -> handler.transferRecipe(container, recipe, slots, player, maxTransfer, doTransfer));
+  }
+
+  /** Validates the recipe fits in the station, then runs the transfer with the recipe slots trimmed to the station inputs */
+  @Nullable
+  private IRecipeTransferError transfer(TinkerStationContainerMenu container, IRecipeSlotsView recipeSlotsView, Function<IRecipeSlotsView,IRecipeTransferError> transfer) {
     // must have server support
     if (!handlerHelper.recipeTransferHasServerSupport()) {
       return handlerHelper.createUserErrorWithTooltip(Component.translatable("jei.tooltip.error.recipe.transfer.no.server"));
@@ -73,7 +90,7 @@ public class TinkerStationTransferInfo<T> implements IRecipeTransferInfo<TinkerS
     if (slotViews.size() > size) {
       filteredSlotView = handlerHelper.createRecipeSlotsView(slotViews.subList(0, size));
     }
-    return this.handler.transferRecipe(container, recipe, filteredSlotView, player, maxTransfer, doTransfer);
+    return transfer.apply(filteredSlotView);
   }
 
   @Override
