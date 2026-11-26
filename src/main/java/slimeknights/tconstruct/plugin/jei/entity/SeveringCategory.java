@@ -70,7 +70,8 @@ public class SeveringCategory implements IRecipeCategory<SeveringRecipe> {
     IIngredientAcceptor<?> entities = builder.addSlot(RecipeIngredientRole.INPUT, 3, 3)
            .setCustomRenderer(MantleJEIConstants.ENTITY_TYPE, entityRenderer)
            .addIngredients(MantleJEIConstants.ENTITY_TYPE, input.getDisplay());
-    IIngredientAcceptor<?> eggs = builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addItemStacks(input.getEggs());
+    // addIngredients keeps the null entries of entities without egg, so both slots stay the same size
+    IIngredientAcceptor<?> eggs = builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addIngredients(VanillaTypes.ITEM_STACK, input.getEggs());
     builder.createFocusLink(entities, eggs);
 
     // output

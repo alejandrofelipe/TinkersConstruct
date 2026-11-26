@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.plugin.jei.entity;
 
 import lombok.Getter;
+import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.gui.builder.IIngredientAcceptor;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -100,8 +101,8 @@ public class EntityMeltingRecipeCategory implements IRecipeCategory<EntityMeltin
     IIngredientAcceptor<?> entities = builder.addSlot(RecipeIngredientRole.INPUT, 19, 11)
                                              .setCustomRenderer(MantleJEIConstants.ENTITY_TYPE, entityRenderer)
                                              .addIngredients(MantleJEIConstants.ENTITY_TYPE, input.getDisplay());
-    // add spawn eggs as hidden inputs
-    IIngredientAcceptor<?> eggs = builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addItemStacks(input.getEggs());
+    // add spawn eggs as hidden inputs; addIngredients keeps the null entries of entities without egg, so both slots stay the same size
+    IIngredientAcceptor<?> eggs = builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addIngredients(VanillaTypes.ITEM_STACK, input.getEggs());
     builder.createFocusLink(entities, eggs);
 
     // output
