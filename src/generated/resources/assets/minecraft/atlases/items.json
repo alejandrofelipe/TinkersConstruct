@@ -1,0 +1,11 @@
+{
+  "sources": [
+    {
+      "type": "minecraft:filter",
+      "pattern": {
+        "namespace": "^tconstruct$",
+        "path": "^item/tool/"
+      }
+    }
+  ]
+}
