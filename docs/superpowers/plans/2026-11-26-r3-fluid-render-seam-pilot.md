@@ -84,4 +84,41 @@ FluidEffectProjectile renderers take `FluidRenderInfo` (they already go through 
 
 ## Result
 
-_(filled in at T4)_
+Done 2026-11-26, all four tasks.
+
+**Mantle API** (`slimeknights.mantle.client.render`, documented in `repo/docs/api/client-models.md`):
+- `record FluidRenderInfo(TextureAtlasSprite still, TextureAtlasSprite flowing, int color, int lightLevel, boolean isGas)`;
+  `static @Nullable FluidRenderInfo of(FluidStack)` (**null** for an empty stack — no `EMPTY` constant, since a record of
+  sprites has no honest empty value), `withOpacity(int)` (alpha × opacity / 255, `this` at ≥ 255), `light(int)`.
+- `FluidRenderer.submitCuboid(PoseStack, SubmitNodeCollector, FluidCuboid, FluidRenderInfo, int light)` — full cuboid, gas flips.
+- `FluidRenderer.submitPouring(PoseStack, SubmitNodeCollector, List<FluidCuboid>, List<List<FluidCuboid>> below, FluidRenderInfo, int light)`
+  — faucet/channel streams, never flips gas (as before).
+- `FluidRenderer.submitTiledBox(PoseStack, SubmitNodeCollector, FluidRenderInfo, Vector3fc from, Vector3fc to, int light)` —
+  tiled per block, `FLUID_NO_CULL`, bottom +0.001; the per-block split is the old Tinkers `getBlockBounds` generalised
+  (same float expressions, so the same vertices).
+- `MantleRenderTypes.FLUID_NO_CULL` + `MantleShaders.FLUID_NO_CULL` / `FLUID_NO_FOG_NO_CULL` / `getConfiguredFluidNoCullPipeline()`.
+- Nothing deprecated: `renderCuboid(…, yOffset, …)` and `RenderingHelper.renderFaucetFluids` lost their Tinkers callers but
+  stay as downstream API (`renderFaucetFluids` is used by `submitPouring`).
+
+**Sites:** faucet, channel (per-cube rotation now `RenderingHelper.applyRotation`; the copied `rotateAround` is gone),
+casting fade (faded info resolved at extract; `RenderUtils.renderTransparentCuboid`/`submitTransparentCuboid` deleted),
+smeltery tank (`SmelteryTankRenderer.extractLayers` → `FluidLayer(info, from, to)` in the render state; heights still from
+`GuiSmelteryTank.calcLiquidHeights`), `TinkerRenderTypes.SMELTERY_FLUID` + 2 pipelines deleted. Left as they were:
+casting partial fill and the tank/melter/gauge/proxy tank/projectile renderers (already on Mantle's `FluidStack`
+`submitScaledCuboid`/`submitCuboids` — optional, not trivial enough to be worth the churn now).
+
+**Metric:** 6 → 1 Tinkers world fluid-path files naming `submitCustomGeometry`/`VertexConsumer`/`IClientFluidTypeExtensions`
+(`RenderUtils`, `Faucet…`, `Channel…`, `SmelteryTankRenderer`, `TinkerRenderTypes`, `HeatingStructure…` → only
+`HeatingStructure…`, whose `submitCustomGeometry` draws the error-block lines, not fluid). Tinkers −319/+90 lines, Mantle +206.
+**M8 exposure:** custom geometry / vertex / render type changes → 0 Tinkers files (was 5); a change of the block entity
+renderer interface still touches each fluid renderer (~9, unchanged).
+
+**Verification:** Mantle `build`; Tinkers `build` (799 unit = 796 + 3 `FluidRenderInfoTest`, 2 skipped), `runGameTestServer`
+159/159, full `runClientUiTest` 49/49. Pixel diff of the T1 baseline (and of a second baseline run, to size the run-to-run
+noise) against the post-migration run: `book_structure` identical; `smeltery_tank_world`, `fluid_blocks`, `casting_pour`,
+`casting_cooling` differ only inside animated fluid textures (same edges and shapes), particles/smoke and clouds, the same
+pattern as baseline vs baseline; `smeltery`/`melter` differ only in the animated GUI lava gauge (untouched `GuiUtil`).
+New scenario `smeltery_tank_world`: client tank holds a liquid below a gas; cobalt layer blue, ichor layer orange, empty top
+neither; mutation (tank submit skipped) → fails on the cobalt layer (0/5600 px).
+
+**Decision:** continue R3 — GUI fluid/tank widgets next (26.1 `GuiGraphicsExtractor`, M7), then item-in-world rendering.

@@ -209,6 +209,20 @@ through a small set of Mantle helpers expressed in the *current* paradigm (two-p
 fluid rendering (`FluidRenderer` + Faucet/Channel/Casting/Heating renderers — all hotspots). Measure call sites
 before/after; continue only if the pilot reduces the M7 rendering diff. Cost: medium (~2–3 sessions for the pilot).
 
+**Pilot result (2026-11-26, plan [`2026-11-26-r3-fluid-render-seam-pilot.md`](2026-11-26-r3-fluid-render-seam-pilot.md)).**
+Mantle gained `FluidRenderInfo` (resolved at extract) + `FluidRenderer.submitCuboid` / `submitPouring` / `submitTiledBox` +
+`MantleRenderTypes.FLUID_NO_CULL` (+206 lines). Faucet, channel, casting fade and the smeltery tank moved onto it; Tinkers
+lost 319 lines and gained 90 (`RenderUtils` transparent cuboid, both faucet/channel lambdas, the channel's copied rotation,
+the smeltery quad loop and `TinkerRenderTypes.SMELTERY_FLUID` + its 2 pipelines are gone). Metric (Tinkers world fluid-path
+files naming `submitCustomGeometry`/`VertexConsumer`/`IClientFluidTypeExtensions`): **6 → 1** — the one left is
+`HeatingStructureBlockEntityRenderer`, for the error-block *lines*, not fluid. M8 exposure on the fluid path: a change to
+custom geometry submission / vertex consumers / render types now touches 0 Tinkers files (was 5) and 2–3 Mantle files; a
+change to the block entity renderer interface itself (`PoseStack`/`SubmitNodeCollector` in `submit`) still touches every
+fluid renderer (~9 files, unchanged — that is the vanilla interface, no seam can absorb it). Visual parity verified by
+pixel diff against two baseline runs (only animated-texture, particle and cloud noise). **Recommendation: continue** —
+next candidates GUI fluid/tank widgets (`GuiUtil`, `GuiSmelteryTank`; 26.1 `GuiGraphicsExtractor` lands in M7, nearer than
+M8) and item-in-world rendering (Heating's direct `ItemStackRenderState.submit`, cheap, low churn so far).
+
 ### R4 — Rename-map tooling for mechanical breaks (targets (a))
 Category (a) dominates error counts. Generalize the M6 token script into a reusable `rename-map` (text file of
 old→new FQN/member pairs + a script, or OpenRewrite `ChangeType`/`ChangeMethodName` recipes) seeded from the NeoForge

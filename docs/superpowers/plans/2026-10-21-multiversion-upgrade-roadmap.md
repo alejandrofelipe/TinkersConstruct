@@ -168,7 +168,11 @@ incremental measures folded into the recipe above:
 - **R3 — rendering seams before M7:** route Tinkers' repeated vanilla rendering patterns through a few Mantle helpers in
   the current paradigm, so 26.1 (`GuiGraphicsExtractor`) and 26.2 (no `MultiBufferSource`) are fixed in N helpers, not M
   call sites. Pilot = fluid rendering (`FluidRenderer` + Faucet/Channel/Casting/Heating renderers), between M6 and M7;
-  continue only if it measurably shrinks the M7 rendering diff.
+  continue only if it measurably shrinks the M7 rendering diff. **Pilot done 2026-11-26** (after the `v1.21.11-*` tags,
+  ships with the next Mantle release): `FluidRenderInfo` + `FluidRenderer.submitCuboid/submitPouring/submitTiledBox` +
+  `MantleRenderTypes.FLUID_NO_CULL`; world fluid-path metric 6 → 1 Tinkers files (the one left is the error-block lines),
+  pixel parity verified, new uitest `smeltery_tank_world`. Continue: GUI fluid/tank widgets next (26.1), then
+  item-in-world rendering.
 - **R4 — rename-map tool** (`repo/scripts/rename-map/`): step 1 also produces the milestone's map file from the primer
   (from 26.1, unobfuscated jars allow a jar-to-jar API diff to seed it); steps 3–4 apply it before hand fixes. First built
   in M6 Phase 0.5.
