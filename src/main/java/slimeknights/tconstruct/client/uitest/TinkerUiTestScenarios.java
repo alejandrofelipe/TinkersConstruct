@@ -5,13 +5,17 @@ import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.IRecipeLayoutDrawable;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.ingredients.IIngredientRenderer;
 import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.IRecipeManager;
+import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import mezz.jei.api.recipe.transfer.IRecipeTransferContext;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
+import mezz.jei.api.recipe.transfer.RecipeTransferResult;
 import mezz.jei.api.runtime.IClickableIngredient;
 import mezz.jei.api.runtime.IJeiRuntime;
 import mezz.jei.api.runtime.IRecipesGui;
@@ -52,20 +56,25 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ARGB;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.equipment.Equippable;
@@ -109,6 +118,8 @@ import slimeknights.mantle.client.uitest.UiTestContext;
 import slimeknights.mantle.client.uitest.UiTestScenario;
 import slimeknights.mantle.client.uitest.UiTestScenarios;
 import slimeknights.mantle.client.uitest.UiTestSuite;
+import slimeknights.mantle.plugin.jei.entity.EntityIngredientRenderer;
+import slimeknights.mantle.recipe.ingredient.EntityIngredient;
 import slimeknights.mantle.registration.object.EnumObject;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.TConstruct;
@@ -126,6 +137,7 @@ import slimeknights.tconstruct.library.client.modifiers.ModifierIconManager;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
 import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.modifiers.ModifierManager;
 import slimeknights.tconstruct.library.recipe.FluidValues;
@@ -133,8 +145,11 @@ import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipe;
 import slimeknights.tconstruct.library.recipe.modifiers.adding.IDisplayModifierRecipe;
 import slimeknights.tconstruct.library.recipe.molding.MoldingRecipe;
+import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
 import slimeknights.tconstruct.library.recipe.tinkerstation.building.ToolBuildingRecipe;
 import slimeknights.tconstruct.library.recipe.worktable.IModifierWorktableRecipe;
+import slimeknights.tconstruct.library.tools.SlotType;
+import slimeknights.tconstruct.library.tools.SlotType.SlotCount;
 import slimeknights.tconstruct.library.tools.nbt.MaterialIdNBT;
 import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 import slimeknights.tconstruct.library.tools.item.armor.ModifiableArmorItem;
@@ -144,6 +159,10 @@ import slimeknights.tconstruct.gametest.SmelteryRigs;
 import slimeknights.tconstruct.plugin.jei.JEIPlugin;
 import slimeknights.tconstruct.plugin.jei.TConstructJEIConstants;
 import slimeknights.tconstruct.plugin.jei.entity.DefaultEntityMeltingRecipe;
+import slimeknights.tconstruct.plugin.jei.modifiers.ModifierBookmarkIngredientRenderer;
+import slimeknights.tconstruct.plugin.jei.modifiers.ModifierIngredientRenderer;
+import slimeknights.tconstruct.plugin.jei.modifiers.SlotIngredientRenderer;
+import slimeknights.tconstruct.plugin.jei.partbuilder.PatternIngredientRenderer;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.ChannelBlock;
 import slimeknights.tconstruct.smeltery.block.FaucetBlock;
@@ -161,6 +180,7 @@ import slimeknights.tconstruct.smeltery.item.CopperCanItem;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.entity.table.CraftingStationBlockEntity;
 import slimeknights.tconstruct.tables.menu.CraftingStationContainerMenu;
+import slimeknights.tconstruct.tables.menu.TinkerStationContainerMenu;
 import slimeknights.tconstruct.tables.client.inventory.TinkerStationScreen;
 import slimeknights.tconstruct.tables.client.inventory.ToolTableScreen;
 import slimeknights.tconstruct.tables.client.inventory.widget.TinkerTabsWidget;
@@ -169,6 +189,7 @@ import slimeknights.tconstruct.tools.TinkerToolParts;
 import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.client.ToolContainerScreen;
 import slimeknights.tconstruct.tools.data.ModifierIds;
+import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
 import slimeknights.tconstruct.tools.modules.cosmetic.TrimModule;
 import slimeknights.tconstruct.tools.recipe.severing.PlayerBeheadingRecipe;
@@ -257,6 +278,8 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new StationCarriedClicksScenario());
     UiTestScenarios.register(new JeiTankClickableScenario());
     UiTestScenarios.register(new JeiRecipeTransferScenario());
+    UiTestScenarios.register(new JeiTinkerStationTransferScenario());
+    UiTestScenarios.register(new JeiToolInventoryTransferScenario());
     UiTestScenarios.register(new JeiCraftingStationSlotScenario());
     UiTestScenarios.register(new JeiSmelterySlotScenario());
     UiTestScenarios.register(new JeiSmelteryTankScenario());
@@ -505,7 +528,8 @@ public class TinkerUiTestScenarios {
    * No GUI: asks every Tinkers JEI category with hover tooltips for its tooltip at a point inside each tooltip area and at one outside,
    * through {@link IRecipeCategory#getTooltip(ITooltipBuilder, Object, IRecipeSlotsView, double, double)} as JEI's recipe layout does,
    * and checks the exact lines (cooling time, ore, cast kept/consumed, pattern consumed, anvil, incremental/free modifiers, worktable
-   * description). Pins the tooltips across the move off JEI's deprecated {@code getTooltipStrings}.
+   * description). Pins the tooltips across the move off JEI's deprecated {@code getTooltipStrings}. Also checks the tooltip of each Tinkers and
+   * Mantle ingredient renderer through the overload JEI 27 calls, pinning the move off the deprecated {@code getTooltip(T, TooltipFlag)}.
    */
   private static class JeiCategoryTooltipsScenario implements UiTestScenario {
     @Override
@@ -553,6 +577,42 @@ public class TinkerUiTestScenarios {
       IModifierWorktableRecipe worktable = prefer(recipes, TConstructJEIConstants.MODIFIER_WORKTABLE, recipe -> true);
       check(runtime, TConstructJEIConstants.MODIFIER_WORKTABLE, worktable, 30, 5, List.of(worktable.getDescription(null)));
       check(runtime, TConstructJEIConstants.MODIFIER_WORKTABLE, worktable, 30, 30, List.of());
+
+      // ingredient renderers: the tooltip overload JEI 27 calls (builder + tooltip context) must reach each renderer's lines
+      checkIngredient(new EntityIngredientRenderer(16), new EntityIngredient.EntityInput(EntityType.PIG), List.of(EntityType.PIG.getDescription()));
+      Pattern pattern = new Pattern(TConstruct.getResource("pick_head"));
+      checkIngredient(PatternIngredientRenderer.INSTANCE, pattern, List.of(pattern.getDisplayName()));
+      checkIngredient(SlotIngredientRenderer.INGREDIENT, new SlotCount(SlotType.UPGRADE, 1), List.of(Component.translatable(jeiKey("modifier_slot.ingredient"), SlotType.UPGRADE.getDisplayName())));
+      checkIngredient(SlotIngredientRenderer.INPUT, new SlotCount(SlotType.UPGRADE, 2), List.of(Component.translatable(jeiKey("modifiers.slots"), 2, SlotType.UPGRADE.getDisplayName())));
+      checkIngredient(SlotIngredientRenderer.OUTPUT, new SlotCount(SlotType.UPGRADE, 1), List.of(SlotType.UPGRADE.format(1)));
+      Modifier modifier = TinkerModifiers.ambidextrous.get();
+      checkIngredient(new ModifierIngredientRenderer(100, 10), new ModifierEntry(modifier, 1), modifier.getDescriptionList(1));
+      List<Component> bookmark = new ArrayList<>();
+      bookmark.add(Component.translatable("jei.tconstruct.modifier_ingredient", Component.translatable(modifier.getTranslationKey())));
+      bookmark.addAll(modifier.getDescriptionList());
+      checkIngredient(ModifierBookmarkIngredientRenderer.INSTANCE, new ModifierEntry(modifier, 1), bookmark);
+    }
+
+    /** Collects an ingredient tooltip as JEI 27 does (the builder overload with a tooltip context, normal flag) and compares it to the expected lines */
+    private static <T> void checkIngredient(IIngredientRenderer<T> renderer, T ingredient, List<Component> expected) {
+      List<Object> lines = new ArrayList<>();
+      Minecraft mc = Minecraft.getInstance();
+      renderer.getTooltip(recordingTooltip(lines, renderer.getClass().getSimpleName()), ingredient, Item.TooltipContext.of(mc.level), mc.player, TooltipFlag.NORMAL);
+      if (!lines.equals(expected)) {
+        throw new IllegalStateException(renderer.getClass().getSimpleName() + " tooltip of " + ingredient + ": expected " + expected + " but got " + lines);
+      }
+    }
+
+    /** A tooltip builder recording the lines; a proxy rather than an implementation, so nothing overrides the builder's deprecated legacy methods */
+    private static ITooltipBuilder recordingTooltip(List<Object> lines, String user) {
+      return (ITooltipBuilder) Proxy.newProxyInstance(ITooltipBuilder.class.getClassLoader(), new Class<?>[] {ITooltipBuilder.class}, (proxy, method, args) -> {
+        switch (method.getName()) {
+          case "add" -> lines.add(args[0]);
+          case "addAll" -> lines.addAll((Collection<?>) args[0]);
+          default -> throw new UnsupportedOperationException("tooltip builder method " + method.getName() + " used by " + user);
+        }
+        return null;
+      });
     }
 
     private static String jeiKey(String path) {
@@ -573,15 +633,7 @@ public class TinkerUiTestScenarios {
       IRecipeManager recipes = runtime.getRecipeManager();
       IRecipeCategory<T> category = recipes.getRecipeCategory(type);
       List<Object> lines = new ArrayList<>();
-      // a proxy rather than an implementation, so nothing overrides the builder's deprecated legacy methods
-      ITooltipBuilder tooltip = (ITooltipBuilder) Proxy.newProxyInstance(ITooltipBuilder.class.getClassLoader(), new Class<?>[] {ITooltipBuilder.class}, (proxy, method, args) -> {
-        switch (method.getName()) {
-          case "add" -> lines.add(args[0]);
-          case "addAll" -> lines.addAll((Collection<?>) args[0]);
-          default -> throw new UnsupportedOperationException("tooltip builder method " + method.getName() + " used by " + type.getUid());
-        }
-        return null;
-      });
+      ITooltipBuilder tooltip = recordingTooltip(lines, type.getUid().toString());
       IRecipeSlotsView slots = recipes.createRecipeLayoutDrawable(category, recipe, runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup())
         .map(IRecipeLayoutDrawable::getRecipeSlotsView).orElseThrow(() -> new IllegalStateException("JEI could not lay out a " + type.getUid() + " recipe"));
       category.getTooltip(tooltip, recipe, slots, mouseX, mouseY);
@@ -2480,8 +2532,9 @@ public class TinkerUiTestScenarios {
    * JEI recipe transfer into the crafting station from its side inventory: the only planks are in a chest next to the station
    * (a native slot over NeoForge's {@code VanillaContainerWrapper} around the chest's {@code Container}, set directly, from
    * {@code IModifiableItemHandlerProvider.find}). JEI's transfer handler for the vanilla stick recipe ({@code CraftingStationTransferInfo})
-   * must accept the recipe and move both planks into the grid. Inventories exposing only a native {@code ResourceHandler} get a side
-   * inventory set through transactions since transfer phase 6, covered by the {@code side_inventory_*} gametests.
+   * must accept the recipe and move both planks into the grid, and the server must report the transfer as a success (JEI 27 context path).
+   * Inventories exposing only a native {@code ResourceHandler} get a side inventory set through transactions since transfer phase 6, covered
+   * by the {@code side_inventory_*} gametests.
    */
   private static class JeiRecipeTransferScenario implements UiTestScenario {
     private static final String NAME = "jei_recipe_transfer";
@@ -2490,6 +2543,8 @@ public class TinkerUiTestScenarios {
     private final BlockPos chest = pos.south();
     private final Consumer<ClientTickEvent.Post> poller = this::transferWhenReady;
     private boolean transferred = false;
+    @Nullable
+    private UiTestTransferContext<?,?> transfer = null;
     @Nullable
     private String failure = null;
 
@@ -2501,6 +2556,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void prepare(UiTestContext ctx) {
       transferred = false;
+      transfer = null;
       failure = null;
       ctx.sendCommand("clear @s");
       ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + pos.getY() + " " + pos.getZ());
@@ -2554,37 +2610,14 @@ public class TinkerUiTestScenarios {
       }
       transferred = true;
       NeoForge.EVENT_BUS.unregister(poller);
-      IJeiRuntime runtime = JEIPlugin.runtime;
-      if (runtime == null) {
-        failure = "JEI runtime not captured - onRuntimeAvailable never fired";
-        return;
+      try {
+        IJeiRuntime runtime = requireJeiRuntime();
+        @SuppressWarnings("unchecked")
+        AbstractContainerScreen<CraftingStationContainerMenu> stationScreen = (AbstractContainerScreen<CraftingStationContainerMenu>) screen;
+        transfer = runJeiTransfer(runtime, stationScreen, RecipeTypes.CRAFTING, craftingRecipe(runtime, STICK), STICK.toString());
+      } catch (IllegalStateException e) {
+        failure = e.getMessage();
       }
-      IRecipeManager recipes = runtime.getRecipeManager();
-      IRecipeCategory<RecipeHolder<CraftingRecipe>> category = recipes.getRecipeCategory(RecipeTypes.CRAFTING);
-      RecipeHolder<CraftingRecipe> stick = recipes.createRecipeLookup(RecipeTypes.CRAFTING).get()
-        .filter(holder -> holder.id().identifier().equals(STICK)).findFirst().orElse(null);
-      if (stick == null) {
-        failure = "JEI has no " + STICK + " crafting recipe";
-        return;
-      }
-      IRecipeSlotsView slots = recipes.createRecipeLayoutDrawable(category, stick, runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup())
-        .map(IRecipeLayoutDrawable::getRecipeSlotsView).orElse(null);
-      if (slots == null) {
-        failure = "JEI could not lay out " + STICK;
-        return;
-      }
-      IRecipeTransferHandler<CraftingStationContainerMenu, RecipeHolder<CraftingRecipe>> handler = runtime.getRecipeTransferManager().getRecipeTransferHandler(menu, category).orElse(null);
-      if (handler == null) {
-        failure = "JEI has no recipe transfer handler for the crafting station";
-        return;
-      }
-      // what the + button checks first, then the click
-      IRecipeTransferError error = handler.transferRecipe(menu, stick, slots, mc.player, false, false);
-      if (error != null) {
-        failure = "JEI refuses to transfer " + STICK + " into the crafting station: " + error.getType();
-        return;
-      }
-      handler.transferRecipe(menu, stick, slots, mc.player, false, true);
     }
 
     @Override
@@ -2613,6 +2646,7 @@ public class TinkerUiTestScenarios {
       if (inGrid != 2 || planksOutsideGrid(menu) != 0) {
         throw new IllegalStateException(NAME + " expected both planks moved into the grid, found " + inGrid + " in the grid and " + planksOutsideGrid(menu) + " outside");
       }
+      requireTransferSuccess(NAME, transfer);
       ctx.mc().setScreen(null);
     }
 
@@ -2620,6 +2654,378 @@ public class TinkerUiTestScenarios {
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
       ctx.mc().setScreen(null);
+    }
+  }
+
+  /**
+   * JEI recipe transfer of a pickaxe into the tinker station through {@code TinkerStationTransferInfo}: the three parts JEI shows first for the
+   * pickaxe tool building recipe are in the player inventory, the station keeps its default (repair) layout, whose three input slots take any item.
+   * The parts must end up in the station inputs and the server must report the transfer as a success.
+   */
+  private static class JeiTinkerStationTransferScenario implements UiTestScenario {
+    private static final String NAME = "jei_tinker_station_transfer";
+    private final BlockPos pos = SITE.offset(174, 0, 0);
+    private final Consumer<ClientTickEvent.Post> poller = this::transferWhenReady;
+    private final List<ItemStack> parts = new ArrayList<>();
+    @Nullable
+    private ToolBuildingRecipe recipe = null;
+    private boolean transferred = false;
+    @Nullable
+    private UiTestTransferContext<?,?> transfer = null;
+    @Nullable
+    private String failure = null;
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      transferred = false;
+      transfer = null;
+      failure = null;
+      parts.clear();
+      IJeiRuntime runtime = requireJeiRuntime();
+      IRecipeManager recipes = runtime.getRecipeManager();
+      recipe = recipes.createRecipeLookup(TConstructJEIConstants.TOOL_BUILDING).get()
+        .filter(r -> r.getOutput().asItem() == TinkerTools.pickaxe.asItem()).findFirst()
+        .orElseThrow(() -> new IllegalStateException(NAME + ": JEI has no pickaxe tool building recipe"));
+      IRecipeSlotsView slots = recipes.createRecipeLayoutDrawable(recipes.getRecipeCategory(TConstructJEIConstants.TOOL_BUILDING), recipe, runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup())
+        .map(IRecipeLayoutDrawable::getRecipeSlotsView).orElseThrow(() -> new IllegalStateException(NAME + ": JEI could not lay out the pickaxe recipe"));
+      slots.getSlotViews(RecipeIngredientRole.INPUT).forEach(view -> view.getItemStacks().filter(stack -> !stack.isEmpty()).findFirst().ifPresent(stack -> parts.add(stack.copy())));
+      if (parts.size() != 3) {
+        throw new IllegalStateException(NAME + ": expected the pickaxe recipe to show 3 parts, found " + parts);
+      }
+      ctx.sendCommand("clear @s");
+      ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + pos.getY() + " " + pos.getZ());
+      List<ItemStack> toGive = parts.stream().map(ItemStack::copy).toList();
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        level.setBlockAndUpdate(pos, TinkerTables.tinkerStation.get().defaultBlockState());
+        if (!(level.getBlockEntity(pos) instanceof Container station)) {
+          throw new IllegalStateException("Expected a tinker station at " + pos + ", found " + level.getBlockEntity(pos));
+        }
+        station.clearContent();
+        Inventory inventory = level.getServer().getPlayerList().getPlayers().getFirst().getInventory();
+        for (int i = 0; i < toGive.size(); i++) {
+          inventory.setItem(9 + i, toGive.get(i));
+        }
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.useBlock(pos);
+      NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, poller);
+    }
+
+    /** Counts the parts in the station inputs (true) or anywhere else in the menu (false) */
+    private int countParts(TinkerStationContainerMenu menu, boolean inInputs) {
+      int count = 0;
+      for (Slot slot : menu.slots) {
+        if (menu.getInputSlots().contains(slot) == inInputs) {
+          ItemStack stack = slot.getItem();
+          if (parts.stream().anyMatch(part -> ItemStack.isSameItemSameComponents(part, stack))) {
+            count += stack.getCount();
+          }
+        }
+      }
+      return count;
+    }
+
+    /** Runs JEI's transfer of the pickaxe recipe once the menu shows the parts in the player inventory */
+    private void transferWhenReady(ClientTickEvent.Post event) {
+      Minecraft mc = Minecraft.getInstance();
+      if (transferred || recipe == null || !(mc.screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof TinkerStationContainerMenu menu)
+          || countParts(menu, false) != parts.size()) {
+        return;
+      }
+      transferred = true;
+      NeoForge.EVENT_BUS.unregister(poller);
+      try {
+        @SuppressWarnings("unchecked")
+        AbstractContainerScreen<TinkerStationContainerMenu> stationScreen = (AbstractContainerScreen<TinkerStationContainerMenu>) screen;
+        transfer = runJeiTransfer(requireJeiRuntime(), stationScreen, TConstructJEIConstants.TOOL_BUILDING, recipe, "the pickaxe");
+      } catch (IllegalStateException e) {
+        failure = e.getMessage();
+      }
+    }
+
+    @Override
+    public int settleTicks() {
+      return 30; // menu round trip + transfer packet + slot sync
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      if (failure != null) {
+        throw new IllegalStateException(NAME + ": " + failure);
+      }
+      if (!(ctx.mc().screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof TinkerStationContainerMenu menu)) {
+        throw new IllegalStateException(NAME + " expected the tinker station menu at capture, found " + ctx.mc().screen);
+      }
+      if (!transferred) {
+        throw new IllegalStateException(NAME + ": the player inventory never showed the 3 pickaxe parts");
+      }
+      int inInputs = countParts(menu, true);
+      int outside = countParts(menu, false);
+      if (inInputs != parts.size() || outside != 0) {
+        throw new IllegalStateException(NAME + " expected the 3 parts moved into the station inputs, found " + inInputs + " in the inputs and " + outside + " outside");
+      }
+      requireTransferSuccess(NAME, transfer);
+      ctx.mc().setScreen(null);
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(poller);
+      ctx.mc().setScreen(null);
+      ctx.sendCommand("clear @s");
+    }
+  }
+
+  /**
+   * JEI recipe transfer into a tool's 2x2 crafting grid (workbench modifier) through {@code ToolInventoryTransferInfo}, the path that trims the
+   * recipe slots to the small grid: a pickaxe with the workbench modifier is held, 2 planks are in the player inventory, and the stick recipe must
+   * move both planks into the grid with a success reported by the server.
+   */
+  private static class JeiToolInventoryTransferScenario implements UiTestScenario {
+    private static final String NAME = "jei_tool_inventory_transfer";
+    private static final Identifier STICK = Identifier.withDefaultNamespace("stick");
+    private final BlockPos pos = SITE.offset(180, 0, 0);
+    private final Consumer<ClientTickEvent.Post> poller = this::transferWhenReady;
+    private boolean transferred = false;
+    @Nullable
+    private UiTestTransferContext<?,?> transfer = null;
+    @Nullable
+    private String failure = null;
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      transferred = false;
+      transfer = null;
+      failure = null;
+      // look straight up so the use hits the air, not a block
+      ctx.sendCommand("tp @s " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " 0 -90");
+      ctx.runOnServer(() -> {
+        ToolStack tool = ToolStack.createTool(TinkerTools.pickaxe.get(), TinkerTools.pickaxe.get().getToolDefinition(),
+          MaterialNBT.of(MaterialVariant.of(MaterialIds.cobalt, ""), MaterialVariant.of(MaterialIds.wood, ""), MaterialVariant.of(MaterialIds.iron, "")));
+        tool.addModifier(ModifierIds.workbench, 1);
+        Inventory inventory = ctx.serverLevel().getServer().getPlayerList().getPlayers().getFirst().getInventory();
+        inventory.clearContent();
+        inventory.setItem(0, tool.createStack());
+        inventory.setItem(9, new ItemStack(Items.OAK_PLANKS, 2));
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      LocalPlayer player = ctx.player();
+      player.getInventory().setSelectedSlot(0);
+      Objects.requireNonNull(ctx.mc().gameMode).useItem(player, InteractionHand.MAIN_HAND);
+      NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, poller);
+    }
+
+    /** Planks in the tool's crafting grid (true) or anywhere else in the menu (false) */
+    private static int planks(ToolContainerMenu menu, boolean inGrid) {
+      int count = 0;
+      for (int i = 0; i < menu.slots.size(); i++) {
+        boolean grid = i >= 1 && i < menu.getToolInventoryStart();
+        ItemStack stack = menu.getSlot(i).getItem();
+        if (grid == inGrid && stack.is(Items.OAK_PLANKS)) {
+          count += stack.getCount();
+        }
+      }
+      return count;
+    }
+
+    /** Runs JEI's transfer of the stick recipe once the tool menu shows the planks */
+    private void transferWhenReady(ClientTickEvent.Post event) {
+      Minecraft mc = Minecraft.getInstance();
+      if (transferred || !(mc.screen instanceof ToolContainerScreen screen) || planks(screen.getMenu(), false) != 2) {
+        return;
+      }
+      transferred = true;
+      NeoForge.EVENT_BUS.unregister(poller);
+      try {
+        IJeiRuntime runtime = requireJeiRuntime();
+        transfer = runJeiTransfer(runtime, screen, RecipeTypes.CRAFTING, craftingRecipe(runtime, STICK), STICK.toString());
+      } catch (IllegalStateException e) {
+        failure = e.getMessage();
+      }
+    }
+
+    @Override
+    public int settleTicks() {
+      return 30; // menu round trip + transfer packet + slot sync
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      if (failure != null) {
+        throw new IllegalStateException(NAME + ": " + failure);
+      }
+      if (!(ctx.mc().screen instanceof ToolContainerScreen screen)) {
+        throw new IllegalStateException(NAME + " expected ToolContainerScreen at capture, found " + ctx.mc().screen);
+      }
+      ToolContainerMenu menu = screen.getMenu();
+      int gridSize = menu.getToolInventoryStart() - 1;
+      if (gridSize != 4) {
+        throw new IllegalStateException(NAME + " expected the workbench 2x2 crafting grid, found " + gridSize + " grid slots");
+      }
+      if (!transferred) {
+        throw new IllegalStateException(NAME + ": the tool menu never showed the 2 planks");
+      }
+      int inGrid = planks(menu, true);
+      int outside = planks(menu, false);
+      if (inGrid != 2 || outside != 0) {
+        throw new IllegalStateException(NAME + " expected both planks moved into the grid, found " + inGrid + " in the grid and " + outside + " outside");
+      }
+      requireTransferSuccess(NAME, transfer);
+      ctx.mc().setScreen(null);
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      NeoForge.EVENT_BUS.unregister(poller);
+      ctx.mc().setScreen(null);
+      ctx.sendCommand("clear @s");
+      // look ahead again: the following screen captures show the world behind them
+      ctx.sendCommand("tp @s ~ ~ ~ 0 0");
+    }
+  }
+
+  /** Gets the captured JEI runtime, or throws when {@code onRuntimeAvailable} never fired */
+  private static IJeiRuntime requireJeiRuntime() {
+    IJeiRuntime runtime = JEIPlugin.runtime;
+    if (runtime == null) {
+      throw new IllegalStateException("JEI runtime not captured - onRuntimeAvailable never fired");
+    }
+    return runtime;
+  }
+
+  /** Finds the crafting recipe with the given id in JEI */
+  private static RecipeHolder<CraftingRecipe> craftingRecipe(IJeiRuntime runtime, Identifier id) {
+    return runtime.getRecipeManager().createRecipeLookup(RecipeTypes.CRAFTING).get()
+      .filter(holder -> holder.id().identifier().equals(id)).findFirst()
+      .orElseThrow(() -> new IllegalStateException("JEI has no " + id + " crafting recipe"));
+  }
+
+  /**
+   * Runs a JEI recipe transfer the way the recipes GUI's + button does since JEI 27: through the handler's context overload, first the check
+   * without transfer, then the transfer. Throws when JEI has no handler for the menu, cannot lay out the recipe or refuses it.
+   * @return  the transfer's context, which records the result the server reports
+   */
+  private static <R, C extends AbstractContainerMenu> UiTestTransferContext<R, C> runJeiTransfer(IJeiRuntime runtime, AbstractContainerScreen<C> screen, IRecipeType<R> type, R recipe, String what) {
+    IRecipeManager recipes = runtime.getRecipeManager();
+    IRecipeCategory<R> category = recipes.getRecipeCategory(type);
+    IRecipeSlotsView slots = recipes.createRecipeLayoutDrawable(category, recipe, runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup())
+      .map(IRecipeLayoutDrawable::getRecipeSlotsView).orElseThrow(() -> new IllegalStateException("JEI could not lay out " + what));
+    C menu = screen.getMenu();
+    IRecipeTransferHandler<C, R> handler = runtime.getRecipeTransferManager().getRecipeTransferHandler(menu, category)
+      .orElseThrow(() -> new IllegalStateException("JEI has no recipe transfer handler for " + type.getUid() + " in " + menu.getClass().getSimpleName()));
+    Player player = Objects.requireNonNull(Minecraft.getInstance().player);
+    // what the + button checks first, then the click
+    IRecipeTransferError error = handler.transferRecipe(new UiTestTransferContext<>(recipe, type, screen, slots, player), false);
+    if (error != null) {
+      throw new IllegalStateException("JEI refuses to transfer " + what + " into " + menu.getClass().getSimpleName() + ": " + error.getType());
+    }
+    UiTestTransferContext<R, C> context = new UiTestTransferContext<>(recipe, type, screen, slots, player);
+    error = handler.transferRecipe(context, true);
+    if (error != null) {
+      throw new IllegalStateException("JEI failed to transfer " + what + " into " + menu.getClass().getSimpleName() + ": " + error.getType());
+    }
+    return context;
+  }
+
+  /** Fails unless the server reported the transfer as a success */
+  private static void requireTransferSuccess(String name, @Nullable UiTestTransferContext<?,?> transfer) {
+    RecipeTransferResult result = transfer == null ? null : transfer.result;
+    if (result != RecipeTransferResult.SUCCESS) {
+      throw new IllegalStateException(name + " expected the server to report the transfer as a success, got " + result);
+    }
+  }
+
+  /** What JEI's recipes GUI builds for a transfer (its own context class is internal), recording the result the server sends back */
+  private static final class UiTestTransferContext<R, C extends AbstractContainerMenu> implements IRecipeTransferContext<R, C> {
+    /** Well above the ids JEI hands out itself, which count up from zero */
+    private static int nextTransferId = 1_000_000;
+    private final int transferId = nextTransferId++;
+    private final R recipe;
+    private final IRecipeType<R> type;
+    private final AbstractContainerScreen<C> screen;
+    private final IRecipeSlotsView slots;
+    private final Player player;
+    @Nullable
+    private RecipeTransferResult result = null;
+
+    private UiTestTransferContext(R recipe, IRecipeType<R> type, AbstractContainerScreen<C> screen, IRecipeSlotsView slots, Player player) {
+      this.recipe = recipe;
+      this.type = type;
+      this.screen = screen;
+      this.slots = slots;
+      this.player = player;
+    }
+
+    @Override
+    public int getTransferId() {
+      return transferId;
+    }
+
+    @Override
+    public void completeRecipeTransfer(RecipeTransferResult result) {
+      this.result = result;
+    }
+
+    @Override
+    public R getRecipe() {
+      return recipe;
+    }
+
+    @Override
+    public IRecipeType<R> getRecipeType() {
+      return type;
+    }
+
+    @Override
+    public C getContainer() {
+      return screen.getMenu();
+    }
+
+    @Override
+    public AbstractContainerScreen<C> getScreen() {
+      return screen;
+    }
+
+    @Override
+    public IRecipeSlotsView getRecipeSlots() {
+      return slots;
+    }
+
+    @Override
+    public Player getPlayer() {
+      return player;
+    }
+
+    @Override
+    public boolean isMaxTransfer() {
+      return false;
     }
   }
 
