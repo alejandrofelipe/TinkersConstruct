@@ -1,7 +1,6 @@
 package slimeknights.tconstruct.library.client.model;
 
 import com.google.common.base.Suppliers;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.item.BlockModelWrapper;
@@ -12,7 +11,7 @@ import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.RenderTypeGroup;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
 import slimeknights.mantle.client.model.util.ModelHelper;
 
@@ -33,11 +32,13 @@ public class ItemModelUtil {
   private ItemModelUtil() {}
 
   /**
-   * Gets the default render type for dynamic item layer models, matching {@link MantleItemLayerModel#getDefaultRenderType(RenderTypeGroup)}
+   * Gets the default render types for dynamic item layer models, matching {@link MantleItemLayerModel#getDefaultRenderType(RenderTypeGroup)}
    * without a render type hint (what the 1.21.4 composite models used).
+   * 1.21.11: returns the group rather than one entity type, as blocks and items have separate atlases; each layer picks the
+   * type for the atlas of its quads, see {@link ModelHelper#addItemLayers}.
    */
-  public static RenderType defaultRenderType() {
-    return MantleItemLayerModel.getDefaultRenderType(RenderTypeGroup.EMPTY).entity();
+  public static RenderTypeGroup defaultRenderTypes() {
+    return MantleItemLayerModel.getDefaultRenderType(RenderTypeGroup.EMPTY);
   }
 
   /** Gets the item render properties from a resolved model (gui light and transforms), with the given particle */
@@ -51,17 +52,19 @@ public class ItemModelUtil {
   }
 
   /**
-   * A baked item model: quads with their render properties and render type, plus lazily computed extents.
+   * A baked item model: quads with their render properties and render types, plus lazily computed extents.
    * Replaces a single-pass {@code BakedModel} for dynamic item models.
-   * @param quads       Quads to render
-   * @param properties  Item render properties (gui light, particle, transforms)
-   * @param renderType  Render type, null to use the stack's default
-   * @param extents     Model extents, memoized
-   * @param animated    Whether any quad uses an animated sprite, computed once at bake time
+   * 1.21.11: holds a render type group instead of one render type, so quads mixing the blocks and items atlases render as
+   * one layer per atlas, each with the group's type for that atlas.
+   * @param quads        Quads to render
+   * @param properties   Item render properties (gui light, particle, transforms)
+   * @param renderTypes  Render type group, null to use the stack's default for each atlas
+   * @param extents      Model extents, memoized
+   * @param animated     Whether any quad uses an animated sprite, computed once at bake time
    */
-  public record BakedItem(List<BakedQuad> quads, ModelRenderProperties properties, @Nullable RenderType renderType, Supplier<Vector3f[]> extents, boolean animated) {
-    public BakedItem(List<BakedQuad> quads, ModelRenderProperties properties, @Nullable RenderType renderType) {
-      this(quads, properties, renderType, Suppliers.memoize(() -> BlockModelWrapper.computeExtents(quads)), ModelHelper.hasAnimatedSprite(quads));
+  public record BakedItem(List<BakedQuad> quads, ModelRenderProperties properties, @Nullable RenderTypeGroup renderTypes, Supplier<Vector3fc[]> extents, boolean animated) {
+    public BakedItem(List<BakedQuad> quads, ModelRenderProperties properties, @Nullable RenderTypeGroup renderTypes) {
+      this(quads, properties, renderTypes, Suppliers.memoize(() -> BlockModelWrapper.computeExtents(quads)), ModelHelper.hasAnimatedSprite(quads));
     }
 
     /** Gets the particle sprite of this model */
@@ -78,6 +81,6 @@ public class ItemModelUtil {
    * @param model           Resolved baked model (already selected/rebaked for this stack)
    */
   public static void renderModel(ItemStackRenderState renderState, ItemStack stack, ItemDisplayContext displayContext, BakedItem model) {
-    ModelHelper.addItemLayer(renderState, stack, displayContext, model.quads, model.properties, model.renderType, model.extents, model.animated);
+    ModelHelper.addItemLayers(renderState, stack, displayContext, model.quads, model.properties, model.renderTypes, model.extents, model.animated);
   }
 }

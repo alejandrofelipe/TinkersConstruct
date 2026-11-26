@@ -6,7 +6,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.item.ItemModel;
@@ -16,6 +15,7 @@ import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ItemOwner;
@@ -29,6 +29,7 @@ import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
+import slimeknights.mantle.client.model.util.ModelHelper;
 import slimeknights.tconstruct.library.client.model.ItemModelUtil.BakedItem;
 
 import javax.annotation.Nullable;
@@ -53,14 +54,22 @@ public final class FluidContainerModel {
   /** Clone of the same field from the former {@code DynamicFluidContainerModel}; referenced by FluidModifierModel */
   public static final Transformation FLUID_TRANSFORM = new Transformation(new Vector3f(), new Quaternionf(), new Vector3f(1, 1, 1.002f), new Quaternionf());
 
-  /** Builds a block-atlas material */
+  /**
+   * Builds a material for a texture from the model JSON (base, fluid mask, particle).
+   * 1.21.11: item textures left the blocks atlas, so like vanilla model JSON textures these may be in either atlas.
+   */
   private static Material material(Identifier texture) {
+    return new Material(ModelManager.BLOCK_OR_ITEM, texture);
+  }
+
+  /** Builds a block-atlas material, for fluid textures */
+  private static Material blockMaterial(Identifier texture) {
     return new Material(TextureAtlas.LOCATION_BLOCKS, texture);
   }
 
-  /** Looks up a sprite, 1.21.9 replacement for {@code Material#sprite()} */
+  /** Looks up a sprite, 1.21.9 replacement for {@code Material#sprite()}. 1.21.11: resolves {@link ModelManager#BLOCK_OR_ITEM} items atlas first, like the model bakery */
   private static TextureAtlasSprite sprite(Material material) {
-    return Minecraft.getInstance().getAtlasManager().get(material);
+    return ModelHelper.getSprite(material);
   }
 
   /** Unbaked fluid container item model */
@@ -123,13 +132,13 @@ public final class FluidContainerModel {
       TextureAtlasSprite baseSprite = base != null ? sprite(base) : null;
       TextureAtlasSprite maskSprite = fluidMask != null ? sprite(fluidMask) : null;
       IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(fluid.getFluid());
-      TextureAtlasSprite fluidSprite = !fluid.isEmpty() ? sprite(material(clientFluid.getStillTexture(fluid))) : null;
+      TextureAtlasSprite fluidSprite = !fluid.isEmpty() ? sprite(blockMaterial(clientFluid.getStillTexture(fluid))) : null;
 
       // determine particle
       TextureAtlasSprite particleSprite = particle != null ? sprite(particle) : null;
       if (particleSprite == null) particleSprite = fluidSprite;
       if (particleSprite == null) particleSprite = baseSprite;
-      if (particleSprite == null) particleSprite = sprite(material(MissingTextureAtlasSprite.getLocation()));
+      if (particleSprite == null) particleSprite = sprite(blockMaterial(MissingTextureAtlasSprite.getLocation()));
 
       // container is rendered flat: block light false
       List<BakedQuad> builder = new ArrayList<>();
@@ -151,7 +160,7 @@ public final class FluidContainerModel {
         List<BakedQuad> quads = MantleItemLayerModel.getMaskedQuadsForSprite(color, -1, maskSprite, fluidSprite, fluidTransform, light, null);
         builder.addAll(quads);
       }
-      return new BakedItem(List.copyOf(builder), ItemModelUtil.properties(false, particleSprite, itemTransforms), ItemModelUtil.defaultRenderType());
+      return new BakedItem(List.copyOf(builder), ItemModelUtil.properties(false, particleSprite, itemTransforms), ItemModelUtil.defaultRenderTypes());
     }
 
     /** Gets the cached model for the given fluid */

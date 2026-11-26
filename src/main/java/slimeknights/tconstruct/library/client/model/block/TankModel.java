@@ -5,6 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.MapCodec;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
@@ -25,8 +26,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.client.model.IQuadTransformer;
-import net.neoforged.neoforge.client.model.QuadTransformers;
 import net.neoforged.neoforge.client.model.UnbakedModelLoader;
 import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -47,6 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * This model contains a single scalable fluid that can either be statically rendered or rendered in the TESR. It also supports rendering fluids in the item model.
@@ -177,7 +177,7 @@ public class TankModel extends SimpleBlockModel {
       // first, add all regular elements
       data.bake(builder, sprites);
       // next, add in the fluid
-      IQuadTransformer fluidTransformer = color == -1 ? QuadTransformers.empty() : ColoredBlockModel.applyColorQuadTransformer(color);
+      UnaryOperator<BakedQuad> fluidTransformer = color == -1 ? UnaryOperator.identity() : ColoredBlockModel.applyColorQuadTransformer(color);
       ColoredBlockModel.bakePart(builder, fluid, luminosity, sprites, data.state(), fluidTransformer);
       return data.part(builder.build(), data.particle(replacements));
     }

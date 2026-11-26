@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.MapCodec;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
@@ -27,8 +28,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.client.model.IQuadTransformer;
-import net.neoforged.neoforge.client.model.QuadTransformers;
 import net.neoforged.neoforge.client.model.UnbakedModelLoader;
 import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -55,6 +54,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * Model that replaces fluid textures with the fluid from model data.
@@ -225,11 +225,11 @@ public class FluidTextureModel extends ColoredBlockModel {
         ColorData colors = LogicHelper.getOrDefault(colorData, i, ColorData.DEFAULT);
         ModelState partState = colors.uvlock() == null ? state : ModelHelper.withUvLock(state, colors.uvlock());
         if (fluidParts.get(i)) {
-          IQuadTransformer fluidTransformer = fluidColor == -1 ? QuadTransformers.empty() : ColoredBlockModel.applyColorQuadTransformer(fluidColor);
+          UnaryOperator<BakedQuad> fluidTransformer = fluidColor == -1 ? UnaryOperator.identity() : ColoredBlockModel.applyColorQuadTransformer(fluidColor);
           ColoredBlockModel.bakePart(builder, element, luminosity, sprites, partState, fluidTransformer);
         } else {
           int partColor = colors.color();
-          IQuadTransformer partTransformer = partColor == -1 ? QuadTransformers.empty() : ColoredBlockModel.applyColorQuadTransformer(partColor);
+          UnaryOperator<BakedQuad> partTransformer = partColor == -1 ? UnaryOperator.identity() : ColoredBlockModel.applyColorQuadTransformer(partColor);
           ColoredBlockModel.bakePart(builder, element, colors.luminosity(), sprites, partState, partTransformer);
         }
       }

@@ -157,8 +157,8 @@ public class MaterialModel {
       ModelBaker baker = context.blockModelBaker();
       ResolvedModel resolved = baker.getModel(model);
       TextureSlots slots = resolved.getTopTextureSlots();
-      List<BakedQuad> quads = resolved.bakeTopGeometry(slots, baker, BlockModelRotation.X0_Y0).getAll();
-      BakedItem base = new BakedItem(quads, ModelRenderProperties.fromResolvedModel(baker, resolved, slots), ElementModelData.itemRenderType(resolved));
+      List<BakedQuad> quads = resolved.bakeTopGeometry(slots, baker, BlockModelRotation.IDENTITY).getAll();
+      BakedItem base = new BakedItem(quads, ModelRenderProperties.fromResolvedModel(baker, resolved, slots), ElementModelData.itemRenderTypes(resolved));
       return new Baked(base, index, material.orElse(null), offsetTransform(offset));
     }
   }
@@ -188,7 +188,7 @@ public class MaterialModel {
       // PORT 1.21.4: tint index -1 - material color is baked into the quads rather than resolved via ItemColors
       List<BakedQuad> quads = MantleItemLayerModel.getQuadsForSprite(sprite.color(), -1, sprite.sprite(), transform, sprite.emissivity());
       // 1.21.4 built a composite model without block light, keep that
-      return new BakedItem(quads, ItemModelUtil.properties(false, sprite.sprite(), base.properties().transforms()), ItemModelUtil.defaultRenderType());
+      return new BakedItem(quads, ItemModelUtil.properties(false, sprite.sprite(), base.properties().transforms()), ItemModelUtil.defaultRenderTypes());
     }
 
     /** Gets the cached baked model for the given material */

@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.smeltery.client.util;
 
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.util.ARGB;
@@ -79,12 +79,16 @@ public class TintedItemRenderState extends ItemStackRenderState {
       for (int i = 0; i < quads.size(); i++) {
         BakedQuad quad = quads.get(i);
         if (!quad.isTinted()) {
-          quads.set(i, new BakedQuad(quad.vertices(), untinted, quad.direction(), quad.sprite(), quad.shade(), quad.lightEmission(), quad.hasAmbientOcclusion()));
+          // 1.21.11: quads are records of positions and packed UVs plus NeoForge's normals and colors, copy every field but the tint
+          quads.set(i, new BakedQuad(quad.position0(), quad.position1(), quad.position2(), quad.position3(),
+                                     quad.packedUV0(), quad.packedUV1(), quad.packedUV2(), quad.packedUV3(),
+                                     untinted, quad.direction(), quad.sprite(), quad.shade(), quad.lightEmission(),
+                                     quad.bakedNormals(), quad.bakedColors(), quad.hasAmbientOcclusion()));
         }
       }
       // fade requires a translucent render type, solid and cutout ignore vertex alpha
       if (translucent) {
-        layer.setRenderType(RenderType.itemEntityTranslucentCull(quads.getFirst().sprite().atlasLocation()));
+        layer.setRenderType(RenderTypes.itemEntityTranslucentCull(quads.getFirst().sprite().atlasLocation()));
       }
     }
   }

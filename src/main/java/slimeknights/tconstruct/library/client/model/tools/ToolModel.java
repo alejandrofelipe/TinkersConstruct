@@ -9,7 +9,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -26,6 +25,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.client.RenderTypeGroup;
 import org.joml.Vector3f;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
 import slimeknights.mantle.util.ItemLayerPixels;
@@ -161,7 +161,7 @@ public class ToolModel {
                                              List<MaterialVariantId> materials, @Nullable IToolStackView tool,
                                              boolean useBlockLight, net.minecraft.client.renderer.block.model.ItemTransforms itemTransforms) {
     Function<Material,TextureAtlasSprite> spriteGetter = Minecraft.getInstance().getAtlasManager()::get;
-    RenderType renderType = ItemModelUtil.defaultRenderType();
+    RenderTypeGroup renderTypes = ItemModelUtil.defaultRenderTypes();
     Transformation smallTransforms = Transformation.identity();
 
     ReversedListBuilder<Collection<BakedQuad>> smallQuads = new ReversedListBuilder<>();
@@ -217,14 +217,14 @@ public class ToolModel {
         guiAll.add(quad);
       }
     }
-    BakedItem small = new BakedItem(List.copyOf(smallAll), properties, renderType);
-    BakedItem gui = new BakedItem(List.copyOf(guiAll), properties, renderType);
+    BakedItem small = new BakedItem(List.copyOf(smallAll), properties, renderTypes);
+    BakedItem gui = new BakedItem(List.copyOf(guiAll), properties, renderTypes);
 
     BakedItem right;
     if (largeTransforms != null) {
       List<BakedQuad> largeAll = new ArrayList<>();
       largeQuads.build(coll -> largeAll.addAll(coll));
-      right = new BakedItem(List.copyOf(largeAll), properties, renderType);
+      right = new BakedItem(List.copyOf(largeAll), properties, renderTypes);
     } else {
       right = small;
     }

@@ -39,8 +39,6 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.IQuadTransformer;
-import net.neoforged.neoforge.client.model.QuadTransformers;
 import net.neoforged.neoforge.client.model.UnbakedModelLoader;
 import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
 import net.neoforged.neoforge.model.data.ModelData;
@@ -76,6 +74,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * Model that handles dynamic materials using the block model elements style.
@@ -247,7 +246,8 @@ public class MaterialBlockModel extends SimpleBlockModel {
 
       // delegate material fetching
       // PORT 1.21.5: rebaked at runtime through the block atlas (Material#sprite); verify material blocks/anvils in the uitest phase
-      Function<Material,TextureAtlasSprite> spriteGetter = Minecraft.getInstance().getAtlasManager()::get;
+      // 1.21.11: model JSON textures use the block_or_item atlas, which AtlasManager#get rejects, so resolve them like the model bakery
+      Function<Material,TextureAtlasSprite> spriteGetter = ModelHelper::getSprite;
       fetchMaterials(materials, spriteGetter, replacements, tints);
 
       // quick exit in case we found nothing, should never happen
@@ -277,10 +277,10 @@ public class MaterialBlockModel extends SimpleBlockModel {
         }
         // apply color if we have it
         if (tint != null) {
-          IQuadTransformer partTransformer = tint.color() == -1 ? QuadTransformers.empty() : ColoredBlockModel.applyColorQuadTransformer(tint.color());
+          UnaryOperator<BakedQuad> partTransformer = tint.color() == -1 ? UnaryOperator.identity() : ColoredBlockModel.applyColorQuadTransformer(tint.color());
           ColoredBlockModel.bakePart(builder, part, tint.emissivity(), sprites, state, partTransformer);
         } else {
-          SimpleBlockModel.bakePart(builder, part, sprites, state, QuadTransformers.empty());
+          SimpleBlockModel.bakePart(builder, part, sprites, state, UnaryOperator.identity());
         }
       }
       return data.part(builder.build(), data.particle(replacements));
@@ -628,10 +628,10 @@ public class MaterialBlockModel extends SimpleBlockModel {
       ModelBaker baker = context.blockModelBaker();
       ResolvedModel resolved = baker.getModel(model);
       TextureSlots slots = resolved.getTopTextureSlots();
-      List<BakedQuad> quads = resolved.bakeTopGeometry(slots, baker, BlockModelRotation.X0_Y0).getAll();
+      List<BakedQuad> quads = resolved.bakeTopGeometry(slots, baker, BlockModelRotation.IDENTITY).getAll();
       ModelRenderProperties properties = ModelRenderProperties.fromResolvedModel(baker, resolved, slots);
-      BakedItem base = new BakedItem(quads, properties, ElementModelData.itemRenderType(resolved));
-      return new Baked(base, bakeDynamic(baker, resolved, BlockModelRotation.X0_Y0));
+      BakedItem base = new BakedItem(quads, properties, ElementModelData.itemRenderTypes(resolved));
+      return new Baked(base, bakeDynamic(baker, resolved, BlockModelRotation.IDENTITY));
     }
 
     /** Baked item model wrapping the dynamic material logic */
@@ -649,7 +649,7 @@ public class MaterialBlockModel extends SimpleBlockModel {
       /** Converts a baked block part to an item variant */
       private BakedItem toItem(SimpleModelWrapper part) {
         assert dynamic != null;
-        return new BakedItem(part.quads().getAll(), dynamic.getData().itemProperties(part.particleIcon()), base.renderType());
+        return new BakedItem(part.quads().getAll(), dynamic.getData().itemProperties(part.particleIcon()), base.renderTypes());
       }
 
       @Override
