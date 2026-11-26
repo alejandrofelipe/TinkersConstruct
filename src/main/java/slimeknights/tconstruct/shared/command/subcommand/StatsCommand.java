@@ -49,7 +49,7 @@ public class StatsCommand {
    * @param subCommand  Command builder
    */
   public static void register(LiteralArgumentBuilder<CommandSourceStack> subCommand) {
-    subCommand.requires(sender -> sender.hasPermission(MantleCommand.PERMISSION_GAME_COMMANDS))
+    subCommand.requires(sender -> MantleCommand.hasPermission(sender, MantleCommand.PERMISSION_GAME_COMMANDS))
               .then(Commands.argument("targets", EntityArgument.entities())
                             // stats <target> bonus add|set <stat_type> <value>
                             .then(Commands.literal("bonus")

@@ -99,7 +99,7 @@ public class CreativeSlotItem extends Item {
 
   /** Checks if the given player may apply this item */
   public static boolean canApply(Player player) {
-    return player.isCreative() || (Config.COMMON.quickApplyToolModifiersSurvival.get() && player.hasPermissions(MantleCommand.PERMISSION_GAME_COMMANDS));
+    return player.isCreative() || (Config.COMMON.quickApplyToolModifiersSurvival.get() && MantleCommand.hasPermission(player, MantleCommand.PERMISSION_GAME_COMMANDS));
   }
 
   /** Common logic between two stack methods */

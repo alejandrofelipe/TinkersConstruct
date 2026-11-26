@@ -49,7 +49,7 @@ public class MaterialsCommand {
    * @param subCommand  Command builder
    */
   public static void register(LiteralArgumentBuilder<CommandSourceStack> subCommand) {
-    subCommand.requires(sender -> sender.hasPermission(MantleCommand.PERMISSION_GAME_COMMANDS))
+    subCommand.requires(sender -> MantleCommand.hasPermission(sender, MantleCommand.PERMISSION_GAME_COMMANDS))
       // materials set <target> <index> <material>
       .then(Commands.literal("set")
         .then(Commands.argument("targets", EntityArgument.entities())

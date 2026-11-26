@@ -127,7 +127,7 @@ public class ModifierCrystalItem extends Item {
     // see also - modifier removal command
 
     // must be op or in creative, right-clicking onto a modifiable slot with a tool
-    if (action == ClickAction.SECONDARY && slot.allowModification(player) && !toolItem.isEmpty() && toolItem.is(TinkerTags.Items.MODIFIABLE) && (player.isCreative() || player.hasPermissions(MantleCommand.PERMISSION_GAME_COMMANDS))) {
+    if (action == ClickAction.SECONDARY && slot.allowModification(player) && !toolItem.isEmpty() && toolItem.is(TinkerTags.Items.MODIFIABLE) && (player.isCreative() || MantleCommand.hasPermission(player, MantleCommand.PERMISSION_GAME_COMMANDS))) {
       // NBT must be valid
       ModifierId modifier = getModifier(stack);
       if (modifier != null) {

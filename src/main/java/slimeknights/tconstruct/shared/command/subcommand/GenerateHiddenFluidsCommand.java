@@ -36,7 +36,7 @@ public class GenerateHiddenFluidsCommand {
    * @param subCommand Command builder
    */
   public static void register(LiteralArgumentBuilder<CommandSourceStack> subCommand) {
-    subCommand.requires(sender -> sender.hasPermission(MantleCommand.PERMISSION_GAME_COMMANDS)).executes(GenerateHiddenFluidsCommand::run);
+    subCommand.requires(sender -> MantleCommand.hasPermission(sender, MantleCommand.PERMISSION_GAME_COMMANDS)).executes(GenerateHiddenFluidsCommand::run);
   }
 
   /** Runs the command */
