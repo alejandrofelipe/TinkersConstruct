@@ -67,8 +67,9 @@ releases piggyback onto the next checkpoint), gating each with the full test bat
   once NeoForge turned out to ship only new → legacy bridges: **no legacy → new adapter** — every *registered* handler is
   ported natively in step 1, consumers stay on the legacy interfaces through the bridges until the full migration. Branch
   `1.21.10`. Detailed plan: [`2026-11-23-m5-1.21.10-port.md`](2026-11-23-m5-1.21.10-port.md).
-- **M5 status (2026-11-25): Phases 0–7 done, Phase 8 (release Mantle `1.16` / Tinkers `3.15.0`, tags `v1.21.10-1.16` /
-  `v1.21.10-3.15.0`) pending — not released yet.** Mantle 100 → 0 and Tinkers 594 → 0 compile errors; datagen tags
+- **M5 done 🏁 (2026-11-25): released Mantle `1.16` / Tinkers `3.15.0`, annotated tags `v1.21.10-1.16` /
+  `v1.21.10-3.15.0` + branch `1.21.10` pushed to origin.** Not deployed (no 1.21.10 game instance). Final battery on the
+  release state: build + 793 unit + 143 gametest + 43/43 uitest. Mantle 100 → 0 and Tinkers 594 → 0 compile errors; datagen tags
   byte-identical (`minecraft:chain` → `iron_chain` in 8 recipes, `DataVersion` 4440 → 4556); the full transfer migration
   (Phase 6) left **0 transfer and 0 JEI `[removal]` warnings** in both repos (Tinkers had 713 legacy-symbol references in
   123 files), so NeoForge 26.3's removal of the legacy API is already absorbed. Battery on the final code: `build` both
@@ -229,7 +230,7 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
 - [x] **M3** — 1.21.5 / NF 21.5.101 🏁 2026-10-24 — Mantle `1.14` / Tinkers `3.13.0`, tags `v1.21.5-1.14` / `v1.21.5-3.13.0`; battery: build + 673 unit + 40 gametest (39 + vanilla `always_pass`) + 15/15 uitest (visual verified). Plan [`2026-10-24-m3-1.21.5-port.md`](2026-10-24-m3-1.21.5-port.md); gotchas [`repo/docs/migration/1.21.4-to-1.21.5.md`](../../../../repo/docs/migration/1.21.4-to-1.21.5.md)
 - [x] **M3 patch** — Tinkers `3.13.1` (2026-10-24): mob head item rendering + legacy tool model cleanup (16 uitest)
 - [x] **M4** — **1.21.8** / NF 21.8.57 (1.21.6 + 1.21.7 folded in) 🔴 — **FECHADO 🏁 2026-11-23**: Fases 0–7 ✅ (2026-10-24 → 2026-11-23), release Mantle `1.15` / Tinkers `3.14.0`, tags `v1.21.8-1.15` / `v1.21.8-3.14.0` pushadas; battery: build + 674 unit + 58 gametest (57 + vanilla `always_pass`) + 31/31 uitest (visual verified vs 1.21.5 reference). Plano [`2026-10-24-m4-1.21.8-port.md`](2026-10-24-m4-1.21.8-port.md); gotchas [`repo/docs/migration/1.21.5-to-1.21.8.md`](../../../../repo/docs/migration/1.21.5-to-1.21.8.md)
-- [ ] **M5** — **1.21.10** / NF 21.10.64 (1.21.9 folded in) 🔴 — **em andamento**: Fases 0–7 ✅ (2026-11-23 → 2026-11-25), branch `1.21.10`; battery: build + 793 unit + 138 gametest (137 + vanilla `always_pass`) + 43/43 uitest (42 scenarios + `mantle:suite_setup`); 0 transfer/JEI `[removal]` warnings; **não lançado** — próximo: Fase 8 (release Mantle `1.16` / Tinkers `3.15.0`, tags `v1.21.10-*`, push só com OK). Plano [`2026-11-23-m5-1.21.10-port.md`](2026-11-23-m5-1.21.10-port.md); gotchas [`repo/docs/migration/1.21.8-to-1.21.10.md`](../../../../repo/docs/migration/1.21.8-to-1.21.10.md)
+- [x] **M5** — **1.21.10** / NF 21.10.64 (1.21.9 folded in) 🔴 — **FECHADO 🏁 2026-11-25**: Fases 0–8 ✅ (2026-11-23 → 2026-11-25), release Mantle `1.16` / Tinkers `3.15.0`, tags `v1.21.10-1.16` / `v1.21.10-3.15.0` pushadas; battery: build + 793 unit + 143 gametest + 43/43 uitest (42 scenarios + `mantle:suite_setup`); 0 transfer/JEI `[removal]` warnings. Plano [`2026-11-23-m5-1.21.10-port.md`](2026-11-23-m5-1.21.10-port.md); gotchas [`repo/docs/migration/1.21.8-to-1.21.10.md`](../../../../repo/docs/migration/1.21.8-to-1.21.10.md)
 - [ ] **M6** — 1.21.11 / NF 21.11.48 (1.21.10 moved into M5)
 - [ ] **M7** — 26.1.2 / NF 26.1.2.130 (26.1 + 26.1.1 folded in; Java 25, unobfuscated → no Parchment)
 - [ ] **M8** — 26.2 / NF 26.2.0.95 (Java 25) 🏁 target — revisit 26.3 (NeoForge-stable since 2026-10-11) after M8
