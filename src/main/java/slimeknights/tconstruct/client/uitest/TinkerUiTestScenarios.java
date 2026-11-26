@@ -29,14 +29,23 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -47,6 +56,9 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
+import net.minecraft.world.item.equipment.trim.TrimPattern;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
@@ -74,6 +86,7 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
+import slimeknights.mantle.client.model.util.ModelHelper;
 import slimeknights.mantle.client.screen.MultiModuleScreen;
 import slimeknights.mantle.client.screen.book.BookScreen;
 import slimeknights.mantle.client.screen.book.element.StructureElement;
@@ -83,7 +96,12 @@ import slimeknights.mantle.client.uitest.UiTestScenarios;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.fluids.TinkerFluids;
+import slimeknights.tconstruct.library.client.modifiers.ModifierIconManager;
+import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
+import slimeknights.tconstruct.library.modifiers.Modifier;
+import slimeknights.tconstruct.library.modifiers.ModifierId;
+import slimeknights.tconstruct.library.modifiers.ModifierManager;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipe;
@@ -93,6 +111,7 @@ import slimeknights.tconstruct.library.recipe.tinkerstation.building.ToolBuildin
 import slimeknights.tconstruct.library.recipe.worktable.IModifierWorktableRecipe;
 import slimeknights.tconstruct.library.tools.nbt.MaterialIdNBT;
 import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
+import slimeknights.tconstruct.library.tools.item.armor.ModifiableArmorItem;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.gametest.SmelteryRigs;
@@ -125,6 +144,7 @@ import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.client.ToolContainerScreen;
 import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
+import slimeknights.tconstruct.tools.modules.cosmetic.TrimModule;
 import slimeknights.tconstruct.world.TinkerHeadType;
 import slimeknights.tconstruct.world.TinkerWorld;
 import org.lwjgl.glfw.GLFW;
@@ -172,6 +192,8 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new HeadItemsScenario());
     UiTestScenarios.register(new DynamicItemIconsScenario());
     UiTestScenarios.register(new ToolInventoryScenario());
+    UiTestScenarios.register(new TrimmedArmorScenario());
+    UiTestScenarios.register(new ItemAtlasGridScenario());
     // every other Tinkers JEI category (JEIPlugin#registerCategories), melting is registered above
     UiTestScenarios.register(new JeiCategoryScenario<>("casting_table", TConstructJEIConstants.CASTING_TABLE));
     UiTestScenarios.register(new JeiCategoryScenario<>("casting_basin", TConstructJEIConstants.CASTING_BASIN));
@@ -1232,6 +1254,211 @@ public class TinkerUiTestScenarios {
       ctx.sendCommand("clear @s");
       // look ahead again: the following screen captures show the world behind them
       ctx.sendCommand("tp @s ~ ~ ~ 0 0");
+    }
+  }
+
+  /**
+   * Opens a survival inventory with trimmed plate armor, worn (player preview) and as items: vanilla trim materials (iron, gold, resin) and a
+   * Tinkers one (cobalt). 1.21.11 moved vanilla's {@code trims/items/*_trim_<material>} permutations from the blocks atlas to the items atlas, while
+   * {@code TrimModifierModel} reads them from the blocks atlas, so Tinkers stitches them there again (M6 Phase 3); without that the item icons fall
+   * back to a flat tint of the base texture. Asserts the trim data is on the client stacks and every sprite the item and worn models look up
+   * exists (item icons on the blocks atlas, including an armor specific {@code iron_darker} palette; worn textures on the armor trims atlas under
+   * {@code trims/entity/humanoid(_leggings)/}, where vanilla moved them in 1.21.4), then captures the inventory so the palette colors can be compared.
+   */
+  private static class TrimmedArmorScenario implements UiTestScenario {
+    /** One trimmed armor piece: slot, plating/maille material, trim pattern and trim material */
+    private record Trim(ArmorType type, MaterialId material, String pattern, String trimMaterial) {
+      ItemStack build() {
+        ModifiableArmorItem item = TinkerTools.plateArmor.get(type);
+        ToolStack tool = ToolStack.createTool(item, item.getToolDefinition(), MaterialNBT.of(MaterialVariant.of(material, ""), MaterialVariant.of(material, "")));
+        if (trimMaterial != null) {
+          ModifierId trim = TinkerModifiers.trim.getId();
+          tool.getPersistentData().putString(TrimModule.materialKey(trim), trimMaterial);
+          tool.getPersistentData().putString(TrimModule.patternKey(trim), pattern);
+          tool.addModifier(trim, 1);
+        }
+        return tool.createStack();
+      }
+    }
+
+    /** Worn: one material per slot */
+    private static final List<Trim> WORN = List.of(
+      new Trim(ArmorType.HELMET, MaterialIds.copper, "minecraft:sentry", "minecraft:iron"),
+      new Trim(ArmorType.CHESTPLATE, MaterialIds.iron, "minecraft:coast", "minecraft:gold"),
+      new Trim(ArmorType.LEGGINGS, MaterialIds.gold, "minecraft:dune", "minecraft:resin"),
+      new Trim(ArmorType.BOOTS, MaterialIds.iron, "minecraft:wild", "tconstruct:cobalt"));
+    /** In the inventory: the worn set rotated through the other slots, iron on iron (vanilla would pick iron_darker), and an untrimmed reference */
+    private static final List<Trim> CARRIED = List.of(
+      new Trim(ArmorType.HELMET, MaterialIds.iron, "minecraft:sentry", "minecraft:iron"),
+      new Trim(ArmorType.HELMET, MaterialIds.iron, "minecraft:sentry", null),
+      new Trim(ArmorType.CHESTPLATE, MaterialIds.copper, "minecraft:coast", "minecraft:resin"),
+      new Trim(ArmorType.CHESTPLATE, MaterialIds.iron, "minecraft:coast", "tconstruct:cobalt"),
+      new Trim(ArmorType.LEGGINGS, MaterialIds.iron, "minecraft:dune", "minecraft:iron"),
+      new Trim(ArmorType.LEGGINGS, MaterialIds.copper, "minecraft:dune", "minecraft:gold"),
+      new Trim(ArmorType.BOOTS, MaterialIds.gold, "minecraft:wild", "minecraft:resin"),
+      new Trim(ArmorType.BOOTS, MaterialIds.copper, "minecraft:wild", "minecraft:iron"));
+    /** Palettes beyond the base ones that the blocks atlas must hold, see {@code TinkerSpriteSourceProvider#vanillaTrimPalettes} */
+    private static final List<String> EXTRA_PALETTES = List.of("iron_darker", "gold_darker");
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource("trimmed_armor");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      // survival: in creative the inventory screen is replaced by the creative tabs, without main inventory or player preview
+      ctx.sendCommand("gamemode survival");
+      ctx.runOnServer(() -> {
+        ServerPlayer player = ctx.serverLevel().getServer().getPlayerList().getPlayers().getFirst();
+        player.getInventory().clearContent();
+        for (Trim trim : WORN) {
+          player.setItemSlot(trim.type.getSlot(), trim.build());
+        }
+        for (int i = 0; i < CARRIED.size(); i++) {
+          player.getInventory().setItem(9 + i, CARRIED.get(i).build());
+        }
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      LocalPlayer player = ctx.player();
+      Registry<TrimMaterial> materials = player.registryAccess().lookupOrThrow(Registries.TRIM_MATERIAL);
+      Registry<TrimPattern> patterns = player.registryAccess().lookupOrThrow(Registries.TRIM_PATTERN);
+      TextureAtlas blocks = ctx.mc().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS);
+      TextureAtlas armorTrims = ctx.mc().getAtlasManager().getAtlasOrThrow(AtlasIds.ARMOR_TRIMS);
+      ModifierId trimModifier = TinkerModifiers.trim.getId();
+      for (Trim trim : WORN) {
+        // the data synced to the client
+        ItemStack worn = player.getItemBySlot(trim.type.getSlot());
+        ToolStack tool = ToolStack.from(worn);
+        String material = tool.getPersistentData().getString(TrimModule.materialKey(trimModifier));
+        if (!worn.is(TinkerTools.plateArmor.get(trim.type)) || tool.getModifierLevel(trimModifier) != 1 || !trim.trimMaterial.equals(material)) {
+          throw new IllegalStateException("trimmed_armor: worn " + trim.type + " lacks its trim, found " + worn + " with material '" + material + "'");
+        }
+        TrimMaterial trimMaterial = materials.getValue(Identifier.parse(trim.trimMaterial));
+        TrimPattern pattern = patterns.getValue(Identifier.parse(trim.pattern));
+        if (trimMaterial == null || pattern == null) {
+          throw new IllegalStateException("trimmed_armor: client registries lack trim material " + trim.trimMaterial + " or pattern " + trim.pattern);
+        }
+        String suffix = trimMaterial.assets().base().suffix();
+        // item icon, as TrimModifierModel looks it up, and the worn texture, as TrimArmorTextureSupplier looks it up
+        assertSprite(blocks, Identifier.withDefaultNamespace("trims/items/" + trim.type.getName() + "_trim_" + suffix));
+        Identifier patternAsset = pattern.assetId();
+        String armorPath = "trims/entity/" + (trim.type == ArmorType.LEGGINGS ? "humanoid_leggings/" : "humanoid/") + patternAsset.getPath();
+        assertSprite(armorTrims, patternAsset.withPath(armorPath + "_" + suffix));
+      }
+      for (String palette : EXTRA_PALETTES) {
+        assertSprite(blocks, Identifier.withDefaultNamespace("trims/items/helmet_trim_" + palette));
+      }
+      ctx.mc().setScreen(new InventoryScreen(player));
+      ctx.parkMouse();
+    }
+
+    /** Fails if the atlas has no sprite with that name */
+    private static void assertSprite(TextureAtlas atlas, Identifier name) {
+      if (MissingTextureAtlasSprite.getLocation().equals(atlas.getSprite(name).contents().name())) {
+        throw new IllegalStateException("trimmed_armor: atlas " + atlas.location() + " has no sprite " + name);
+      }
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      // here rather than in close() so a failed assert in open() doesn't leave the rest of the suite in survival
+      ctx.mc().setScreen(null);
+      ctx.sendCommand("clear @s");
+      ctx.sendCommand("gamemode creative");
+    }
+  }
+
+  /**
+   * Draws a grid of item models and modifier icons whose atlas lookups the 1.21.11 items/blocks atlas split changed: the copper can and a tank
+   * (fluid container models, one layer per atlas), material-less parts (the base part texture), molten fluid buckets, and modifier icons made of
+   * {@code minecraft:item/...} textures (now on the items atlas) over Tinkers {@code gui/modifiers} frames (blocks atlas). Asserts each icon
+   * texture resolves through {@code BLOCK_OR_ITEM}, then captures the grid on a plain screen.
+   */
+  private static class ItemAtlasGridScenario implements UiTestScenario {
+    /** Modifiers whose icons start with a vanilla item texture, see {@code tinkering/modifier_icons.json} */
+    private static final List<ModifierId> ICON_MODIFIERS = List.of(ModifierIds.soulbound, ModifierIds.diamond, ModifierIds.emerald, ModifierIds.netherite, TinkerModifiers.overslime.getId());
+
+    private static List<ItemStack> stacks() {
+      return List.of(
+        new ItemStack(TinkerSmeltery.copperCan),
+        CopperCanItem.setFluid(new ItemStack(TinkerSmeltery.copperCan), new FluidStack(Fluids.WATER, FluidValues.BOTTLE)),
+        CopperCanItem.setFluid(new ItemStack(TinkerSmeltery.copperCan), new FluidStack(TinkerFluids.moltenCobalt.get(), FluidValues.INGOT)),
+        new ItemStack(TinkerSmeltery.searedTank.get(TankType.FUEL_TANK)),
+        new ItemStack(TinkerToolParts.pickHead.get()),
+        new ItemStack(TinkerToolParts.toolHandle.get()),
+        new ItemStack(TinkerToolParts.plating.get(ArmorType.HELMET)),
+        new ItemStack(TinkerFluids.moltenIron.getBucket()),
+        new ItemStack(TinkerFluids.moltenCobalt.getBucket()),
+        new ItemStack(TinkerModifiers.modifierCrystal.get()));
+    }
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource("item_atlas_grid");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {}
+
+    @Override
+    public int prepareSettleTicks() {
+      return 5;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      List<Modifier> modifiers = new ArrayList<>();
+      for (ModifierId id : ICON_MODIFIERS) {
+        if (!ModifierManager.INSTANCE.contains(id)) {
+          throw new IllegalStateException("item_atlas_grid: modifier " + id + " is not loaded on the client");
+        }
+        modifiers.add(ModifierManager.INSTANCE.get(id));
+      }
+      // the vanilla item textures used by those icons must resolve through the items atlas, not to the missing sprite
+      for (String texture : List.of("item/echo_shard", "item/diamond", "item/emerald", "item/netherite_ingot", "item/slime_ball")) {
+        TextureAtlasSprite sprite = ModelHelper.getSprite(new Material(ModelManager.BLOCK_OR_ITEM, Identifier.withDefaultNamespace(texture)));
+        if (MissingTextureAtlasSprite.getLocation().equals(sprite.contents().name())) {
+          throw new IllegalStateException("item_atlas_grid: modifier icon texture minecraft:" + texture + " resolves to the missing sprite");
+        }
+      }
+      ctx.mc().setScreen(new GridScreen(stacks(), modifiers));
+      ctx.parkMouse();
+    }
+  }
+
+  /** Plain screen drawing items in a row at 2x scale, and modifier icons below */
+  private static class GridScreen extends Screen {
+    private final List<ItemStack> stacks;
+    private final List<Modifier> modifiers;
+
+    private GridScreen(List<ItemStack> stacks, List<Modifier> modifiers) {
+      super(Component.empty());
+      this.stacks = stacks;
+      this.modifiers = modifiers;
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+      super.render(graphics, mouseX, mouseY, partialTick);
+      int left = 20;
+      graphics.pose().pushMatrix();
+      graphics.pose().scale(2, 2);
+      for (int i = 0; i < stacks.size(); i++) {
+        graphics.renderItem(stacks.get(i), left / 2 + i * 20, 20);
+      }
+      graphics.pose().popMatrix();
+      for (int i = 0; i < modifiers.size(); i++) {
+        ModifierIconManager.renderIcon(graphics, modifiers.get(i), left + i * 40, 110, 100, 32);
+      }
     }
   }
 
