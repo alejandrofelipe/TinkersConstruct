@@ -204,6 +204,11 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
    * player instead (server side; the client's prediction is corrected by the server). For a swap, whose old stack vanilla already handed
    * out, the slot is still emptied when the handler allows it, so the old stack is not duplicated.
    * <p>
+   * A new stack of the slot's own item is not always "the slot's stack plus what the player gave": a number key swap from a smaller hotbar
+   * stack of the same item hands the whole old stack to the hotbar and sets the slot to the smaller stack, so a new stack smaller than the
+   * old one is handled as a swap. A larger one nets out to the difference whichever way vanilla got there (placing more, a drag, or a
+   * number key swap moving more than the slot held, which also hands the old stack out).
+   * <p>
    * Programmatic {@link #set(ItemStack)} calls (client sync, {@link TransferUtil#trySetSlot}, Mantle's stack merging, which all check the
    * result themselves) never give anything back.
    */
@@ -216,12 +221,12 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
     ItemStack current = super.getStackCopy();
     if (!transactional.trySet(index, ItemResource.of(newStack), newStack.getCount()) && !newStack.isEmpty()) {
       int refused;
-      if (ItemStack.isSameItemSameComponents(current, newStack)) {
-        // vanilla took just the difference
+      if (ItemStack.isSameItemSameComponents(current, newStack) && newStack.getCount() >= current.getCount()) {
+        // the player gave just the difference
         refused = newStack.getCount() - current.getCount();
       } else {
         refused = newStack.getCount();
-        // a swap: vanilla already handed out the old stack
+        // a swap (a smaller stack of the same item included): vanilla already handed out the old stack
         if (!current.isEmpty()) {
           transactional.trySet(index, ItemResource.EMPTY, 0);
         }

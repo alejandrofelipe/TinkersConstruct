@@ -704,6 +704,48 @@ public class MenuSlotGameTests {
     helper.succeed();
   }
 
+  /** Sets up a side inventory menu over the native handler for a fresh mock player, with the player's menu set so cursor updates apply */
+  private static MovingSideInventory transactionalMenu(GameTestHelper helper, ItemStacksResourceHandler inventory) {
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    MovingSideInventory menu = new MovingSideInventory(player, ModifiableItemHandler.transactional(inventory));
+    player.containerMenu = menu;
+    return menu;
+  }
+
+  /**
+   * Native handler giving only whole stacks: extracting part of a slot's stack takes nothing. A simulated extract of the whole stack
+   * succeeds, so the slot can be picked up from, but a set lowering the count (an exact partial extract) is refused.
+   */
+  private static ItemStacksResourceHandler wholeStackInventory() {
+    return new ItemStacksResourceHandler(1) {
+      @Override
+      protected int getCapacity(int index, ItemResource resource) {
+        return 16;
+      }
+
+      @Override
+      public int extract(int index, ItemResource resource, int amount, TransactionContext transaction) {
+        return amount < getAmountAsInt(index) ? 0 : super.extract(index, resource, amount, transaction);
+      }
+    };
+  }
+
+  /**
+   * Number key swap of the same item from a smaller hotbar stack: vanilla hands the slot's whole stack to the hotbar and sets the slot to
+   * the smaller stack, which a handler giving only whole stacks refuses. No item may be duplicated (before, the slot kept its stack while
+   * the hotbar got a copy of it).
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_same_item_hotbar_swap(GameTestHelper helper) {
+    ItemStacksResourceHandler inventory = wholeStackInventory();
+    MovingSideInventory menu = transactionalMenu(helper, inventory);
+    inventory.set(0, ItemResource.of(Items.APPLE), 10);
+    menu.player.getInventory().setItem(0, new ItemStack(Items.APPLE, 3));
+    menu.clicked(0, 0, ClickType.SWAP, menu.player);
+    assertCount(helper, inventory, menu, Items.APPLE, 13, "after the same item hotbar swap");
+    helper.succeed();
+  }
+
   /** Tinkers chest menu: slots report their chest index, respect the slot limit, and shift clicking moves stacks out of the chest. */
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void chest_menu_slots(GameTestHelper helper) {
