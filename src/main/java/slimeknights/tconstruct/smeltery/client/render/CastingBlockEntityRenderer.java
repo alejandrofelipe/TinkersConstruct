@@ -13,10 +13,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.client.render.FluidCuboid;
+import slimeknights.mantle.client.render.FluidRenderInfo;
 import slimeknights.mantle.client.render.FluidRenderer;
 import slimeknights.mantle.client.render.RenderItem;
 import slimeknights.mantle.client.render.RenderingHelper;
-import slimeknights.tconstruct.library.client.RenderUtils;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.tank.CastingFluidHandler;
 import slimeknights.tconstruct.smeltery.client.render.CastingBlockEntityRenderer.CastingRenderState;
@@ -44,6 +44,7 @@ public class CastingBlockEntityRenderer implements BlockEntityRenderer<CastingBl
     state.input.clear();
     state.output.clear();
     state.fluid = FluidStack.EMPTY;
+    state.fadingFluid = null;
     state.capacity = 0;
     if (state.fluids.isEmpty() && state.renderItems.isEmpty()) {
       return;
@@ -71,6 +72,11 @@ public class CastingBlockEntityRenderer implements BlockEntityRenderer<CastingBl
       CastingFluidHandler tank = casting.getTank();
       state.fluid = tank.getFluid().copy();
       state.capacity = tank.getCapacity();
+      // if full, the fluid fades out with the cooling progress
+      if (state.capacity > 0 && state.fluid.getAmount() == state.capacity && fluidOpacity >= 0) {
+        FluidRenderInfo info = FluidRenderInfo.of(state.fluid);
+        state.fadingFluid = info == null ? null : info.withOpacity(fluidOpacity);
+      }
     }
 
     // items
@@ -113,8 +119,10 @@ public class CastingBlockEntityRenderer implements BlockEntityRenderer<CastingBl
       int light = state.lightCoords;
       // if full, start rendering with opacity for progress
       if (fluidStack.getAmount() == state.capacity) {
-        for (FluidCuboid fluid : state.fluids) {
-          RenderUtils.submitTransparentCuboid(matrices, collector, fluid, fluidStack, state.fluidOpacity, light);
+        if (state.fadingFluid != null) {
+          for (FluidCuboid fluid : state.fluids) {
+            FluidRenderer.submitCuboid(matrices, collector, fluid, state.fadingFluid, light);
+          }
         }
       } else {
         // not strictly useful to scale the fluids down, but who knows what the modeler does
@@ -147,6 +155,9 @@ public class CastingBlockEntityRenderer implements BlockEntityRenderer<CastingBl
     public int capacity = 0;
     /** Opacity of the fluid, fades out at the end of cooling */
     public int fluidOpacity = 0xFF;
+    /** Fluid of a full tank faded by {@link #fluidOpacity}, null unless full */
+    @Nullable
+    public FluidRenderInfo fadingFluid;
     /** Cast or input item */
     public final ItemStackRenderState input = new ItemStackRenderState();
     /** Output item, or the cooling recipe output */
