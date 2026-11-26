@@ -46,7 +46,7 @@ public class SlotIngredientHelper implements IIngredientHelper<SlotCount> {
   }
 
   @Override
-  public Identifier getResourceLocation(SlotCount slots) {
+  public Identifier getIdentifier(SlotCount slots) {
     return TConstruct.getResource(getName(slots));
   }
 

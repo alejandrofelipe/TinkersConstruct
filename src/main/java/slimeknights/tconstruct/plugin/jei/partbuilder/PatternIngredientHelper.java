@@ -29,7 +29,7 @@ public class PatternIngredientHelper implements IIngredientHelper<Pattern> {
   }
 
   @Override
-  public Identifier getResourceLocation(Pattern pattern) {
+  public Identifier getIdentifier(Pattern pattern) {
     return pattern.getLocation();
   }
 
