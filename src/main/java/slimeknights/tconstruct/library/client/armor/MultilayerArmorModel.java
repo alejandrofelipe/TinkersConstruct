@@ -40,9 +40,9 @@ public class MultilayerArmorModel {
     if (slot == EquipmentSlot.CHEST && ModifierUtil.checkVolatileFlag(stack, ModifiableArmorItem.ELYTRA)) {
       PoseStack matrices = context.matrices();
       matrices.pushPose();
-      // same offset as vanilla's wings layer
+      // same offset and first order as vanilla's wings layer
       matrices.translate(0.0F, 0.0F, 0.125F);
-      submitLayers(model, stack, TextureType.WINGS, context.wings(), context, FIRST_ORDER);
+      submitLayers(model, stack, TextureType.WINGS, context.wings(), context, 0);
       matrices.popPose();
     }
   }

@@ -74,7 +74,7 @@ public record TrimArmorTextureSupplier(ModifierId modifier, Identifier patternKe
         if (pattern != null && material != null) {
           Identifier patternAsset = pattern.assetId();
           // 1.21.4: vanilla moved the worn trim textures from trims/models/armor/<pattern>(_leggings) to trims/entity/humanoid(_leggings)/<pattern>
-          texture = TrimArmorTexture.create(patternAsset.withPath("trims/entity/" + (textureType == TextureType.LEGGINGS ? "humanoid_leggings/" : "humanoid/") + patternAsset.getPath()), material);
+          texture = TrimArmorTexture.create(patternAsset.withPath("trims/entity/" + (textureType == TextureType.LEGGINGS ? "humanoid_leggings/" : "humanoid/") + patternAsset.getPath()), material, pattern.decal());
         }
         cache.put(key, texture);
         return texture;
@@ -94,6 +94,8 @@ public record TrimArmorTextureSupplier(ModifierId modifier, Identifier patternKe
     private static TextureAtlas armorTrimAtlas = null;
     @Getter
     private final TextureAtlasSprite trimSprite;
+    /** If true, the trim pattern is a decal, drawn with vanilla's decal trim render type */
+    private final boolean decal;
 
     /** Gets the texture atlas for trim */
     private static TextureAtlas getTrimAtlas() {
@@ -104,12 +106,12 @@ public record TrimArmorTextureSupplier(ModifierId modifier, Identifier patternKe
     }
 
     /** Creates the trim texture for the given root texture and material */
-    private static ArmorTexture create(Identifier root, TrimMaterial material) {
+    private static ArmorTexture create(Identifier root, TrimMaterial material, boolean decal) {
       // start by trying and finding the material specific sprite
       Identifier withMaterial = root.withSuffix('_' + material.assets().base().suffix());
       TextureAtlasSprite sprite = getTrimAtlas().getSprite(withMaterial);
       if (!MissingTextureAtlasSprite.getLocation().equals(sprite.contents().name())) {
-        return new TrimArmorTexture(sprite);
+        return new TrimArmorTexture(sprite, decal);
       }
       // failed to find the unique sprite, go for tinting the base
       int color = -1;
@@ -124,7 +126,7 @@ public record TrimArmorTextureSupplier(ModifierId modifier, Identifier patternKe
     @Override
     public <S> int submit(Model<? super S> model, S state, PoseStack matrices, SubmitNodeCollector collector, int order, int packedLight, int outlineColor, boolean hasGlint) {
       // ignoring glint as odds are very low trim texture is the first one
-      collector.order(order).submitModel(model, state, matrices, Sheets.armorTrimsSheet(false), packedLight, OverlayTexture.NO_OVERLAY, -1, trimSprite, outlineColor, null);
+      collector.order(order).submitModel(model, state, matrices, Sheets.armorTrimsSheet(decal), packedLight, OverlayTexture.NO_OVERLAY, -1, trimSprite, outlineColor, null);
       return order + 1;
     }
   }

@@ -63,7 +63,8 @@
         "lapis": "minecraft:trims/color_palettes/lapis",
         "netherite": "minecraft:trims/color_palettes/netherite",
         "quartz": "minecraft:trims/color_palettes/quartz",
-        "redstone": "minecraft:trims/color_palettes/redstone"
+        "redstone": "minecraft:trims/color_palettes/redstone",
+        "resin": "minecraft:trims/color_palettes/resin"
       },
       "textures": [
         "tconstruct:item/tool/armor/travelers/goggles/trim",
