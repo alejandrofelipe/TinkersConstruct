@@ -35,7 +35,9 @@ repositories {
 
 group = 'slimeknights.tconstruct'
 base { archivesName = 'TinkersConstruct' }
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+// the freefair 8.6 default (Lombok 1.18.32) crashes javac 25 (TypeTag.UNKNOWN is gone); 1.18.40+ supports JDK 25
+lombok { version = '1.18.42' }
 
 task buildInfo {
     if (System.getenv().BUILD_NUMBER != null) {
@@ -56,13 +58,6 @@ println "Java: ${System.getProperty 'java.version'}, Version: ${version}"
 minecraft {
     accessTransformers {
         file('src/main/resources/META-INF/accesstransformer.cfg')
-    }
-}
-
-subsystems {
-    parchment {
-        minecraftVersion = parchment_minecraft
-        mappingsVersion = parchment_version
     }
 }
 
@@ -156,9 +151,11 @@ runs {
 // via javaLauncher instead of overriding executable. The JBR path is registered as a discoverable
 // toolchain via org.gradle.java.installations.paths in gradle.properties; it reports its vendor as
 // JetBrains (`java -version` -> "JBR-21.0.11+..."), matched here via JvmVendorSpec.JETBRAINS.
+// 26.1: the game needs Java 25, so this needs a JBR 25 registered in org.gradle.java.installations.paths
+// (the JBR 21 there no longer matches; without a JBR 25 Gradle's toolchain resolution would try to provision one).
 tasks.matching { it.name == 'runClientHotswap' }.configureEach {
     it.javaLauncher.set(javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.JETBRAINS
     })
 }
