@@ -2905,7 +2905,12 @@ public class TinkerUiTestScenarios {
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
       ctx.mc().setScreen(null);
-      ctx.sendCommand("clear @s");
+      // close the menu on the server before clearing: closing hands the crafting grid back to the inventory, which may land after a plain clear
+      ctx.runOnServer(() -> {
+        ServerPlayer player = ctx.serverLevel().getServer().getPlayerList().getPlayers().getFirst();
+        player.closeContainer();
+        player.getInventory().clearContent();
+      });
       // look ahead again: the following screen captures show the world behind them
       ctx.sendCommand("tp @s ~ ~ ~ 0 0");
     }
