@@ -69,7 +69,7 @@ public class TippedToolTransformRecipe extends ToolBuildingRecipe {
           PotionContents contents = stack.get(DataComponents.POTION_CONTENTS);
           if (contents != null) {
             contents.potion()
-              .map(holder -> holder.unwrapKey().map(key -> key.location().toString()).orElse(null))
+              .map(holder -> holder.unwrapKey().map(key -> key.identifier().toString()).orElse(null))
               .ifPresent(id -> tool.getPersistentData().putString(modifier.getLocation(), id));
           }
         }
@@ -88,7 +88,7 @@ public class TippedToolTransformRecipe extends ToolBuildingRecipe {
           if (contents != null) {
             String id = contents.potion()
               .flatMap(Holder::unwrapKey)
-              .map(key -> key.location().toString())
+              .map(key -> key.identifier().toString())
               .orElse(null);
             if (id != null) {
               ItemStack copy = result.copy();

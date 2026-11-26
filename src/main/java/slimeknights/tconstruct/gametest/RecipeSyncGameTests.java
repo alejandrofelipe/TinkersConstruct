@@ -45,7 +45,7 @@ public class RecipeSyncGameTests {
         continue;
       }
       checked++;
-      String id = holder.id().location().toString();
+      String id = holder.id().identifier().toString();
       try {
         byte[] first = encode(access, holder);
         RegistryFriendlyByteBuf buffer = buffer(access, Unpooled.wrappedBuffer(first));

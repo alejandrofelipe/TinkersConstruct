@@ -43,6 +43,6 @@ public class ItemPartRecipeBuilder extends AbstractRecipeBuilder<ItemPartRecipeB
 
   @Override
   public void save(RecipeOutput consumer, ResourceKey<Recipe<?>> id) {
-    save(consumer, id.location());
+    save(consumer, id.identifier());
   }
 }

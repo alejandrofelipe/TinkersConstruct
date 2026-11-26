@@ -26,7 +26,7 @@ public class TagNotEmptyCondition<T> implements LootItemCondition, ICondition {
    */
   @SuppressWarnings("unchecked")
   public static final MapCodec<TagNotEmptyCondition<?>> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-    Identifier.CODEC.fieldOf("registry").forGetter(c -> c.tag.registry().location()),
+    Identifier.CODEC.fieldOf("registry").forGetter(c -> c.tag.registry().identifier()),
     Identifier.CODEC.fieldOf("tag").forGetter(c -> c.tag.location())
   ).apply(inst, (registry, tag) -> new TagNotEmptyCondition<Object>(TagKey.create(ResourceKey.createRegistryKey(registry), tag))));
 

@@ -90,8 +90,8 @@ public class FluidBucketModelProvider extends GenericDataProvider {
   @Override
   public CompletableFuture<?> run(CachedOutput cache) {
     List<CompletableFuture<?>> tasks = BuiltInRegistries.ITEM.entrySet().stream()
-      .filter(entry -> entry.getKey().location().getNamespace().equals(modId) && entry.getValue() instanceof BucketItem)
-      .map(entry -> saveJson(cache, entry.getKey().location(), makeBucket((BucketItem)entry.getValue())))
+      .filter(entry -> entry.getKey().identifier().getNamespace().equals(modId) && entry.getValue() instanceof BucketItem)
+      .map(entry -> saveJson(cache, entry.getKey().identifier(), makeBucket((BucketItem)entry.getValue())))
       .collect(Collectors.toCollection(ArrayList::new));
     tasks.add(saveJson(cache, Identifier.fromNamespaceAndPath(modId, "copper_can"), makeCopperCan()));
     tasks.add(saveJson(cache, Identifier.fromNamespaceAndPath(modId, "potion_bucket"), makePotionBucket()));

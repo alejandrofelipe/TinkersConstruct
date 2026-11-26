@@ -149,7 +149,7 @@ public class GenerateMeltingRecipesCommand {
     RecipeOutput consumer = new RecipeOutput() {
       @Override
       public void accept(ResourceKey<Recipe<?>> id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions) {
-        Identifier location = id.location();
+        Identifier location = id.identifier();
         Path path = data.resolve(location.getNamespace() + "/recipe/" + location.getPath() + ".json");
         JsonElement json = Recipe.CODEC.encodeStart(jsonOps, recipe).getOrThrow(JsonParseException::new);
         if (GeneratePackHelper.saveJson(json, path)) {
@@ -179,7 +179,7 @@ public class GenerateMeltingRecipesCommand {
     MeltingCache cache = new MeltingCache();
     for (RecipeHolder<T> holder : TinkerRecipeAccess.byType((RecipeType<T>) recipeType.value(), level)) {
       // skip any recipes that are specifically blacklisted
-      if (skipRecipes.contains(holder.id().location())) {
+      if (skipRecipes.contains(holder.id().identifier())) {
         continue;
       }
       Recipe<?> recipe = holder.value();

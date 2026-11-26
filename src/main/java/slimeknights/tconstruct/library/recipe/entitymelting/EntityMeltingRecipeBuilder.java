@@ -46,6 +46,6 @@ public class EntityMeltingRecipeBuilder extends AbstractRecipeBuilder<EntityMelt
 
   @Override
   public void save(RecipeOutput recipeOutput, ResourceKey<Recipe<?>> id) {
-    save(recipeOutput, id.location());
+    save(recipeOutput, id.identifier());
   }
 }

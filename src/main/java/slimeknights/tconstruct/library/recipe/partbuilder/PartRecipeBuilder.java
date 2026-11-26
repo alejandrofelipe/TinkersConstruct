@@ -60,6 +60,6 @@ public class PartRecipeBuilder extends AbstractRecipeBuilder<PartRecipeBuilder> 
 
   @Override
   public void save(RecipeOutput consumerIn, ResourceKey<Recipe<?>> id) {
-    save(consumerIn, id.location());
+    save(consumerIn, id.identifier());
   }
 }

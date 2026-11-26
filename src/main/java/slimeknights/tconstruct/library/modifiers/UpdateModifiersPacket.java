@@ -142,7 +142,7 @@ public class UpdateModifiersPacket implements IThreadsafePacket {
     // enchantment mapping
     buffer.writeVarInt(enchantmentMap.size());
     for (Entry<ResourceKey<Enchantment>,Modifier> entry : enchantmentMap.entrySet()) {
-      buffer.writeIdentifier(entry.getKey().location());
+      buffer.writeIdentifier(entry.getKey().identifier());
       buffer.writeIdentifier(entry.getValue().getId().getLocation());
     }
     buffer.writeVarInt(enchantmentTagMappings.size());

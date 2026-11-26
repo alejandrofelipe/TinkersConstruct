@@ -293,7 +293,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
           // will come around later for the proper fluid amount
           RecipeHolder<ICastingRecipe> newRecipe = findCastingRecipe();
           currentRecipe = newRecipe == null ? null : newRecipe.value();
-          currentRecipeName = newRecipe == null ? null : newRecipe.id().location();
+          currentRecipeName = newRecipe == null ? null : newRecipe.id().identifier();
           recipeName = null;
           if (currentRecipe == null || currentRecipe.getFluidAmount(castingInventory) > currentFluid.getAmount()) {
             timer = 0;
@@ -409,7 +409,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
       if (castingRecipe != null) {
         if (execute) {
           this.currentRecipe = castingRecipe.value();
-          this.currentRecipeName = castingRecipe.id().location();
+          this.currentRecipeName = castingRecipe.id().identifier();
           this.recipeName = null;
           this.lastOutput = null;
         }
@@ -422,7 +422,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
       if (castingRecipe != null) {
         if (execute) {
           this.currentRecipe = castingRecipe.value();
-          this.currentRecipeName = castingRecipe.id().location();
+          this.currentRecipeName = castingRecipe.id().identifier();
           this.recipeName = null;
           this.lastOutput = null;
           // move output to input slot, prevents removing and ensures item is reduced properly

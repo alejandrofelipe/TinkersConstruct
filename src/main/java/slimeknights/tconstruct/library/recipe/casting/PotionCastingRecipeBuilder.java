@@ -194,7 +194,7 @@ public class PotionCastingRecipeBuilder extends AbstractRecipeBuilder<PotionCast
 
   @Override
   public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
-    save(output, id.location());
+    save(output, id.identifier());
   }
 
   /** Factory for the tipping/tip-clearing recipe variant; both recipe constructors share this signature */

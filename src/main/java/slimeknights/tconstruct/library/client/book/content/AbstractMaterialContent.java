@@ -152,7 +152,7 @@ public abstract class AbstractMaterialContent extends PageContent {
       // PORT 1.21.4: Level#getRecipeManager and the RecipeManager-based RecipeHelper#getUIRecipes are gone; resolve the
       // synced recipes via TinkerRecipeAccess, sorting by holder id first for cross-side determinism (as getUIRecipes did)
       repairStacks = TinkerRecipeAccess.byType(TinkerRecipeTypes.MATERIAL.get(), world).stream()
-        .sorted(Comparator.comparing(holder -> holder.id().location()))
+        .sorted(Comparator.comparing(holder -> holder.id().identifier()))
         .map(RecipeHolder::value)
         .filter(recipe -> material.matchesVariant(recipe.getMaterial()))
         // prefer 1 value 1 needed (ingots), then 1 value with higher needed (nuggets), then higher value (blocks)

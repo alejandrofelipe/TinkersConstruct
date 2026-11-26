@@ -149,7 +149,7 @@ public class PotionCastingRecipe implements ICastingRecipe, IMultiRecipe<Display
     if (contents != null) {
       return contents.potion()
         .flatMap(Holder::unwrapKey)
-        .map(key -> key.location().toString())
+        .map(key -> key.identifier().toString())
         .orElse("");
     }
     return "";

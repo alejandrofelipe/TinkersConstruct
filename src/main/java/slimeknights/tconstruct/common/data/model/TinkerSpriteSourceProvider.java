@@ -101,7 +101,7 @@ public class TinkerSpriteSourceProvider extends SpriteSourceProvider {
 
   /** Adds a vanilla material to the map */
   private static void addVanilla(Map<String,Identifier> map, ResourceKey<TrimMaterial> material) {
-    Identifier path = material.location();
+    Identifier path = material.identifier();
     map.put(path.getPath(), path.withPrefix(PALETTE_FOLDER));
   }
 }

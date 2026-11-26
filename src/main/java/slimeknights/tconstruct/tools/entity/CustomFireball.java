@@ -149,8 +149,8 @@ public class CustomFireball extends Fireball implements ProjectileWithPower {
     super.addAdditionalSaveData(tag);
     tag.putFloat(TAG_POWER, power);
     tag.putFloat(TAG_MULTIPLIER, damageMultiplier);
-    tag.putString(TAG_DAMAGE_TYPE, damageType.location().toString());
-    tag.putString(TAG_ENDERFERENCE_TYPE, enderferenceType.location().toString());
+    tag.putString(TAG_DAMAGE_TYPE, damageType.identifier().toString());
+    tag.putString(TAG_ENDERFERENCE_TYPE, enderferenceType.identifier().toString());
   }
 
   /** Parses the given damage type */

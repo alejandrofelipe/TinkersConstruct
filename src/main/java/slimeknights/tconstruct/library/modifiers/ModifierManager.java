@@ -391,7 +391,7 @@ public class ModifierManager extends SimpleJsonResourceReloadListener<JsonElemen
   public Stream<ResourceKey<Enchantment>> getEquivalentEnchantments(Predicate<ModifierId> modifiers) {
     Predicate<Entry<?,Modifier>> predicate = entry -> modifiers.test(entry.getValue().getId());
     return enchantmentMap.entrySet().stream().filter(predicate).map(Entry::getKey)
-      .distinct().sorted(Comparator.comparing(ResourceKey::location));
+      .distinct().sorted(Comparator.comparing(ResourceKey::identifier));
   }
 
   /** Gets a list of all modifier IDs */

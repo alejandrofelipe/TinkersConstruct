@@ -21,7 +21,7 @@ public class TagDifferencePresentCondition<T> implements ICondition {
   /** Codec serializing the registry, the base tag, and the subtracted tags */
   @SuppressWarnings("unchecked")
   public static final MapCodec<TagDifferencePresentCondition<?>> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-    Identifier.CODEC.fieldOf("registry").forGetter(c -> c.base.registry().location()),
+    Identifier.CODEC.fieldOf("registry").forGetter(c -> c.base.registry().identifier()),
     Identifier.CODEC.fieldOf("base").forGetter(c -> c.base.location()),
     Identifier.CODEC.listOf().fieldOf("subtracted").forGetter(c -> c.subtracted.stream().map(TagKey::location).toList())
   ).apply(inst, (registry, base, subtracted) -> {

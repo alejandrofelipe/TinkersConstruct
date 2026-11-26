@@ -88,6 +88,6 @@ public class MaterialFluidRecipeBuilder extends AbstractRecipeBuilder<MaterialFl
 
   @Override
   public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
-    save(output, id.location());
+    save(output, id.identifier());
   }
 }

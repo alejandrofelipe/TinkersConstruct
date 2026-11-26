@@ -21,7 +21,7 @@ public class TagIntersectionPresentCondition<T> implements ICondition {
   /** Codec serializing the registry and the list of tags */
   @SuppressWarnings("unchecked")
   public static final MapCodec<TagIntersectionPresentCondition<?>> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-    Identifier.CODEC.fieldOf("registry").forGetter(c -> c.names.get(0).registry().location()),
+    Identifier.CODEC.fieldOf("registry").forGetter(c -> c.names.get(0).registry().identifier()),
     Identifier.CODEC.listOf().fieldOf("tags").forGetter(c -> c.names.stream().map(TagKey::location).toList())
   ).apply(inst, (registry, tags) -> {
     ResourceKey<Registry<Object>> key = ResourceKey.createRegistryKey(registry);

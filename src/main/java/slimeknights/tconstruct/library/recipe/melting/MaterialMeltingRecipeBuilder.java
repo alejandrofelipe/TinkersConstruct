@@ -88,6 +88,6 @@ public class MaterialMeltingRecipeBuilder extends AbstractRecipeBuilder<Material
 
   @Override
   public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
-    save(output, id.location());
+    save(output, id.identifier());
   }
 }

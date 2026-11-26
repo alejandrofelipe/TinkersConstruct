@@ -83,7 +83,7 @@ public class PartBuilderBlockEntity extends RetexturedTableBlockEntity implement
         recipes = TinkerRecipeAccess.byType(TinkerRecipeTypes.PART_BUILDER.get(), level).stream()
                        .filter(holder -> holder.value().partialMatch(inventoryWrapper))
                        // sort by holder ID to keep order consistent on both sides (ResourceKey is not Comparable, so compare its location)
-                       .sorted(Comparator.comparing(holder -> holder.id().location()))
+                       .sorted(Comparator.comparing(holder -> holder.id().identifier()))
                        .flatMap(holder -> holder.value().getPatterns(inventoryWrapper).map(p -> new PatternRecipe(p, holder.value())))
                        .collect(Collectors.toMap(PatternRecipe::pattern, PatternRecipe::recipe, (a, b) -> a));
         sortedButtons = recipes.entrySet()

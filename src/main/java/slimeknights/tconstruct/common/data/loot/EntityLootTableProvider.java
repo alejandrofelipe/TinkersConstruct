@@ -50,7 +50,7 @@ public class EntityLootTableProvider extends EntityLootSubProvider {
   @Override
   protected Stream<EntityType<?>> getKnownEntityTypes() {
     return BuiltInRegistries.ENTITY_TYPE.entrySet().stream()
-                                   .filter(entry -> TConstruct.MOD_ID.equals(entry.getKey().location().getNamespace()))
+                                   .filter(entry -> TConstruct.MOD_ID.equals(entry.getKey().identifier().getNamespace()))
                                    .map(Entry::getValue)
                                    // MISC entities (projectiles, hooks, dropped items) have no loot table; skip them
                                    // from the coverage validation (they still generate if explicitly added above)

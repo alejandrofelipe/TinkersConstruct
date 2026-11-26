@@ -112,22 +112,22 @@ public class WorldgenGameTests {
     for (ResourceKey<Structure> key : ISLANDS.keySet()) {
       Structure structure = structures.getValue(key);
       if (!(structure instanceof IslandStructure)) {
-        failures.add("structure " + key.location() + " is " + structure);
+        failures.add("structure " + key.identifier() + " is " + structure);
       } else if (structure.biomes().size() == 0) {
-        failures.add("structure " + key.location() + " has an empty biome set");
+        failures.add("structure " + key.identifier() + " has an empty biome set");
       }
     }
     Registry<StructureSet> sets = level.registryAccess().lookupOrThrow(Registries.STRUCTURE_SET);
     for (ResourceKey<StructureSet> key : STRUCTURE_SETS) {
       StructureSet set = sets.getValue(key);
       if (set == null) {
-        failures.add("structure set " + key.location() + " missing");
+        failures.add("structure set " + key.identifier() + " missing");
       } else if (set.structures().isEmpty()) {
-        failures.add("structure set " + key.location() + " is empty");
+        failures.add("structure set " + key.identifier() + " is empty");
       } else {
         for (StructureSet.StructureSelectionEntry entry : set.structures()) {
           if (!(entry.structure().value() instanceof IslandStructure)) {
-            failures.add("structure set " + key.location() + " references " + entry.structure());
+            failures.add("structure set " + key.identifier() + " references " + entry.structure());
           }
         }
       }
@@ -139,16 +139,16 @@ public class WorldgenGameTests {
     configuredKeys.add(TinkerWorld.configuredLargeCobaltOre);
     for (ResourceKey<ConfiguredFeature<?,?>> key : configuredKeys) {
       if (configured.getValue(key) == null) {
-        failures.add("configured feature " + key.location() + " missing");
+        failures.add("configured feature " + key.identifier() + " missing");
       }
     }
     Registry<PlacedFeature> placed = level.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE);
     for (ResourceKey<PlacedFeature> key : PLACED_FEATURES) {
       PlacedFeature feature = placed.getValue(key);
       if (feature == null) {
-        failures.add("placed feature " + key.location() + " missing");
+        failures.add("placed feature " + key.identifier() + " missing");
       } else if (!feature.feature().isBound()) {
-        failures.add("placed feature " + key.location() + " has an unbound feature");
+        failures.add("placed feature " + key.identifier() + " has an unbound feature");
       }
     }
     var modifiers = level.registryAccess().lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS);
@@ -216,7 +216,7 @@ public class WorldgenGameTests {
       ChunkPos chunk = new ChunkPos(SectionPos.blockToSectionCoord(ORIGIN) + 8 * index++, SectionPos.blockToSectionCoord(ORIGIN));
       Optional<Holder.Reference<Structure>> holder = structures.get(key);
       if (holder.isEmpty()) {
-        failures.add(key.location() + " missing");
+        failures.add(key.identifier() + " missing");
         continue;
       }
       // same as the /place structure command
@@ -224,7 +224,7 @@ public class WorldgenGameTests {
         holder.get(), level.dimension(), level.registryAccess(), generator, generator.getBiomeSource(), level.getChunkSource().randomState(),
         level.getStructureManager(), level.getSeed(), chunk, 0, level, biome -> true);
       if (!start.isValid()) {
-        failures.add(key.location() + " generated no pieces");
+        failures.add(key.identifier() + " generated no pieces");
         continue;
       }
       BoundingBox box = start.getBoundingBox();
@@ -247,10 +247,10 @@ public class WorldgenGameTests {
         }
       }
       if (!foundGrass) {
-        failures.add(key.location() + " placed at " + box + " without any of " + expected);
+        failures.add(key.identifier() + " placed at " + box + " without any of " + expected);
       }
       if (!leftovers.isEmpty()) {
-        failures.add(key.location() + " placed vanilla blocks " + leftovers);
+        failures.add(key.identifier() + " placed vanilla blocks " + leftovers);
       }
     }
     finish(helper, failures);
@@ -268,12 +268,12 @@ public class WorldgenGameTests {
       fill(level, origin.offset(-16, -16, -16), origin.offset(16, 16, 16), Blocks.STONE.defaultBlockState());
       ConfiguredFeature<?,?> feature = configured.getValue(geode.getKey());
       if (feature == null || !feature.place(level, level.getChunkSource().getGenerator(), RandomSource.create(index), origin)) {
-        failures.add(geode.getKey().location() + " did not place");
+        failures.add(geode.getKey().identifier() + " did not place");
         continue;
       }
       GeodeItemObject crystal = geode.getValue();
       if (count(level, origin.offset(-16, -16, -16), origin.offset(16, 16, 16), Set.of(crystal.getBlock(), crystal.getBudding())) == 0) {
-        failures.add(geode.getKey().location() + " placed no " + crystal.getBlock());
+        failures.add(geode.getKey().identifier() + " placed no " + crystal.getBlock());
       }
     }
     finish(helper, failures);
@@ -291,9 +291,9 @@ public class WorldgenGameTests {
       fill(level, origin.offset(-8, -8, -8), origin.offset(8, 8, 8), Blocks.NETHERRACK.defaultBlockState());
       ConfiguredFeature<?,?> feature = configured.getValue(key);
       if (feature == null || !feature.place(level, level.getChunkSource().getGenerator(), RandomSource.create(index), origin)) {
-        failures.add(key.location() + " did not place");
+        failures.add(key.identifier() + " did not place");
       } else if (count(level, origin.offset(-8, -8, -8), origin.offset(8, 8, 8), Set.of(TinkerWorld.cobaltOre.get())) == 0) {
-        failures.add(key.location() + " placed no cobalt ore");
+        failures.add(key.identifier() + " placed no cobalt ore");
       }
     }
     finish(helper, failures);
@@ -310,23 +310,23 @@ public class WorldgenGameTests {
       BlockPos origin = new BlockPos(ORIGIN + 32 * index++, 41, ORIGIN + 3000);
       ConfiguredFeature<?,?> feature = configured.getValue(key);
       if (feature == null) {
-        failures.add(key.location() + " missing");
+        failures.add(key.identifier() + " missing");
         continue;
       }
       // slime trees grow on slimy soil, fungi on their configured ground
       TagKey<Block> ground = feature.config() instanceof SlimeFungusConfig fungus ? fungus.getGroundTag() : TinkerTags.Blocks.SLIMY_SOIL;
       Optional<Block> soil = blocks.get(ground).flatMap(set -> set.stream().findFirst()).map(Holder::value);
       if (soil.isEmpty()) {
-        failures.add(key.location() + " ground tag " + ground.location() + " is empty");
+        failures.add(key.identifier() + " ground tag " + ground.location() + " is empty");
         continue;
       }
       // a platform, not a single block: enderbark's mangrove roots grow down until they hit ground, failing past max_root_length
       fill(level, origin.offset(-8, -1, -8), origin.offset(8, -1, 8), soil.get().defaultBlockState());
       if (!feature.place(level, level.getChunkSource().getGenerator(), RandomSource.create(index), origin)) {
-        failures.add(key.location() + " did not place on " + soil.get());
+        failures.add(key.identifier() + " did not place on " + soil.get());
       } else if (BlockPos.betweenClosedStream(origin.offset(-8, 0, -8), origin.offset(8, 30, 8)).allMatch(pos -> level.getBlockState(pos).isAir())) {
         // mangrove-style enderbark raises its trunk above the origin, so look at the whole volume over the platform
-        failures.add(key.location() + " placed nothing above its platform");
+        failures.add(key.identifier() + " placed nothing above its platform");
       }
     }
     finish(helper, failures);

@@ -1950,7 +1950,7 @@ public class TinkerUiTestScenarios {
       IRecipeManager recipes = runtime.getRecipeManager();
       IRecipeCategory<RecipeHolder<CraftingRecipe>> category = recipes.getRecipeCategory(RecipeTypes.CRAFTING);
       RecipeHolder<CraftingRecipe> stick = recipes.createRecipeLookup(RecipeTypes.CRAFTING).get()
-        .filter(holder -> holder.id().location().equals(STICK)).findFirst().orElse(null);
+        .filter(holder -> holder.id().identifier().equals(STICK)).findFirst().orElse(null);
       if (stick == null) {
         failure = "JEI has no " + STICK + " crafting recipe";
         return;

@@ -42,6 +42,6 @@ public class ModifierRepairRecipeBuilder extends AbstractRecipeBuilder<ModifierR
 
   @Override
   public void save(RecipeOutput output, ResourceKey<Recipe<?>> id) {
-    save(output, id.location());
+    save(output, id.identifier());
   }
 }

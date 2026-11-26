@@ -82,7 +82,7 @@ public record BannerModifierModel(@Nullable Identifier smallPrefix, @Nullable Id
             // why must holders be such a pain?
             // TODO 1.21: will need to switch from using the ID to using the asset root for the texture
             pattern.unwrapKey().ifPresent(id -> {
-              TextureAtlasSprite sprite = spriteGetter.apply(ModifierModel.blockAtlas(prefix.withSuffix(MaterialRenderInfo.getSuffix(id.location()))));
+              TextureAtlasSprite sprite = spriteGetter.apply(ModifierModel.blockAtlas(prefix.withSuffix(MaterialRenderInfo.getSuffix(id.identifier()))));
               // skip if sprite is missing - deals with modded patterns that we haven't made textures for
               if (!MissingTextureAtlasSprite.getLocation().equals(sprite.contents().name())) {
                 quads.add(MantleItemLayerModel.getQuadForGui(color, -1, sprite, transforms, 0));

@@ -71,10 +71,10 @@ public class TinkerBlockStateProvider extends ModelProvider {
   @Override
   protected java.util.stream.Stream<? extends net.minecraft.core.Holder<Block>> getKnownBlocks() {
     return BuiltInRegistries.BLOCK.listElements()
-      .filter(holder -> holder.getKey().location().getNamespace().equals(TConstruct.MOD_ID))
+      .filter(holder -> holder.getKey().identifier().getNamespace().equals(TConstruct.MOD_ID))
       // fluid blocks get their blockstate from FluidBlockstateModelProvider, not this provider
       .filter(holder -> !(holder.value() instanceof net.minecraft.world.level.block.LiquidBlock))
-      .filter(holder -> !hasResource(holder.getKey().location(), "blockstates"));
+      .filter(holder -> !hasResource(holder.getKey().identifier(), "blockstates"));
   }
 
   /**

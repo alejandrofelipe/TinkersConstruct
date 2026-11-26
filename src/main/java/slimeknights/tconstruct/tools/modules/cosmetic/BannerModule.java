@@ -82,7 +82,7 @@ public enum BannerModule implements ModifierModule, DisplayNameModifierHook, Too
           if (holder != null) {
             // note that Forge is dumb in BannerItem with their patch - mojang already adds the mod ID to the tooltip key
             holder.unwrapKey().ifPresent(key ->
-              tooltip.add(Component.translatable("block.minecraft.banner." + key.location().toShortLanguageKey() + '.' + dye.getName()).withStyle(ChatFormatting.GRAY)));
+              tooltip.add(Component.translatable("block.minecraft.banner." + key.identifier().toShortLanguageKey() + '.' + dye.getName()).withStyle(ChatFormatting.GRAY)));
 
           }
         }
@@ -113,7 +113,7 @@ public enum BannerModule implements ModifierModule, DisplayNameModifierHook, Too
     // This base-pattern copy needs reworking against the new BannerPatternLayers component.
     {
       CompoundTag basePattern = new CompoundTag();
-      basePattern.putString(KEY_PATTERN, BannerPatterns.BASE.location().toString());
+      basePattern.putString(KEY_PATTERN, BannerPatterns.BASE.identifier().toString());
       basePattern.putInt(KEY_DYE, dye.getId());
       basePattern.putInt(KEY_COLOR, baseColor);
       patterns.add(basePattern);

@@ -81,7 +81,7 @@ public class RecipeValidationGameTests {
     Map<String, String> failures = new LinkedHashMap<>();
     for (RecipeHolder<IMeltingRecipe> holder : TinkerRecipeAccess.byType(TinkerRecipeTypes.MELTING.get(), helper.getLevel())) {
       IMeltingRecipe recipe = holder.value();
-      String id = holder.id().location().toString();
+      String id = holder.id().identifier().toString();
       try {
         List<Ingredient> ingredients = recipe.placementInfo().ingredients();
         for (Ingredient ingredient : ingredients) {
@@ -121,7 +121,7 @@ public class RecipeValidationGameTests {
     for (RecipeType<ICastingRecipe> type : List.of(TinkerRecipeTypes.CASTING_TABLE.get(), TinkerRecipeTypes.CASTING_BASIN.get())) {
       for (RecipeHolder<ICastingRecipe> holder : TinkerRecipeAccess.byType(type, helper.getLevel())) {
         ICastingRecipe recipe = holder.value();
-        String id = holder.id().location().toString();
+        String id = holder.id().identifier().toString();
         try {
           for (Ingredient ingredient : recipe.placementInfo().ingredients()) {
             if (ingredient.items().findAny().isEmpty()) {
@@ -152,7 +152,7 @@ public class RecipeValidationGameTests {
     Map<String, String> failures = new LinkedHashMap<>();
     for (RecipeHolder<AlloyRecipe> holder : TinkerRecipeAccess.byType(TinkerRecipeTypes.ALLOYING.get(), helper.getLevel())) {
       AlloyRecipe recipe = holder.value();
-      String id = holder.id().location().toString();
+      String id = holder.id().identifier().toString();
       try {
         for (AlloyRecipe.AlloyIngredient ingredient : recipe.getInputs()) {
           if (ingredient.fluid().getFluids().isEmpty()) {

@@ -63,6 +63,6 @@ public class PartBuilderToolRecycleBuilder extends AbstractRecipeBuilder<PartBui
 
   @Override
   public void save(RecipeOutput consumer, ResourceKey<Recipe<?>> id) {
-    save(consumer, id.location());
+    save(consumer, id.identifier());
   }
 }
