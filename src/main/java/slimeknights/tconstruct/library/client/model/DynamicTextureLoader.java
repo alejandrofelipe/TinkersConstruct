@@ -62,9 +62,10 @@ public class DynamicTextureLoader extends ResourceValidator {
     } else {
       return mat -> {
         // to suppress logging, need to load from our own list. We just load it for `textures/item` on the block atlas
+        // 1.21.11: the block atlas only stitches item/tool/ (Tinkers' atlas source), other item textures moved to the items atlas
         if (TextureAtlas.LOCATION_BLOCKS.equals(mat.atlasLocation())) {
           Identifier texture = mat.texture();
-          if (texture.getPath().startsWith("item/")) {
+          if (texture.getPath().startsWith("item/tool/")) {
             return INSTANCE.test(mat.texture());
           }
         }

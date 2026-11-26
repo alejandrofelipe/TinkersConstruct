@@ -11,12 +11,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.bus.api.IEventBus;
 
+import slimeknights.mantle.client.model.util.ModelHelper;
 import slimeknights.mantle.data.listener.IEarlySafeManagerReloadListener;
 import slimeknights.mantle.util.JsonHelper;
 import slimeknights.tconstruct.TConstruct;
@@ -124,7 +127,9 @@ public class ModifierIconManager implements IEarlySafeManagerReloadListener {
     List<Identifier> icons = modifierIcons.getOrDefault(modifier.getId(), Collections.emptyList());
     if (!icons.isEmpty()) {
       for (Identifier icon : icons) {
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, atlas.getSprite(icon), x, y, size, size);
+        // 1.21.11: item textures (such as minecraft:item/...) left the blocks atlas, while gui/modifiers icons are only stitched into it,
+        // so resolve icons like model textures: items atlas first, then blocks atlas
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ModelHelper.getSprite(new Material(ModelManager.BLOCK_OR_ITEM, icon)), x, y, size, size);
       }
     } else {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, atlas.getSprite(DEFAULT_PAGES), x, y, size, size);
