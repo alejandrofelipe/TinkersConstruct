@@ -140,6 +140,29 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
 7. **Commit per green step; tag the milestone** (`v<mc>-<modver>`); deploy to the instance if desired.
 8. **Write the next milestone's detailed plan.**
 
+**Upgrade-cost measures (adopted 2026-11-25; analysis + evidence:
+[`2026-11-25-upgrade-architecture-analysis.md`](2026-11-25-upgrade-architecture-analysis.md)).** No hexagonal/DDD
+rewrite (87% of files import `net.minecraft`; paradigm and silent changes leak through any port). Instead, five
+incremental measures folded into the recipe above:
+- **R1 — boundary contract tests** (highest ROI; silent changes caused 9/12 hotfixes): keep the catalogue
+  `tinkers/docs/boundary-contracts.md` complete; every new vanilla integration point gets a test; datagen golden diff in
+  step 4's `runData`. Review the catalogue in each milestone's Phase 0. First built in M6 Phase 0.5.
+- **R2 — vocabulary rule for Mantle's public API:** for concepts stable in the domain (ids, serialization schema,
+  input, network send, lifecycle hooks, fluid action, permissions), Mantle APIs consumed by Tinkers take/return
+  Mantle-owned or primitive types. Applied only when a milestone forces the API to change anyway; never to rendering
+  pipeline types, registries, codecs or data components. Record each application in the migration guide's "Mantle API
+  changes for downstream" table.
+- **R3 — rendering seams before M7:** route Tinkers' repeated vanilla rendering patterns through a few Mantle helpers in
+  the current paradigm, so 26.1 (`GuiGraphicsExtractor`) and 26.2 (no `MultiBufferSource`) are fixed in N helpers, not M
+  call sites. Pilot = fluid rendering (`FluidRenderer` + Faucet/Channel/Casting/Heating renderers), between M6 and M7;
+  continue only if it measurably shrinks the M7 rendering diff.
+- **R4 — rename-map tool** (`repo/scripts/rename-map/`): step 1 also produces the milestone's map file from the primer
+  (from 26.1, unobfuscated jars allow a jar-to-jar API diff to seed it); steps 3–4 apply it before hand fixes. First built
+  in M6 Phase 0.5.
+- **R5 — scripted multi-line backports:** keep branch-per-version (ecosystem norm; Stonecutter rejected). A script
+  cherry-picks a fix across the release lines in throwaway worktrees, runs the battery per line and reports which lines
+  need manual adaptation. Build it on the next hotfix.
+
 ## Cross-cutting risks / notes
 
 - **M3 (1.21.5) + M4 (1.21.6) are the two walls.** Budget the most time there — data components for
