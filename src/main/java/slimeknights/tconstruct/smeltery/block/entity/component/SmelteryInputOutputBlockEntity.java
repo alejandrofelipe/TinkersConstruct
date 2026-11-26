@@ -23,8 +23,7 @@ import slimeknights.tconstruct.common.multiblock.IMasterLogic;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.tank.ISmelteryTankHandler;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 import static slimeknights.mantle.util.RetexturedHelper.TAG_TEXTURE;
@@ -44,7 +43,6 @@ public abstract class SmelteryInputOutputBlockEntity<T> extends SmelteryComponen
   private boolean capabilityResolved = false;
 
   /* Retexturing */
-  @Nonnull
   @Getter
   private Block texture = Blocks.AIR;
 
@@ -124,7 +122,6 @@ public abstract class SmelteryInputOutputBlockEntity<T> extends SmelteryComponen
   /* Retexturing */
 
   @Override
-  @Nonnull
   public ModelData getModelData() {
     return RetexturedHelper.getModelData(getTexture());
   }

@@ -43,7 +43,6 @@ import slimeknights.tconstruct.tables.menu.slot.TinkerStationSlot;
 import slimeknights.tconstruct.tables.network.TinkerStationRenamePacket;
 import slimeknights.tconstruct.tables.network.TinkerStationSelectionPacket;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 
 import static slimeknights.tconstruct.tables.block.entity.table.TinkerStationBlockEntity.INPUT_SLOT;
@@ -96,10 +95,10 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   protected ScalableElementScreen centerBeam = CENTER_BEAM.move(0, 0, 0, 0);
 
   /** Gets the default layout to apply, the "repair" button */
-  @Nonnull @Getter
+  @Getter
   private final StationSlotLayout defaultLayout;
   /** Currently selected tool */
-  @Nonnull @Getter
+  @Getter
   private StationSlotLayout currentLayout;
 
   // components

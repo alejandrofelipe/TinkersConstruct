@@ -19,7 +19,7 @@ import slimeknights.tconstruct.library.module.ModuleHookMap.Builder;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** @deprecated use {@link DurabilityShieldModule} with {@link CapacityBarHook} */
 @Deprecated

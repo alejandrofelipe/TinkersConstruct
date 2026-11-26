@@ -30,7 +30,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import slimeknights.tconstruct.world.TinkerStructures;
 import slimeknights.tconstruct.world.block.SlimeVineBlock;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Optional;
 
 public class IslandPiece extends TemplateStructurePiece {

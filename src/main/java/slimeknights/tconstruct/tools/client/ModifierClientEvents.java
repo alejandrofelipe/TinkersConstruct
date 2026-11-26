@@ -56,7 +56,6 @@ import slimeknights.tconstruct.tools.TinkerModifiers;
 import slimeknights.tconstruct.tools.modules.armor.MinimapModule;
 import slimeknights.tconstruct.tools.modules.armor.SleevesModule;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,9 +151,7 @@ public class ModifierClientEvents {
   private static final Identifier MAP_BACKGROUND = Identifier.withDefaultNamespace("textures/map/map_background.png");
   private static final Identifier MAP_BACKGROUND_CHECKERBOARD = Identifier.withDefaultNamespace("textures/map/map_background_checkerboard.png");
 
-  @Nonnull
   private static ItemStack nextOffhand = ItemStack.EMPTY;
-  @Nonnull
   private static ItemStack currentSleeve = ItemStack.EMPTY;
 
   /** Items to render for the item frame modifier */

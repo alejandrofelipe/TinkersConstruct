@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.recipe.modifiers.adding;
 import slimeknights.tconstruct.library.modifiers.Modifier;
 import slimeknights.tconstruct.library.tools.SlotType;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Interface for all recipes that add a modifier, for looking up recipe usage */
 public interface IModifierRecipe {

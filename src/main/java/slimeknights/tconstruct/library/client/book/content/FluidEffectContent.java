@@ -2,6 +2,7 @@ package slimeknights.tconstruct.library.client.book.content;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NonNull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.RegistryAccess;
@@ -28,8 +29,7 @@ import slimeknights.tconstruct.library.client.book.elements.FluidItemElement;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffects;
 import slimeknights.tconstruct.library.utils.Util;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,15 +41,13 @@ public class FluidEffectContent extends PageContent {
 
   @Setter
   @Getter
-  @Nonnull
+  @NonNull
   protected String title = "";
   @Getter
   protected String group = "";
   protected String text = "";
-  @Nullable
-  protected String[] entity = null;
-  @Nullable
-  protected String[] block = null;
+  protected String @Nullable [] entity = null;
+  protected String @Nullable [] block = null;
   private transient List<Component> entityComponents = List.of();
   private transient List<Component> blockComponents = List.of();
 
@@ -85,7 +83,7 @@ public class FluidEffectContent extends PageContent {
   }
 
   /** Adds a list of effects to the page */
-  private void addList(ArrayList<BookElement> list, int x, int y, int height, String key, @Nullable String[] texts, List<Component> components) {
+  private void addList(ArrayList<BookElement> list, int x, int y, int height, String key, String @Nullable [] texts, List<Component> components) {
     if (texts != null || !components.isEmpty()) {
       TextData head = new TextData(I18n.get(key));
       head.underlined = true;
@@ -139,7 +137,7 @@ public class FluidEffectContent extends PageContent {
   }
 
   /** Adds an effect list to the HTML */
-  private void addHtmlList(HtmlElement div, String key, @Nullable String[] strings, List<Component> components) {
+  private void addHtmlList(HtmlElement div, String key, String @Nullable [] strings, List<Component> components) {
     if (components.isEmpty() && strings == null) return;
 
     // append hardcoded text

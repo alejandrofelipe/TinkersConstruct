@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class PiglinHeadBlock extends SkullBlock {
   protected static final VoxelShape PIGLIN_SHAPE = Block.box(3, 0, 3, 13, 8, 13);

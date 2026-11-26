@@ -28,8 +28,7 @@ import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.tools.modules.cosmetic.TrimModule;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -184,7 +183,6 @@ public interface TrimModifierModel extends ModifierModel {
       Custom::new);
 
     /** Base texture for this model */
-    @Nonnull
     private final Identifier smallRoot, largeRoot;
     /** Cache of textures for each material. */
     private final Map<String, TrimTexture> smallCache, largeCache ;

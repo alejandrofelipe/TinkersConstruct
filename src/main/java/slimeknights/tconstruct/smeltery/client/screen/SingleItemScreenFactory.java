@@ -10,7 +10,7 @@ import slimeknights.mantle.client.screen.BackgroundContainerScreen;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.smeltery.menu.SingleItemContainerMenu;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**

@@ -55,7 +55,7 @@ import slimeknights.tconstruct.library.modifiers.impl.ComposableModifier;
 import slimeknights.tconstruct.library.utils.GenericTagUtil;
 import slimeknights.tconstruct.library.utils.JsonUtils;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;

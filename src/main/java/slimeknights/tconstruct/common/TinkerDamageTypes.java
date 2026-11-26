@@ -9,7 +9,7 @@ import net.minecraft.world.entity.Entity;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.modifiers.fluid.entity.DamageFluidEffect.DamageTypePair;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Handles any custom damage types in the mod */
 public class TinkerDamageTypes {

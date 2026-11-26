@@ -11,7 +11,7 @@ import slimeknights.mantle.inventory.BaseContainerMenu;
 import slimeknights.tconstruct.library.transfer.IModifiableItemHandlerProvider;
 import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class SideInventoryContainer<TILE extends BlockEntity> extends BaseContainerMenu<TILE> {
 

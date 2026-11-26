@@ -31,7 +31,7 @@ import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.recipe.casting.IDisplayableCastingRecipe;
 import slimeknights.tconstruct.plugin.jei.util.FluidTooltipCallback;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.awt.Color;
 import java.util.List;
 

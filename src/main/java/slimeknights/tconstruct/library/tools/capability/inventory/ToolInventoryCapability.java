@@ -37,7 +37,7 @@ import slimeknights.tconstruct.library.transfer.SlotStorageItemHandler;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;

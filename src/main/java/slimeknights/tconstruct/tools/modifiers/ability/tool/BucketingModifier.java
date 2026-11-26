@@ -15,7 +15,7 @@ import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.tools.modules.interaction.BucketModule;
 import slimeknights.tconstruct.tools.modules.interaction.TankInteractionModule;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** @deprecated use {@link BucketModule}, {@link ToolTankHelper#TANK_HANDLER}, {@link TankInteractionModule}, and {@link ShowOffhandModule} */
 @Deprecated(forRemoval = true)

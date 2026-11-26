@@ -18,7 +18,7 @@ import slimeknights.tconstruct.library.modifiers.hook.interaction.InteractionSou
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @AllArgsConstructor
 @Getter

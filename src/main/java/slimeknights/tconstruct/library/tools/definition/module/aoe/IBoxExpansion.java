@@ -6,7 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import slimeknights.mantle.data.registry.NamedComponentRegistry;
 import slimeknights.tconstruct.TConstruct;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Logic that determines how box AOE expands */
 public interface IBoxExpansion {

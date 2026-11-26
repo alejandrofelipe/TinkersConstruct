@@ -31,7 +31,7 @@ import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.smeltery.item.TankItem;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /**

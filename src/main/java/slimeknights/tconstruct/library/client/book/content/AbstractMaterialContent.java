@@ -59,8 +59,7 @@ import slimeknights.tconstruct.library.utils.Util;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tools.TinkerToolParts;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -183,7 +182,6 @@ public abstract class AbstractMaterialContent extends PageContent {
     return getRepairStacks();
   }
 
-  @Nonnull
   @Override
   public String getTitle() {
     if (title.isEmpty()) {

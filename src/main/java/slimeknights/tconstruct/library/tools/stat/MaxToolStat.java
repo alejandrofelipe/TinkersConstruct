@@ -17,7 +17,7 @@ import slimeknights.mantle.util.RegistryHelper;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.library.utils.Util;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.function.IntFunction;
 
 /**

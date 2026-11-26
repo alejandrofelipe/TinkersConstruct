@@ -9,7 +9,7 @@ import slimeknights.tconstruct.library.recipe.alloying.AlloyRecipe;
 import slimeknights.tconstruct.library.recipe.alloying.IAlloyTank;
 import slimeknights.tconstruct.library.recipe.alloying.IMutableAlloyTank;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;

@@ -10,7 +10,7 @@ import net.minecraft.util.GsonHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.utils.JsonUtils;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Transformer that shifts the sprite by the given offset

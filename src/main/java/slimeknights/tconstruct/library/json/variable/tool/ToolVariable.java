@@ -16,7 +16,7 @@ import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.context.ToolAttackContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import static slimeknights.mantle.data.loadable.record.SingletonLoader.singleton;
 

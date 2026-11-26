@@ -14,7 +14,7 @@ import slimeknights.tconstruct.library.modifiers.ModifierManager;
 import slimeknights.tconstruct.library.modifiers.impl.ComposableModifier;
 import slimeknights.tconstruct.library.modifiers.util.DynamicModifier;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -34,7 +34,7 @@ public abstract class AbstractModifierProvider extends GenericDataProvider {
   protected abstract void addModifiers();
 
   /** Adds the given builder, handling duplicate modifiers */
-  private void addBuilder(ModifierId id, @Nullable ComposableModifier.Builder builder, @Nullable ICondition condition, JsonRedirect... redirects) {
+  private void addBuilder(ModifierId id, ComposableModifier.@Nullable Builder builder, @Nullable ICondition condition, JsonRedirect... redirects) {
     Composable previous = composableModifiers.putIfAbsent(id, new Composable(builder, condition, redirects));
     if (previous != null) {
       throw new IllegalArgumentException("Duplicate modifier " + id);
@@ -95,7 +95,7 @@ public abstract class AbstractModifierProvider extends GenericDataProvider {
   }
 
   /** Result for composable too */
-  private record Composable(@Nullable ComposableModifier.Builder builder, @Nullable ICondition condition, JsonRedirect[] redirects) {
+  private record Composable(ComposableModifier.@Nullable Builder builder, @Nullable ICondition condition, JsonRedirect[] redirects) {
     /** Writes this result to JSON */
     public JsonObject serialize() {
       JsonObject json;

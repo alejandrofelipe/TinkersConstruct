@@ -18,7 +18,7 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Context for {@link BreakSpeedModifierHook} */
 public sealed interface BreakSpeedContext {

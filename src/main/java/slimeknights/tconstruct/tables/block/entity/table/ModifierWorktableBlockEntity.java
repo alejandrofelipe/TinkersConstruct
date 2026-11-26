@@ -24,8 +24,7 @@ import slimeknights.tconstruct.tables.block.entity.inventory.LazyResultContainer
 import slimeknights.tconstruct.tables.block.entity.inventory.ModifierWorktableContainerWrapper;
 import slimeknights.tconstruct.tables.menu.ModifierWorktableContainerMenu;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -53,7 +52,6 @@ public class ModifierWorktableBlockEntity extends RetexturedTableBlockEntity imp
   @Nullable
   private IModifierWorktableRecipe lastRecipe;
   /* Current buttons to display */
-  @Nonnull
   private List<ModifierEntry> buttons = Collections.emptyList();
   /** Index of the currently selected modifier */
   private int selectedModifierIndex = -1;

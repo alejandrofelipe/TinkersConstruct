@@ -10,7 +10,7 @@ import net.minecraft.world.level.material.MapColor;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.shared.block.SlimeType;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Locale;
 
 /** Variants of slimy foliage, for grass and leaves notably. */

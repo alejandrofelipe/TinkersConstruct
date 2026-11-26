@@ -20,7 +20,7 @@ import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.utils.HarvestTiers;
 import slimeknights.tconstruct.library.utils.Util;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /** Tool stat for comparing tool tiers */

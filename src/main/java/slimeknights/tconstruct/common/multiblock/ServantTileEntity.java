@@ -13,7 +13,7 @@ import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.mantle.util.BlockEntityHelper;
 import slimeknights.tconstruct.library.utils.TagUtil;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class ServantTileEntity extends MantleBlockEntity implements IServantLogic {
   private static final String TAG_MASTER_POS = "masterOffset";

@@ -19,7 +19,7 @@ import slimeknights.mantle.data.GenericDataProvider;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.data.GenericNBTProvider;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;

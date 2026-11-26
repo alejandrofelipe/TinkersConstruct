@@ -40,7 +40,7 @@ import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.library.tools.nbt.ModifierNBT;
 import slimeknights.tconstruct.library.utils.TeleportHelper;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class EnderportingModifier extends NoLevelsModifier implements PlantHarvestModifierHook, ProjectileHitModifierHook, ProjectileLaunchModifierHook, BlockHarvestModifierHook, MeleeHitModifierHook, MonsterMeleeHitModifierHook.RedirectAfter, ProjectileFuseModifierHook {
   private static final Identifier SECONDARY_ARROW = TConstruct.getResource("enderporting_secondary");

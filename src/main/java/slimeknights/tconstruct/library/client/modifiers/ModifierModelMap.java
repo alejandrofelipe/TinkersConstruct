@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.client.modifiers;
 import slimeknights.tconstruct.library.client.modifiers.model.ModifierModel;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collections;
 import java.util.Map;
 

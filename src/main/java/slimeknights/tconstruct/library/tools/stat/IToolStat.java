@@ -10,7 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import slimeknights.tconstruct.library.utils.Util;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.text.DecimalFormat;
 
 /**

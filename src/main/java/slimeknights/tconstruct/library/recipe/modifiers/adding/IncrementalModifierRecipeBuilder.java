@@ -19,7 +19,7 @@ import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.modifiers.util.LazyModifier;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Recipe that supports not just adding multiple of an item, but also adding a partial amount */
 @SuppressWarnings({"unused", "UnusedReturnValue"})

@@ -20,7 +20,7 @@ import slimeknights.tconstruct.library.client.model.UniqueGuiModel;
 import slimeknights.tconstruct.library.utils.DomainDisplayName;
 import slimeknights.tconstruct.shared.client.FluidParticle;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT)
 public class CommonsClientEvents extends ClientEventBase {

@@ -22,7 +22,7 @@ import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.tools.modifiers.traits.melee.ConductingModifier;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** Module for boosting damage while on fire, based on the fire amount. TODO: consider merging into protection module via a formula builder */

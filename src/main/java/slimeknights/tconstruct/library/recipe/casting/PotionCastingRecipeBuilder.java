@@ -25,7 +25,7 @@ import slimeknights.mantle.recipe.ingredient.FluidIngredient;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Builder for a potion bottle filling recipe. Takes a fluid and optional cast to create an item that copies the fluid NBT

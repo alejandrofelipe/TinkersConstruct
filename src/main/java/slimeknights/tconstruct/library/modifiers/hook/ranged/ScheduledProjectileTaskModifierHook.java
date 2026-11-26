@@ -13,7 +13,7 @@ import slimeknights.tconstruct.library.utils.Schedule.ListScheduler;
 import slimeknights.tconstruct.library.utils.Schedule.ScheduleBuilder;
 import slimeknights.tconstruct.library.utils.Schedule.Scheduler;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collection;
 import java.util.List;
 

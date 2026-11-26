@@ -20,7 +20,7 @@ import slimeknights.mantle.util.typed.TypedMap;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.tools.stat.IToolStat;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

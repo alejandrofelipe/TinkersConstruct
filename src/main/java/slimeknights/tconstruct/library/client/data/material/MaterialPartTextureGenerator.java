@@ -17,7 +17,7 @@ import slimeknights.tconstruct.library.client.data.util.AbstractSpriteReader;
 import slimeknights.tconstruct.library.client.data.util.DataGenSpriteReader;
 import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;

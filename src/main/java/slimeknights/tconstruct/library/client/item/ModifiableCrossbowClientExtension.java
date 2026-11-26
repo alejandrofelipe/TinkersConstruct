@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import slimeknights.tconstruct.library.tools.item.ranged.ModifiableCrossbowItem;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Client extensions for modifiable crossbows. Adds in the arm pose when charged. */
 public class ModifiableCrossbowClientExtension extends ModifiableItemClientExtension {

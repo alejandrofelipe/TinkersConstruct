@@ -16,7 +16,7 @@ import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.recipe.alloying.IMutableAlloyTank;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
@@ -45,8 +45,7 @@ public class MixerAlloyTank implements IMutableAlloyTank {
   /** Set of sides already scanned (whether or not they had a handler) */
   private final Set<Direction> checked = EnumSet.noneOf(Direction.class);
   /** Map of tank index to tank on the side */
-  @Nullable
-  private ResourceHandler<FluidResource>[] indexedList = null;
+  private ResourceHandler<FluidResource> @Nullable [] indexedList = null;
 
   // state
   /** If true, tanks are marked for refresh later */

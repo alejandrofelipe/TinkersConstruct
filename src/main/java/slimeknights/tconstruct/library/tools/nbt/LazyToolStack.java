@@ -9,7 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import slimeknights.tconstruct.library.recipe.RecipeResult;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Helper which contains a lazily loaded tool stack, used for recipe output to reduce NBT parsing */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

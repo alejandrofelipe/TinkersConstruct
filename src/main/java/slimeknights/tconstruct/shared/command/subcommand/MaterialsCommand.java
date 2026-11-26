@@ -32,7 +32,7 @@ import slimeknights.tconstruct.shared.command.argument.MaterialArgument;
 import slimeknights.tconstruct.shared.command.argument.MaterialStatsArgument;
 import slimeknights.tconstruct.shared.command.argument.MaterialVariantArgument;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Optional;
 

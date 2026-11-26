@@ -35,7 +35,7 @@ import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.world.TinkerWorld;
 import slimeknights.tconstruct.world.entity.ArmoredSlimeEntity;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 

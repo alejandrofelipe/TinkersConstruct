@@ -33,7 +33,7 @@ import slimeknights.mantle.util.BlockEntityHelper;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.FaucetBlockEntity;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.EnumMap;
 import java.util.Optional;
 

@@ -8,7 +8,7 @@ import slimeknights.tconstruct.library.modifiers.hook.special.CapacityBarHook;
 import slimeknights.tconstruct.library.modifiers.modules.util.ModuleBuilder;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Helper for modules that provide capacity to be able to specify a target */
 public interface CapacitySourceModule {

@@ -13,8 +13,7 @@ import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.utils.TagUtil;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -163,7 +162,6 @@ public class MaterialNBT implements Iterable<MaterialVariant> {
 
   /* Iterator */
 
-  @Nonnull
   @Override
   public Iterator<MaterialVariant> iterator() {
     return list.iterator();

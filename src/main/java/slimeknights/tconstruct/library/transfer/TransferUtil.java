@@ -23,7 +23,7 @@ import net.neoforged.neoforge.transfer.item.PlayerInventoryWrapper;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.transfer.TransferHelper;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Transaction safe helpers for querying and filling the fluid handler of a single container item, and for immediate fills and drains of

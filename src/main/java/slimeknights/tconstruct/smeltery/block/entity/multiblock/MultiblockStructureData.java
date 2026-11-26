@@ -15,7 +15,7 @@ import slimeknights.tconstruct.common.multiblock.IServantLogic;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.smeltery.block.component.SearedBlock;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Consumer;

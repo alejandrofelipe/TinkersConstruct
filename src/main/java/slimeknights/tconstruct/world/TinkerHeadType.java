@@ -5,7 +5,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.SkullBlock.Type;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Locale;
 import java.util.function.Supplier;
 

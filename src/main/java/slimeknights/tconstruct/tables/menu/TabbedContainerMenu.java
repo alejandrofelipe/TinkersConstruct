@@ -30,7 +30,7 @@ import slimeknights.tconstruct.tables.block.ITabbedBlock;
 import slimeknights.tconstruct.tables.client.inventory.BaseTabbedScreen;
 import slimeknights.tconstruct.tables.menu.module.SideInventoryContainer;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.List;

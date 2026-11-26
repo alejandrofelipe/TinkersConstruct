@@ -22,7 +22,7 @@ import slimeknights.tconstruct.library.recipe.casting.CastingRecipeLookup;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeLookup;
 import slimeknights.tconstruct.library.tools.item.ModifiableItem;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Additional living predicates added by Tinkers, Mantle controls the loader we use these days */
 public class TinkerPredicate {

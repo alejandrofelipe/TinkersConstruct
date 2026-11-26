@@ -3,7 +3,7 @@ package slimeknights.tconstruct.smeltery.client.screen;
 import net.minecraft.client.renderer.Rect2i;
 import net.neoforged.neoforge.fluids.FluidStack;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface for JEI support to determine the ingredient under the mouse

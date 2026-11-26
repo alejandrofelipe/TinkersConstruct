@@ -10,7 +10,7 @@ import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.entity.table.CraftingStationBlockEntity;
 import slimeknights.tconstruct.tables.menu.slot.PlayerSensitiveLazyResultSlot;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class CraftingStationContainerMenu extends TabbedContainerMenu<CraftingStationBlockEntity> {
   private final PlayerSensitiveLazyResultSlot resultSlot;

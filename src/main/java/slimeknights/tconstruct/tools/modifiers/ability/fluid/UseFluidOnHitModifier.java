@@ -23,7 +23,7 @@ import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.shared.particle.FluidParticleData;
 import slimeknights.tconstruct.tools.modules.armor.CounterModule;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import static slimeknights.tconstruct.library.tools.capability.fluid.ToolTankHelper.TANK_HELPER;
 

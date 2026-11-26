@@ -30,7 +30,7 @@ import slimeknights.tconstruct.library.utils.SimpleCache;
 import slimeknights.tconstruct.tools.client.material.CombatFishingHookRenderer.CombatFishingHookRenderState;
 import slimeknights.tconstruct.tools.entity.CombatFishingHook;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Optional;
 
 /** Renderer for {@link CombatFishingHook}. Mostly a recreation of {@link net.minecraft.client.renderer.entity.FishingHookRenderer} */

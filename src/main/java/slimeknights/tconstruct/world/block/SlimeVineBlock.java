@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.shared.block.SlimeType;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Locale;
 
 /**

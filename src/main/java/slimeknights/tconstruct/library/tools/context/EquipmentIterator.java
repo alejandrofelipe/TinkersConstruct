@@ -8,7 +8,7 @@ import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.tools.context.EquipmentIterator.EquipmentEntry;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.CheckForNull;
+import org.jspecify.annotations.Nullable;
 import java.util.Collections;
 import java.util.List;
 
@@ -93,7 +93,7 @@ public class EquipmentIterator extends AbstractIterator<EquipmentEntry> {
     lastTool = index;
   }
 
-  @CheckForNull
+  @Nullable
   @Override
   protected EquipmentEntry computeNext() {
     // out of entries for this tool?
@@ -138,7 +138,7 @@ public class EquipmentIterator extends AbstractIterator<EquipmentEntry> {
       this.size = modifiers.size();
     }
 
-    @CheckForNull
+    @Nullable
     @Override
     protected EquipmentEntry computeNext() {
       // out of data?

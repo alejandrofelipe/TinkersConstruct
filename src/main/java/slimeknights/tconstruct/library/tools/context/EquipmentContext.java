@@ -13,7 +13,7 @@ import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -31,8 +31,7 @@ public class EquipmentContext {
   /** Array of tools currently on the entity */
   protected final IToolStackView[] toolsInSlots = new IToolStackView[EquipmentSlot.values().length];
   /** Cached tinker data capability, saves capability lookup times slightly */
-  @Nullable
-  private TinkerDataCapability.Holder tinkerData = null;
+  private TinkerDataCapability.@Nullable Holder tinkerData = null;
   /** Tracks whether the tinker data capability has been fetched yet, as null is a valid result */
   private boolean fetchedTinkerData = false;
 
@@ -96,8 +95,7 @@ public class EquipmentContext {
   }
 
   /** Gets the tinker data capability, or null if absent */
-  @Nullable
-  public TinkerDataCapability.Holder getTinkerData() {
+  public TinkerDataCapability.@Nullable Holder getTinkerData() {
     if (!fetchedTinkerData) {
       tinkerData = entity.getCapability(TinkerDataCapability.CAPABILITY);
       fetchedTinkerData = true;
@@ -106,8 +104,7 @@ public class EquipmentContext {
   }
 
   /** Gets the tinker data capability, or null if absent */
-  @Nullable
-  public TinkerDataCapability.Holder getDataHolder() {
+  public TinkerDataCapability.@Nullable Holder getDataHolder() {
     return getTinkerData();
   }
 

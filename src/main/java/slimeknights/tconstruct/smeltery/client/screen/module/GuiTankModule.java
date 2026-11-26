@@ -18,7 +18,7 @@ import slimeknights.tconstruct.library.client.GuiUtil;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.smeltery.client.screen.IScreenWithFluidTank;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;

@@ -17,7 +17,7 @@ import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.inventory.SingleItemHandler;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A native item handler paired with a setter that puts a stack into one of its slots directly, which menu slots (NeoForge's

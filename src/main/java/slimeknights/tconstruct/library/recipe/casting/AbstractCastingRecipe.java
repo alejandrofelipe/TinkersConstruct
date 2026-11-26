@@ -10,8 +10,7 @@ import slimeknights.mantle.data.loadable.common.IngredientLoadable;
 import slimeknights.mantle.data.loadable.field.LoadableField;
 import slimeknights.mantle.data.loadable.primitive.BooleanLoadable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** Shared logic between item and material casting */
@@ -21,7 +20,7 @@ public abstract class AbstractCastingRecipe implements ICastingRecipe {
   protected static final LoadableField<Boolean,AbstractCastingRecipe> CAST_CONSUMED_FIELD = BooleanLoadable.INSTANCE.defaultField("cast_consumed", false, false, AbstractCastingRecipe::isConsumed);
   protected static final LoadableField<Boolean,AbstractCastingRecipe> SWITCH_SLOTS_FIELD = BooleanLoadable.INSTANCE.defaultField("switch_slots", false, false, AbstractCastingRecipe::switchSlots);
 
-  @Getter @Nonnull
+  @Getter
   private final RecipeType<? extends Recipe<ICastingContainer>> type;
   @Getter
   private final Identifier id;

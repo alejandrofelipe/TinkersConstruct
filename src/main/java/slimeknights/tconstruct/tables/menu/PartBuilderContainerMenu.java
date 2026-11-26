@@ -14,7 +14,7 @@ import slimeknights.tconstruct.tables.block.entity.inventory.LazyResultContainer
 import slimeknights.tconstruct.tables.block.entity.table.PartBuilderBlockEntity;
 import slimeknights.tconstruct.tables.menu.slot.LazyResultSlot;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class PartBuilderContainerMenu extends TabbedContainerMenu<PartBuilderBlockEntity> {
   // slots

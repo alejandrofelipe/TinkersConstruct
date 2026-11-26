@@ -19,7 +19,7 @@ import slimeknights.tconstruct.library.tools.capability.TinkerDataKeys;
 import slimeknights.tconstruct.library.tools.context.EquipmentChangeContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /**
@@ -112,7 +112,7 @@ public record ArmorLevelModule(TinkerDataKey<Integer> key, boolean allowBroken, 
    * @param key    Key to get
    * @return  Level from the key
    */
-  public static int getLevel(@Nullable TinkerDataCapability.Holder data, TinkerDataKey<Integer> key) {
+  public static int getLevel(TinkerDataCapability.@Nullable Holder data, TinkerDataKey<Integer> key) {
     return data != null ? data.get(key, 0) : 0;
   }
 }

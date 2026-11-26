@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.crafting.ICustomIngredient;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.stream.Stream;
 
 /** Ingredient that contains another ingredient nested inside */

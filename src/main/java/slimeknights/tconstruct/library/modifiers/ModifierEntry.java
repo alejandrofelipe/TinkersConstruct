@@ -16,7 +16,7 @@ import slimeknights.tconstruct.library.modifiers.util.OptionalModifier;
 import slimeknights.tconstruct.library.module.ModuleHook;
 import slimeknights.tconstruct.library.utils.TagUtil;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Data class holding a modifier with a level

@@ -39,7 +39,7 @@ import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -102,7 +102,7 @@ public class MaterialModel {
   /**
    * Gets quads for the given material variant of the texture
    */
-  public static List<BakedQuad> getQuadsForMaterial(Function<Material, TextureAtlasSprite> spriteGetter, Material texture, MaterialVariantId material, int tintIndex, Transformation transformation, @Nullable slimeknights.mantle.util.ItemLayerPixels pixels) {
+  public static List<BakedQuad> getQuadsForMaterial(Function<Material, TextureAtlasSprite> spriteGetter, Material texture, MaterialVariantId material, int tintIndex, Transformation transformation, slimeknights.mantle.util.@Nullable ItemLayerPixels pixels) {
     TintedSprite sprite = getMaterialSprite(spriteGetter, texture, material);
     return MantleItemLayerModel.getQuadsForSprite(sprite.color(), tintIndex, sprite.sprite(), transformation, sprite.emissivity(), pixels);
   }

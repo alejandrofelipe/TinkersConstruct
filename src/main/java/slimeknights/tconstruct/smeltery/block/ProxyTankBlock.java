@@ -20,7 +20,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import slimeknights.tconstruct.smeltery.block.entity.ProxyTankBlockEntity;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
 

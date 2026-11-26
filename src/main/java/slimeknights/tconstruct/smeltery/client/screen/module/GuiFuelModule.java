@@ -16,7 +16,7 @@ import slimeknights.tconstruct.smeltery.block.entity.module.FuelModule;
 import slimeknights.tconstruct.smeltery.block.entity.module.FuelModule.FuelInfo;
 import slimeknights.tconstruct.smeltery.client.screen.IScreenWithFluidTank;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

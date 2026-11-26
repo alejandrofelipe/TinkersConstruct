@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Result of attempting to form a multiblock, for error message and the position causing the error

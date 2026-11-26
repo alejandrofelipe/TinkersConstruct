@@ -5,7 +5,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.resources.Identifier;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

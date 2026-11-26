@@ -8,7 +8,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemUseAnimation;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.mantle.data.loadable.mapping.SimpleRecordLoadable;
 import slimeknights.mantle.data.loadable.primitive.EnumLoadable;
@@ -97,7 +97,7 @@ public enum ZoomModule implements ModifierModule, GeneralInteractionModifierHook
   }
 
   /** Stops zooming */
-  private static void stopZoom(ModifierEntry modifier, @Nullable TinkerDataCapability.Holder tinkerData) {
+  private static void stopZoom(ModifierEntry modifier, TinkerDataCapability.@Nullable Holder tinkerData) {
     if (tinkerData != null) {
       tinkerData.computeIfAbsent(TinkerDataKeys.FOV_MODIFIER).remove(modifier.getId().getLocation());
     }

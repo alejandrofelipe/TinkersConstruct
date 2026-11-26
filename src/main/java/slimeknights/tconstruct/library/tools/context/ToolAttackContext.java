@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.NonNull;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -30,8 +31,7 @@ import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import slimeknights.tconstruct.library.utils.Util;
 import slimeknights.tconstruct.shared.TinkerEffects;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /** Object for common context for weapon attack hooks */
@@ -40,15 +40,15 @@ import java.util.Objects;
 public class ToolAttackContext {
   /* Attacker */
   /** Entity doing the attacking */
-  @Nonnull
+  @NonNull
   private final LivingEntity attacker;
   /** Player doing the attacking, null if not a player */
   @Nullable
   private final Player playerAttacker;
   /** Hand containing the tool */
-  @Nonnull
+  @NonNull
   private final InteractionHand hand;
-  @Nonnull
+  @NonNull
   private final EquipmentSlot slotType;
   /** The projectile causing this damage. See {@link slimeknights.tconstruct.tools.entity.ThrownTool} */
   @Nullable
@@ -56,7 +56,7 @@ public class ToolAttackContext {
 
   /* Target */
   /** Originally targeted entity, may be different from {@link #getLivingTarget()} for multipart entities */
-  @Nonnull
+  @NonNull
   private final Entity target;
   /** Target entity */
   @Nullable

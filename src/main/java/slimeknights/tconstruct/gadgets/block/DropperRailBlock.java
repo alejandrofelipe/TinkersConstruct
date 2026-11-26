@@ -13,7 +13,7 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.transfer.TransferHelper;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class DropperRailBlock extends RailBlock {
 

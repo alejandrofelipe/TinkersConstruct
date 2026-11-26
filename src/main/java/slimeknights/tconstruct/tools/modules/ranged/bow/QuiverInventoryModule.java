@@ -19,7 +19,7 @@ import slimeknights.tconstruct.library.tools.item.ranged.ModifiableBowItem;
 import slimeknights.tconstruct.library.tools.nbt.IToolContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Extension of {@link InventoryModule} with a filter setup for bows. */
 public class QuiverInventoryModule extends InventoryModule {

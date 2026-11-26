@@ -11,7 +11,7 @@ import net.minecraft.world.level.ItemLike;
 import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.shared.block.SlimeType;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 // not part of the tic particle system since it uses vanilla particles
 public class SlimeParticle extends BreakingItemParticle {

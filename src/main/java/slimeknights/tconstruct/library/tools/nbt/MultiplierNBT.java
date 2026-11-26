@@ -13,7 +13,7 @@ import slimeknights.mantle.data.loadable.primitive.FloatLoadable;
 import slimeknights.tconstruct.library.tools.stat.INumericToolStat;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;

@@ -22,7 +22,7 @@ import slimeknights.tconstruct.smeltery.block.entity.tank.CastingFluidHandler;
 import slimeknights.tconstruct.smeltery.client.render.CastingBlockEntityRenderer.CastingRenderState;
 import slimeknights.tconstruct.smeltery.client.util.TintedItemRenderState;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 public class CastingBlockEntityRenderer implements BlockEntityRenderer<CastingBlockEntity, CastingRenderState> {
@@ -37,7 +37,7 @@ public class CastingBlockEntityRenderer implements BlockEntityRenderer<CastingBl
   }
 
   @Override
-  public void extractRenderState(CastingBlockEntity casting, CastingRenderState state, float partialTicks, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
+  public void extractRenderState(CastingBlockEntity casting, CastingRenderState state, float partialTicks, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
     BlockEntityRenderer.super.extractRenderState(casting, state, partialTicks, cameraPos, breakProgress);
     state.fluids = FluidCuboid.REGISTRY.get(state.blockState, List.of());
     state.renderItems = RenderItem.STATE_REGISTRY.get(state.blockState, List.of());

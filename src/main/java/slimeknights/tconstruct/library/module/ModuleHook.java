@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import net.minecraft.resources.Identifier;
 import slimeknights.mantle.registration.object.IdAwareObject;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collection;
 import java.util.function.Function;
 

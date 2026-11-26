@@ -55,7 +55,7 @@ import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.modifiers.effect.MagneticEffect;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Based on {@link net.minecraft.world.entity.projectile.ThrownTrident} for throwing a modifiable weapon. */
 public class ThrownTool extends ThrownTrident implements ToolProjectile {

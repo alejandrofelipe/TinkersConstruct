@@ -22,7 +22,7 @@ import net.minecraft.world.level.pathfinder.PathType;
 import slimeknights.mantle.block.InventoryBlock;
 import slimeknights.tconstruct.smeltery.block.component.SearedBlock;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Shared logic for all multiblock structure controllers */
 public abstract class ControllerBlock extends InventoryBlock {

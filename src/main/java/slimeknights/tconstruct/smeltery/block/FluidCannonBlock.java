@@ -23,7 +23,7 @@ import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock;
 import slimeknights.tconstruct.smeltery.block.entity.FluidCannonBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.FluidCannonBlockEntity.IFluidCannon;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import static net.minecraft.world.level.block.DirectionalBlock.FACING;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.TRIGGERED;

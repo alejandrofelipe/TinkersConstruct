@@ -10,7 +10,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import slimeknights.mantle.data.GenericDataProvider;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.concurrent.CompletableFuture;
 
 /** Data generator to create png image files */

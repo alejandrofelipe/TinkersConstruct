@@ -19,7 +19,7 @@ import slimeknights.tconstruct.smeltery.block.entity.multiblock.HeatingStructure
 import slimeknights.tconstruct.smeltery.block.entity.multiblock.HeatingStructureMultiblock.StructureData;
 import slimeknights.tconstruct.smeltery.block.entity.multiblock.SmelteryMultiblock;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class SmelteryBlockEntity extends HeatingStructureBlockEntity {
   /** Fluid capacity per internal block */

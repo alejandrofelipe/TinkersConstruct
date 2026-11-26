@@ -12,7 +12,7 @@ import slimeknights.mantle.data.loadable.common.IngredientLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.recipe.helper.LoadableIngredientSerializer;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Ingredient matching an item with no container item, used to ensure NBT fluid items are empty */
 public class NoContainerIngredient extends NestedIngredient {

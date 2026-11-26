@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.materials.definition;
 import lombok.Getter;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Class for a material variant, lazily loads the material instance and stores the variant string */
 public class MaterialVariant extends LazyMaterial {

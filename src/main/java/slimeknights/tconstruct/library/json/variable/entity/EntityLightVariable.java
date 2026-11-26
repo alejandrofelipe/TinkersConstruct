@@ -7,7 +7,7 @@ import net.minecraft.world.level.LightLayer;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.tconstruct.library.json.TinkerLoadables;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Gets the light level at the entity position

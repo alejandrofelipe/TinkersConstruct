@@ -9,7 +9,7 @@ import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator;
 import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 

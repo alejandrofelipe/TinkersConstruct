@@ -31,7 +31,7 @@ import slimeknights.tconstruct.library.modifiers.fluid.FluidEffect;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext;
 import slimeknights.tconstruct.library.tools.capability.BlockItemProviderCapability;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 import static slimeknights.tconstruct.library.tools.capability.BlockItemProviderCapability.getBlockProvider;

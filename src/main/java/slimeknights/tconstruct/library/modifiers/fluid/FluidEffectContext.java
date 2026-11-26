@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 import static slimeknights.tconstruct.library.tools.helper.ModifierUtil.asLiving;
@@ -72,8 +72,7 @@ public abstract class FluidEffectContext {
   }
 
   /** Gets the direct source of damage for this context. This prefers the projectile over the entity. */
-  @Nullable
-  public net.minecraft.world.entity.Entity getDirectSource() {
+  public net.minecraft.world.entity.@Nullable Entity getDirectSource() {
     if (projectile != null) {
       return projectile;
     }
@@ -84,8 +83,7 @@ public abstract class FluidEffectContext {
    * Gets the cause of effects caused by this context.
    * @see Projectile#getEffectSource()
    */
-  @Nullable
-  public net.minecraft.world.entity.Entity getEffectSource() {
+  public net.minecraft.world.entity.@Nullable Entity getEffectSource() {
     // effects prefer the mob, but accept the projectile if nothing else
     if (entity != null) {
       return entity;
@@ -244,7 +242,7 @@ public abstract class FluidEffectContext {
     }
 
     /** Set the entity using the fluid, setting the player by instanceof check */
-    public Builder user(@Nullable net.minecraft.world.entity.Entity entity) {
+    public Builder user(net.minecraft.world.entity.@Nullable Entity entity) {
       return user(asLiving(entity));
     }
 

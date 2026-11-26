@@ -12,7 +12,7 @@ import slimeknights.tconstruct.library.module.ModuleHookMap.Builder;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.tools.modules.interaction.PlaceFireModule;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** @deprecated use {@link PlaceFireModule} and {@link ShowOffhandModule} */
 @Deprecated(forRemoval = true)

@@ -16,7 +16,7 @@ import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.recipe.helper.LoadableIngredientSerializer;
 import slimeknights.mantle.util.RegistryHelper;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;

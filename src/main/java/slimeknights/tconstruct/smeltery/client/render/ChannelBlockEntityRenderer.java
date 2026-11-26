@@ -25,7 +25,7 @@ import slimeknights.tconstruct.smeltery.block.ChannelBlock.ChannelConnection;
 import slimeknights.tconstruct.smeltery.block.entity.ChannelBlockEntity;
 import slimeknights.tconstruct.smeltery.client.render.ChannelBlockEntityRenderer.ChannelRenderState;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +38,7 @@ public class ChannelBlockEntityRenderer implements BlockEntityRenderer<ChannelBl
   }
 
   @Override
-  public void extractRenderState(ChannelBlockEntity te, ChannelRenderState renderState, float partialTicks, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
+  public void extractRenderState(ChannelBlockEntity te, ChannelRenderState renderState, float partialTicks, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
     BlockEntityRenderer.super.extractRenderState(te, renderState, partialTicks, cameraPos, breakProgress);
     renderState.fluid = null;
     renderState.cubes = List.of();

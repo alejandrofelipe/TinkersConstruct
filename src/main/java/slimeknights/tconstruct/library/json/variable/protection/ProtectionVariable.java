@@ -10,7 +10,7 @@ import slimeknights.tconstruct.library.json.variable.VariableLoaderRegistry;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Variable for use in {@link slimeknights.tconstruct.library.modifiers.modules.armor.ProtectionModule} */
 public interface ProtectionVariable extends IHaveLoader {

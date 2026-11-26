@@ -16,7 +16,7 @@ import slimeknights.mantle.data.loadable.common.ColorLoadable;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.utils.Util;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.function.ToIntFunction;

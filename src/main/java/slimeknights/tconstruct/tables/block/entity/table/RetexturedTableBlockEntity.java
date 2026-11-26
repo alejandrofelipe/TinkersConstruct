@@ -15,12 +15,10 @@ import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.shared.block.entity.TableBlockEntity;
 
-import javax.annotation.Nonnull;
-
 public abstract class RetexturedTableBlockEntity extends TableBlockEntity implements IRetexturedBlockEntity {
   private static final String TAG_TEXTURE = "texture";
 
-  @Nonnull @Getter
+  @Getter
   protected Block texture = Blocks.AIR;
   public RetexturedTableBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, Component name, int size) {
     super(type, pos, state, name, size);
@@ -34,7 +32,6 @@ public abstract class RetexturedTableBlockEntity extends TableBlockEntity implem
 
   /* Textures */
 
-  @Nonnull
   @Override
   public ModelData getModelData() {
     return RetexturedHelper.getModelData(texture);

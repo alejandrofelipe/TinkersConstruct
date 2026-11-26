@@ -22,7 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import slimeknights.tconstruct.common.Sounds;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.tools.TinkerTools;

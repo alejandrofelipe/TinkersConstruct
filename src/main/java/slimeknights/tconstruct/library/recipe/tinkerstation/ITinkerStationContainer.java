@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.recipe.tinkerstation;
 import slimeknights.tconstruct.library.recipe.ITinkerableContainer;
 import slimeknights.tconstruct.library.recipe.material.MaterialRecipe;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Inventory interface for all Tinker Station containers to use

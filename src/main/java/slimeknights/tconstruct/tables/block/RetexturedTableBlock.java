@@ -8,7 +8,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import slimeknights.mantle.block.RetexturedBlock;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class RetexturedTableBlock extends TabbedTableBlock {
   public RetexturedTableBlock(Properties builder) {

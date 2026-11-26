@@ -8,7 +8,7 @@ import slimeknights.tconstruct.library.tools.context.EquipmentIterator.Equipment
 import slimeknights.tconstruct.library.tools.context.LootingContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collection;
 
 public interface ArmorLootingModifierHook {

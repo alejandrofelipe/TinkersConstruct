@@ -25,7 +25,7 @@ import slimeknights.tconstruct.library.tools.nbt.ToolDataNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.tools.TinkerModifiers;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;

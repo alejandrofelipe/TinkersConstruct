@@ -197,7 +197,7 @@ import slimeknights.tconstruct.world.TinkerHeadType;
 import slimeknights.tconstruct.world.TinkerWorld;
 import org.lwjgl.glfw.GLFW;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2557,8 +2557,7 @@ public class TinkerUiTestScenarios {
     }
 
     /** Point of the screen showing lava, or null if the gauge has not received the fuel yet */
-    @Nullable
-    private static int[] findLava(MelterScreen screen) {
+    private static int @Nullable [] findLava(MelterScreen screen) {
       for (int y = screen.getGuiTop(); y < screen.getGuiTop() + screen.getYSize(); y++) {
         for (int x = screen.getGuiLeft(); x < screen.getGuiLeft() + screen.getXSize(); x++) {
           IScreenWithFluidTank.FluidLocation fluid = screen.getFluidUnderMouse(x, y);

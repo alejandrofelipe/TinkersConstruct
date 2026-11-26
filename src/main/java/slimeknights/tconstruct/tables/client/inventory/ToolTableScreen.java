@@ -37,7 +37,7 @@ import slimeknights.tconstruct.tables.client.inventory.module.SideInventoryScree
 import slimeknights.tconstruct.tables.client.inventory.widget.PanelTabButton;
 import slimeknights.tconstruct.tables.menu.TabbedContainerMenu;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import slimeknights.mantle.util.BlockEntityHelper;
 import slimeknights.tconstruct.tables.block.entity.chest.TinkersChestBlockEntity;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Dyeable chest block. Color is stored in the {@link DataComponents#DYED_COLOR} component. */
 public class TinkersChestBlockItem extends BlockItem {

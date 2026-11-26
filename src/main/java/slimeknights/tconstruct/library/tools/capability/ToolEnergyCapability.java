@@ -20,7 +20,7 @@ import slimeknights.tconstruct.library.tools.stat.CapacityStat;
 import slimeknights.tconstruct.library.tools.stat.ToolStatId;
 import slimeknights.tconstruct.tools.TinkerModifiers;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.function.Supplier;
 
 /**

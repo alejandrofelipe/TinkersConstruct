@@ -27,7 +27,7 @@ import org.apache.logging.log4j.MarkerManager;
 import slimeknights.mantle.util.DataLoadedConditionContext;
 import slimeknights.tconstruct.TConstruct;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Arrays;

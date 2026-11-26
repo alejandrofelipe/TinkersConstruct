@@ -12,7 +12,7 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.transfer.ModifiableItemHandler.TransactionalModifier;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Optional;
 
 /**

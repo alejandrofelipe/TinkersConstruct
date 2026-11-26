@@ -31,7 +31,7 @@ import slimeknights.tconstruct.library.tools.capability.TinkerDataKeys;
 import slimeknights.tconstruct.library.tools.context.EquipmentChangeContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** @deprecated use {@link slimeknights.tconstruct.library.modifiers.modules.armor.MaxArmorAttributeModule} */

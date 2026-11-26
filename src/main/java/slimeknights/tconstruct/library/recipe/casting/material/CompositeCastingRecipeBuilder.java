@@ -19,7 +19,7 @@ import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Builder for a composite part recipe, should exist for each part */
 @Accessors(fluent = true)

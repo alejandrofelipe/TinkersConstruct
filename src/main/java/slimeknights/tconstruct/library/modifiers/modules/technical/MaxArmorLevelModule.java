@@ -18,7 +18,7 @@ import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability.Com
 import slimeknights.tconstruct.library.tools.context.EquipmentChangeContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** Shared logic for modules that run an effect based on the max level of the modifier across equipment slots */

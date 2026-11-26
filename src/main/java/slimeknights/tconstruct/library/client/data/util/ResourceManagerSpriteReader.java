@@ -8,7 +8,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;

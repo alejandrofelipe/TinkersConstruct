@@ -36,8 +36,7 @@ import slimeknights.tconstruct.library.modifiers.ModifierManager;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.modifiers.adding.IDisplayModifierRecipe;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -121,7 +120,6 @@ public class ContentModifier extends PageContent {
   }
 
   @Override
-  @Nonnull
   public String getTitle() {
     return this.getModifier().getDisplayName().getString();
   }

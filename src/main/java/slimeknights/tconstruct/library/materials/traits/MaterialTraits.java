@@ -11,7 +11,7 @@ import slimeknights.tconstruct.library.materials.json.MaterialTraitsJson;
 import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

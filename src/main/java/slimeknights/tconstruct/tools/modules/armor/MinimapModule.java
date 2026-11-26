@@ -35,7 +35,7 @@ import slimeknights.tconstruct.library.tools.context.EquipmentChangeContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.tools.modules.InventorySelectionModule;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** Module implementing the minimap module. Should be paired with an {@link slimeknights.tconstruct.library.tools.capability.inventory.InventoryModule} */

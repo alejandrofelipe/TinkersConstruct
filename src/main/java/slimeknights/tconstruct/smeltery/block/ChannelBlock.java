@@ -39,7 +39,7 @@ import slimeknights.tconstruct.library.utils.Util;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.ChannelBlockEntity;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;

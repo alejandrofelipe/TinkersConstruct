@@ -16,7 +16,7 @@ import slimeknights.tconstruct.TConstruct;
 
 import net.minecraft.resources.Identifier;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 

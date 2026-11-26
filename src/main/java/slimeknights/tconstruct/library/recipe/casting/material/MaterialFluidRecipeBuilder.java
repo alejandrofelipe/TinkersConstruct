@@ -16,7 +16,7 @@ import slimeknights.mantle.recipe.data.AbstractRecipeBuilder;
 import slimeknights.mantle.recipe.ingredient.FluidIngredient;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import static slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe.getTemperature;
 

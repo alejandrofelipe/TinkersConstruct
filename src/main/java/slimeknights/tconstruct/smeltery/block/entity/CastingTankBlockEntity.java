@@ -44,8 +44,7 @@ import slimeknights.tconstruct.smeltery.block.entity.component.TankBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.component.TankBlockEntity.ITankBlock;
 import slimeknights.tconstruct.smeltery.item.TankItem;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlockEntity.ITankInventoryBlockEntity, WorldlyContainer {
   /** Max capacity for the tank */
@@ -213,7 +212,6 @@ public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlo
   }
 
   @Override
-  @Nonnull
   public int[] getSlotsForFace(Direction side) {
     return new int[]{INPUT, OUTPUT};
   }
@@ -249,7 +247,6 @@ public class CastingTankBlockEntity extends TableBlockEntity implements ITankBlo
     return displayInventory;
   }
 
-  @Nonnull
   @Override
   public ModelData getModelData() {
     return ModelData.builder()

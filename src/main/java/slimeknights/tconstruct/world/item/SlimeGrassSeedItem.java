@@ -18,7 +18,7 @@ import slimeknights.tconstruct.world.block.FoliageType;
 import slimeknights.tconstruct.world.block.SlimeVineBlock;
 import slimeknights.tconstruct.world.block.SlimeVineBlock.VineStage;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class SlimeGrassSeedItem extends TooltipItem {
   private final FoliageType foliage;

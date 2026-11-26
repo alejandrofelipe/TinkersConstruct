@@ -21,8 +21,7 @@ import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.inventory.HeaterItemHandler;
 import slimeknights.tconstruct.smeltery.menu.SingleItemContainerMenu;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Tile entity for the heater block below the melter */
 public class HeaterBlockEntity extends NameableBlockEntity implements IModifiableItemHandlerProvider {

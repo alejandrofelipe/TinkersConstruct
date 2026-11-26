@@ -16,7 +16,7 @@ import slimeknights.tconstruct.library.module.ModuleHook;
 import slimeknights.tconstruct.library.tools.definition.module.ToolHooks;
 import slimeknights.tconstruct.library.tools.item.IModifiable;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.stream.Stream;
 
 /** Ingredient that only matches tools with a specific hook */

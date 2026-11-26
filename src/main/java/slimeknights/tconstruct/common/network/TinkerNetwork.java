@@ -41,7 +41,7 @@ import slimeknights.tconstruct.tools.network.SyncProjectileModifiersPacket;
 import slimeknights.tconstruct.tools.network.TinkerControlPacket;
 import slimeknights.tconstruct.tools.network.ToolContainerFluidUpdatePacket;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Base network class for all tinkers logic

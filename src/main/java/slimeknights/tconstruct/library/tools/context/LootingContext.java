@@ -6,7 +6,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Context for looting modifier hooks such as {@link slimeknights.tconstruct.library.modifiers.hook.combat.LootingModifierHook} and {@link slimeknights.tconstruct.library.modifiers.hook.mining.HarvestEnchantmentsModifierHook}.

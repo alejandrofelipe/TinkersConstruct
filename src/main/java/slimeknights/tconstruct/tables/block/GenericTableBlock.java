@@ -5,7 +5,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType.BlockEntitySupplier;
 import net.minecraft.world.level.block.state.BlockState;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Generic block shared by any that don't need special stuff on top */
 public class GenericTableBlock extends RetexturedTableBlock {

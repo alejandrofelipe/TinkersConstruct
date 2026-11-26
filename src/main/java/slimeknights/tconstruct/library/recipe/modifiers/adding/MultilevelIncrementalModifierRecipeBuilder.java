@@ -17,7 +17,7 @@ import net.minecraft.world.level.ItemLike;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Builder for {@link MultilevelIncrementalModifierRecipe} */
 public class MultilevelIncrementalModifierRecipeBuilder extends AbstractMultilevelModifierRecipeBuilder<MultilevelIncrementalModifierRecipeBuilder> {

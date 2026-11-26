@@ -6,7 +6,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.equipment.ArmorType;
 import slimeknights.tconstruct.library.tools.item.armor.DummyArmorMaterial;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Armor material that doubles as a container for tool definitions for each armor slot */
 public class ModifiableArmorMaterial extends DummyArmorMaterial {
