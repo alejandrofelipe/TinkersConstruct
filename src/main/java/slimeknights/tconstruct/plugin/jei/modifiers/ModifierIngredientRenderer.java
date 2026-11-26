@@ -1,11 +1,14 @@
 package slimeknights.tconstruct.plugin.jei.modifiers;
 
 import mezz.jei.api.ingredients.IIngredientRenderer;
+import mezz.jei.api.ingredients.rendering.IIngredientRenderContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 
@@ -25,22 +28,35 @@ public record ModifierIngredientRenderer(int width, int height) implements IIngr
   }
 
   @Override
-  public void render(GuiGraphics graphics, @Nullable ModifierEntry entry) {
+  public void render(GuiGraphics graphics, @Nullable ModifierEntry entry, int x, int y, IIngredientRenderContext context) {
     if (entry != null) {
       Component name = entry.getDisplayName();
       Font fontRenderer = getFontRenderer(Minecraft.getInstance(), entry);
-      int x = (width - fontRenderer.width(name)) / 2;
-      graphics.drawString(fontRenderer, name, x, 1, -1, true);
+      graphics.drawString(fontRenderer, name, x + (width - fontRenderer.width(name)) / 2, y + 1, -1, true);
     }
   }
 
+  /** JEI 27 still declares this overload abstract, but only calls the positioned one above */
+  @SuppressWarnings("removal")
   @Override
-  public List<Component> getTooltip(ModifierEntry entry, TooltipFlag flag) {
+  public void render(GuiGraphics graphics, @Nullable ModifierEntry entry) {
+    render(graphics, entry, 0, 0, IIngredientRenderContext.INGREDIENT);
+  }
+
+  @Override
+  public List<Component> getTooltip(ModifierEntry entry, Item.TooltipContext context, @Nullable Player player, TooltipFlag flag) {
     List<Component> tooltip = entry.getModifier().getDescriptionList(entry.getLevel());
     if (flag.isAdvanced()) {
       tooltip = new ArrayList<>(tooltip);
       tooltip.add((Component.literal(entry.getId().toString())).withStyle(ChatFormatting.DARK_GRAY));
     }
     return tooltip;
+  }
+
+  /** JEI 27 still declares this overload abstract, but only calls the one with a tooltip context above */
+  @SuppressWarnings("removal")
+  @Override
+  public List<Component> getTooltip(ModifierEntry entry, TooltipFlag flag) {
+    return getTooltip(entry, Item.TooltipContext.EMPTY, null, flag);
   }
 }

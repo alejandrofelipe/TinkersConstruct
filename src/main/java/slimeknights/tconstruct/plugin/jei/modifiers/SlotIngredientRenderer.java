@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.plugin.jei.modifiers;
 
 import mezz.jei.api.ingredients.IIngredientRenderer;
+import mezz.jei.api.ingredients.rendering.IIngredientRenderContext;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -12,6 +13,8 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 import slimeknights.mantle.client.model.NBTKeyModel;
 import slimeknights.tconstruct.TConstruct;
@@ -32,7 +35,7 @@ public enum SlotIngredientRenderer implements IIngredientRenderer<SlotCount> {
   /** Shows a slot in the ingredients view */
   INGREDIENT {
     @Override
-    public List<Component> getTooltip(SlotCount slots, TooltipFlag tooltipFlag) {
+    public List<Component> getTooltip(SlotCount slots, Item.TooltipContext context, @Nullable Player player, TooltipFlag tooltipFlag) {
       SlotType type = slots.type();
       return appendId(type, Component.translatable(KEY_INGREDIENT, type.getDisplayName()), tooltipFlag);
     }
@@ -40,7 +43,7 @@ public enum SlotIngredientRenderer implements IIngredientRenderer<SlotCount> {
   /** Shows a slot as an input. Tooltip will discuss required slots. */
   INPUT {
     @Override
-    public List<Component> getTooltip(@Nullable SlotCount slots, TooltipFlag tooltipFlag) {
+    public List<Component> getTooltip(@Nullable SlotCount slots, Item.TooltipContext context, @Nullable Player player, TooltipFlag tooltipFlag) {
       if (slots != null) {
         int count = slots.count();
         if (count > 0) {
@@ -60,7 +63,7 @@ public enum SlotIngredientRenderer implements IIngredientRenderer<SlotCount> {
   /** Shows a slot as an output. Tooltip will discuss gained slots. */
   OUTPUT {
     @Override
-    public List<Component> getTooltip(SlotCount slots, TooltipFlag tooltipFlag) {
+    public List<Component> getTooltip(SlotCount slots, Item.TooltipContext context, @Nullable Player player, TooltipFlag tooltipFlag) {
       SlotType type = slots.type();
       return appendId(type, type.format(slots.count()), tooltipFlag);
     }
@@ -99,14 +102,28 @@ public enum SlotIngredientRenderer implements IIngredientRenderer<SlotCount> {
   }
 
   @Override
-  public void render(GuiGraphics graphics, @Nullable SlotCount slots) {
+  public void render(GuiGraphics graphics, @Nullable SlotCount slots, int x, int y, IIngredientRenderContext context) {
     if (this != INGREDIENT && slots != null && slots.count() > 0) {
       String text = Integer.toString(slots.count());
       Font fontRenderer = Minecraft.getInstance().font;
-      graphics.drawString(fontRenderer, text, 9 - fontRenderer.width(text), 5, Color.GRAY.getRGB(), false);
+      graphics.drawString(fontRenderer, text, x + 9 - fontRenderer.width(text), y + 5, Color.GRAY.getRGB(), false);
     }
     // PORT 1.21.4: GuiGraphics.blit(x,y,z,w,h,sprite) was removed; sprites now render through blitSprite(renderType, sprite, ...)
-    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITES.computeIfAbsent(SlotCount.type(slots), SLOT_LOOKUP), this == INGREDIENT ? 0 : 8, 0, 16, 16);
+    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITES.computeIfAbsent(SlotCount.type(slots), SLOT_LOOKUP), x + (this == INGREDIENT ? 0 : 8), y, 16, 16);
+  }
+
+  /** JEI 27 still declares this overload abstract, but only calls the positioned one above */
+  @SuppressWarnings("removal")
+  @Override
+  public void render(GuiGraphics graphics, @Nullable SlotCount slots) {
+    render(graphics, slots, 0, 0, IIngredientRenderContext.INGREDIENT);
+  }
+
+  /** JEI 27 still declares this overload abstract, but only calls the one with a tooltip context in each constant */
+  @SuppressWarnings("removal")
+  @Override
+  public List<Component> getTooltip(@Nullable SlotCount slots, TooltipFlag tooltipFlag) {
+    return getTooltip(slots, Item.TooltipContext.EMPTY, null, tooltipFlag);
   }
 
   /** Appends the ID in advanced tooltip */
