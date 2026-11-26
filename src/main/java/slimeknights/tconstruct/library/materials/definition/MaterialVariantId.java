@@ -17,7 +17,7 @@ import slimeknights.mantle.data.loadable.primitive.StringLoadable;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 import slimeknights.tconstruct.library.utils.IdParser;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Represents a material that possibly has a variant. Variants are simply a different texture with the same material properties */
 public sealed interface MaterialVariantId permits MaterialId, MaterialVariantIdImpl {

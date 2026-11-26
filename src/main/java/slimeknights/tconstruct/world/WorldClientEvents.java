@@ -35,7 +35,7 @@ import slimeknights.tconstruct.world.client.TinkerHeadSpecialModel;
 import slimeknights.tconstruct.world.client.TerracubeRenderer;
 import slimeknights.tconstruct.world.client.TinkerSlimeRenderer;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Supplier;

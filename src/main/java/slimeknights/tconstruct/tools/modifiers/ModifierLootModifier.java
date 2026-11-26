@@ -25,8 +25,6 @@ import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.library.tools.nbt.ModifierNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 
-import javax.annotation.Nonnull;
-
 /** Global loot modifier for modifiers */
 public class ModifierLootModifier extends LootModifier {
   public static final MapCodec<ModifierLootModifier> CODEC = RecordCodecBuilder.mapCodec(inst -> codecStart(inst).apply(inst, ModifierLootModifier::new));
@@ -40,7 +38,6 @@ public class ModifierLootModifier extends LootModifier {
     return new GenericLootModifierBuilder<>(ModifierLootModifier::new);
   }
 
-  @Nonnull
   @Override
   protected ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
     // tool is for harvest

@@ -33,7 +33,7 @@ import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModuleInvento
 import slimeknights.tconstruct.smeltery.block.entity.multiblock.HeatingStructureMultiblock.StructureData;
 import slimeknights.tconstruct.smeltery.client.render.HeatingStructureBlockEntityRenderer.HeatingStructureRenderState;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +51,7 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
   }
 
   @Override
-  public void extractRenderState(HeatingStructureBlockEntity smeltery, HeatingStructureRenderState renderState, float partialTicks, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
+  public void extractRenderState(HeatingStructureBlockEntity smeltery, HeatingStructureRenderState renderState, float partialTicks, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
     BlockEntityRenderer.super.extractRenderState(smeltery, renderState, partialTicks, cameraPos, breakProgress);
     renderState.errorPos = null;
     renderState.structureValid = false;

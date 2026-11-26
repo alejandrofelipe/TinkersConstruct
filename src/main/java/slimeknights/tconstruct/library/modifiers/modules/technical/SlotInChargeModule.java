@@ -18,7 +18,7 @@ import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.tools.logic.InteractionHandler;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.function.Function;
 
@@ -68,7 +68,7 @@ public record SlotInChargeModule(TinkerDataKey<SlotInCharge> key, @Nullable TagK
   }
 
   /** Checks if the given slot is in charge */
-  public static boolean isInCharge(@Nullable TinkerDataCapability.Holder data, TinkerDataKey<SlotInCharge> key, EquipmentSlot slot) {
+  public static boolean isInCharge(TinkerDataCapability.@Nullable Holder data, TinkerDataKey<SlotInCharge> key, EquipmentSlot slot) {
     if (data != null) {
       SlotInCharge inCharge = data.get(key);
       return inCharge != null && inCharge.inCharge == slot;
@@ -77,7 +77,7 @@ public record SlotInChargeModule(TinkerDataKey<SlotInCharge> key, @Nullable TagK
   }
 
   /** Gets the total level if the passed slot is in charge. */
-  public static int getLevel(@Nullable TinkerDataCapability.Holder data, TinkerDataKey<SlotInCharge> key, EquipmentSlot slot) {
+  public static int getLevel(TinkerDataCapability.@Nullable Holder data, TinkerDataKey<SlotInCharge> key, EquipmentSlot slot) {
     if (data != null) {
       SlotInCharge inCharge = data.get(key);
       return inCharge != null && inCharge.inCharge == slot ? inCharge.totalLevel : 0;

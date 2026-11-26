@@ -39,7 +39,7 @@ import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability.Hol
 import slimeknights.tconstruct.library.tools.context.EquipmentChangeContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;

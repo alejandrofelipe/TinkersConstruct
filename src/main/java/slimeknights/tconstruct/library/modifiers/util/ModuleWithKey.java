@@ -8,7 +8,7 @@ import slimeknights.mantle.data.loadable.field.LoadableField;
 import slimeknights.mantle.util.JsonHelper;
 import slimeknights.tconstruct.library.modifiers.Modifier;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Shared boilerplate for a module with a nullable key that can alternatively be the modifier ID

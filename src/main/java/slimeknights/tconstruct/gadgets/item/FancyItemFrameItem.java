@@ -13,8 +13,6 @@ import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
-import javax.annotation.Nonnull;
-
 public class FancyItemFrameItem extends Item {
 
   private final TriFunction<? extends HangingEntity, Level, BlockPos, Direction> entityProvider;
@@ -28,7 +26,6 @@ public class FancyItemFrameItem extends Item {
    * Called when this item is used when targetting a Block
    */
   @Override
-  @Nonnull
   public InteractionResult useOn(UseOnContext context) {
     BlockPos pos = context.getClickedPos();
     Direction facing = context.getClickedFace();

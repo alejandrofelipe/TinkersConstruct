@@ -16,7 +16,7 @@ import slimeknights.tconstruct.smeltery.block.entity.tank.SmelteryTank;
 import slimeknights.tconstruct.smeltery.client.screen.IScreenWithFluidTank;
 import slimeknights.tconstruct.smeltery.network.SmelteryFluidClickedPacket;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;

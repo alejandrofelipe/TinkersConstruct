@@ -12,7 +12,7 @@ import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.stat.INumericToolStat;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Standard capacity bar implementation which scales through modifier level */
 public class CapacityBarModule extends CapacityBarHook.PersistentDataCapacityBar implements ModifierModule {

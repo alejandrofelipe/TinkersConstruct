@@ -44,7 +44,7 @@ import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.client.model.ModelProperties;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;

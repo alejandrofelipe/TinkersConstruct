@@ -7,7 +7,7 @@ import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tables.block.entity.chest.AbstractChestBlockEntity;
 import slimeknights.tconstruct.tables.menu.module.SideInventoryContainer;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class TinkerChestContainerMenu extends TabbedContainerMenu<AbstractChestBlockEntity> {
   protected SideInventoryContainer<AbstractChestBlockEntity> inventory;

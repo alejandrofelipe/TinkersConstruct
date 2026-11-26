@@ -21,7 +21,7 @@ import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext.Entity
 import slimeknights.tconstruct.library.tools.helper.ToolAttackUtil;
 import slimeknights.tconstruct.shared.TinkerEffects;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Effect that damages an entity

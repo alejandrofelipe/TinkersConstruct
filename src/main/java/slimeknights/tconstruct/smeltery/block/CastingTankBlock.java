@@ -32,7 +32,7 @@ import slimeknights.tconstruct.smeltery.block.entity.ITankBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.component.TankBlockEntity.ITankBlock;
 import slimeknights.tconstruct.smeltery.item.TankItem;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import static slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.LIGHT;
 

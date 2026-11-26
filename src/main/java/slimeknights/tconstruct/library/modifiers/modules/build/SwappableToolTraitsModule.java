@@ -24,7 +24,7 @@ import slimeknights.tconstruct.library.tools.definition.module.build.ToolTraitHo
 import slimeknights.tconstruct.library.tools.nbt.IToolContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 import static slimeknights.tconstruct.library.modifiers.modules.build.SwappableSlotModule.FORMAT;

@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 import slimeknights.tconstruct.shared.block.ClearStainedGlassBlock.GlassColor;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 

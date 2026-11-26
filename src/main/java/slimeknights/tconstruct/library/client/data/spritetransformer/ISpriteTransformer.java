@@ -6,7 +6,7 @@ import org.jetbrains.annotations.ApiStatus.NonExtendable;
 import slimeknights.mantle.data.gson.GenericRegisteredSerializer;
 import slimeknights.mantle.data.gson.GenericRegisteredSerializer.IJsonSerializable;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface for a function that transforms a sprite into another sprite

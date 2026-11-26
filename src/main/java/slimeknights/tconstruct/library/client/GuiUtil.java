@@ -20,7 +20,7 @@ import org.joml.Matrix3x2f;
 import slimeknights.mantle.client.screen.ElementScreen;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * GUI helpers for the deferred GUI rendering of 1.21.6+.

@@ -19,7 +19,7 @@ import slimeknights.tconstruct.library.tools.stat.FloatToolStat;
 import slimeknights.tconstruct.library.tools.stat.ModifierStatsBuilder;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** @deprecated use helpers from {@link OverslimeModule} if possible. */
 @Deprecated

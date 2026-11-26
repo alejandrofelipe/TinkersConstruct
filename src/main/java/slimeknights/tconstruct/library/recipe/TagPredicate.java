@@ -5,7 +5,7 @@ import net.minecraft.nbt.NbtUtils;
 import slimeknights.mantle.data.loadable.common.NBTLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.function.Predicate;
 
 /** Extended implementation of {@link net.minecraft.advancements.criterion.NbtPredicate} that supports syncing over the network */

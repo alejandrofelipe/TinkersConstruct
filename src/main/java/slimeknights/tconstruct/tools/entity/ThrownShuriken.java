@@ -48,7 +48,7 @@ import slimeknights.tconstruct.shared.TinkerEffects;
 import slimeknights.tconstruct.tools.TinkerToolActions;
 import slimeknights.tconstruct.tools.TinkerTools;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Modifiable shuriken entity */
 public class ThrownShuriken extends Projectile implements ToolProjectile, ProjectileWithPower, ProjectileWithKnockback, ReusableProjectile {

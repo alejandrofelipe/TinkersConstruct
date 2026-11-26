@@ -12,7 +12,7 @@ import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.item.CrystalshotItem;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** @deprecated use {@link InfinityModule} and {@link slimeknights.tconstruct.library.modifiers.modules.display.ModifierVariantColorModule} */
 @Deprecated(forRemoval = true)

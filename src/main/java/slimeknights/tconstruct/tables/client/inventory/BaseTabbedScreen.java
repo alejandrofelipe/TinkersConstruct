@@ -18,7 +18,7 @@ import slimeknights.tconstruct.tables.client.inventory.widget.TinkerTabsWidget;
 import slimeknights.tconstruct.tables.menu.TabbedContainerMenu;
 import slimeknights.tconstruct.tables.menu.module.SideInventoryContainer;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Objects;
 

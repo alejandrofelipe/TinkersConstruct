@@ -13,7 +13,7 @@ import net.neoforged.neoforge.common.conditions.ICondition;
 import slimeknights.mantle.recipe.data.ConsumerWrapperBuilder;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 

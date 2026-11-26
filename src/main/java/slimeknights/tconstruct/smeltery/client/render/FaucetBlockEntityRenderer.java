@@ -20,7 +20,7 @@ import slimeknights.tconstruct.smeltery.block.FaucetBlock;
 import slimeknights.tconstruct.smeltery.block.entity.FaucetBlockEntity;
 import slimeknights.tconstruct.smeltery.client.render.FaucetBlockEntityRenderer.FaucetRenderState;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 public class FaucetBlockEntityRenderer implements BlockEntityRenderer<FaucetBlockEntity, FaucetRenderState> {
@@ -32,7 +32,7 @@ public class FaucetBlockEntityRenderer implements BlockEntityRenderer<FaucetBloc
   }
 
   @Override
-  public void extractRenderState(FaucetBlockEntity tileEntity, FaucetRenderState state, float partialTicks, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
+  public void extractRenderState(FaucetBlockEntity tileEntity, FaucetRenderState state, float partialTicks, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
     BlockEntityRenderer.super.extractRenderState(tileEntity, state, partialTicks, cameraPos, breakProgress);
     state.fluid = null;
     state.fluids = List.of();

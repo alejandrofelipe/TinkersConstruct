@@ -12,7 +12,7 @@ import slimeknights.tconstruct.library.modifiers.fluid.EffectLevel;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffect;
 import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Block fluid effect that targets the block adjacent to the one hit */
 public record OffsetBlockFluidEffect(FluidEffect<? super FluidEffectContext.Block> effect, @Nullable Direction direction) implements FluidEffect<FluidEffectContext.Block> {

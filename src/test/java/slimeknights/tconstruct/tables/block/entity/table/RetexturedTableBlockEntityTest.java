@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.test.BaseMcTest;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

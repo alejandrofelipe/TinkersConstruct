@@ -6,7 +6,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import slimeknights.mantle.inventory.BaseContainerMenu;
 import slimeknights.tconstruct.shared.TinkerCommons;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Container that triggers the criteria instance */
 public class TriggeringBaseContainerMenu<TILE extends BlockEntity> extends BaseContainerMenu<TILE> {

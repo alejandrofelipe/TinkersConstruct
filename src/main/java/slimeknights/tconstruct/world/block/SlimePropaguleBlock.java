@@ -21,7 +21,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import slimeknights.tconstruct.common.TinkerTags;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 import static net.minecraft.world.level.block.MangrovePropaguleBlock.AGE;

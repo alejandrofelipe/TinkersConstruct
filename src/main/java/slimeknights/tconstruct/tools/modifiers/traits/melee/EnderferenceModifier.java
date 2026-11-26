@@ -16,7 +16,7 @@ import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.shared.TinkerEffects;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** @deprecated use {@link MobEffectModule} and {@link TinkerEffects#ENDERFERENCE_KEY} */
 @Deprecated(forRemoval = true)

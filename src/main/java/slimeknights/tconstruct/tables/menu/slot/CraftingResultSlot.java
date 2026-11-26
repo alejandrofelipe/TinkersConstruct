@@ -8,8 +8,6 @@ import net.neoforged.neoforge.event.EventHooks;
 import slimeknights.mantle.inventory.CustomResultSlot;
 import slimeknights.mantle.inventory.IContainerCraftingCustom;
 
-import javax.annotation.Nonnull;
-
 /**
  * Same as {@link CustomResultSlot}, but does not require an crafting inventory
  */
@@ -34,7 +32,7 @@ public class CraftingResultSlot extends ResultSlot {
   }
 
   @Override
-  public void onTake(Player playerIn, @Nonnull ItemStack stack) {
+  public void onTake(Player playerIn, ItemStack stack) {
     this.checkTakeAchievements(stack);
     this.callback.onCrafting(playerIn, stack, this.container);
   }

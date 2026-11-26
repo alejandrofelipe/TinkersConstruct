@@ -31,8 +31,7 @@ import slimeknights.tconstruct.gadgets.TinkerGadgets;
 import slimeknights.tconstruct.gadgets.capability.PiggybackCapability;
 import slimeknights.tconstruct.gadgets.capability.PiggybackHandler;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.function.Consumer;
 
 public class PiggyBackPackItem extends TooltipItem {
@@ -172,7 +171,7 @@ public class PiggyBackPackItem extends TooltipItem {
     }
 
     @Override
-    public boolean applyEffectTick(@Nonnull ServerLevel level, @Nonnull LivingEntity livingEntityIn, int amplifier) {
+    public boolean applyEffectTick(ServerLevel level, LivingEntity livingEntityIn, int amplifier) {
       ItemStack chestArmor = livingEntityIn.getItemBySlot(EquipmentSlot.CHEST);
       if (chestArmor.isEmpty() || chestArmor.getItem() != TinkerGadgets.piggyBackpack.get()) {
         TinkerGadgets.piggyBackpack.get().matchCarriedEntitiesToCount(livingEntityIn, 0);

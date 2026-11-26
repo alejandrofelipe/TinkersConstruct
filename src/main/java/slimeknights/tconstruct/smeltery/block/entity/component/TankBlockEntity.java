@@ -32,8 +32,7 @@ import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType
 import slimeknights.tconstruct.smeltery.block.entity.ITankBlockEntity;
 import slimeknights.tconstruct.smeltery.item.TankItem;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITankBlockEntity {
   /** Max capacity for the tank */
@@ -99,7 +98,6 @@ public class TankBlockEntity extends SmelteryComponentBlockEntity implements ITa
     return tank;
   }
 
-  @Nonnull
   @Override
   public ModelData getModelData() {
     return ModelData.builder()

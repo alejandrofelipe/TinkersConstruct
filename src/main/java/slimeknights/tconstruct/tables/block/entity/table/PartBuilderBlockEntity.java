@@ -24,7 +24,7 @@ import slimeknights.tconstruct.tables.block.entity.inventory.LazyResultContainer
 import slimeknights.tconstruct.tables.block.entity.inventory.PartBuilderContainerWrapper;
 import slimeknights.tconstruct.tables.menu.PartBuilderContainerMenu;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;

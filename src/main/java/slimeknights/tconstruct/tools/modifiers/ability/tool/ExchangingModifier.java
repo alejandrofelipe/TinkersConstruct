@@ -25,7 +25,7 @@ import slimeknights.tconstruct.library.tools.context.ToolHarvestContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.utils.Util;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class ExchangingModifier extends NoLevelsModifier implements RemoveBlockModifierHook {
   @Override

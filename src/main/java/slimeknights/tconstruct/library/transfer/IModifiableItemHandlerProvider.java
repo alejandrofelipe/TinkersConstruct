@@ -12,7 +12,7 @@ import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.mantle.transfer.TransferHelper;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Implemented by our block entities to give menus and slot sync packets direct access to the real stacks of their inventory.

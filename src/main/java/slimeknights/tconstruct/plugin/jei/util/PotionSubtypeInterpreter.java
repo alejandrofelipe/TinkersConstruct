@@ -4,7 +4,7 @@ import mezz.jei.api.ingredients.subtypes.UidContext;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.alchemy.PotionContents;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Common logic for subtype interpreter between the fluid and item form of our potion. Based on a JEI class with the same name */
 public interface PotionSubtypeInterpreter<T> extends SimpleSubtypeInterpreter<T> {

@@ -5,7 +5,7 @@ import net.neoforged.neoforge.common.conditions.ICondition;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import slimeknights.tconstruct.library.json.JsonRedirect;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @SuppressWarnings("ClassCanBeRecord") // GSON does not support records
 @Data
@@ -21,6 +21,5 @@ public class MaterialJson {
   private final Integer sortOrder;
   @Nullable
   private final Boolean hidden;
-  @Nullable
-  private final JsonRedirect[] redirect;
+  private final JsonRedirect @Nullable [] redirect;
 }

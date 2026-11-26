@@ -29,7 +29,6 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.tconstruct.library.utils.Util;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.function.Supplier;
 

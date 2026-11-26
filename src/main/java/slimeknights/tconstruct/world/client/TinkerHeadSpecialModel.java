@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.util.StringRepresentable;
 import slimeknights.tconstruct.world.TinkerHeadType;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Special item model for Tinkers heads, registered as {@code tconstruct:head}.

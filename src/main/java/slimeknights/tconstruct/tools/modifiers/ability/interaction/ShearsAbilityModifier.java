@@ -21,7 +21,7 @@ import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.tools.modules.interaction.ShearsModule;
 import slimeknights.tconstruct.library.tools.helper.ToolAttackUtil;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** @deprecated use {@link ShearsModule} */
 @Deprecated(forRemoval = true)

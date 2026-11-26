@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import slimeknights.mantle.block.RetexturedBlock;
 import slimeknights.tconstruct.smeltery.block.entity.component.SmelteryComponentBlockEntity;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class RetexturedOrientableSmelteryBlock extends OrientableSmelteryBlock {
   public RetexturedOrientableSmelteryBlock(Properties properties, BlockEntitySupplier<? extends SmelteryComponentBlockEntity> blockEntity) {

@@ -15,7 +15,7 @@ import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.smeltery.block.entity.GaugeBlockEntity;
 import slimeknights.tconstruct.smeltery.client.render.GaugeBlockEntityRenderer.GaugeRenderState;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** Renderer for the obisidian gauge block */
@@ -28,7 +28,7 @@ public class GaugeBlockEntityRenderer implements BlockEntityRenderer<GaugeBlockE
   }
 
   @Override
-  public void extractRenderState(GaugeBlockEntity tile, GaugeRenderState state, float partialTick, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
+  public void extractRenderState(GaugeBlockEntity tile, GaugeRenderState state, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
     BlockEntityRenderer.super.extractRenderState(tile, state, partialTick, cameraPos, breakProgress);
     state.fluids = FluidCuboid.REGISTRY.get(state.blockState, List.of());
     state.fluid = FluidStack.EMPTY;

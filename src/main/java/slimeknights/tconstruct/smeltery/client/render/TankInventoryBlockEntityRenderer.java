@@ -24,7 +24,7 @@ import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.smeltery.block.entity.ITankBlockEntity.ITankInventoryBlockEntity;
 import slimeknights.tconstruct.smeltery.client.render.TankInventoryBlockEntityRenderer.TankInventoryRenderState;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 public class TankInventoryBlockEntityRenderer<T extends BlockEntity & ITankInventoryBlockEntity> implements BlockEntityRenderer<T, TankInventoryRenderState> {
@@ -41,7 +41,7 @@ public class TankInventoryBlockEntityRenderer<T extends BlockEntity & ITankInven
   }
 
   @Override
-  public void extractRenderState(T melter, TankInventoryRenderState state, float partialTicks, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
+  public void extractRenderState(T melter, TankInventoryRenderState state, float partialTicks, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
     BlockEntityRenderer.super.extractRenderState(melter, state, partialTicks, cameraPos, breakProgress);
     state.facing = state.blockState.getValue(directionProperty);
     state.fluids = Config.CLIENT.tankFluidModel.get() ? List.of() : FluidCuboid.REGISTRY.get(state.blockState, List.of());

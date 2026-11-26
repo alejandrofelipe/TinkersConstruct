@@ -15,8 +15,6 @@ import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.component.SmelteryInputOutputBlockEntity.SmelteryFluidIO;
 import slimeknights.tconstruct.smeltery.block.entity.tank.IDisplayFluidListener;
 
-import javax.annotation.Nonnull;
-
 /**
  * Fluid IO extension to display controller fluid
  */
@@ -32,7 +30,6 @@ public class DrainBlockEntity extends SmelteryFluidIO implements IDisplayFluidLi
     super(type, pos, state);
   }
 
-  @Nonnull
   @Override
   public ModelData getModelData() {
     return RetexturedHelper.getModelDataBuilder(getTexture()).with(ModelProperties.FLUID_STACK, displayFluid).build();

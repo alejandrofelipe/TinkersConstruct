@@ -4,7 +4,7 @@ import net.minecraft.resources.Identifier;
 import slimeknights.tconstruct.library.utils.IdParser;
 import slimeknights.tconstruct.library.utils.ResourceId;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This is just a copy of Identifier for type safety in tool stat JSON.

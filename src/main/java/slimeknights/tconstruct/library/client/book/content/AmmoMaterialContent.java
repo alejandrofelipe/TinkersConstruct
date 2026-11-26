@@ -15,7 +15,7 @@ import slimeknights.tconstruct.library.utils.Util;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tools.stats.StatlessMaterialStats;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 public class AmmoMaterialContent extends AbstractMaterialContent {

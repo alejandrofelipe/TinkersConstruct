@@ -11,7 +11,7 @@ import slimeknights.tconstruct.library.json.variable.entity.EntityVariable;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Variable fetching data from an entity in the protection context */
 public record EntityProtectionVariable(EntityVariable entity, WhichEntity which, float fallback) implements ProtectionVariable {

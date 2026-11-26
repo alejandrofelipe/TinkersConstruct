@@ -19,7 +19,7 @@ import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer.OreRateT
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeBuilder;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import static slimeknights.mantle.Mantle.COMMON;
 import static slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe.getTemperature;

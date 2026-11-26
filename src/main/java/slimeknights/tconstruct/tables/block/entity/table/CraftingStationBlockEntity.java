@@ -28,7 +28,7 @@ import slimeknights.tconstruct.tables.block.entity.inventory.LazyResultContainer
 import slimeknights.tconstruct.tables.menu.CraftingStationContainerMenu;
 import slimeknights.tconstruct.tables.network.UpdateCraftingRecipePacket;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collections;
 
 public class CraftingStationBlockEntity extends RetexturedTableBlockEntity implements ILazyCrafter {

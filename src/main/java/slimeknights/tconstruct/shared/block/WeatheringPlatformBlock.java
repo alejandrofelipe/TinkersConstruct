@@ -22,7 +22,7 @@ import net.neoforged.neoforge.common.ItemAbility;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.shared.TinkerCommons;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Optional;
 
 public class WeatheringPlatformBlock extends PlatformBlock implements WeatheringCopper {

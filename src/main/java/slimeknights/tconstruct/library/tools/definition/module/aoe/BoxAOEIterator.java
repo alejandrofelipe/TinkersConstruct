@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.NonNull;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -18,7 +19,6 @@ import slimeknights.tconstruct.library.tools.definition.module.aoe.IBoxExpansion
 import slimeknights.tconstruct.library.tools.item.IModifiable;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -251,7 +251,7 @@ public record BoxAOEIterator(BoxSize base, List<BoxSize> expansions, IBoxExpansi
   public static class Builder {
     private final BoxSize base;
     /** Direction to expand the AOE */
-    @Nonnull @Setter @Accessors(fluent = true)
+    @NonNull @Setter @Accessors(fluent = true)
     private IBoxExpansion direction = IBoxExpansion.SIDE_HIT;
     private final ImmutableList.Builder<BoxSize> expansions = ImmutableList.builder();
 

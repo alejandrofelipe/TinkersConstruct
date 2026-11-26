@@ -18,8 +18,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.common.IShearable;
 import slimeknights.tconstruct.world.TinkerWorld;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 public class SlimeTallGrassBlock extends VegetationBlock implements IShearable, SlimePlant {
@@ -48,7 +47,6 @@ public class SlimeTallGrassBlock extends VegetationBlock implements IShearable, 
     return SHAPE;
   }
 
-  @Nonnull
   @Override
   public List<ItemStack> onSheared(@Nullable Player player, ItemStack item, Level world, BlockPos pos) {
     return Lists.newArrayList(new ItemStack(this, 1));

@@ -18,7 +18,7 @@ import slimeknights.tconstruct.library.fluid.FluidAction;
 import slimeknights.tconstruct.library.modifiers.fluid.block.MobEffectCloudFluidEffect;
 import slimeknights.tconstruct.library.modifiers.fluid.entity.MobEffectFluidEffect;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;

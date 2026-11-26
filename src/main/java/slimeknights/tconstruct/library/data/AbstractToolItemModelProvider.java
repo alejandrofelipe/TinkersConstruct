@@ -25,7 +25,7 @@ import slimeknights.mantle.registration.object.IdAwareObject;
 import slimeknights.tconstruct.library.tools.item.ranged.ModifiableCrossbowItem;
 import slimeknights.tconstruct.library.tools.item.ranged.ModifiableLauncherItem;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;

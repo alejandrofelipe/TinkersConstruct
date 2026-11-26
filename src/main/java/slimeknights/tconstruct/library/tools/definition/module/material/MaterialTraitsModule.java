@@ -16,7 +16,7 @@ import slimeknights.tconstruct.library.tools.definition.module.build.ToolTraitHo
 import slimeknights.tconstruct.library.tools.helper.ModifierBuilder;
 import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /**

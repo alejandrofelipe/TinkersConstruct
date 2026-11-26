@@ -11,7 +11,7 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.neoforged.neoforge.common.conditions.ICondition;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Helper to add data components to a vanilla recipe result during datagen.

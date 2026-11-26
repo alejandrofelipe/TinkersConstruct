@@ -11,7 +11,7 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
 import slimeknights.tconstruct.library.transfer.SlotStorageItemHandler;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**

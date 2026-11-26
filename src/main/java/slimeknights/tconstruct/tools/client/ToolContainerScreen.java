@@ -24,7 +24,7 @@ import slimeknights.tconstruct.smeltery.client.screen.IScreenWithFluidTank;
 import slimeknights.tconstruct.smeltery.client.screen.module.GuiTankModule;
 import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.function.Function;
 

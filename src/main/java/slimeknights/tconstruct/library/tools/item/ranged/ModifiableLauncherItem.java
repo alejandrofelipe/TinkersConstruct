@@ -63,7 +63,7 @@ import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.tools.TinkerToolActions;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -91,7 +91,7 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
   // shoot via their own releaseUsing/firing logic, so this is a no-op to satisfy the abstract method until/if the
   // ranged layer is converged onto the vanilla projectile pipeline.
   @Override
-  protected void shootProjectile(LivingEntity shooter, net.minecraft.world.entity.projectile.Projectile projectile, int index, float velocity, float inaccuracy, float angle, @javax.annotation.Nullable LivingEntity target) {}
+  protected void shootProjectile(LivingEntity shooter, net.minecraft.world.entity.projectile.Projectile projectile, int index, float velocity, float inaccuracy, float angle, @Nullable LivingEntity target) {}
 
 
   /* Basic properties */

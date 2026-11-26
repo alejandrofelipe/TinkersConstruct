@@ -30,7 +30,7 @@ import slimeknights.tconstruct.smeltery.network.ChannelFlowPacket;
 import slimeknights.tconstruct.smeltery.network.FluidUpdatePacket;
 import slimeknights.tconstruct.smeltery.network.FluidUpdatePacket.IFluidPacketReceiver;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.nio.ByteBuffer;
 import java.util.EnumMap;
 import java.util.Map;

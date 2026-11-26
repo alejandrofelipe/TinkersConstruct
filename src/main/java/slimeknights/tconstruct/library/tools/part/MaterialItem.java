@@ -23,7 +23,7 @@ import slimeknights.tconstruct.library.tools.nbt.ToolDataVerifier;
 import slimeknights.tconstruct.library.utils.DomainDisplayName;
 import slimeknights.tconstruct.library.utils.Util;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;

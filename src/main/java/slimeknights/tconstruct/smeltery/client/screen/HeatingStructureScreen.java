@@ -22,7 +22,7 @@ import slimeknights.tconstruct.smeltery.client.screen.module.GuiSmelteryTank;
 import slimeknights.tconstruct.smeltery.client.screen.module.HeatingStructureSideInventoryScreen;
 import slimeknights.tconstruct.smeltery.menu.HeatingStructureContainerMenu;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;

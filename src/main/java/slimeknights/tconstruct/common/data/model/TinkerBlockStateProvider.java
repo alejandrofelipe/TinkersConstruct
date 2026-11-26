@@ -31,7 +31,7 @@ import slimeknights.tconstruct.shared.block.ClearStainedGlassBlock.GlassColor;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.world.TinkerWorld;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.function.Function;
 
 import static net.minecraft.client.data.models.BlockModelGenerators.plainVariant;

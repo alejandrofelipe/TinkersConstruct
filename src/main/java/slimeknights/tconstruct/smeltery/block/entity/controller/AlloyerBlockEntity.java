@@ -31,7 +31,7 @@ import slimeknights.tconstruct.smeltery.block.entity.module.alloying.SingleAlloy
 import slimeknights.tconstruct.smeltery.menu.AlloyerContainerMenu;
 
 import net.minecraft.core.Direction;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Dedicated alloying block

@@ -14,13 +14,10 @@ import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.tools.TinkerToolParts;
 
-import javax.annotation.Nonnull;
-
 import static slimeknights.tconstruct.library.tools.part.IMaterialItem.MATERIAL_TAG;
 
 /** Block entity logic for {@link MaterialBlock} */
 public class MaterialBlockEntity extends MantleBlockEntity {
-  @Nonnull
   @Getter
   private MaterialVariantId material = IMaterial.UNKNOWN_ID;
 

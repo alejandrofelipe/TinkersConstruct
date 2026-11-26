@@ -22,7 +22,7 @@ import slimeknights.tconstruct.smeltery.block.entity.tank.ProxyItemTank;
 import slimeknights.tconstruct.smeltery.block.entity.tank.ProxyItemTank.TankContents;
 import slimeknights.tconstruct.smeltery.client.render.ProxyTankBlockEntityRenderer.ProxyTankRenderState;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
@@ -40,7 +40,7 @@ public class ProxyTankBlockEntityRenderer implements BlockEntityRenderer<ProxyTa
   }
 
   @Override
-  public void extractRenderState(ProxyTankBlockEntity proxyTank, ProxyTankRenderState state, float partialTicks, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
+  public void extractRenderState(ProxyTankBlockEntity proxyTank, ProxyTankRenderState state, float partialTicks, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
     BlockEntityRenderer.super.extractRenderState(proxyTank, state, partialTicks, cameraPos, breakProgress);
     state.facing = state.blockState.getValue(HORIZONTAL_FACING);
     state.fluids = Config.CLIENT.tankFluidModel.get() ? List.of() : FluidCuboid.REGISTRY.get(state.blockState, List.of());

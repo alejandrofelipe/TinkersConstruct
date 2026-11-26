@@ -59,7 +59,7 @@ public class ProxyTankBlockEntity extends MantleBlockEntity implements IFluidTan
   }
 
   @Override
-  public ModifiableItemHandler getModifiableItemHandler(@javax.annotation.Nullable Direction side) {
+  public ModifiableItemHandler getModifiableItemHandler(@org.jspecify.annotations.Nullable Direction side) {
     return ModifiableItemHandler.ofSingle(itemTank);
   }
 

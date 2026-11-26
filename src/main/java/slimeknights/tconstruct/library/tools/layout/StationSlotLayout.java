@@ -16,7 +16,7 @@ import net.minecraft.world.level.ItemLike;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Collections;
 import java.util.List;
 

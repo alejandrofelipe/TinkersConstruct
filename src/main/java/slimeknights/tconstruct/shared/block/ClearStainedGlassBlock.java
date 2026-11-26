@@ -7,7 +7,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Locale;
 
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;

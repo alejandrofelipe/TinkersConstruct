@@ -9,7 +9,7 @@ import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 import slimeknights.tconstruct.shared.inventory.TriggeringBaseContainerMenu;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Container for a block with a single item inventory

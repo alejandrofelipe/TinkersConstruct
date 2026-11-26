@@ -8,7 +8,7 @@ import net.minecraft.world.item.Item;
 import slimeknights.mantle.util.RegistryHelper;
 import slimeknights.tconstruct.common.TinkerTags;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Locale;
 
 /** Helper for registering the different effects for modifiers that change behavior based on the tool type */

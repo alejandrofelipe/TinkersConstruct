@@ -23,7 +23,7 @@ import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 import slimeknights.tconstruct.library.tools.part.IRepairKitItem;
 import slimeknights.tconstruct.tables.TinkerTables;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Recipe using repair kits in the crafting table */
 public class CraftingTableRepairKitRecipe extends CustomRecipe {

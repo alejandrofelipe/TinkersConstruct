@@ -6,7 +6,7 @@ import net.minecraft.world.entity.LivingEntity;
 import slimeknights.tconstruct.library.tools.capability.TinkerDataCapability;
 import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Helper class to keep track the max modifier level in a modifier, floats, keeps track of max slot, and tracks all 6 slots */
 public class ModifierMaxLevel {

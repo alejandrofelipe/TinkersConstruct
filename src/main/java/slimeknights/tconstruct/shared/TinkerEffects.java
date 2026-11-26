@@ -26,7 +26,7 @@ import slimeknights.tconstruct.tools.modifiers.effect.MagneticEffect;
 import slimeknights.tconstruct.tools.modifiers.effect.RepulsiveEffect;
 import slimeknights.tconstruct.tools.modifiers.traits.skull.SelfDestructiveModifier.SelfDestructiveEffect;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Handles registration for all status effects and potions in the mod */
 public class TinkerEffects extends TinkerModule {

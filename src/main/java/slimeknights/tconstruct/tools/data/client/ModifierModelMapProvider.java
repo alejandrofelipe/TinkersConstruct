@@ -15,7 +15,7 @@ import slimeknights.tconstruct.tools.TinkerModifiers;
 import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.data.ModifierIds;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Provider for modifier models on tools */
 public class ModifierModelMapProvider extends AbstractModifierModelMapProvider {

@@ -40,8 +40,7 @@ import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.network.ToolContainerFluidUpdatePacket;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Optional;
 
 /** Container for a tool inventory */
@@ -345,7 +344,6 @@ public class ToolContainerMenu extends AbstractContainerMenu {
       this.player = player;
     }
 
-    @Nonnull
     @Override
     public FluidStack getFluid() {
       return ToolTankHelper.TANK_HELPER.getFluid(tool);

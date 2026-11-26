@@ -8,7 +8,7 @@ import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import slimeknights.mantle.util.JsonHelper;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Represents a redirect in a material or modifier JSON */
 @SuppressWarnings("ClassCanBeRecord") // GSON does not support records

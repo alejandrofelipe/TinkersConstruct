@@ -14,7 +14,7 @@ import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructure
 import slimeknights.tconstruct.smeltery.block.entity.multiblock.MultiblockResult;
 import slimeknights.tconstruct.smeltery.network.StructureErrorPositionPacket;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Multiblock that displays the error from the tile entity on right click

@@ -19,7 +19,7 @@ import slimeknights.tconstruct.library.recipe.casting.material.MaterialFluidReci
 import slimeknights.tconstruct.library.recipe.material.MaterialRecipeBuilder;
 import slimeknights.tconstruct.library.recipe.melting.MaterialMeltingRecipeBuilder;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 import static slimeknights.mantle.Mantle.COMMON;

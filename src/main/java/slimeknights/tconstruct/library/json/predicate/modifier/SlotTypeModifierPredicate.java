@@ -5,7 +5,7 @@ import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.recipe.modifiers.ModifierRecipeLookup;
 import slimeknights.tconstruct.library.tools.SlotType;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Predicate that matches any modifiers with recipes requiring a slot */
 public record SlotTypeModifierPredicate(@Nullable SlotType slotType) implements ModifierPredicate {

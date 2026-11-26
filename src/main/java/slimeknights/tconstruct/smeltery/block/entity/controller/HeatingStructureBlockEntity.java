@@ -54,8 +54,7 @@ import slimeknights.tconstruct.smeltery.menu.HeatingStructureContainerMenu;
 import slimeknights.tconstruct.smeltery.network.StructureErrorPositionPacket;
 import slimeknights.tconstruct.smeltery.network.StructureUpdatePacket;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -126,7 +125,6 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
   private boolean fluidUpdateQueued = false;
   /** Cache of the bounds for the case of no structure */
   private AABB defaultBounds;
-  @Nonnull
   @Getter
   private Block texture = Blocks.AIR;
 
@@ -337,7 +335,7 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
   }
 
   @Override
-  public ModifiableItemHandler getModifiableItemHandler(@Nullable net.minecraft.core.Direction side) {
+  public ModifiableItemHandler getModifiableItemHandler(net.minecraft.core.@Nullable Direction side) {
     return meltingInventory.getModifiableItemHandler();
   }
 
@@ -488,7 +486,6 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
     }
   }
 
-  @Nonnull
   @Override
   public ModelData getModelData() {
     return RetexturedHelper.getModelDataBuilder(getTexture()).with(ModelProperties.FLUID_STACK, displayFluid).build();

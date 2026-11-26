@@ -21,7 +21,7 @@ import slimeknights.mantle.util.BlockEntityHelper;
 import slimeknights.tconstruct.shared.block.TableBlock;
 import slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractCastingBlock extends TableBlock {
   /** Property for when the casting block has an item inside */

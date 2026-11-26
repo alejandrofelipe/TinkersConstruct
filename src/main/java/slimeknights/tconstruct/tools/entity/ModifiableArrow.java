@@ -30,7 +30,7 @@ import slimeknights.tconstruct.library.tools.stat.ToolStats;
 import slimeknights.tconstruct.library.utils.Schedule;
 import slimeknights.tconstruct.tools.TinkerTools;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Arrow with material variants */
 public class ModifiableArrow extends AbstractArrow implements ToolProjectile, ReusableProjectile {

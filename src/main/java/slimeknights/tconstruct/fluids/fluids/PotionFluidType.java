@@ -13,7 +13,7 @@ import slimeknights.mantle.fluid.texture.ClientTextureFluidType;
 import slimeknights.mantle.recipe.helper.FluidOutput;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.function.Consumer;
 
 public class PotionFluidType extends FluidType {

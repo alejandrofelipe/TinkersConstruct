@@ -14,7 +14,7 @@ import slimeknights.tconstruct.library.modifiers.modules.util.ModifierCondition.
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.stat.INumericToolStat;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** Common tooltip logic for conditional stat modules */

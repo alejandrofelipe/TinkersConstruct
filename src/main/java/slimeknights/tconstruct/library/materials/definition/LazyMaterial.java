@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.function.Supplier;
 
 /** This class handles lazy loading of a material, as the times recipes load is too soon to fetch material objects */

@@ -26,7 +26,7 @@ import slimeknights.tconstruct.smeltery.block.entity.module.MultitankFuelModule;
 import slimeknights.tconstruct.smeltery.block.entity.tank.SmelteryTank;
 import slimeknights.tconstruct.tables.menu.module.SideInventoryContainer;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.function.Consumer;
 
 public class HeatingStructureContainerMenu extends TriggeringMultiModuleContainerMenu<HeatingStructureBlockEntity> implements TransferDirectionSupplier {

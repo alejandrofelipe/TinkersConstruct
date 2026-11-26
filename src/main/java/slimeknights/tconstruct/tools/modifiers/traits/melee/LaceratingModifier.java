@@ -32,7 +32,7 @@ import slimeknights.tconstruct.library.tools.nbt.ModifierNBT;
 import slimeknights.tconstruct.shared.TinkerEffects;
 import slimeknights.tconstruct.tools.modules.armor.CounterModule;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class LaceratingModifier extends Modifier implements ProjectileHitModifierHook, MeleeHitModifierHook, MonsterMeleeHitModifierHook.RedirectAfter, OnAttackedModifierHook {
   /** Applies the effect to the target */

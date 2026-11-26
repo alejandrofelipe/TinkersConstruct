@@ -24,7 +24,6 @@ import slimeknights.tconstruct.library.tools.item.IModifiableDisplay;
 import slimeknights.tconstruct.library.tools.layout.LayoutSlot;
 import slimeknights.tconstruct.tools.TinkerTools;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -138,13 +137,11 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
     }
   }
 
-  @Nonnull
   @Override
   public Component getTitle() {
     return TITLE;
   }
 
-  @Nonnull
   @Override
   public IRecipeType<ToolBuildingRecipe> getRecipeType() {
     return TConstructJEIConstants.TOOL_BUILDING;

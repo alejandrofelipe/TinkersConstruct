@@ -10,7 +10,7 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import slimeknights.tconstruct.common.Sounds;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.IdentityHashMap;
 
 /** Logic for entities bouncing */

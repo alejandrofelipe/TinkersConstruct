@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.utils;
 
 import net.minecraft.resources.Identifier;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.function.BiFunction;
 
 /**

@@ -8,7 +8,7 @@ import slimeknights.tconstruct.library.utils.Util;
 
 import java.util.Objects;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Resource location variant for pattern buttons in the part builder. Also used in a few spots for convenient icon loading.

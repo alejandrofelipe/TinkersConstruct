@@ -10,7 +10,7 @@ import net.minecraft.resources.Identifier;
 import slimeknights.mantle.data.loadable.primitive.StringLoadable;
 import slimeknights.mantle.util.typed.TypedMap;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.function.Function;
 
 /**

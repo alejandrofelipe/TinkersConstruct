@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.recipe;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This class represents the result of a recipe, which is one of:

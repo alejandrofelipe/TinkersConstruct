@@ -22,7 +22,7 @@ import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 import slimeknights.tconstruct.tables.TinkerTables;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /**
@@ -71,8 +71,7 @@ public class ShapedMaterialsRecipe extends ShapedRecipe implements MaterialsCraf
    * Finds materials for each of the parts
    * @return Array of all matched materials. Array will have no null entries, though the array may be null if no match was found.
    */
-  @Nullable
-  static MaterialVariantId[] findMaterials(CraftingInput inventory, List<Ingredient> parts, int partCount, boolean checkRepeats) {
+  static MaterialVariantId @Nullable [] findMaterials(CraftingInput inventory, List<Ingredient> parts, int partCount, boolean checkRepeats) {
     // want one material for each
     MaterialVariantId[] materials = new MaterialVariantId[partCount];
     for (int i = 0; i < inventory.size(); i++) {

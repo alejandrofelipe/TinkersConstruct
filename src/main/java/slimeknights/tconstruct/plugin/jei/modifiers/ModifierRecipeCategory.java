@@ -36,7 +36,7 @@ import slimeknights.tconstruct.plugin.jei.TConstructJEIConstants;
 import slimeknights.tconstruct.tools.TinkerModifiers;
 import slimeknights.tconstruct.tools.item.CreativeSlotItem;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;

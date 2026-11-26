@@ -14,7 +14,7 @@ import net.minecraft.network.chat.Component;
 import slimeknights.tconstruct.library.tools.SlotType;
 import slimeknights.tconstruct.shared.command.argument.SlotTypeArgument.OptionalSlotType;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;

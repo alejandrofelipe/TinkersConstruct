@@ -13,7 +13,7 @@ import slimeknights.tconstruct.library.module.ModuleHookMap.Builder;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Modifier to handle spilling recipes */
 public class BurstingModifier extends UseFluidOnHitModifier implements OnAttackedModifierHook {

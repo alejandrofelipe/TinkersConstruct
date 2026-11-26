@@ -20,7 +20,7 @@ import slimeknights.tconstruct.tables.menu.slot.ArmorSlot;
 import slimeknights.tconstruct.tables.menu.slot.LazyResultSlot;
 import slimeknights.tconstruct.tables.menu.slot.TinkerStationSlot;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

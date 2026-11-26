@@ -10,7 +10,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -31,8 +31,7 @@ import java.util.stream.Stream;
  */
 public final class LazyTagIngredient implements HolderSet<Item> {
   private final TagKey<Item> tag;
-  @Nullable
-  private HolderSet.Named<Item> resolved;
+  private HolderSet.@Nullable Named<Item> resolved;
 
   private LazyTagIngredient(TagKey<Item> tag) {
     this.tag = tag;

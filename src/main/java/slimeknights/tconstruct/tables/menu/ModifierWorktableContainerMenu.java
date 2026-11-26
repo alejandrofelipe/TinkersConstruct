@@ -17,7 +17,7 @@ import slimeknights.tconstruct.tables.block.entity.table.ModifierWorktableBlockE
 import slimeknights.tconstruct.tables.menu.slot.ArmorSlot;
 import slimeknights.tconstruct.tables.menu.slot.LazyResultSlot;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

@@ -16,7 +16,7 @@ import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.recipe.material.MaterialRecipe;
 import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.stream.Stream;
 
 /**

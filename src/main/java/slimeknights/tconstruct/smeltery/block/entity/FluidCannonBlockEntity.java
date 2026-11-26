@@ -38,7 +38,7 @@ import slimeknights.tconstruct.library.utils.NBTTags;
 import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.library.utils.Util;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.shared.particle.FluidParticleData;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;

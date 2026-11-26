@@ -5,7 +5,7 @@ import net.minecraft.client.resources.model.Material;
 import slimeknights.mantle.data.loadable.field.LoadableField;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 

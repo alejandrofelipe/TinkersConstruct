@@ -10,7 +10,7 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import slimeknights.mantle.registration.object.IdAwareObject;
 import slimeknights.tconstruct.TConstruct;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -56,8 +56,7 @@ public class TinkerDataCapability {
   }
 
   /** Gets the data capability from an entity, or null if missing */
-  @Nullable
-  public static TinkerDataCapability.Holder getData(LivingEntity entity) {
+  public static TinkerDataCapability.@Nullable Holder getData(LivingEntity entity) {
     return entity.getCapability(CAPABILITY);
   }
 

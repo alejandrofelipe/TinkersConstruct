@@ -40,7 +40,7 @@ import slimeknights.tconstruct.tables.block.entity.inventory.TinkerStationContai
 import slimeknights.tconstruct.tables.menu.TinkerStationContainerMenu;
 import slimeknights.tconstruct.tables.network.UpdateTinkerStationRecipePacket;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import static slimeknights.tconstruct.library.tools.part.IMaterialItem.MATERIAL_TAG;
 

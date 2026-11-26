@@ -12,7 +12,7 @@ import slimeknights.mantle.util.BlockEntityHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Packet to tell a multiblock to render a specific position as the cause of the error

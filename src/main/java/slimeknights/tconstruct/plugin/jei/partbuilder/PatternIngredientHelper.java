@@ -7,7 +7,7 @@ import net.minecraft.resources.Identifier;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
 import slimeknights.tconstruct.plugin.jei.TConstructJEIConstants;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Ingredient helper for Tinkers patterns

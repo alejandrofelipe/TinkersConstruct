@@ -25,7 +25,7 @@ import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.library.tools.nbt.ModifierNBT;
 import slimeknights.tconstruct.tools.modules.armor.CounterModule;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** @deprecated use {@link slimeknights.tconstruct.library.modifiers.modules.combat.MobEffectModule} with its various forms. */
 @Deprecated(forRemoval = true)

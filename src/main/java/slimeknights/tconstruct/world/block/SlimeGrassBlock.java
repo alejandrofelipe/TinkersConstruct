@@ -19,7 +19,7 @@ import net.minecraft.world.level.lighting.LightEngine;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.world.TinkerWorld;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class SlimeGrassBlock extends SnowyDirtBlock implements BonemealableBlock {
   @Getter

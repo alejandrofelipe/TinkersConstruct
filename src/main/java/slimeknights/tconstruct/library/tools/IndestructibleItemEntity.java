@@ -14,7 +14,7 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
 import slimeknights.tconstruct.tools.TinkerTools;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Item entity that will never die */
 public class IndestructibleItemEntity extends ItemEntity {

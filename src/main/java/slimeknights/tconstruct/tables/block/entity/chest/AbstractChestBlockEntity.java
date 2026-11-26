@@ -25,7 +25,7 @@ import slimeknights.tconstruct.library.utils.TagUtil;
 import slimeknights.tconstruct.tables.block.entity.inventory.ChestItemHandler;
 import slimeknights.tconstruct.tables.menu.TinkerChestContainerMenu;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** Shared base logic for all Tinkers' chest tile entities */
 public abstract class AbstractChestBlockEntity extends NameableBlockEntity implements IModifiableItemHandlerProvider {

@@ -50,8 +50,7 @@ import slimeknights.tconstruct.smeltery.block.entity.inventory.MoldingContainerW
 import slimeknights.tconstruct.smeltery.block.entity.tank.CastingFluidHandler;
 import slimeknights.tconstruct.smeltery.network.FluidUpdatePacket;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Optional;
 
 public abstract class CastingBlockEntity extends TableBlockEntity implements WorldlyContainer, FluidUpdatePacket.IFluidPacketReceiver {
@@ -260,7 +259,6 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
   }
   
   @Override
-  @Nonnull
   public int[] getSlotsForFace(Direction side) {
     return new int[]{INPUT, OUTPUT};
   }

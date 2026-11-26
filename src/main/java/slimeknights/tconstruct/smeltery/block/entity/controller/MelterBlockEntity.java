@@ -37,8 +37,7 @@ import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModuleInvento
 import slimeknights.tconstruct.smeltery.block.entity.module.SolidFuelModule;
 import slimeknights.tconstruct.smeltery.menu.MelterContainerMenu;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class MelterBlockEntity extends NameableBlockEntity implements ITankInventoryBlockEntity, IModifiableItemHandlerProvider {
 
