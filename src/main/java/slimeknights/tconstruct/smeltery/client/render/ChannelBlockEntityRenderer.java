@@ -1,14 +1,12 @@
 package slimeknights.tconstruct.smeltery.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Plane;
@@ -16,12 +14,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.client.render.ChannelFluids;
 import slimeknights.mantle.client.render.FluidCuboid;
+import slimeknights.mantle.client.render.FluidRenderInfo;
 import slimeknights.mantle.client.render.FluidRenderer;
-import slimeknights.mantle.client.render.MantleRenderTypes;
 import slimeknights.mantle.client.render.RenderingHelper;
 import slimeknights.tconstruct.smeltery.block.ChannelBlock;
 import slimeknights.tconstruct.smeltery.block.ChannelBlock.ChannelConnection;
@@ -43,7 +40,7 @@ public class ChannelBlockEntityRenderer implements BlockEntityRenderer<ChannelBl
   @Override
   public void extractRenderState(ChannelBlockEntity te, ChannelRenderState renderState, float partialTicks, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
     BlockEntityRenderer.super.extractRenderState(te, renderState, partialTicks, cameraPos, breakProgress);
-    renderState.fluid = FluidStack.EMPTY;
+    renderState.fluid = null;
     renderState.cubes = List.of();
     renderState.below = List.of();
     FluidStack fluid = te.getFluid();
@@ -62,7 +59,7 @@ public class ChannelBlockEntityRenderer implements BlockEntityRenderer<ChannelBl
     if (model == null) {
       return;
     }
-    renderState.fluid = fluid.copy();
+    renderState.fluid = FluidRenderInfo.of(fluid);
 
     // determine the cubes to render: sides first, while doing so we will determine center "flow"
     List<RotatedCube> cubes = new ArrayList<>();
@@ -115,36 +112,21 @@ public class ChannelBlockEntityRenderer implements BlockEntityRenderer<ChannelBl
 
   @Override
   public void submit(ChannelRenderState state, PoseStack matrices, SubmitNodeCollector collector, CameraRenderState camera) {
-    FluidStack fluid = state.fluid;
-    if (fluid.isEmpty()) {
+    FluidRenderInfo fluid = state.fluid;
+    if (fluid == null) {
       return;
     }
-    List<RotatedCube> cubes = state.cubes;
-    List<List<FluidCuboid>> below = state.below;
-    int combinedLight = state.lightCoords;
-    collector.submitCustomGeometry(matrices, MantleRenderTypes.FLUID, (pose, builder) -> {
-      // fluid attributes
-      IClientFluidTypeExtensions attributes = IClientFluidTypeExtensions.of(fluid.getFluid());
-      TextureAtlasSprite still = FluidRenderer.getBlockSprite(attributes.getStillTexture(fluid));
-      TextureAtlasSprite flowing = FluidRenderer.getBlockSprite(attributes.getFlowingTexture(fluid));
-      int color = attributes.getTintColor(fluid);
-      int light = FluidRenderer.withBlockLight(combinedLight, fluid.getFluid().getFluidType().getLightLevel(fluid));
-
-      for (RotatedCube cube : cubes) {
-        PoseStack.Pose cubePose = pose;
-        // apply rotation for the side, same as RenderingHelper#applyRotation
-        Direction rotation = cube.rotation;
-        if (rotation != null && rotation.getAxis().isHorizontal() && rotation != Direction.SOUTH) {
-          cubePose = pose.copy();
-          cubePose.rotateAround(Axis.YP.rotationDegrees(-90f * rotation.get2DDataValue()), 0.5f, 0, 0.5f);
-        }
-        FluidRenderer.renderCuboid(cubePose, builder, cube.cube, 0, still, flowing, color, light, false);
+    int light = state.lightCoords;
+    for (RotatedCube cube : state.cubes) {
+      // apply rotation for the side
+      boolean isRotated = cube.rotation != null && RenderingHelper.applyRotation(matrices, cube.rotation);
+      FluidRenderer.submitPouring(matrices, collector, List.of(cube.cube), List.of(), fluid, light);
+      if (isRotated) {
+        matrices.popPose();
       }
-      // render into the block(s) below
-      if (!below.isEmpty()) {
-        RenderingHelper.renderFaucetFluids(pose, builder, below, still, flowing, color, light);
-      }
-    });
+    }
+    // render into the block(s) below
+    FluidRenderer.submitPouring(matrices, collector, List.of(), state.below, fluid, light);
   }
 
   @Override
@@ -157,8 +139,9 @@ public class ChannelBlockEntityRenderer implements BlockEntityRenderer<ChannelBl
 
   /** Render state for the channel */
   public static class ChannelRenderState extends BlockEntityRenderState {
-    /** Copy of the channel fluid */
-    public FluidStack fluid = FluidStack.EMPTY;
+    /** Channel fluid, null when empty */
+    @Nullable
+    public FluidRenderInfo fluid;
     /** Cubes to render with their rotation */
     private List<RotatedCube> cubes = List.of();
     /** Fluid cuboids in the blocks below, from {@link RenderingHelper#getFaucetFluids} */

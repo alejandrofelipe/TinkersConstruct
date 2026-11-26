@@ -7,17 +7,14 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Con
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
 import slimeknights.mantle.client.render.FluidCuboid;
+import slimeknights.mantle.client.render.FluidRenderInfo;
 import slimeknights.mantle.client.render.FluidRenderer;
-import slimeknights.mantle.client.render.MantleRenderTypes;
 import slimeknights.mantle.client.render.RenderingHelper;
 import slimeknights.tconstruct.smeltery.block.FaucetBlock;
 import slimeknights.tconstruct.smeltery.block.entity.FaucetBlockEntity;
@@ -37,7 +34,7 @@ public class FaucetBlockEntityRenderer implements BlockEntityRenderer<FaucetBloc
   @Override
   public void extractRenderState(FaucetBlockEntity tileEntity, FaucetRenderState state, float partialTicks, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
     BlockEntityRenderer.super.extractRenderState(tileEntity, state, partialTicks, cameraPos, breakProgress);
-    state.fluid = FluidStack.EMPTY;
+    state.fluid = null;
     state.fluids = List.of();
     state.below = List.of();
     FluidStack renderFluid = tileEntity.getRenderFluid();
@@ -48,7 +45,7 @@ public class FaucetBlockEntityRenderer implements BlockEntityRenderer<FaucetBloc
     // fetch faucet model to determine where to render fluids
     state.fluids = FluidCuboid.REGISTRY.get(state.blockState, List.of());
     if (!state.fluids.isEmpty()) {
-      state.fluid = renderFluid.copy();
+      state.fluid = FluidRenderInfo.of(renderFluid);
       state.direction = state.blockState.getValue(FaucetBlock.FACING);
       // fluids in the block(s) below
       state.below = RenderingHelper.getFaucetFluids(world, tileEntity.getBlockPos(), state.direction);
@@ -57,34 +54,13 @@ public class FaucetBlockEntityRenderer implements BlockEntityRenderer<FaucetBloc
 
   @Override
   public void submit(FaucetRenderState state, PoseStack matrices, SubmitNodeCollector collector, CameraRenderState camera) {
-    FluidStack renderFluid = state.fluid;
-    if (renderFluid.isEmpty() || state.fluids.isEmpty()) {
+    FluidRenderInfo fluid = state.fluid;
+    if (fluid == null || state.fluids.isEmpty()) {
       return;
     }
-    // if side, rotate fluid model
+    // if side, rotate fluid model, including the fluid in the block(s) below
     boolean isRotated = RenderingHelper.applyRotation(matrices, state.direction);
-
-    List<FluidCuboid> fluids = state.fluids;
-    List<List<FluidCuboid>> below = state.below;
-    int light = state.lightCoords;
-    collector.submitCustomGeometry(matrices, MantleRenderTypes.FLUID, (pose, buffer) -> {
-      // fluid props
-      IClientFluidTypeExtensions attributes = IClientFluidTypeExtensions.of(renderFluid.getFluid());
-      int color = attributes.getTintColor(renderFluid);
-      TextureAtlasSprite still = FluidRenderer.getBlockSprite(attributes.getStillTexture(renderFluid));
-      TextureAtlasSprite flowing = FluidRenderer.getBlockSprite(attributes.getFlowingTexture(renderFluid));
-      FluidType fluidType = renderFluid.getFluid().getFluidType();
-      int fluidLight = FluidRenderer.withBlockLight(light, fluidType.getLightLevel(renderFluid));
-
-      // render all cubes in the model
-      for (FluidCuboid cube : fluids) {
-        FluidRenderer.renderCuboid(pose, buffer, cube, 0, still, flowing, color, fluidLight, false);
-      }
-
-      // render into the block(s) below
-      RenderingHelper.renderFaucetFluids(pose, buffer, below, still, flowing, color, fluidLight);
-    });
-
+    FluidRenderer.submitPouring(matrices, collector, state.fluids, state.below, fluid, state.lightCoords);
     // if rotated, pop back rotation
     if (isRotated) {
       matrices.popPose();
@@ -98,8 +74,9 @@ public class FaucetBlockEntityRenderer implements BlockEntityRenderer<FaucetBloc
 
   /** Render state for the faucet */
   public static class FaucetRenderState extends BlockEntityRenderState {
-    /** Copy of the poured fluid, empty when not pouring */
-    public FluidStack fluid = FluidStack.EMPTY;
+    /** Poured fluid, null when not pouring */
+    @Nullable
+    public FluidRenderInfo fluid;
     public Direction direction = Direction.DOWN;
     public List<FluidCuboid> fluids = List.of();
     /** Fluid cuboids in the blocks below, from {@link RenderingHelper#getFaucetFluids} */
