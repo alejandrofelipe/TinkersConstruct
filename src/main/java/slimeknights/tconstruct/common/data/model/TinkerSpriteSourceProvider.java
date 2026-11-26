@@ -44,7 +44,9 @@ public class TinkerSpriteSourceProvider extends SpriteSourceProvider {
     "rib", "spire", "wayfinder", "shaper", "silence", "raiser", "host"
   };
   private static final String PALETTE_FOLDER = "trims/color_palettes/";
-  private static final String TRIM_FOLDER = "trims/models/armor/";
+  /** 1.21.4: vanilla's worn trim textures, was {@code trims/models/armor/<pattern>(_leggings)} */
+  private static final String TRIM_FOLDER = "trims/entity/humanoid/";
+  private static final String TRIM_LEGGINGS_FOLDER = "trims/entity/humanoid_leggings/";
 
   public TinkerSpriteSourceProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
     super(output, lookupProvider, TConstruct.MOD_ID);
@@ -110,7 +112,7 @@ public class TinkerSpriteSourceProvider extends SpriteSourceProvider {
     // add armor trims in our materials
     atlas(Identifier.parse("armor_trims"))
       .addSource(new PalettedPermutations(
-        Arrays.stream(TRIMS).flatMap(name -> Stream.of(Identifier.parse(TRIM_FOLDER + name), Identifier.parse(TRIM_FOLDER + name + "_leggings"))).toList(),
+        Arrays.stream(TRIMS).flatMap(name -> Stream.of(Identifier.parse(TRIM_FOLDER + name), Identifier.parse(TRIM_LEGGINGS_FOLDER + name))).toList(),
         trimPalette, tinkerMaterials));
   }
 

@@ -73,7 +73,8 @@ public record TrimArmorTextureSupplier(ModifierId modifier, Identifier patternKe
         texture = ArmorTexture.EMPTY;
         if (pattern != null && material != null) {
           Identifier patternAsset = pattern.assetId();
-          texture = TrimArmorTexture.create(patternAsset.withPath("trims/models/armor/" + patternAsset.getPath() + (textureType == TextureType.LEGGINGS ? "_leggings" : "")), material);
+          // 1.21.4: vanilla moved the worn trim textures from trims/models/armor/<pattern>(_leggings) to trims/entity/humanoid(_leggings)/<pattern>
+          texture = TrimArmorTexture.create(patternAsset.withPath("trims/entity/" + (textureType == TextureType.LEGGINGS ? "humanoid_leggings/" : "humanoid/") + patternAsset.getPath()), material);
         }
         cache.put(key, texture);
         return texture;
