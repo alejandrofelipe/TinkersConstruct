@@ -79,7 +79,7 @@ public class SeveringCategory implements IRecipeCategory<SeveringRecipe> {
   }
 
   @Override
-  public Identifier getRegistryName(SeveringRecipe recipe) {
+  public Identifier getIdentifier(SeveringRecipe recipe) {
     return recipe.getId();
   }
 }

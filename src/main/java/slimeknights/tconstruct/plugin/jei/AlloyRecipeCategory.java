@@ -175,7 +175,7 @@ public class AlloyRecipeCategory implements IRecipeCategory<AlloyRecipe> {
   }
 
   @Override
-  public Identifier getRegistryName(AlloyRecipe recipe) {
+  public Identifier getIdentifier(AlloyRecipe recipe) {
     return recipe.getId();
   }
 }

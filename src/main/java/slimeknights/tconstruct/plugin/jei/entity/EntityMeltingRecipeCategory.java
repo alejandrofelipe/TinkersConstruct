@@ -120,7 +120,7 @@ public class EntityMeltingRecipeCategory implements IRecipeCategory<EntityMeltin
   }
 
   @Override
-  public Identifier getRegistryName(EntityMeltingRecipe recipe) {
+  public Identifier getIdentifier(EntityMeltingRecipe recipe) {
     return recipe.getId();
   }
 

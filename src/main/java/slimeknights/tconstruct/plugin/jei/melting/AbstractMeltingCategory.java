@@ -133,7 +133,7 @@ public abstract class AbstractMeltingCategory implements IRecipeCategory<Melting
   }
 
   @Override
-  public Identifier getRegistryName(MeltingRecipe recipe) {
+  public Identifier getIdentifier(MeltingRecipe recipe) {
     return recipe.getId();
   }
 }

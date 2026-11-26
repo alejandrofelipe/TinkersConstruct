@@ -151,7 +151,7 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
   }
 
   @Override
-  public Identifier getRegistryName(ToolBuildingRecipe recipe) {
+  public Identifier getIdentifier(ToolBuildingRecipe recipe) {
     return recipe.getId();
   }
 }

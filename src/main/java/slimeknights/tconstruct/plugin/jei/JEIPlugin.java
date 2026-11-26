@@ -202,8 +202,8 @@ public class JEIPlugin implements IModPlugin {
     assert level != null;
     RegistryAccess access = level.registryAccess();
     // NOTE (1.21 recipe id): recipes below are registered by value; since 1.21 the id lives in the RecipeHolder, not
-    // the recipe. Each category's getRegistryName(recipe) therefore returns recipe.getId() == null, which JEI
-    // explicitly permits (IRecipeCategory#getRegistryName is @Nullable, "or null if there is none"). It only degrades
+    // the recipe. Each category's getIdentifier(recipe) (getRegistryName before JEI 27) therefore returns recipe.getId() == null, which JEI
+    // explicitly permits (IRecipeCategory#getIdentifier is @Nullable, "or null if there is none"). It only degrades
     // per-recipe bookmarking and the id line in advanced tooltips, and never crashes. Populating the id (via the
     // holder) or switching categories to T=RecipeHolder was evaluated 2026-07-15 and judged disproportionate for those
     // secondary features; the LopyLuna community port of the same code accepts the same null. See project memory

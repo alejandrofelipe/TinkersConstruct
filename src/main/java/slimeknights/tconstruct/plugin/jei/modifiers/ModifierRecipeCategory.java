@@ -245,7 +245,7 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
 
   @Nullable
   @Override
-  public Identifier getRegistryName(IDisplayModifierRecipe recipe) {
+  public Identifier getIdentifier(IDisplayModifierRecipe recipe) {
     return recipe.getRecipeId();
   }
 

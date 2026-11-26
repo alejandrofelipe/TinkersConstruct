@@ -113,7 +113,7 @@ public class MoldingRecipeCategory implements IRecipeCategory<MoldingRecipe> {
   }
 
   @Override
-  public Identifier getRegistryName(MoldingRecipe recipe) {
+  public Identifier getIdentifier(MoldingRecipe recipe) {
     return recipe.getId();
   }
 }

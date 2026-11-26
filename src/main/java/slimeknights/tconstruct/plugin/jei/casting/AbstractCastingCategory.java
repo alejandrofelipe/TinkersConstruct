@@ -139,7 +139,7 @@ public abstract class AbstractCastingCategory implements IRecipeCategory<IDispla
 
   @Nullable
   @Override
-  public Identifier getRegistryName(IDisplayableCastingRecipe recipe) {
+  public Identifier getIdentifier(IDisplayableCastingRecipe recipe) {
     return recipe.getRecipeId();
   }
 }
