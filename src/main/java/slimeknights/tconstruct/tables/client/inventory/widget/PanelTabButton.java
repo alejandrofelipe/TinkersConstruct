@@ -33,7 +33,7 @@ public class PanelTabButton extends Button {
   }
 
   @Override
-  public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+  protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
     (this.isHovered ? this.backgroundHover : this.background).draw(graphics, this.getX(), this.getY());
     this.icon.render(graphics, this.getX() + 1, this.getY() + 1);
   }

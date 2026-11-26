@@ -66,7 +66,7 @@ public class ContentPageIconList extends PageContent {
       totalHeight -= getTitleHeight();
     }
     if (subText != null) {
-      totalHeight -= 16 + this.parent.parent.parent.fontRenderer.wordWrapHeight(subText, BookScreen.PAGE_WIDTH) * 12 / 9;
+      totalHeight -= 16 + wordWrapHeight(this.parent.parent.parent.fontRenderer, subText, BookScreen.PAGE_WIDTH) * 12 / 9;
     }
     return totalHeight / this.height;
   }

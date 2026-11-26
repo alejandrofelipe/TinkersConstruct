@@ -2,10 +2,11 @@ package slimeknights.tconstruct.tables.client.inventory;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -236,9 +237,14 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
       // the rectangle one block above the feet and translate one block down, so the feet stay at (armorStandX, armorStandY);
       // the rectangle spans 2.5 blocks up and 1.5 blocks to each side so the stand and its held tool are not clipped.
       int halfWidth = this.armorStandScale * 3 / 2;
-      InventoryScreen.renderEntityInInventory(graphics, this.armorStandX - halfWidth, this.armorStandY - this.armorStandScale * 5 / 2,
-                                              this.armorStandX + halfWidth, this.armorStandY + this.armorStandScale / 2,
-                                              this.armorStandScale, ARMOR_STAND_TRANSLATION, pose, null, this.armorStandPreview);
+      // 1.21.11: InventoryScreen#renderEntityInInventory was removed; same steps as its body (now vanilla's private InventoryScreen#extractRenderState)
+      EntityRenderState renderState = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(this.armorStandPreview).createRenderState(this.armorStandPreview, 1.0F);
+      renderState.lightCoords = LightTexture.FULL_BRIGHT;
+      renderState.shadowPieces.clear();
+      renderState.outlineColor = 0;
+      graphics.submitEntityRenderState(renderState, this.armorStandScale, ARMOR_STAND_TRANSLATION, pose, null,
+                                       this.armorStandX - halfWidth, this.armorStandY - this.armorStandScale * 5 / 2,
+                                       this.armorStandX + halfWidth, this.armorStandY + this.armorStandScale / 2);
 
       graphics.blit(RenderPipelines.GUI_TEXTURED, ICON_TEXTURE, armorStandX - 16, armorStandY - 16, 0, 184, 32, 32, 256, 256);
     }

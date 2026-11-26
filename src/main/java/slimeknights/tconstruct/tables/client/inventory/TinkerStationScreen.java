@@ -3,7 +3,6 @@ package slimeknights.tconstruct.tables.client.inventory;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.InputQuirks;
@@ -647,12 +646,12 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   }
 
   @Override
-  public void renderSlot(GuiGraphics graphics, Slot slotIn) {
+  public void renderSlot(GuiGraphics graphics, Slot slotIn, int mouseX, int mouseY) {
     // don't draw dormant slots with no item
     if (slotIn instanceof TinkerStationSlot && ((TinkerStationSlot) slotIn).isDormant() && !slotIn.hasItem()) {
       return;
     }
-    super.renderSlot(graphics, slotIn);
+    super.renderSlot(graphics, slotIn, mouseX, mouseY);
   }
 
   @Override
@@ -756,9 +755,9 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   }
 
   @Override
-  public void resize(Minecraft pMinecraft, int pWidth, int pHeight) {
+  public void resize(int pWidth, int pHeight) {
     String s = this.textField.getValue();
-    super.resize(pMinecraft, pWidth, pHeight);
+    super.resize(pWidth, pHeight);
     this.textField.setValue(s);
   }
 
