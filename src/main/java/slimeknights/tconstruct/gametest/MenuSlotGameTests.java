@@ -24,6 +24,7 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import slimeknights.mantle.inventory.WrapperSlot;
+import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
 import slimeknights.tconstruct.library.tools.capability.fluid.ToolTankHelper;
 import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
@@ -32,6 +33,7 @@ import slimeknights.tconstruct.library.transfer.ModifiableItemHandler;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
+import slimeknights.tconstruct.smeltery.block.entity.CastingTankBlockEntity;
 import slimeknights.tconstruct.smeltery.item.TankItem;
 import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.data.ModifierIds;
@@ -863,6 +865,89 @@ public class MenuSlotGameTests {
       m.clicked(0, 0, ClickType.SWAP, m.player);
     });
     assertCount(helper, inventory[0], menu, Items.APPLE, 10, "after swapping into an empty hotbar slot");
+    helper.succeed();
+  }
+
+  /** Builds a crafting station menu next to the given inventory, with a full crafting grid so shift clicks go to the side inventory */
+  private static CraftingStationContainerMenu fullStationMenu(GameTestHelper helper, Player player, boolean disableWhitelist) {
+    CraftingStationBlockEntity station = (CraftingStationBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(POS));
+    if (station == null) {
+      throw new IllegalStateException("no crafting station");
+    }
+    for (int i = 0; i < 9; i++) {
+      station.setItem(i, new ItemStack(Items.DIRT));
+    }
+    // the side inventory must be in reach
+    player.setPos(helper.absoluteVec(new Vec3(2.5, 1, 1.5)));
+    boolean whitelist = Config.COMMON.disableSideInventoryWhitelist.get();
+    Config.COMMON.disableSideInventoryWhitelist.set(disableWhitelist || whitelist);
+    try {
+      CraftingStationContainerMenu menu = new CraftingStationContainerMenu(0, player.getInventory(), station);
+      player.containerMenu = menu;
+      return menu;
+    } finally {
+      Config.COMMON.disableSideInventoryWhitelist.set(whitelist);
+    }
+  }
+
+  /** Shift clicks the given player inventory slot in the menu */
+  private static void shiftClickPlayerSlot(GameTestHelper helper, AbstractContainerMenu menu, Player player, int inventorySlot) {
+    for (int i = 0; i < menu.slots.size(); i++) {
+      Slot slot = menu.slots.get(i);
+      if (slot.container == player.getInventory() && slot.getContainerSlot() == inventorySlot) {
+        menu.clicked(i, 0, ClickType.QUICK_MOVE, player);
+        return;
+      }
+    }
+    helper.fail(Component.literal("player inventory slot " + inventorySlot + " not found in the menu"));
+  }
+
+  /**
+   * A casting tank as a side inventory (whitelist disabled) consumes what is set into its input, moving the result to its output. Shift
+   * clicking a water bucket into it must account exactly one bucket: the tank gets the water, the output the empty bucket, the player loses
+   * the water bucket (before, the menu wrote its stale copy back into the input, duplicating the bucket).
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_shift_click_casting_tank(GameTestHelper helper) {
+    place(helper, POS, TinkerTables.craftingStation.get(), CraftingStationBlockEntity.class);
+    CastingTankBlockEntity tank = place(helper, POS.east(), TinkerSmeltery.searedCastingTank.get(), CastingTankBlockEntity.class);
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    CraftingStationContainerMenu menu = fullStationMenu(helper, player, true);
+    if (menu.getSubContainer(SideInventoryContainer.class) == null) {
+      helper.fail(Component.literal("crafting station found no side inventory next to the casting tank"));
+      return;
+    }
+    player.getInventory().setItem(9, new ItemStack(Items.WATER_BUCKET));
+    shiftClickPlayerSlot(helper, menu, player, 9);
+    assertStack(helper, tank.getItem(CastingTankBlockEntity.INPUT), ItemStack.EMPTY, "casting tank input");
+    assertStack(helper, tank.getItem(CastingTankBlockEntity.OUTPUT), new ItemStack(Items.BUCKET), "casting tank output");
+    FluidStack fluid = tank.getTank().getFluid();
+    helper.assertTrue(fluid.getFluid().isSame(Fluids.WATER) && fluid.getAmount() == FluidType.BUCKET_VOLUME, Component.literal("casting tank holds " + fluid));
+    helper.assertTrue(player.getInventory().countItem(Items.WATER_BUCKET) == 0 && player.getInventory().countItem(Items.BUCKET) == 0,
+      Component.literal("player kept " + player.getInventory().getItem(9)));
+    helper.succeed();
+  }
+
+  /** Shift clicking into a vanilla container side inventory moves the whole stack, refilling a partial stack and filling an empty slot */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_shift_click_vanilla_container(GameTestHelper helper) {
+    place(helper, POS, TinkerTables.craftingStation.get(), CraftingStationBlockEntity.class);
+    BarrelBlockEntity barrel = place(helper, POS.east(), Blocks.BARREL, BarrelBlockEntity.class);
+    barrel.setItem(0, new ItemStack(Items.IRON_INGOT, 5));
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    CraftingStationContainerMenu menu = fullStationMenu(helper, player, false);
+    if (menu.getSubContainer(SideInventoryContainer.class) == null) {
+      helper.fail(Component.literal("crafting station found no side inventory next to the barrel"));
+      return;
+    }
+    player.getInventory().setItem(9, new ItemStack(Items.IRON_INGOT, 20));
+    shiftClickPlayerSlot(helper, menu, player, 9);
+    assertStack(helper, barrel.getItem(0), new ItemStack(Items.IRON_INGOT, 25), "barrel slot 0 after refilling");
+    player.getInventory().setItem(10, new ItemStack(Items.GOLD_INGOT, 7));
+    shiftClickPlayerSlot(helper, menu, player, 10);
+    assertStack(helper, barrel.getItem(1), new ItemStack(Items.GOLD_INGOT, 7), "barrel slot 1 after moving");
+    helper.assertTrue(player.getInventory().countItem(Items.IRON_INGOT) == 0 && player.getInventory().countItem(Items.GOLD_INGOT) == 0,
+      Component.literal("player kept " + player.getInventory().getItem(9) + " / " + player.getInventory().getItem(10)));
     helper.succeed();
   }
 
