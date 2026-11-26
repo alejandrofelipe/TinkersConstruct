@@ -32,8 +32,9 @@ import java.util.Optional;
  *   {@link #tryRemove} is clamped), so the sets vanilla then makes are ones the handler normally accepts.</li>
  *   <li>Simulations cannot predict every handler (one spreading an insert over several slots non-linearly accepts a large simulated insert
  *   but no exact set), so the final write is checked too: {@link #safeInsert(ItemStack, int)} sets the slot before shrinking the cursor,
- *   and a refused {@link #setByPlayer(ItemStack, ItemStack)} (swaps, drags, number key swaps: vanilla already took the new stack) gives the
- *   items the slot did not take back to the player. The set is all or nothing, so the handler keeps none of what is given back.</li>
+ *   {@link #tryRemove} sets the remainder before handing anything out, and a refused {@link #setByPlayer(ItemStack, ItemStack)} (swaps,
+ *   drags, number key swaps: vanilla already took the new stack and handed out the old one) gives the items the slot did not take back to
+ *   the player, and takes back an old stack the slot kept. The set is all or nothing, so the handler keeps none of what is given back.</li>
  * </ul>
  */
 public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
@@ -206,7 +207,8 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
    * handing out the old one), so a refused set would lose those items: the part of the new stack the slot did not take goes back to the
    * player instead (server side; the client's prediction is corrected by the server). For a swap, whose old stack vanilla already handed
    * out, the slot is still emptied when the handler allows it, so the old stack is not duplicated; when it refuses that too (contradicting
-   * what {@link #mayPickup} simulated), the slot keeps the old stack and the copy vanilla handed out is taken back from the player.
+   * what {@link #mayPickup} simulated), the slot keeps the old stack and the copy vanilla handed out is taken back from the player. The
+   * same goes for a refused clear (vanilla moved the stack out first, e.g. a number key swap into an empty hotbar slot).
    * <p>
    * A new stack of the slot's own item is not always "the slot's stack plus what the player gave": a number key swap from a smaller hotbar
    * stack of the same item hands the whole old stack to the hotbar and sets the slot to the smaller stack, so a new stack smaller than the
@@ -223,9 +225,16 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
       return;
     }
     ItemStack current = super.getStackCopy();
-    if (!transactional.trySet(index, ItemResource.of(newStack), newStack.getCount()) && !newStack.isEmpty()) {
+    if (!transactional.trySet(index, ItemResource.of(newStack), newStack.getCount())) {
       int refused;
-      if (ItemStack.isSameItemSameComponents(current, newStack) && newStack.getCount() >= current.getCount()) {
+      if (newStack.isEmpty()) {
+        // clearing the slot after vanilla moved its stack out (a number key swap into an empty hotbar slot), refused although mayPickup
+        // simulated it: the slot keeps its stack, so take back the copy vanilla handed out
+        refused = 0;
+        if (!current.isEmpty()) {
+          takeBack(current);
+        }
+      } else if (ItemStack.isSameItemSameComponents(current, newStack) && newStack.getCount() >= current.getCount()) {
         // the player gave just the difference
         refused = newStack.getCount() - current.getCount();
       } else {
@@ -316,18 +325,35 @@ public class ModifiableItemHandlerSlot extends ResourceHandlerSlot {
     return amount > 0 && simulateExtract(amount) == amount;
   }
 
+  /**
+   * Over a transactional setter, takes without NeoForge's {@code StackCopySlot#remove} (final), which sets the remainder ignoring a refusal
+   * and hands out the split stack anyway: the slot is set to the remainder first, all or nothing, and only what really left it is returned.
+   * Picking up, gathering (PICKUP_ALL), throwing and JEI all take through here ({@link #safeTake} included). Vanilla's
+   * {@code setByPlayer(EMPTY)} after emptying the slot is skipped, it would be a no-op set of an already empty slot.
+   */
   @Override
   public Optional<ItemStack> tryRemove(int count, int decrement, Player player) {
     if (!inRange()) {
       return Optional.empty();
     }
-    if (transactional != null) {
-      // remove(count) sets the remainder, so only take what the handler gives
-      count = simulateExtract(Math.min(count, decrement));
-      if (count <= 0) {
-        return Optional.empty();
-      }
+    if (transactional == null) {
+      return super.tryRemove(count, decrement, player);
     }
-    return super.tryRemove(count, decrement, player);
+    if (!mayPickup(player)) {
+      return Optional.empty();
+    }
+    ItemStack current = super.getStackCopy();
+    if (!allowModification(player) && decrement < current.getCount()) {
+      return Optional.empty();
+    }
+    // only take what the handler gives
+    int amount = simulateExtract(Math.min(Math.min(count, decrement), current.getCount()));
+    Optional<ItemStack> taken = Optional.empty();
+    if (amount > 0 && transactional.trySet(index, ItemResource.of(current), current.getCount() - amount)) {
+      taken = Optional.of(current.copyWithCount(amount));
+    }
+    // the menu may write back the last stack handed out by getItem, so refresh it to the real contents
+    getItem();
+    return taken;
   }
 }

@@ -829,6 +829,43 @@ public class MenuSlotGameTests {
     helper.succeed();
   }
 
+  /**
+   * Taking from a slot whose final extract fails although simulated: nothing may be handed out while the slot keeps its stack (before,
+   * NeoForge's slot ignored the refused set of the remainder and returned the split stack anyway).
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void slot_safety_take_refused(GameTestHelper helper) {
+    FlakyInventory[] inventory = new FlakyInventory[1];
+    // picking up all and half
+    for (int button = 0; button <= 1; button++) {
+      int clickButton = button;
+      MovingSideInventory menu = withFailingFinalExtract(helper, false, (inv, m) -> {
+        inventory[0] = inv;
+        inv.set(0, ItemResource.of(Items.APPLE), 10);
+        click(m, m.player, 0, clickButton, ItemStack.EMPTY);
+      });
+      assertCount(helper, inventory[0], menu, Items.APPLE, 10, "after picking up with button " + button);
+    }
+
+    // a direct take, as throwing and JEI do
+    ItemStack[] taken = new ItemStack[1];
+    MovingSideInventory menu = withFailingFinalExtract(helper, false, (inv, m) -> {
+      inventory[0] = inv;
+      inv.set(0, ItemResource.of(Items.APPLE), 10);
+      taken[0] = m.getSlot(0).safeTake(1, Integer.MAX_VALUE, m.player);
+    });
+    assertCount(helper, inventory[0], menu, Items.APPLE, 10 - taken[0].getCount(), "after taking one directly (took " + taken[0] + ")");
+
+    // number key swap into an empty hotbar slot: vanilla moved the stack to the hotbar, then the slot refuses to be emptied
+    menu = withFailingFinalExtract(helper, false, (inv, m) -> {
+      inventory[0] = inv;
+      inv.set(0, ItemResource.of(Items.APPLE), 10);
+      m.clicked(0, 0, ClickType.SWAP, m.player);
+    });
+    assertCount(helper, inventory[0], menu, Items.APPLE, 10, "after swapping into an empty hotbar slot");
+    helper.succeed();
+  }
+
   /** Tinkers chest menu: slots report their chest index, respect the slot limit, and shift clicking moves stacks out of the chest. */
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void chest_menu_slots(GameTestHelper helper) {
