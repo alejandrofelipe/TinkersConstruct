@@ -1,0 +1,5 @@
+{
+  "type": "tconstruct:basic_armor",
+  "texture_name": "tconstruct_gametest:basic",
+  "slot": "helmet"
+}

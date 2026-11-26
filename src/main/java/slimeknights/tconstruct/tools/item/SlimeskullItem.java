@@ -25,7 +25,7 @@ public class SlimeskullItem extends ModifiableArmorItem {
   private final Identifier name;
 
   public SlimeskullItem(ModifiableArmorMaterial material, Identifier name, Properties properties) {
-    super(material, ArmorType.HELMET, properties);
+    super(material, ArmorType.HELMET, properties, EQUIPMENT_ASSET);
     this.name = name;
   }
 

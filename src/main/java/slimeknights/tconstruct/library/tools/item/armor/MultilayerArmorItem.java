@@ -1,10 +1,12 @@
 package slimeknights.tconstruct.library.tools.item.armor;
 
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import slimeknights.tconstruct.library.client.armor.ArmorModelManager.ArmorModelDispatcher;
 import slimeknights.tconstruct.library.tools.definition.ModifiableArmorMaterial;
@@ -22,7 +24,7 @@ public class MultilayerArmorItem extends ModifiableArmorItem {
   }
 
   public MultilayerArmorItem(ModifiableArmorMaterial material, ArmorType slot, Properties properties, Identifier name) {
-    super(material, slot, properties);
+    super(material, slot, properties, EQUIPMENT_ASSET);
     this.name = name;
   }
 
@@ -31,7 +33,15 @@ public class MultilayerArmorItem extends ModifiableArmorItem {
   }
 
   public MultilayerArmorItem(DummyArmorMaterial material, ArmorType slot, Properties properties, ToolDefinition toolDefinition, Identifier name) {
-    super(material, slot, properties, toolDefinition);
+    this(material, slot, properties, toolDefinition, name, EQUIPMENT_ASSET);
+  }
+
+  /**
+   * Creates armor drawn from an armor model.
+   * @param equipmentAsset  {@link #EQUIPMENT_ASSET}, or {@link #WINGS_EQUIPMENT_ASSET} for a chestplate that always has wings
+   */
+  public MultilayerArmorItem(DummyArmorMaterial material, ArmorType slot, Properties properties, ToolDefinition toolDefinition, Identifier name, ResourceKey<EquipmentAsset> equipmentAsset) {
+    super(material, slot, properties, toolDefinition, equipmentAsset);
     this.name = name;
   }
 

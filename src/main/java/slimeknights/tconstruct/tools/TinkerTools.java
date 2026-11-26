@@ -252,7 +252,7 @@ public final class TinkerTools extends TinkerModule {
     .put(ArmorType.CHESTPLATE, ITEMS.register("slimy_chestplate", p -> new MultilayerArmorItem(ArmorDefinitions.SLIMESUIT, ArmorType.CHESTPLATE, p), UNSTACKABLE_PROPS))
     .putAll(ITEMS.registerEnum("slime", new ArmorType[] {ArmorType.LEGGINGS, ArmorType.BOOTS}, (key, type) -> new MultilayerArmorItem(ArmorDefinitions.SLIMESUIT, type, UNSTACKABLE_PROPS.setId(key))))
     .build();
-  public static final ItemObject<MultilayerArmorItem> slimeWings = ITEMS.register("slime_wings", p -> new MultilayerArmorItem(ArmorDefinitions.SLIMESUIT, ArmorType.CHESTPLATE, p, ArmorDefinitions.SLIME_WINGS, TinkerTools.slimeWings.getId()), UNSTACKABLE_PROPS);
+  public static final ItemObject<MultilayerArmorItem> slimeWings = ITEMS.register("slime_wings", p -> new MultilayerArmorItem(ArmorDefinitions.SLIMESUIT, ArmorType.CHESTPLATE, p, ArmorDefinitions.SLIME_WINGS, TinkerTools.slimeWings.getId(), ModifiableArmorItem.WINGS_EQUIPMENT_ASSET), UNSTACKABLE_PROPS);
 
   // shields
   public static final ItemObject<ModifiableItem> travelersShield = ITEMS.register("travelers_shield", p -> new ModifiableItem(p, ArmorDefinitions.TRAVELERS_SHIELD), UNSTACKABLE_PROPS);

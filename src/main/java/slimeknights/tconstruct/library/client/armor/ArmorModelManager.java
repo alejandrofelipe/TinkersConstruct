@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -126,6 +127,15 @@ public class ArmorModelManager extends SimpleJsonResourceReloadListener<JsonElem
         }
       }
       return model;
+    }
+
+    /**
+     * Skips every layer of the equipment asset in vanilla's equipment layer, as {@link TinkerArmorLayer} draws the armor. The asset layers
+     * are transparent, but a drawn layer would still get vanilla's glint over the armor model.
+     */
+    @Override
+    public int getArmorLayerTintColor(ItemStack stack, EquipmentClientInfo.Layer layer, int layerIdx, int fallbackColor) {
+      return 0;
     }
 
     /** Gets the renderer drawing the armor model on the entity */

@@ -17,6 +17,8 @@ import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
+import slimeknights.tconstruct.library.tools.item.armor.ModifiableArmorItem;
+import slimeknights.tconstruct.library.tools.item.armor.MultilayerArmorItem;
 import slimeknights.tconstruct.library.tools.part.ToolPartItem;
 import slimeknights.tconstruct.plugin.jsonthings.block.FlexBurningLiquidBlock;
 import slimeknights.tconstruct.plugin.jsonthings.block.FlexMobEffectLiquidBlock;
@@ -83,6 +85,18 @@ public class JsonThingsGameTests {
     helper.assertTrue(kit.getRepairAmount() == 3, Component.literal("repair kit repairs " + kit.getRepairAmount() + ", expected 3"));
     Item cast = item(helper, "test_head_cast");
     helper.assertTrue(cast instanceof FlexPartCastItem, Component.literal("tconstruct:part_cast thing is not a FlexPartCastItem: " + cast));
+    helper.succeed();
+  }
+
+  /** Basic armor has no armor model, so vanilla draws it as iron armor, while multilayer armor uses the Tinkers asset drawn by the Tinkers armor layer */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 20)
+  public static void jsonthings_armor_equipment_assets(GameTestHelper helper) {
+    Item basic = item(helper, "test_basic_helmet");
+    helper.assertTrue(basic instanceof ModifiableArmorItem && !(basic instanceof MultilayerArmorItem), Component.literal("tconstruct:basic_armor thing is not a plain ModifiableArmorItem: " + basic));
+    ToolGameTests.assertEquipmentAsset(helper, basic, ModifiableArmorItem.PLAIN_EQUIPMENT_ASSET);
+    Item multilayer = item(helper, "test_multilayer_helmet");
+    helper.assertTrue(multilayer instanceof MultilayerArmorItem, Component.literal("tconstruct:multilayer_armor thing is not a MultilayerArmorItem: " + multilayer));
+    ToolGameTests.assertEquipmentAsset(helper, multilayer, ModifiableArmorItem.EQUIPMENT_ASSET);
     helper.succeed();
   }
 

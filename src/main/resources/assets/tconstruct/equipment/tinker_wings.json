@@ -1,0 +1,10 @@
+{
+  "layers": {
+    "humanoid": [
+      { "texture": "tconstruct:transparent" }
+    ],
+    "wings": [
+      { "texture": "tconstruct:transparent" }
+    ]
+  }
+}

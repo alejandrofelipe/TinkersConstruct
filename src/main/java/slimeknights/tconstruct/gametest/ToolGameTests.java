@@ -9,12 +9,17 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.equipment.ArmorMaterials;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -31,6 +36,7 @@ import slimeknights.tconstruct.library.tools.capability.inventory.ToolInventoryC
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
 import slimeknights.tconstruct.library.tools.helper.ToolDamageUtil;
 import slimeknights.tconstruct.library.tools.helper.ToolBuildHandler;
+import slimeknights.tconstruct.library.tools.item.armor.ModifiableArmorItem;
 import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolDataVerifier;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
@@ -50,10 +56,31 @@ import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /** Gametests for the tool crafting subsystem: assembling parts into a working tool at a tinker station. */
 public class ToolGameTests {
+  /** Fails unless the armor item's equippable uses the given equipment asset, keeping iron's equip sound */
+  static void assertEquipmentAsset(GameTestHelper helper, Item item, ResourceKey<EquipmentAsset> expected) {
+    Equippable equippable = new ItemStack(item).get(DataComponents.EQUIPPABLE);
+    helper.assertTrue(equippable != null && equippable.assetId().equals(Optional.of(expected)),
+      Component.literal(BuiltInRegistries.ITEM.getKey(item) + " has equipment asset " + (equippable == null ? null : equippable.assetId()) + ", expected " + expected.identifier()));
+    helper.assertTrue(equippable.equipSound().equals(ArmorMaterials.IRON.equipSound()), Component.literal(BuiltInRegistries.ITEM.getKey(item) + " lost iron's equip sound: " + equippable.equipSound()));
+  }
+
+  /** Armor drawn from armor models uses the Tinkers equipment asset (vanilla draws nothing), the slime wings the one with a wings layer (hides the cape) */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 20)
+  public static void armor_equipment_assets(GameTestHelper helper) {
+    Consumer<ModifiableArmorItem> modelArmor = item -> assertEquipmentAsset(helper, item, ModifiableArmorItem.EQUIPMENT_ASSET);
+    TinkerTools.plateArmor.forEach(modelArmor);
+    TinkerTools.travelersGear.forEach(modelArmor);
+    TinkerTools.slimesuit.forEach(modelArmor);
+    assertEquipmentAsset(helper, TinkerTools.slimeWings.get(), ModifiableArmorItem.WINGS_EQUIPMENT_ASSET);
+    helper.succeed();
+  }
+
 
   /**
    * A stone pick head, wood tool handle, and wood tool binding are placed in a tinker station's input

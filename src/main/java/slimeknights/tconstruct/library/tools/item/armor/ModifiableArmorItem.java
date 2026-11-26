@@ -80,16 +80,16 @@ public class ModifiableArmorItem extends Item implements IModifiableDisplay {
   public static final Identifier ENDERMASK = TConstruct.getResource("endermask");
 
   /**
-   * Equipment asset of all Tinkers armor. Worn Tinkers armor is drawn by {@link slimeknights.tconstruct.library.client.armor.TinkerArmorLayer}
-   * from the armor models, so vanilla's equipment layer must draw nothing for it. This asset intentionally has no JSON: the equipment asset codec
-   * rejects an empty layer map, and an unknown asset resolves to an asset without layers. It must still be set, as vanilla only copies worn
-   * equipment with an asset into the render state.
+   * Equipment asset of armor drawn from an armor model ({@link MultilayerArmorItem}, slimeskull) by
+   * {@link slimeknights.tconstruct.library.client.armor.TinkerArmorLayer}. Its humanoid layer is a transparent texture that the armor model
+   * dispatcher also skips, so vanilla's equipment layer draws nothing for it, while vanilla still copies the worn stack into the render state
+   * and the cape layer sees a chestplate.
    */
   public static final ResourceKey<EquipmentAsset> EQUIPMENT_ASSET = ResourceKey.create(EquipmentAssets.ROOT_ID, TConstruct.getResource("tinker_armor"));
-  /** Iron's stats (durability, defense, toughness, equip sound, repair tag) on {@link #EQUIPMENT_ASSET}; Tinkers drives the real armor stats through tool stats */
-  private static final ArmorMaterial PLACEHOLDER_MATERIAL = new ArmorMaterial(
-    ArmorMaterials.IRON.durability(), ArmorMaterials.IRON.defense(), ArmorMaterials.IRON.enchantmentValue(), ArmorMaterials.IRON.equipSound(),
-    ArmorMaterials.IRON.toughness(), ArmorMaterials.IRON.knockbackResistance(), ArmorMaterials.IRON.repairIngredient(), EQUIPMENT_ASSET);
+  /** Same as {@link #EQUIPMENT_ASSET} with a transparent wings layer as well, for chestplates that always have wings so the cape layer hides the cape */
+  public static final ResourceKey<EquipmentAsset> WINGS_EQUIPMENT_ASSET = ResourceKey.create(EquipmentAssets.ROOT_ID, TConstruct.getResource("tinker_wings"));
+  /** Equipment asset of armor without an armor model, which vanilla draws as iron armor */
+  public static final ResourceKey<EquipmentAsset> PLAIN_EQUIPMENT_ASSET = ArmorMaterials.IRON.assetId();
 
   @Getter
   private final ToolDefinition toolDefinition;
@@ -101,15 +101,38 @@ public class ModifiableArmorItem extends Item implements IModifiableDisplay {
   // ModifiableArmorMaterial no longer extends it (see DummyArmorMaterial). We pass a placeholder material to the super ctor
   // so construction compiles, while Tinkers drives armor stats through ToolStats/attributes instead.
   // PORT 1.21.4: ArmorType became net.minecraft.world.item.equipment.ArmorType.
-  public ModifiableArmorItem(DummyArmorMaterial materialIn, ArmorType type, Properties builderIn, ToolDefinition toolDefinition) {
+  /**
+   * Creates an armor item.
+   * @param equipmentAsset  Equipment asset vanilla draws when worn, {@link #EQUIPMENT_ASSET} for armor drawn from an armor model
+   */
+  public ModifiableArmorItem(DummyArmorMaterial materialIn, ArmorType type, Properties builderIn, ToolDefinition toolDefinition, ResourceKey<EquipmentAsset> equipmentAsset) {
     // 1.21.5: ArmorItem was removed; humanoidArmor applies the same components the old ArmorItem constructor did (with the placeholder material)
-    super(builderIn.humanoidArmor(PLACEHOLDER_MATERIAL, type));
+    super(builderIn.humanoidArmor(placeholderMaterial(equipmentAsset), type));
     this.type = type;
     this.toolDefinition = toolDefinition;
   }
 
+  /** Creates armor without an armor model, drawn as iron armor ({@link #PLAIN_EQUIPMENT_ASSET}) */
+  public ModifiableArmorItem(DummyArmorMaterial materialIn, ArmorType type, Properties builderIn, ToolDefinition toolDefinition) {
+    this(materialIn, type, builderIn, toolDefinition, PLAIN_EQUIPMENT_ASSET);
+  }
+
+  public ModifiableArmorItem(ModifiableArmorMaterial material, ArmorType type, Properties properties, ResourceKey<EquipmentAsset> equipmentAsset) {
+    this(material, type, properties, Objects.requireNonNull(material.getArmorDefinition(type), "Missing tool definition for " + type.getName()), equipmentAsset);
+  }
+
+  /** Creates armor without an armor model, drawn as iron armor ({@link #PLAIN_EQUIPMENT_ASSET}) */
   public ModifiableArmorItem(ModifiableArmorMaterial material, ArmorType type, Properties properties) {
-    this(material, type, properties, Objects.requireNonNull(material.getArmorDefinition(type), "Missing tool definition for " + type.getName()));
+    this(material, type, properties, PLAIN_EQUIPMENT_ASSET);
+  }
+
+  /** Iron's stats (durability, defense, toughness, equip sound, repair tag) on the given asset; Tinkers drives the real armor stats through tool stats */
+  private static ArmorMaterial placeholderMaterial(ResourceKey<EquipmentAsset> equipmentAsset) {
+    ArmorMaterial iron = ArmorMaterials.IRON;
+    if (iron.assetId().equals(equipmentAsset)) {
+      return iron;
+    }
+    return new ArmorMaterial(iron.durability(), iron.defense(), iron.enchantmentValue(), iron.equipSound(), iron.toughness(), iron.knockbackResistance(), iron.repairIngredient(), equipmentAsset);
   }
 
   /** Gets the equipment slot for this armor item. PORT 1.21.4: replaces the removed {@code ArmorItem#getEquipmentSlot()}. */
