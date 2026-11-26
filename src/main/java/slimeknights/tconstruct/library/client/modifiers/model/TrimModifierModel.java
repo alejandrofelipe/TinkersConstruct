@@ -7,6 +7,7 @@ import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.registries.Registries;
@@ -86,9 +87,15 @@ public interface TrimModifierModel extends ModifierModel {
               Identifier path = root.withSuffix("_" + material.assets().base().suffix());
 
               // ensure the material sprite exists, if not we will tint the base sprite
-              TextureAtlasSprite sprite = spriteGetter.apply(ModifierModel.blockAtlas(path));
+              // 1.21.11: vanilla stitches the vanilla material permutations on the items atlas, while Tinkers stitches the
+              // permutations in its own materials and the custom roots on the blocks atlas. Mantle's item models split the
+              // quads into one layer per atlas, drawing the items atlas trim after the blocks atlas tool.
+              TextureAtlasSprite sprite = spriteGetter.apply(new Material(TextureAtlas.LOCATION_ITEMS, path));
+              if (isMissing(sprite)) {
+                sprite = spriteGetter.apply(ModifierModel.blockAtlas(path));
+              }
               int color = -1;
-              if (MissingTextureAtlasSprite.getLocation().equals(sprite.contents().name())) {
+              if (isMissing(sprite)) {
                 // if the sprite doesn't exist, will tint the base sprite, assuming we have a component color
                 // helps for mods that don't properly provide all sprites
                 sprite = spriteGetter.apply(ModifierModel.blockAtlas(root));
@@ -111,6 +118,11 @@ public interface TrimModifierModel extends ModifierModel {
         }
       }
     }
+  }
+
+  /** Checks if the sprite is the missing sprite */
+  private static boolean isMissing(TextureAtlasSprite sprite) {
+    return MissingTextureAtlasSprite.getLocation().equals(sprite.contents().name());
   }
 
   enum Armor implements TrimModifierModel {

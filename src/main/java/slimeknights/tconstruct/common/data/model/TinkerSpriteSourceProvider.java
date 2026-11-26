@@ -2,8 +2,6 @@ package slimeknights.tconstruct.common.data.model;
 
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.client.data.models.ItemModelGenerators;
-import net.minecraft.client.data.models.ItemModelGenerators.TrimMaterialData;
 import net.minecraft.client.renderer.texture.atlas.sources.DirectoryLister;
 import net.minecraft.client.renderer.texture.atlas.sources.PalettedPermutations;
 import net.minecraft.client.renderer.texture.atlas.sources.SingleFile;
@@ -14,7 +12,6 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.IdentifierPattern;
-import net.minecraft.world.item.equipment.trim.MaterialAssetGroup.AssetInfo;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimMaterials;
 import net.neoforged.neoforge.client.data.SpriteSourceProvider;
@@ -29,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -92,13 +88,9 @@ public class TinkerSpriteSourceProvider extends SpriteSourceProvider {
       // trim shield icons
       .addSource(new PalettedPermutations(customItemTrims, trimPalette, vanillaMaterials))
       // banner modifier icons
-      .addSource(new ShieldBannerModifierSpriteSource(2, 2, 10, 20, TConstruct.getResource("item/tool/armor/plate/shield/banner_large/"), 11, 8, 32))
-      // PORT 1.21.11: vanilla moved its trim item icons (trims/items/<slot>_trim_<material>) from the blocks atlas to the
-      // items atlas. TrimModifierModel looks them up on the blocks atlas (one quad list with the tool sprites), so stitch
-      // the same permutations here, built from the same data as vanilla's AtlasProvider#itemsList.
-      .addSource(new PalettedPermutations(
-        List.of(ItemModelGenerators.TRIM_PREFIX_HELMET, ItemModelGenerators.TRIM_PREFIX_CHESTPLATE, ItemModelGenerators.TRIM_PREFIX_LEGGINGS, ItemModelGenerators.TRIM_PREFIX_BOOTS),
-        trimPalette, vanillaTrimPalettes()));
+      .addSource(new ShieldBannerModifierSpriteSource(2, 2, 10, 20, TConstruct.getResource("item/tool/armor/plate/shield/banner_large/"), 11, 8, 32));
+    // 1.21.11: vanilla's trim item icons in vanilla materials (trims/items/<slot>_trim_<material>) are on the items atlas, so
+    // TrimModifierModel looks them up there; stitching them here too would define each sprite in two atlases.
     // add untinted trim textures, we use them as fallbacks
     for (Armor armor : TrimModifierModel.Armor.values()) {
       blocks.addSource(new SingleFile(armor.getRoot(false), Optional.empty()));
@@ -127,15 +119,6 @@ public class TinkerSpriteSourceProvider extends SpriteSourceProvider {
     json.addProperty("namespace", namespace);
     json.addProperty("path", path);
     return IdentifierPattern.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
-  }
-
-  /** Every vanilla trim palette (base and armor-specific overrides such as {@code iron_darker}), as vanilla's {@code AtlasProvider} lists them for the items atlas */
-  private static Map<String,Identifier> vanillaTrimPalettes() {
-    return ItemModelGenerators.TRIM_MATERIAL_MODELS.stream()
-      .map(TrimMaterialData::assets)
-      .flatMap(assets -> Stream.concat(Stream.of(assets.base()), assets.overrides().values().stream()))
-      .map(AssetInfo::suffix)
-      .collect(Collectors.toMap(suffix -> suffix, suffix -> Identifier.withDefaultNamespace(PALETTE_FOLDER + suffix), (a, b) -> a, TreeMap::new));
   }
 
   /** Adds a vanilla material to the map */

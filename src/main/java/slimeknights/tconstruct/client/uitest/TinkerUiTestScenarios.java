@@ -1349,10 +1349,10 @@ public class TinkerUiTestScenarios {
 
   /**
    * Opens a survival inventory with trimmed plate armor, worn (player preview) and as items: vanilla trim materials (iron, gold, resin) and a
-   * Tinkers one (cobalt). 1.21.11 moved vanilla's {@code trims/items/*_trim_<material>} permutations from the blocks atlas to the items atlas, while
-   * {@code TrimModifierModel} reads them from the blocks atlas, so Tinkers stitches them there again (M6 Phase 3); without that the item icons fall
-   * back to a flat tint of the base texture. Asserts the trim data is on the client stacks and every sprite the item and worn models look up
-   * exists (item icons on the blocks atlas, including an armor specific {@code iron_darker} palette; worn textures on the armor trims atlas under
+   * Tinkers one (cobalt). 1.21.11 moved vanilla's {@code trims/items/*_trim_<material>} permutations from the blocks atlas to the items atlas, so
+   * {@code TrimModifierModel} looks them up there, and on the blocks atlas for Tinkers materials; without that the item icons fall back to a flat
+   * tint of the base texture. Asserts the trim data is on the client stacks and every sprite the item and worn models look up exists (item icons,
+   * including an armor specific {@code iron_darker} palette, and not duplicated on the blocks atlas; worn textures on the armor trims atlas under
    * {@code trims/entity/humanoid(_leggings)/}, where vanilla moved them in 1.21.4).
    * <p>
    * Worn armor (M6 Phase 4): Tinkers armor draws through {@code TinkerArmorLayer}, not vanilla's equipment layer, which drew it as iron armor
@@ -1391,7 +1391,7 @@ public class TinkerUiTestScenarios {
       new Trim(ArmorType.LEGGINGS, MaterialIds.copper, "minecraft:dune", "minecraft:gold"),
       new Trim(ArmorType.BOOTS, MaterialIds.gold, "minecraft:wild", "minecraft:resin"),
       new Trim(ArmorType.BOOTS, MaterialIds.copper, "minecraft:wild", "minecraft:iron"));
-    /** Palettes beyond the base ones that the blocks atlas must hold, see {@code TinkerSpriteSourceProvider#vanillaTrimPalettes} */
+    /** Vanilla palettes beyond the base ones, which vanilla stitches on the items atlas */
     private static final List<String> EXTRA_PALETTES = List.of("iron_darker", "gold_darker");
     /** Worn helmet region of the player preview in GUI pixels, relative to the inventory corner: front left of the head above the eyes, left of the sentry trim */
     private static final Rect2i HELMET_REGION = new Rect2i(42, 15, 5, 4);
@@ -1430,6 +1430,7 @@ public class TinkerUiTestScenarios {
       Registry<TrimMaterial> materials = player.registryAccess().lookupOrThrow(Registries.TRIM_MATERIAL);
       Registry<TrimPattern> patterns = player.registryAccess().lookupOrThrow(Registries.TRIM_PATTERN);
       TextureAtlas blocks = ctx.mc().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS);
+      TextureAtlas items = ctx.mc().getAtlasManager().getAtlasOrThrow(AtlasIds.ITEMS);
       TextureAtlas armorTrims = ctx.mc().getAtlasManager().getAtlasOrThrow(AtlasIds.ARMOR_TRIMS);
       ModifierId trimModifier = TinkerModifiers.trim.getId();
       for (Trim trim : WORN) {
@@ -1446,8 +1447,14 @@ public class TinkerUiTestScenarios {
           throw new IllegalStateException("trimmed_armor: client registries lack trim material " + trim.trimMaterial + " or pattern " + trim.pattern);
         }
         String suffix = trimMaterial.assets().base().suffix();
-        // item icon, as TrimModifierModel looks it up
-        assertSprite(blocks, Identifier.withDefaultNamespace("trims/items/" + trim.type.getName() + "_trim_" + suffix));
+        // item icon, as TrimModifierModel looks it up: vanilla materials on the items atlas only, Tinkers materials on the blocks atlas
+        Identifier icon = Identifier.withDefaultNamespace("trims/items/" + trim.type.getName() + "_trim_" + suffix);
+        if (Identifier.parse(trim.trimMaterial).getNamespace().equals("minecraft")) {
+          assertSprite(items, icon);
+          assertNoSprite(blocks, icon);
+        } else {
+          assertSprite(blocks, icon);
+        }
         // the worn texture, as TrimArmorTextureSupplier looks it up
         Identifier patternAsset = pattern.assetId();
         String armorPath = "trims/entity/" + (trim.type == ArmorType.LEGGINGS ? "humanoid_leggings/" : "humanoid/") + patternAsset.getPath();
@@ -1455,7 +1462,9 @@ public class TinkerUiTestScenarios {
         assertWornRenderer(worn, trim, player.registryAccess());
       }
       for (String palette : EXTRA_PALETTES) {
-        assertSprite(blocks, Identifier.withDefaultNamespace("trims/items/helmet_trim_" + palette));
+        Identifier icon = Identifier.withDefaultNamespace("trims/items/helmet_trim_" + palette);
+        assertSprite(items, icon);
+        assertNoSprite(blocks, icon);
       }
       InventoryScreen screen = new InventoryScreen(player);
       ctx.mc().setScreen(screen);
@@ -1490,6 +1499,13 @@ public class TinkerUiTestScenarios {
     private static void assertSprite(TextureAtlas atlas, Identifier name) {
       if (MissingTextureAtlasSprite.getLocation().equals(atlas.getSprite(name).contents().name())) {
         throw new IllegalStateException("trimmed_armor: atlas " + atlas.location() + " has no sprite " + name);
+      }
+    }
+
+    /** Fails if the atlas has a sprite with that name, as a sprite defined in two atlases is rejected by future versions */
+    private static void assertNoSprite(TextureAtlas atlas, Identifier name) {
+      if (atlas.getTextures().containsKey(name)) {
+        throw new IllegalStateException("trimmed_armor: atlas " + atlas.location() + " duplicates the sprite " + name);
       }
     }
 
