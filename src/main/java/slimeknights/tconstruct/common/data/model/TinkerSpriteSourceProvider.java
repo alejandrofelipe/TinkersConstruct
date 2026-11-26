@@ -1,15 +1,19 @@
 package slimeknights.tconstruct.common.data.model;
 
+import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators.TrimMaterialData;
 import net.minecraft.client.renderer.texture.atlas.sources.DirectoryLister;
 import net.minecraft.client.renderer.texture.atlas.sources.PalettedPermutations;
 import net.minecraft.client.renderer.texture.atlas.sources.SingleFile;
+import net.minecraft.client.renderer.texture.atlas.sources.SourceFilter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.IdentifierPattern;
 import net.minecraft.world.item.equipment.trim.MaterialAssetGroup.AssetInfo;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimMaterials;
@@ -97,6 +101,12 @@ public class TinkerSpriteSourceProvider extends SpriteSourceProvider {
     for (Armor armor : TrimModifierModel.Armor.values()) {
       blocks.addSource(new SingleFile(armor.getRoot(false), Optional.empty()));
     }
+    // PORT 1.21.11: vanilla's items atlas now lists every namespace's item/ folder, which would stitch item/tool/ (~11k
+    // sprites, mostly generated material permutations) a second time. The blocks atlas stays their home (tool models mix
+    // them with block-atlas fluid sprites in one quad list); BLOCK_OR_ITEM lookups fall back to blocks when items lacks one.
+    // Pack sources run after vanilla's, so this filter removes the copy vanilla's directory source added.
+    atlas(AtlasIds.ITEMS)
+      .addSource(new SourceFilter(identifierPattern("^" + TConstruct.MOD_ID + "$", "^item/tool/")));
     // add armor trims in our materials
     atlas(Identifier.parse("armor_trims"))
       .addSource(new PalettedPermutations(
@@ -107,6 +117,14 @@ public class TinkerSpriteSourceProvider extends SpriteSourceProvider {
   /** Creates a directory lister where the source matches the prefix. */
   private static DirectoryLister directory(String path) {
     return new DirectoryLister(path, path + '/');
+  }
+
+  /** Creates an identifier pattern (regexes use find semantics, so anchor them); the constructor is private, so go through the codec. */
+  private static IdentifierPattern identifierPattern(String namespace, String path) {
+    JsonObject json = new JsonObject();
+    json.addProperty("namespace", namespace);
+    json.addProperty("path", path);
+    return IdentifierPattern.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
   }
 
   /** Every vanilla trim palette (base and armor-specific overrides such as {@code iron_darker}), as vanilla's {@code AtlasProvider} lists them for the items atlas */
