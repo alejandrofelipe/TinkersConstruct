@@ -23,7 +23,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.joml.Quaternionf;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.TinkerItemDisplays;
@@ -92,10 +91,8 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
     BlockPos minPos = structure.getMinInside();
     BlockPos maxPos = structure.getMaxInside();
     renderState.minPos = minPos;
-    renderState.maxPos = maxPos;
     // tank fluids, use minPos for brightness
-    renderState.fluids = SmelteryTankRenderer.copyFluids(smeltery.getTank());
-    renderState.capacity = smeltery.getTank().getCapacity();
+    renderState.fluids = SmelteryTankRenderer.extractLayers(smeltery.getTank(), minPos, maxPos);
     renderState.fluidLight = LevelRenderer.getLightColor(world, minPos);
 
     // items
@@ -169,7 +166,7 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
     matrices.pushPose();
     matrices.translate(minPos.getX() - pos.getX(), minPos.getY() - pos.getY(), minPos.getZ() - pos.getZ());
     // render tank fluids
-    SmelteryTankRenderer.submitFluids(matrices, collector, state.fluids, state.capacity, minPos, state.maxPos, state.fluidLight);
+    SmelteryTankRenderer.submitFluids(matrices, collector, state.fluids, state.fluidLight);
 
     // render items
     if (!state.items.isEmpty()) {
@@ -217,11 +214,9 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
     public boolean highlightError = false;
     public boolean structureValid = false;
     public BlockPos minPos = BlockPos.ZERO;
-    public BlockPos maxPos = BlockPos.ZERO;
     public Direction facing = Direction.NORTH;
-    /** Copies of the tank fluids */
-    public List<FluidStack> fluids = List.of();
-    public int capacity = 0;
+    /** Tank fluid layers, from the bottom up */
+    public List<SmelteryTankRenderer.FluidLayer> fluids = List.of();
     public int fluidLight = 0;
     private List<SmelteryItem> items = List.of();
   }
