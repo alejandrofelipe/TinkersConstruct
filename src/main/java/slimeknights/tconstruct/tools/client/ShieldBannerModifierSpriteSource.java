@@ -77,15 +77,15 @@ public record ShieldBannerModifierSpriteSource(int cropX, int cropY, int cropWid
     return CODEC;
   }
 
-  /** Generates a cropped sprite lazily */
+  /** Generates a cropped sprite lazily. 1.21.11: {@code SpriteSupplier} became {@link SpriteSource.DiscardableLoader} */
   @RequiredArgsConstructor
-  private class BannerModifierSpriteSupplier implements SpriteSupplier {
+  private class BannerModifierSpriteSupplier implements SpriteSource.DiscardableLoader {
     private final LazyLoadedImage original;
     private final Identifier input, output;
 
     @Nullable
     @Override
-    public SpriteContents apply(SpriteResourceLoader loader) {
+    public SpriteContents get(SpriteResourceLoader loader) {
       try {
         // its possible the original is bigger than we expect due to HD pack, if so scale it accordingly
         // we only support scaling if it is a multiple of width

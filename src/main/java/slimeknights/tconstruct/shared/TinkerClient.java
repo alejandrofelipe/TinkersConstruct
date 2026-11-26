@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ARGB;
@@ -143,12 +143,12 @@ public class TinkerClient {
         float v1 = texture.getV1();
         Matrix4f matrix4f = event.getPoseStack().last().pose();
         MultiBufferSource.BufferSource bufferSource = minecraft.renderBuffers().bufferSource();
-        VertexConsumer builder = bufferSource.getBuffer(RenderType.blockScreenEffect(texture.atlasLocation()));
+        VertexConsumer builder = bufferSource.getBuffer(RenderTypes.blockScreenEffect(texture.atlasLocation()));
         builder.addVertex(matrix4f, -1, -1, -0.5f).setUv(u1, v1).setColor(color);
         builder.addVertex(matrix4f, 1, -1, -0.5f).setUv(u0, v1).setColor(color);
         builder.addVertex(matrix4f, 1, 1, -0.5f).setUv(u0, v0).setColor(color);
         builder.addVertex(matrix4f, -1, 1, -0.5f).setUv(u1, v0).setColor(color);
-        bufferSource.endBatch(RenderType.blockScreenEffect(texture.atlasLocation()));
+        bufferSource.endBatch(RenderTypes.blockScreenEffect(texture.atlasLocation()));
       }
       event.setCanceled(true);
     }

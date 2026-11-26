@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -165,12 +166,14 @@ public class CombatFishingHookRenderer extends EntityRenderer<CombatFishingHook,
     float f = (float) state.lineOriginOffset.x;
     float f1 = (float) state.lineOriginOffset.y;
     float f2 = (float) state.lineOriginOffset.z;
-    collector.submitCustomGeometry(poseStack, RenderType.lines(), (pose, consumer) -> {
+    // 1.21.11: line width moved from the render type to the vertices, same width as vanilla
+    float lineWidth = Minecraft.getInstance().getWindow().getAppropriateLineWidth();
+    collector.submitCustomGeometry(poseStack, RenderTypes.lines(), (pose, consumer) -> {
       for (int i = 0; i < 16; i++) {
         float start = i / 16f;
         float end = (i + 1) / 16f;
-        stringVertex(f, f1, f2, consumer, pose, start, end);
-        stringVertex(f, f1, f2, consumer, pose, end, start);
+        stringVertex(f, f1, f2, consumer, pose, start, end, lineWidth);
+        stringVertex(f, f1, f2, consumer, pose, end, start, lineWidth);
       }
     });
 
@@ -179,7 +182,7 @@ public class CombatFishingHookRenderer extends EntityRenderer<CombatFishingHook,
   }
 
   /** Copy of the private {@link FishingHookRenderer} string vertex */
-  private static void stringVertex(float x, float y, float z, VertexConsumer consumer, PoseStack.Pose pose, float stringFraction, float nextStringFraction) {
+  private static void stringVertex(float x, float y, float z, VertexConsumer consumer, PoseStack.Pose pose, float stringFraction, float nextStringFraction, float lineWidth) {
     float startX = x * stringFraction;
     float startY = y * (stringFraction * stringFraction + stringFraction) * 0.5F + 0.25F;
     float startZ = z * stringFraction;
@@ -190,7 +193,7 @@ public class CombatFishingHookRenderer extends EntityRenderer<CombatFishingHook,
     normalX /= length;
     normalY /= length;
     normalZ /= length;
-    consumer.addVertex(pose, startX, startY, startZ).setColor(0xFF000000).setNormal(pose, normalX, normalY, normalZ);
+    consumer.addVertex(pose, startX, startY, startZ).setColor(0xFF000000).setNormal(pose, normalX, normalY, normalZ).setLineWidth(lineWidth);
   }
 
   /** Render state carrying the fishing line origin and bobber texture */
@@ -203,7 +206,7 @@ public class CombatFishingHookRenderer extends EntityRenderer<CombatFishingHook,
     public static final MaterialTexture EMPTY = new MaterialTexture(BASE, -1, 0);
 
     public MaterialTexture(Identifier texture, int color, int luminosity) {
-      this(RenderType.entityCutout(texture), luminosity,
+      this(RenderTypes.entityCutout(texture), luminosity,
         color >> 24 & 255,
         color >> 16 & 255,
         color >> 8 & 255,

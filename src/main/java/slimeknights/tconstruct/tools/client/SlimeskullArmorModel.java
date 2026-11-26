@@ -10,7 +10,7 @@ import net.minecraft.client.model.object.skull.SkullModel;
 import net.minecraft.client.model.object.skull.SkullModelBase;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayerLocation;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -124,7 +124,7 @@ public class SlimeskullArmorModel extends MultilayerArmorModel {
         matrixStackIn.popPose();
       }
       if (headModel != null && headTexture != null) {
-        VertexConsumer heaadBuffer = getArmorFoilBuffer(buffer, RenderType.entityCutoutNoCullZOffset(headTexture), hasGlint);
+        VertexConsumer heaadBuffer = getArmorFoilBuffer(buffer, RenderTypes.entityCutoutNoCullZOffset(headTexture), hasGlint);
         matrixStackIn.pushPose();
         if (crouching) {
           matrixStackIn.translate(0, base.head.y / 16.0F, 0);

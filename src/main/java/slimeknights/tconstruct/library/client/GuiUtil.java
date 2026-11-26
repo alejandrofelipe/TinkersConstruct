@@ -1,6 +1,5 @@
 package slimeknights.tconstruct.library.client;
 
-import com.mojang.blaze3d.textures.GpuTextureView;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.client.Minecraft;
@@ -10,6 +9,7 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.BlitRenderState;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
@@ -173,8 +173,9 @@ public final class GuiUtil {
     // 1.21.8: GUI rendering is deferred, so each tile is submitted as a blit render state. The public blitSprite overloads
     // only draw a whole atlas sprite (or a sub-region of a GUI atlas sprite), so partial tiles are submitted directly with
     // their exact sub-UVs, same as the old immediate quads. Depth is ignored: later submissions draw above earlier ones.
-    GpuTextureView texture = screen.getMinecraft().getTextureManager().getTexture(sprite.atlasLocation()).getTextureView();
-    TextureSetup textureSetup = TextureSetup.singleTexture(texture);
+    // 1.21.11: samplers are separate from the texture view; use the atlas texture's own sampler like GuiGraphics#innerBlit
+    AbstractTexture atlasTexture = screen.getMinecraft().getTextureManager().getTexture(sprite.atlasLocation());
+    TextureSetup textureSetup = TextureSetup.singleTexture(atlasTexture.getTextureView(), atlasTexture.getSampler());
     Matrix3x2f pose = new Matrix3x2f(graphics.pose());
     ScreenRectangle scissor = graphics.peekScissorStack();
 

@@ -8,7 +8,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.resources.model.ModelBakery;
@@ -114,19 +114,22 @@ public class ToolRenderEvents {
         // same as the vanilla outline: with the high contrast option, a black secondary outline under a light blue one, else semi-transparent black
         boolean highContrast = outlineState.highContrast();
         if (highContrast) {
-          renderOutlines(outlines, matrices, buffers.getBuffer(RenderType.secondaryBlockOutline()), camera, 0xFF000000);
+          renderOutlines(outlines, matrices, buffers.getBuffer(RenderTypes.secondaryBlockOutline()), camera, 0xFF000000, 7.0F);
         }
-        renderOutlines(outlines, matrices, buffers.getBuffer(RenderType.lines()), camera, highContrast ? HIGH_CONTRAST_OUTLINE : ARGB.color(102, 0xFF000000));
+        renderOutlines(outlines, matrices, buffers.getBuffer(RenderTypes.lines()), camera, highContrast ? HIGH_CONTRAST_OUTLINE : ARGB.color(102, 0xFF000000), Minecraft.getInstance().getWindow().getAppropriateLineWidth());
       }
       return false;
     });
   }
 
-  /** Draws the extra block outlines camera-relative in the given color */
-  private static void renderOutlines(List<ExtraOutline> outlines, PoseStack matrices, VertexConsumer vertexBuilder, Vec3 camera, int color) {
+  /**
+   * Draws the extra block outlines camera-relative in the given color.
+   * 1.21.11: line width moved from the render type to the vertices; widths match vanilla {@code LevelRenderer#renderBlockOutline}.
+   */
+  private static void renderOutlines(List<ExtraOutline> outlines, PoseStack matrices, VertexConsumer vertexBuilder, Vec3 camera, int color, float lineWidth) {
     for (ExtraOutline outline : outlines) {
       BlockPos pos = outline.pos;
-      ShapeRenderer.renderShape(matrices, vertexBuilder, outline.shape, pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z, color);
+      ShapeRenderer.renderShape(matrices, vertexBuilder, outline.shape, pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z, color, lineWidth);
     }
   }
 
@@ -194,9 +197,9 @@ public class ToolRenderEvents {
 
     // finally, render the blocks
     Camera renderInfo = Minecraft.getInstance().gameRenderer.getMainCamera();
-    double x = renderInfo.getPosition().x;
-    double y = renderInfo.getPosition().y;
-    double z = renderInfo.getPosition().z;
+    double x = renderInfo.position().x;
+    double y = renderInfo.position().y;
+    double z = renderInfo.position().z;
     BlockRenderDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
     int rendered = 0;
     do {

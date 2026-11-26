@@ -2,8 +2,8 @@ package slimeknights.tconstruct.world.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.model.LavaSlimeModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.slime.MagmaCubeModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.entity.state.SlimeRenderState;
@@ -12,12 +12,13 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.Slime;
 import slimeknights.tconstruct.TConstruct;
 
-public class TerracubeRenderer extends MobRenderer<Slime, SlimeRenderState, LavaSlimeModel> {
+public class TerracubeRenderer extends MobRenderer<Slime, SlimeRenderState, MagmaCubeModel> {
   private static final Identifier TEXTURE = TConstruct.getResource("textures/entity/terracube.png");
   public TerracubeRenderer(EntityRendererProvider.Context context) {
+    // PORT 1.21.11: LavaSlimeModel was renamed to MagmaCubeModel.
     // PORT 1.21.4: LavaSlimeModel is no longer generic (typed to SlimeRenderState internally); MobRenderer gained the
     // render-state type parameter.
-    super(context, new LavaSlimeModel(context.bakeLayer(ModelLayers.MAGMA_CUBE)), 0.25F);
+    super(context, new MagmaCubeModel(context.bakeLayer(ModelLayers.MAGMA_CUBE)), 0.25F);
     addLayer(new SlimeArmorLayer<>(this, new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_ARMOR.head())), context.getModelSet(), true));
   }
 

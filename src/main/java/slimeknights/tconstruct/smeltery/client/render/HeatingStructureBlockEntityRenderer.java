@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -150,10 +150,12 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
       double x = errorPos.getX() - pos.getX();
       double y = errorPos.getY() - pos.getY();
       double z = errorPos.getZ() - pos.getZ();
-      collector.submitCustomGeometry(matrices, state.highlightError ? TinkerRenderTypes.ERROR_BLOCK : RenderType.lines(), (pose, buffer) -> {
+      // 1.21.11: line width moved from the render type to the vertices; both types used the window scaled width
+      float lineWidth = Minecraft.getInstance().getWindow().getAppropriateLineWidth();
+      collector.submitCustomGeometry(matrices, state.highlightError ? TinkerRenderTypes.ERROR_BLOCK : RenderTypes.lines(), (pose, buffer) -> {
         PoseStack poseStack = new PoseStack();
         poseStack.last().set(pose);
-        ShapeRenderer.renderShape(poseStack, buffer, Shapes.block(), x, y, z, color);
+        ShapeRenderer.renderShape(poseStack, buffer, Shapes.block(), x, y, z, color, lineWidth);
       });
     }
 
