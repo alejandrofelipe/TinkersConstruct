@@ -283,6 +283,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new JeiCraftingStationSlotScenario());
     UiTestScenarios.register(new JeiSmelterySlotScenario());
     UiTestScenarios.register(new JeiSmelteryTankScenario());
+    UiTestScenarios.register(new SmelteryTankWorldScenario());
     if (ModList.get().isLoaded("craftingtweaks")) {
       UiTestScenarios.register(new CraftingTweaksRotateScenario());
     }
@@ -2142,6 +2143,113 @@ public class TinkerUiTestScenarios {
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(freezer);
       ctx.sendCommand("tick unfreeze");
+    }
+  }
+
+  /**
+   * No menu: the smeltery tank fluids drawn in the world by {@code HeatingStructureBlockEntityRenderer} / {@code SmelteryTankRenderer}. A smeltery
+   * with a 1x1x3 inside (open top, empty fuel tank so nothing alloys) holds a third of molten cobalt at the bottom and a third of ichor, a gas,
+   * above it; the camera looks through a column of seared glass in the west wall. Asserts the cobalt layer is blue, the gas layer is ichor
+   * orange and the empty top third shows neither.
+   */
+  private static class SmelteryTankWorldScenario implements UiTestScenario {
+    private static final String NAME = "smeltery_tank_world";
+    private final BlockPos origin = SITE.offset(190, 0, 0);
+    private final BlockPos controller = origin.offset(1, 1, 2);
+    /** Each fluid fills a third of the 1x1x3 inside (12 ingots per block) */
+    private static final int LAYER = FluidValues.INGOT * 12;
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      ctx.sendCommand("tp @s " + (origin.getX() - 2.5) + " " + origin.getY() + " " + (origin.getZ() + 1.5));
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        // the saved world persists across runs: clear the site first so the controller starts with an empty tank
+        for (int x = 0; x < 3; x++) {
+          for (int y = 0; y <= 3; y++) {
+            for (int z = 0; z < 3; z++) {
+              level.setBlockAndUpdate(origin.offset(x, y, z), Blocks.AIR.defaultBlockState());
+            }
+          }
+        }
+        BlockState bricks = TinkerSmeltery.searedBricks.get().defaultBlockState();
+        BlockState glass = TinkerSmeltery.searedGlass.get().defaultBlockState();
+        for (int x = 0; x < 3; x++) {
+          for (int z = 0; z < 3; z++) {
+            level.setBlockAndUpdate(origin.offset(x, 0, z), bricks);
+            // walls 3 high around the 1x1 inside, the west middle column is glass for the camera
+            if (x != 1 || z != 1) {
+              for (int y = 1; y <= 3; y++) {
+                level.setBlockAndUpdate(origin.offset(x, y, z), x == 0 && z == 1 ? glass : bricks);
+              }
+            }
+          }
+        }
+        // empty fuel tank in the east wall: the structure needs a tank, no fuel keeps the fluids from alloying
+        level.setBlockAndUpdate(origin.offset(2, 1, 1), TinkerSmeltery.searedTank.get(TankType.FUEL_TANK).defaultBlockState());
+        level.setBlockAndUpdate(controller, TinkerSmeltery.smelteryController.get().defaultBlockState().setValue(ControllerBlock.FACING, Direction.SOUTH));
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 100; // ticks for the multiblock structure to finish forming, see SmelteryScenario
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.runOnServer(() -> {
+        if (!(ctx.serverLevel().getBlockEntity(controller) instanceof HeatingStructureBlockEntity smeltery) || smeltery.getStructure() == null) {
+          throw new IllegalStateException(NAME + ": expected a formed smeltery at " + controller + ", found " + ctx.serverLevel().getBlockEntity(controller));
+        }
+        // bottom up: the liquid first, then the gas
+        for (FluidStack fluid : List.of(new FluidStack(TinkerFluids.moltenCobalt.get(), LAYER), new FluidStack(TinkerFluids.ichor.get(), LAYER))) {
+          int filled;
+          try (Transaction tx = Transaction.openRoot()) {
+            filled = smeltery.getTank().insert(FluidResource.of(fluid), fluid.getAmount(), tx);
+            tx.commit();
+          }
+          if (filled != fluid.getAmount()) {
+            throw new IllegalStateException(NAME + ": the smeltery tank accepted only " + filled + "/" + fluid.getAmount() + " mB of " + fluid);
+          }
+        }
+      });
+      // center of the middle glass block, the gas layer
+      ctx.lookAt(origin.offset(0, 2, 1));
+    }
+
+    @Override
+    public int settleTicks() {
+      return 20; // tank sync
+    }
+
+    /** Molten cobalt through the glass, as fractions of the frame: average #3875BE as captured */
+    private static final float[] LIQUID_REGION = {600 / 1280f, 470 / 720f, 680 / 1280f, 540 / 720f};
+    private static final IntPredicate COBALT = hued(195, 240, 0.4f, 60);
+    /** Ichor through the glass: average #C84507 as captured */
+    private static final float[] GAS_REGION = {600 / 1280f, 320 / 720f, 680 / 1280f, 400 / 720f};
+    private static final IntPredicate ICHOR = hued(10, 45, 0.4f, 80);
+    /** Empty top third of the inside, just above the gas: the dark far wall (higher up, the sky shows through the open top) */
+    private static final float[] EMPTY_REGION = {600 / 1280f, 262 / 720f, 680 / 1280f, 300 / 720f};
+
+    @Override
+    public void close(UiTestContext ctx) {
+      // the client tank must hold both fluids, one of them a gas, else the capture says nothing about the gas path
+      List<FluidStack> fluids = clientBlockEntity(ctx, controller, HeatingStructureBlockEntity.class, NAME).getTank().getFluids();
+      if (fluids.size() != 2 || !fluids.get(1).getFluid().getFluidType().isLighterThanAir() || fluids.get(0).getFluid().getFluidType().isLighterThanAir()) {
+        throw new IllegalStateException(NAME + ": expected a liquid below a gas in the client tank, found " + fluids);
+      }
+      // the frame just captured is still in the main target
+      try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+        WornArmorScenario.assertFrameRegion(image, LIQUID_REGION, NAME + ": molten cobalt layer", COBALT);
+        WornArmorScenario.assertFrameRegion(image, GAS_REGION, NAME + ": ichor gas layer", ICHOR);
+        WornArmorScenario.assertFrameRegion(image, EMPTY_REGION, NAME + ": empty top of the tank", ICHOR.negate().and(COBALT.negate()));
+      }
     }
   }
 
