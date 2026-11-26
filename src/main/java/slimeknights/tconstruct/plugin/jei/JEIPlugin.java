@@ -452,6 +452,27 @@ public class JEIPlugin implements IModPlugin {
     remove.add(new FluidStack(fluid, FluidType.BUCKET_VOLUME));
   }
 
+  /**
+   * Gets the fluids removed from the JEI ingredient list at runtime. Since JEI 27, recipes whose focus linked slots only
+   * show removed ingredients are hidden too, e.g. the casting recipes filling containers with these fluids.
+   */
+  public static List<FluidStack> getRemovedFluids() {
+    List<FluidStack> removeFluids = new ArrayList<>();
+    // hide compat that is not present
+    for (SmelteryCompat compat : SmelteryCompat.values()) {
+      // if none of the tags exist, remove the fluid
+      if (!compat.isPresent()) {
+        removeFluid(removeFluids, compat.getFluid().get());
+      }
+    }
+    if (!ModList.get().isLoaded("ceramics")) {
+      removeFluid(removeFluids, TinkerFluids.moltenPorcelain.get());
+    }
+    // remove variantless potion fluid, its distinct JEI subtype keeps the potion variants visible (PotionSubtypeInterpreter)
+    removeFluid(removeFluids, TinkerFluids.potion.get());
+    return removeFluids;
+  }
+
   /** Checks if the given tag exists and has members */
   private static boolean tagExists(String name) {
     // 1.21.4: Registry#getTag(TagKey) was removed; getTagOrEmpty returns an empty iterable for a missing/empty tag
@@ -557,19 +578,6 @@ public class JEIPlugin implements IModPlugin {
     }
 
     // fluid hiding, buckets are hidden via the creative tab logic
-    // hide compat that is not present
-    List<FluidStack> removeFluids = new ArrayList<>();
-    compatLoop:
-    for (SmelteryCompat compat : SmelteryCompat.values()) {
-      // if none of the tags exist, remove the fluid
-      if (!compat.isPresent()) {
-        removeFluid(removeFluids, compat.getFluid().get());
-      }
-    }
-    if (!ModList.get().isLoaded("ceramics")) {
-      removeFluid(removeFluids, TinkerFluids.moltenPorcelain.get());
-    }
-
     // add potion fluids for each potion variant if requested
     if (Config.CLIENT.showPotionFluidInJEI.get()) {
       // Potions.EMPTY no longer exists in 1.21; water remains the "no potion" default to skip
@@ -578,11 +586,8 @@ public class JEIPlugin implements IModPlugin {
                                         .filter(holder -> holder.value() != Potions.WATER.value() && !holder.is(TinkerTags.Potions.HIDDEN_FLUID))
                                         .map(holder -> PotionFluidType.potionFluid(holder, FluidType.BUCKET_VOLUME)).toList());
     }
-    // remove variantless potion fluid
-    removeFluid(removeFluids, TinkerFluids.potion.get());
-
     // remove all the fluids
-    manager.removeIngredientsAtRuntime(NeoForgeTypes.FLUID_STACK, removeFluids);
+    manager.removeIngredientsAtRuntime(NeoForgeTypes.FLUID_STACK, getRemovedFluids());
 
     // hide easter egg recipes
     Level level = SafeClientAccess.getLevel();

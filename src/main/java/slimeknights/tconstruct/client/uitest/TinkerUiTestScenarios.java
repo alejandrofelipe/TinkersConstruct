@@ -67,6 +67,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -96,6 +97,7 @@ import slimeknights.mantle.client.uitest.UiTestScenario;
 import slimeknights.mantle.client.uitest.UiTestScenarios;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.fluids.TinkerFluids;
 import slimeknights.tconstruct.library.client.modifiers.ModifierIconManager;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
@@ -155,12 +157,17 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /** Registers TConstruct's automated GUI screenshot scenarios (active only with -Dmantle.uitest=true). */
 // NeoForge 21.8 removed EventBusSubscriber.bus(): the bus is inferred per event, FMLClientSetupEvent is a mod-bus event
@@ -197,8 +204,10 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new TrimmedArmorScenario());
     UiTestScenarios.register(new ItemAtlasGridScenario());
     // every other Tinkers JEI category (JEIPlugin#registerCategories), melting is registered above
-    UiTestScenarios.register(new JeiCategoryScenario<>("casting_table", TConstructJEIConstants.CASTING_TABLE));
-    UiTestScenarios.register(new JeiCategoryScenario<>("casting_basin", TConstructJEIConstants.CASTING_BASIN));
+    // 1.21.10 (JEI 26) listed all 1859 table / 1016 basin display recipes; JEI 27 hides the ones only showing hidden fluids
+    // (container filling with 30 absent compat or tag-hidden fluids: 120 table, 300 basin; variantless potion: 4 table, 10 basin)
+    UiTestScenarios.register(new JeiCategoryScenario<>("casting_table", TConstructJEIConstants.CASTING_TABLE, IDisplayableCastingRecipe::getFluids, 1735));
+    UiTestScenarios.register(new JeiCategoryScenario<>("casting_basin", TConstructJEIConstants.CASTING_BASIN, IDisplayableCastingRecipe::getFluids, 706));
     // patternless (pick up) molding recipes have a null pattern, which the category used to NPE on
     UiTestScenarios.register(new JeiCategoryScenario<>("molding", TConstructJEIConstants.MOLDING, "a recipe without pattern", recipe -> recipe.getPattern() == null));
     UiTestScenarios.register(new JeiCategoryScenario<>("alloy", TConstructJEIConstants.ALLOY));
@@ -574,19 +583,39 @@ public class TinkerUiTestScenarios {
      * "Found a broken recipe": its ingredients after the throw are never indexed and its layout fails, so the recipes GUI skips it.
      */
     private final boolean allMustLayOut;
+    /**
+     * Fluids of a casting recipe, to check the recipes JEI hides: since JEI 27 a recipe whose focus linked slots only show
+     * hidden ingredients is hidden, so only recipes showing just {@link JEIPlugin#getRemovedFluids()} or fluids tagged
+     * {@link TinkerTags.Fluids#HIDDEN_IN_RECIPE_VIEWERS} may be hidden. Null skips the check.
+     */
+    @Nullable
+    private final Function<T, List<FluidStack>> castingFluids;
+    /** Minimum number of recipes the recipes GUI must list, when {@link #castingFluids} is set */
+    private final int minVisible;
     /** Re-parks every tick: a recentering cursor event from opening the screen may land after open() */
     private final Consumer<ClientTickEvent.Post> mouseParker = event -> new UiTestContext(Minecraft.getInstance()).parkMouse();
 
-    private JeiCategoryScenario(String name, IRecipeType<T> type, String mustShowDescription, Predicate<T> mustShow, boolean allMustLayOut) {
+    private JeiCategoryScenario(String name, IRecipeType<T> type, String mustShowDescription, Predicate<T> mustShow, boolean allMustLayOut,
+                                @Nullable Function<T, List<FluidStack>> castingFluids, int minVisible) {
       this.name = name;
       this.type = type;
       this.mustShowDescription = mustShowDescription;
       this.mustShow = mustShow;
       this.allMustLayOut = allMustLayOut;
+      this.castingFluids = castingFluids;
+      this.minVisible = minVisible;
+    }
+
+    private JeiCategoryScenario(String name, IRecipeType<T> type, String mustShowDescription, Predicate<T> mustShow, boolean allMustLayOut) {
+      this(name, type, mustShowDescription, mustShow, allMustLayOut, null, 0);
     }
 
     private JeiCategoryScenario(String name, IRecipeType<T> type, String mustShowDescription, Predicate<T> mustShow) {
       this(name, type, mustShowDescription, mustShow, false);
+    }
+
+    private JeiCategoryScenario(String name, IRecipeType<T> type, Function<T, List<FluidStack>> castingFluids, int minVisible) {
+      this(name, type, "any recipe", recipe -> true, false, castingFluids, minVisible);
     }
 
     private JeiCategoryScenario(String name, IRecipeType<T> type) {
@@ -613,6 +642,9 @@ public class TinkerUiTestScenarios {
       if (recipes.createRecipeLookup(type).get().noneMatch(mustShow)) {
         throw new IllegalStateException("JEI category " + type.getUid() + " is missing " + mustShowDescription);
       }
+      if (castingFluids != null) {
+        checkHiddenRecipes(recipes, castingFluids);
+      }
       if (allMustLayOut) {
         IRecipeCategory<T> category = recipes.getRecipeCategory(type);
         IFocusGroup noFocus = runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup();
@@ -626,6 +658,27 @@ public class TinkerUiTestScenarios {
       runtime.getRecipesGui().showTypes(List.of(type));
       ctx.parkMouse();
       NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, mouseParker);
+    }
+
+    /** Fails when JEI lists fewer than {@link #minVisible} recipes, or hides a recipe showing any fluid the plugin did not remove */
+    private void checkHiddenRecipes(IRecipeManager recipes, Function<T, List<FluidStack>> fluids) {
+      Set<T> visible = Collections.newSetFromMap(new IdentityHashMap<>());
+      recipes.createRecipeLookup(type).get().forEach(visible::add);
+      if (visible.size() < minVisible) {
+        throw new IllegalStateException("JEI category " + type.getUid() + " lists " + visible.size() + " recipes, expected at least " + minVisible);
+      }
+      // fluids removed at runtime or hidden by tag; the variantless potion fluid is removed, but a potion variant has contents
+      Set<Fluid> removed = JEIPlugin.getRemovedFluids().stream().map(FluidStack::getFluid).collect(Collectors.toSet());
+      Predicate<FluidStack> isRemoved = fluid -> fluid.is(TinkerTags.Fluids.HIDDEN_IN_RECIPE_VIEWERS)
+                                                 || removed.contains(fluid.getFluid()) && !fluid.has(DataComponents.POTION_CONTENTS);
+      List<T> wronglyHidden = recipes.createRecipeLookup(type).includeHidden().get()
+        .filter(recipe -> !visible.contains(recipe))
+        .filter(recipe -> fluids.apply(recipe).isEmpty() || !fluids.apply(recipe).stream().allMatch(isRemoved))
+        .toList();
+      if (!wronglyHidden.isEmpty()) {
+        throw new IllegalStateException("JEI category " + type.getUid() + " hides " + wronglyHidden.size() + " recipe(s) showing fluids that are not removed, first fluids: "
+                                        + fluids.apply(wronglyHidden.get(0)).stream().map(fluid -> fluid.getFluid() + " " + fluid.getComponentsPatch()).toList());
+      }
     }
 
     @Override
