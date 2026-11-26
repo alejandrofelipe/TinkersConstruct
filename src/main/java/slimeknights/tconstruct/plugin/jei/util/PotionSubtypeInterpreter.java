@@ -12,12 +12,18 @@ public interface PotionSubtypeInterpreter<T> extends SimpleSubtypeInterpreter<T>
   @Nullable
   PotionContents getContents(T ingredient);
 
-  @Nullable
+  /**
+   * Subtype of the ingredient without potion contents. It must not be null: JEI matches hidden or removed ingredients by
+   * their grouping uid too, which is the uid without subtype, so removing the variantless potion fluid (as the JEI plugin
+   * does) would otherwise hide every potion variant, along with every recipe that only shows potion fluids.
+   */
+  String NO_CONTENTS = "none";
+
   @Override
   default Object getSubtypeData(T ingredient, UidContext context) {
     PotionContents contents = getContents(ingredient);
     if (contents == null) {
-      return null;
+      return NO_CONTENTS;
     }
     // 1.21.4: the static Potion.getName(Optional<Holder<Potion>>, String) was removed; build a stable id from the potion's base name
     String potionTypeString = contents.potion().map(holder -> holder.value().name()).orElse("");
