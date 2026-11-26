@@ -15,6 +15,7 @@ import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.runtime.IClickableIngredient;
 import mezz.jei.api.runtime.IJeiRuntime;
 import mezz.jei.api.runtime.IRecipesGui;
+import com.mojang.blaze3d.platform.NativeImage;
 import net.blay09.mods.craftingtweaks.client.GuiTweakButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -39,6 +40,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.AtlasIds;
@@ -47,6 +49,7 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -58,6 +61,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -78,6 +82,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -89,6 +94,7 @@ import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
 import slimeknights.mantle.client.model.util.ModelHelper;
+import slimeknights.mantle.client.render.RenderTargetCapture;
 import slimeknights.mantle.client.screen.MultiModuleScreen;
 import slimeknights.mantle.client.screen.book.BookScreen;
 import slimeknights.mantle.client.screen.book.element.StructureElement;
@@ -99,6 +105,11 @@ import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.fluids.TinkerFluids;
+import slimeknights.tconstruct.library.client.armor.ArmorModelManager.ArmorModelDispatcher;
+import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.ArmorTexture;
+import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.TextureType;
+import slimeknights.tconstruct.library.client.armor.texture.TintedArmorTexture;
+import slimeknights.tconstruct.library.client.armor.texture.TrimArmorTextureSupplier.TrimArmorTexture;
 import slimeknights.tconstruct.library.client.modifiers.ModifierIconManager;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
@@ -161,6 +172,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -1341,7 +1353,11 @@ public class TinkerUiTestScenarios {
    * {@code TrimModifierModel} reads them from the blocks atlas, so Tinkers stitches them there again (M6 Phase 3); without that the item icons fall
    * back to a flat tint of the base texture. Asserts the trim data is on the client stacks and every sprite the item and worn models look up
    * exists (item icons on the blocks atlas, including an armor specific {@code iron_darker} palette; worn textures on the armor trims atlas under
-   * {@code trims/entity/humanoid(_leggings)/}, where vanilla moved them in 1.21.4), then captures the inventory so the palette colors can be compared.
+   * {@code trims/entity/humanoid(_leggings)/}, where vanilla moved them in 1.21.4).
+   * <p>
+   * Worn armor (M6 Phase 4): Tinkers armor draws through {@code TinkerArmorLayer}, not vanilla's equipment layer, which drew it as iron armor
+   * since 1.21.4. Asserts each worn piece has Tinkers' empty equipment asset and an armor renderer whose layers give a material texture and a trim,
+   * then after the capture samples the player preview: the copper helmet must be orange and the gold leggings yellow, not grey.
    */
   private static class TrimmedArmorScenario implements UiTestScenario {
     /** One trimmed armor piece: slot, plating/maille material, trim pattern and trim material */
@@ -1377,6 +1393,10 @@ public class TinkerUiTestScenarios {
       new Trim(ArmorType.BOOTS, MaterialIds.copper, "minecraft:wild", "minecraft:iron"));
     /** Palettes beyond the base ones that the blocks atlas must hold, see {@code TinkerSpriteSourceProvider#vanillaTrimPalettes} */
     private static final List<String> EXTRA_PALETTES = List.of("iron_darker", "gold_darker");
+    /** Worn helmet region of the player preview in GUI pixels, relative to the inventory corner: front left of the head above the eyes, left of the sentry trim */
+    private static final Rect2i HELMET_REGION = new Rect2i(42, 15, 5, 4);
+    /** Worn leggings region of the player preview in GUI pixels, relative to the inventory corner: front of the legs below the dune trim */
+    private static final Rect2i LEGGINGS_REGION = new Rect2i(44, 58, 12, 3);
 
     @Override
     public Identifier id() {
@@ -1426,17 +1446,44 @@ public class TinkerUiTestScenarios {
           throw new IllegalStateException("trimmed_armor: client registries lack trim material " + trim.trimMaterial + " or pattern " + trim.pattern);
         }
         String suffix = trimMaterial.assets().base().suffix();
-        // item icon, as TrimModifierModel looks it up, and the worn texture, as TrimArmorTextureSupplier looks it up
+        // item icon, as TrimModifierModel looks it up
         assertSprite(blocks, Identifier.withDefaultNamespace("trims/items/" + trim.type.getName() + "_trim_" + suffix));
+        // the worn texture, as TrimArmorTextureSupplier looks it up
         Identifier patternAsset = pattern.assetId();
         String armorPath = "trims/entity/" + (trim.type == ArmorType.LEGGINGS ? "humanoid_leggings/" : "humanoid/") + patternAsset.getPath();
         assertSprite(armorTrims, patternAsset.withPath(armorPath + "_" + suffix));
+        assertWornRenderer(worn, trim, player.registryAccess());
       }
       for (String palette : EXTRA_PALETTES) {
         assertSprite(blocks, Identifier.withDefaultNamespace("trims/items/helmet_trim_" + palette));
       }
-      ctx.mc().setScreen(new InventoryScreen(player));
-      ctx.parkMouse();
+      InventoryScreen screen = new InventoryScreen(player);
+      ctx.mc().setScreen(screen);
+      // mouse on the center of the player preview, so the player faces the camera
+      ctx.moveMouse(screen.leftPos + 50.5, screen.topPos + 43);
+    }
+
+    /** Fails unless the worn stack draws through the Tinkers armor layer with a material texture and a trim, instead of a vanilla equipment asset */
+    private static void assertWornRenderer(ItemStack worn, Trim trim, RegistryAccess access) {
+      Equippable equippable = worn.get(DataComponents.EQUIPPABLE);
+      if (equippable == null || !equippable.assetId().equals(Optional.of(ModifiableArmorItem.EQUIPMENT_ASSET))) {
+        throw new IllegalStateException("trimmed_armor: worn " + trim.type + " has equipment asset " + (equippable == null ? null : equippable.assetId()) + ", vanilla would draw it instead of the armor model");
+      }
+      if (!(IClientItemExtensions.of(worn) instanceof ArmorModelDispatcher dispatcher)) {
+        throw new IllegalStateException("trimmed_armor: worn " + trim.type + " has no armor model client extensions, nothing draws it");
+      }
+      TextureType textureType = TextureType.fromSlot(trim.type.getSlot());
+      List<ArmorTexture> textures = dispatcher.getModel(worn).layers().stream()
+        .map(layer -> layer.getArmorTexture(worn, textureType, access))
+        .filter(texture -> texture != ArmorTexture.EMPTY)
+        .toList();
+      // plating textures are greyscale, tinted by the material
+      if (textures.isEmpty() || !(textures.getFirst() instanceof TintedArmorTexture plating) || plating.color() == -1 && !plating.texture().getPath().endsWith(trim.material.getPath() + ".png")) {
+        throw new IllegalStateException("trimmed_armor: worn " + trim.type + " lacks a " + trim.material + " material texture, layers give " + textures);
+      }
+      if (textures.stream().noneMatch(texture -> texture instanceof TrimArmorTexture)) {
+        throw new IllegalStateException("trimmed_armor: worn " + trim.type + " lacks a trim texture, layers give " + textures);
+      }
     }
 
     /** Fails if the atlas has no sprite with that name */
@@ -1444,6 +1491,82 @@ public class TinkerUiTestScenarios {
       if (MissingTextureAtlasSprite.getLocation().equals(atlas.getSprite(name).contents().name())) {
         throw new IllegalStateException("trimmed_armor: atlas " + atlas.location() + " has no sprite " + name);
       }
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      // the frame just captured is still in the main target
+      if (ctx.mc().screen instanceof InventoryScreen screen) {
+        try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+          double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
+          assertHue(image, scale, screen, HELMET_REGION, "copper helmet", 5, 40);
+          assertHue(image, scale, screen, LEGGINGS_REGION, "gold leggings", 40, 65);
+        }
+      } else {
+        throw new IllegalStateException("trimmed_armor: the inventory closed before the capture, found " + ctx.mc().screen);
+      }
+      ctx.mc().setScreen(null);
+    }
+
+    /**
+     * Fails unless 3/4 of the region is bright and saturated within the hue range, which grey (vanilla iron) or missing armor is not.
+     * @param scale   Image pixels per GUI pixel
+     * @param region  Region in GUI pixels, relative to the inventory corner
+     * @param minHue  Minimum hue in degrees
+     * @param maxHue  Maximum hue in degrees
+     */
+    private static void assertHue(NativeImage image, double scale, AbstractContainerScreen<?> screen, Rect2i region, String name, float minHue, float maxHue) {
+      int x0 = (int) Math.round((screen.leftPos + region.getX()) * scale);
+      int y0 = (int) Math.round((screen.topPos + region.getY()) * scale);
+      int x1 = (int) Math.round((screen.leftPos + region.getX() + region.getWidth()) * scale);
+      int y1 = (int) Math.round((screen.topPos + region.getY() + region.getHeight()) * scale);
+      int matching = 0;
+      long red = 0, green = 0, blue = 0;
+      for (int y = y0; y < y1; y++) {
+        for (int x = x0; x < x1; x++) {
+          int color = image.getPixel(x, y);
+          int r = ARGB.red(color), g = ARGB.green(color), b = ARGB.blue(color);
+          red += r;
+          green += g;
+          blue += b;
+          int max = Math.max(r, Math.max(g, b));
+          int min = Math.min(r, Math.min(g, b));
+          float hue = hue(r, g, b, max, min);
+          // bright enough to not be a dark skin or hair pixel, saturated enough to not be grey
+          if (max >= 110 && max - min >= 0.35f * max && hue >= minHue && hue <= maxHue) {
+            matching++;
+          }
+        }
+      }
+      int total = Math.max(1, (x1 - x0) * (y1 - y0));
+      int average = ARGB.color(255, (int) (red / total), (int) (green / total), (int) (blue / total));
+      int spread = Math.max(ARGB.red(average), Math.max(ARGB.green(average), ARGB.blue(average))) - Math.min(ARGB.red(average), Math.min(ARGB.green(average), ARGB.blue(average)));
+      String stats = String.format("%d of %d pixels in hue %.0f-%.0f, average #%06X", matching, total, minHue, maxHue, average & 0xFFFFFF);
+      TConstruct.LOG.info("trimmed_armor: worn {} region {}", name, stats);
+      if (spread < 20) {
+        throw new IllegalStateException("trimmed_armor: worn " + name + " is desaturated (grey or missing armor): " + stats);
+      }
+      if (matching * 4 < total * 3) {
+        throw new IllegalStateException("trimmed_armor: worn " + name + " has the wrong color: " + stats);
+      }
+    }
+
+    /** Hue in degrees of the color, 0 for grey */
+    private static float hue(int r, int g, int b, int max, int min) {
+      if (max == min) {
+        return 0;
+      }
+      float delta = max - min;
+      float hue;
+      if (max == r) {
+        hue = (g - b) / delta;
+      } else if (max == g) {
+        hue = 2 + (b - r) / delta;
+      } else {
+        hue = 4 + (r - g) / delta;
+      }
+      hue *= 60;
+      return hue < 0 ? hue + 360 : hue;
     }
 
     @Override
