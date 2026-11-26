@@ -1424,7 +1424,7 @@ public class TinkerUiTestScenarios {
    * {@code trims/entity/humanoid(_leggings)/}, where vanilla moved them in 1.21.4).
    * <p>
    * Worn armor (M6 Phase 4): Tinkers armor draws through {@code TinkerArmorLayer}, not vanilla's equipment layer, which drew it as iron armor
-   * since 1.21.4. Asserts each worn piece has Tinkers' empty equipment asset and an armor renderer whose layers give a material texture and a trim,
+   * since 1.21.4. Asserts each worn piece has Tinkers' equipment asset (a transparent layer vanilla skips) and an armor renderer whose layers give a material texture and a trim,
    * then after the capture samples the player preview: the copper helmet must be orange and the gold leggings yellow, not grey.
    */
   private static class TrimmedArmorScenario implements UiTestScenario {
