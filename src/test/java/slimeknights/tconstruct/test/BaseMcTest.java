@@ -90,7 +90,14 @@ public class BaseMcTest {
     BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(provider).forEach(DataComponentInitializers.PendingComponents::apply);
   }
 
-  /** Wraps the lookup so missing or unbound tags resolve to an empty tag */
+  /**
+   * Wraps the lookup so missing or unbound tags resolve to an empty tag.
+   * <p>
+   * Consequence for tests: <b>every tag-based default component is empty in unit tests.</b> A missing or unbound tag becomes a detached,
+   * empty {@link HolderSet.Named} (not bound to any registry, never filled), so components built from tags (e.g. a tool's mineable blocks,
+   * {@code DamageResistant} fire types, repair items) match nothing. Behaviour that depends on tag contents must be verified in gametests,
+   * where the server loads the real tags.
+   */
   private static <T> HolderLookup.RegistryLookup<T> withEmptyTags(HolderLookup.RegistryLookup<T> lookup) {
     return new HolderLookup.RegistryLookup.Delegate<>() {
       @Override
