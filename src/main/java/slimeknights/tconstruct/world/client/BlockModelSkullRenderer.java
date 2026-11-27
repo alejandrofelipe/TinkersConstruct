@@ -2,7 +2,6 @@ package slimeknights.tconstruct.world.client;
 
 import net.minecraft.client.model.object.skull.SkullModelBase;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -22,7 +21,8 @@ import java.util.Map;
 public class BlockModelSkullRenderer extends SkullModelBase {
   private final ItemStack stack;
 
-  public BlockModelSkullRenderer(ItemRenderer itemRenderer, ItemStack stack) {
+  /** 26.1: the unused {@code ItemRenderer} parameter is gone, as is the class */
+  public BlockModelSkullRenderer(ItemStack stack) {
     // empty root: this model no longer renders through the vanilla skull/model path (see class breadcrumb)
     super(new ModelPart(List.of(), Map.of()));
     this.stack = stack;

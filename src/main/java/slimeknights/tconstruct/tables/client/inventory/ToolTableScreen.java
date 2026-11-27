@@ -3,13 +3,13 @@ package slimeknights.tconstruct.tables.client.inventory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Inventory;
@@ -239,7 +239,7 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
       int halfWidth = this.armorStandScale * 3 / 2;
       // 1.21.11: InventoryScreen#renderEntityInInventory was removed; same steps as its body (now vanilla's private InventoryScreen#extractRenderState)
       EntityRenderState renderState = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(this.armorStandPreview).createRenderState(this.armorStandPreview, 1.0F);
-      renderState.lightCoords = LightTexture.FULL_BRIGHT;
+      renderState.lightCoords = LightCoordsUtil.FULL_BRIGHT;
       renderState.shadowPieces.clear();
       renderState.outlineColor = 0;
       graphics.entity(renderState, this.armorStandScale, ARMOR_STAND_TRANSLATION, pose, null,

@@ -1,7 +1,6 @@
 package slimeknights.tconstruct.library.client;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.LayeringTransform;
 import net.minecraft.client.renderer.rendertype.OutputTarget;
@@ -12,6 +11,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 import slimeknights.tconstruct.TConstruct;
+
+import java.util.Optional;
 
 /**
  * Render types defined by Tinkers.
@@ -42,10 +43,13 @@ public class TinkerRenderTypes {
   public static class Pipelines {
     private Pipelines() {}
 
-    /** Pipeline for the error block, vanilla lines without depth testing so it shows through everything */
+    /**
+     * Pipeline for the error block, vanilla lines without depth testing so it shows through everything.
+     * 26.1: {@code DepthTestFunction.NO_DEPTH_TEST} is gone; no depth stencil state = no depth test (as vanilla's GUI text snippet).
+     */
     public static final RenderPipeline ERROR_BLOCK = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
       .withLocation(TConstruct.getResource("pipeline/error_block"))
-      .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+      .withDepthStencilState(Optional.empty())
       .build();
 
     @SubscribeEvent

@@ -6,7 +6,11 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.util.Util;
+import net.minecraft.client.color.block.BlockTintSource;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.ARGB;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
 import net.neoforged.api.distmarker.Dist;
@@ -37,6 +41,7 @@ import slimeknights.tconstruct.world.client.TinkerSlimeRenderer;
 
 import org.jspecify.annotations.Nullable;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -148,29 +153,48 @@ public class WorldClientEvents extends ClientEventBase {
     });
   }
 
+  /** 26.1: block colors are a list of tint sources, one per tint index; every slime model uses tint index 0 */
   @SubscribeEvent
-  static void registerBlockColorHandlers(RegisterColorHandlersEvent.Block event) {
+  static void registerBlockColorHandlers(RegisterColorHandlersEvent.BlockTintSources event) {
     // slime plants - blocks
     for (FoliageType type : FoliageType.values()) {
       event.register(
-        (state, reader, pos, index) -> getSlimeColorByPos(pos, type, null),
+        List.of(slimeTint(type, null)),
         TinkerWorld.vanillaSlimeGrass.get(type), TinkerWorld.earthSlimeGrass.get(type), TinkerWorld.skySlimeGrass.get(type),
         TinkerWorld.enderSlimeGrass.get(type), TinkerWorld.ichorSlimeGrass.get(type));
       event.register(
-        (state, reader, pos, index) -> getSlimeColorByPos(pos, type, SlimeColorizer.LOOP_OFFSET),
+        List.of(slimeTint(type, SlimeColorizer.LOOP_OFFSET)),
         TinkerWorld.slimeLeaves.get(type));
       event.register(
-        (state, reader, pos, index) -> getSlimeColorByPos(pos, type, null),
+        List.of(slimeTint(type, null)),
         TinkerWorld.slimeFern.get(type), TinkerWorld.slimeTallGrass.get(type), TinkerWorld.pottedSlimeFern.get(type));
     }
 
     // vines
     event.register(
-      (state, reader, pos, index) -> getSlimeColorByPos(pos, FoliageType.SKY, SlimeColorizer.LOOP_OFFSET),
+      List.of(slimeTint(FoliageType.SKY, SlimeColorizer.LOOP_OFFSET)),
       TinkerWorld.skySlimeVine.get());
     event.register(
-      (state, reader, pos, index) -> getSlimeColorByPos(pos, FoliageType.ENDER, SlimeColorizer.LOOP_OFFSET),
+      List.of(slimeTint(FoliageType.ENDER, SlimeColorizer.LOOP_OFFSET)),
       TinkerWorld.enderSlimeVine.get());
+  }
+
+  /**
+   * Creates the tint source for a slime plant, replacing the 1.21.11 block color lambdas: the type color without a level, the color at the
+   * position in the world. Quad tints multiply the alpha too, so the color is made opaque (the old block colors used only RGB).
+   */
+  private static BlockTintSource slimeTint(FoliageType type, @Nullable BlockPos add) {
+    return new BlockTintSource() {
+      @Override
+      public int color(BlockState state) {
+        return ARGB.opaque(getSlimeColorByPos(null, type, add));
+      }
+
+      @Override
+      public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
+        return ARGB.opaque(getSlimeColorByPos(pos, type, add));
+      }
+    };
   }
 
   // PORT 1.21.4: RegisterColorHandlersEvent.Item and net.minecraft.client.color.item.ItemColors were removed. The slime

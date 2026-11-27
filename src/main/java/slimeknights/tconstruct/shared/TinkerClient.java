@@ -2,7 +2,7 @@ package slimeknights.tconstruct.shared;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.Lightmap;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -125,12 +125,12 @@ public class TinkerClient {
       if (Shapes.joinIsNotEmpty(state.getShape(minecraft.level, pos).move(pos.getX(), pos.getY(), pos.getZ()), Shapes.create(AABB.ofSize(minecraft.player.getEyePosition(), width, 1.0E-6D, width)), BooleanOp.AND)) {
         // this is for the most part a clone of the vanilla logic from ScreenEffectRenderer with some changes mentioned below
 
-        TextureAtlasSprite texture = minecraft.getBlockRenderer().getBlockModelShaper().getParticleIcon(state, minecraft.level, pos);
+        TextureAtlasSprite texture = minecraft.getModelManager().getBlockStateModelSet().getParticleMaterial(state, minecraft.level, pos).sprite();
 
         // change: handle brightness based on renderWater
         Player player = minecraft.player;
         BlockPos blockpos = BlockPos.containing(player.getX(), player.getEyeY(), player.getZ());
-        float brightness = LightTexture.getBrightness(player.level().dimensionType(), player.level().getMaxLocalRawBrightness(blockpos));
+        float brightness = Lightmap.getBrightness(player.level().dimensionType(), player.level().getMaxLocalRawBrightness(blockpos));
         int color = ARGB.colorFromFloat(1.0f, brightness, brightness, brightness);
 
         // draw the quad

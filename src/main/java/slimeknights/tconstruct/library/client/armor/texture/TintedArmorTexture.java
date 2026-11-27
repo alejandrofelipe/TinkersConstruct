@@ -7,11 +7,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
 import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier.ArmorTexture;
 
 /** Armor texture which tints the texture */
@@ -20,7 +20,7 @@ import slimeknights.tconstruct.library.client.armor.texture.ArmorTextureSupplier
 @RequiredArgsConstructor
 @Setter
 public class TintedArmorTexture implements ArmorTexture {
-  private static final int MAX_LIGHT = LightTexture.pack(15, 15);
+  private static final int MAX_LIGHT = LightCoordsUtil.pack(15, 15);
 
   @Getter
   private final Identifier texture;
@@ -39,7 +39,7 @@ public class TintedArmorTexture implements ArmorTexture {
     if (luminosity >= 15) {
       return TintedArmorTexture.MAX_LIGHT;
     }
-    // inlined version of methods from LightTexture
+    // inlined version of methods from LightCoordsUtil
     return Math.max(luminosity, (packedLight & 0xFFFF) >> 4) << 4
       | Math.max(luminosity, packedLight >> 20 & 0xFFFF) << 20;
   }

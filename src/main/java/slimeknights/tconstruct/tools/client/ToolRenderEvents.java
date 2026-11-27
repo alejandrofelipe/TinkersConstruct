@@ -1,17 +1,14 @@
 package slimeknights.tconstruct.tools.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.ShapeRenderer;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.BlockDestructionProgress;
 import net.minecraft.util.ARGB;
@@ -20,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -29,7 +27,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import slimeknights.tconstruct.TConstruct;
@@ -135,10 +133,13 @@ public class ToolRenderEvents {
 
   /** Extra block outline extracted for {@link #extractBlockHighlights} */
   private record ExtraOutline(BlockPos pos, VoxelShape shape) {}
-  /** Renders the block damage process on the extra blocks */
+  /**
+   * Renders the block damage process on the extra blocks.
+   * 26.1: {@code BlockRenderDispatcher} and the tripwire stage are gone; the extra blocks are submitted as breaking block models like vanilla
+   * {@code LevelRenderer#submitBlockDestroyAnimation}, which draws them into the crumbling buffers with the vanilla ones.
+   */
   @SubscribeEvent
-  static void renderBlockDamageProgress(RenderLevelStageEvent.AfterTripwireBlocks event) {
-    // TODO: AfterTripwireBlocks: confirm this is the right stage for crumbling, maybe earlier
+  static void renderBlockDamageProgress(SubmitCustomGeometryEvent event) {
     // validate required variables are set
     MultiPlayerGameMode controller = Minecraft.getInstance().gameMode;
     if (controller == null || !controller.isDestroying()) {
@@ -189,32 +190,23 @@ public class ToolRenderEvents {
       return;
     }
 
-    // set up buffers
+    // finally, submit the blocks
     PoseStack matrices = event.getPoseStack();
-    matrices.pushPose();
-    MultiBufferSource.BufferSource vertices = event.getLevelRenderer().renderBuffers.crumblingBufferSource();
-    VertexConsumer vertexBuilder = vertices.getBuffer(ModelBakery.DESTROY_TYPES.get(progress.getProgress()));
-
-    // finally, render the blocks
-    Camera renderInfo = Minecraft.getInstance().gameRenderer.getMainCamera();
-    double x = renderInfo.position().x;
-    double y = renderInfo.position().y;
-    double z = renderInfo.position().z;
-    BlockRenderDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
+    SubmitNodeCollector collector = event.getSubmitNodeCollector();
+    BlockStateModelSet models = Minecraft.getInstance().getModelManager().getBlockStateModelSet();
+    Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;
+    int progressStage = progress.getProgress();
     int rendered = 0;
     do {
       BlockPos pos = extraBlocks.next();
-      matrices.pushPose();
-      matrices.translate(pos.getX() - x, pos.getY() - y, pos.getZ() - z);
-      PoseStack.Pose entry = matrices.last();
-      VertexConsumer blockBuilder = new SheetedDecalTextureGenerator(vertexBuilder, entry, 1f);
-      // TODO: is it practical to fetch model data here?
-      dispatcher.renderBreakingTexture(world.getBlockState(pos), pos, world, matrices, blockBuilder);
-      matrices.popPose();
+      BlockState extraState = world.getBlockState(pos);
+      if (extraState.getRenderShape() == RenderShape.MODEL) {
+        matrices.pushPose();
+        matrices.translate(pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z);
+        collector.submitBreakingBlockModel(matrices, models.get(extraState), extraState.getSeed(pos), progressStage);
+        matrices.popPose();
+      }
       rendered++;
     } while (rendered < MAX_BLOCKS && extraBlocks.hasNext());
-    // finish rendering
-    matrices.popPose();
-    vertices.endBatch();
   }
 }

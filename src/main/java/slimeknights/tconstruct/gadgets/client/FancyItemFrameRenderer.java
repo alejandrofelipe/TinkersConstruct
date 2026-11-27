@@ -8,7 +8,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemFrameRenderer;
 import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
@@ -17,6 +19,8 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.client.event.RenderItemInFrameEvent;
 import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.neoforged.neoforge.common.NeoForge;
@@ -25,7 +29,9 @@ import slimeknights.tconstruct.gadgets.client.FancyItemFrameRenderer.FancyItemFr
 import slimeknights.tconstruct.gadgets.entity.FancyItemFrameEntity;
 import slimeknights.tconstruct.gadgets.entity.FrameType;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends ItemFrameRenderer<T> {
@@ -59,6 +65,10 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
   }
 
   private final MapRenderer mapRenderer;
+  /** Random for collecting the frame model parts, render thread only */
+  private final RandomSource random = RandomSource.create();
+  /** Reused list of frame model parts */
+  private final List<BlockStateModelPart> parts = new ArrayList<>();
   public FancyItemFrameRenderer(EntityRendererProvider.Context context) {
     super(context);
     this.mapRenderer = context.getMapRenderer();
@@ -116,7 +126,11 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
       matrices.translate(-0.5D, -0.5D, -0.5D);
       BlockStateModel model = Minecraft.getInstance().getModelManager().getStandaloneModel(isMap ? LOCATIONS_MODEL_MAP.get(frameType) : LOCATIONS_MODEL.get(frameType));
       if (model != null) {
-        collector.submitBlockModel(matrices, Sheets.cutoutBlockSheet(), model, 1.0F, 1.0F, 1.0F, packedLight, OverlayTexture.NO_OVERLAY, state.outlineColor);
+        // 26.1: blocks are submitted as model parts with tint layers instead of a model and an RGB color
+        random.setSeed(42L);
+        model.collectParts(BlockAndTintGetter.EMPTY, BlockPos.ZERO, Blocks.AIR.defaultBlockState(), random, parts);
+        collector.submitBlockModel(matrices, Sheets.cutoutBlockSheet(), List.copyOf(parts), new int[0], packedLight, OverlayTexture.NO_OVERLAY, state.outlineColor);
+        parts.clear();
       }
       matrices.popPose();
     }

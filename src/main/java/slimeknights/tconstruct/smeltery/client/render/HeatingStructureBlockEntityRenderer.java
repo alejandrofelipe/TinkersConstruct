@@ -93,7 +93,7 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
     renderState.minPos = minPos;
     // tank fluids, use minPos for brightness
     renderState.fluids = SmelteryTankRenderer.extractLayers(smeltery.getTank(), minPos, maxPos);
-    renderState.fluidLight = LevelRenderer.getLightColor(world, minPos);
+    renderState.fluidLight = LevelRenderer.getLightCoords(world, minPos);
 
     // items
     int xd = 1 + maxPos.getX() - minPos.getX();
@@ -117,7 +117,7 @@ public class HeatingStructureBlockEntityRenderer implements BlockEntityRenderer<
 
           ItemStackRenderState itemRenderState = new ItemStackRenderState();
           itemModelResolver.updateForTopItem(itemRenderState, stack, TinkerItemDisplays.MELTER, world, null, 0);
-          items.add(new SmelteryItem(itemRenderState, offsetX, height, offsetZ, LevelRenderer.getLightColor(world, itemPos)));
+          items.add(new SmelteryItem(itemRenderState, offsetX, height, offsetZ, LevelRenderer.getLightCoords(world, itemPos)));
 
           // done as quads rather than items as its not that expensive to draw blocks, items are the problem
           if (max != -1) {

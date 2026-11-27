@@ -100,12 +100,13 @@ public class CombatFishingHookRenderer extends EntityRenderer<CombatFishingHook,
   private Vec3 getPlayerHandPos(Player player, float handAngle, float partialTick) {
     int side = FishingHookRenderer.getHoldingArm(player) == HumanoidArm.RIGHT ? 1 : -1;
     if (this.entityRenderDispatcher.options.getCameraType().isFirstPerson() && player == Minecraft.getInstance().player) {
-      double fov = 960.0 / this.entityRenderDispatcher.options.fov().get().intValue();
+      // 26.1: the near plane takes the fov, matching vanilla FishingHookRenderer
+      float fov = this.entityRenderDispatcher.options.fov().get().intValue();
       Vec3 point = this.entityRenderDispatcher
         .camera
-        .getNearPlane()
+        .getNearPlane(fov)
         .getPointOnPlane((float) side * 0.525F, -0.1F)
-        .scale(fov)
+        .scale(960.0 / fov)
         .yRot(handAngle * 0.5F)
         .xRot(-handAngle * 0.7F);
       return player.getEyePosition(partialTick).add(point);

@@ -3,7 +3,11 @@ package slimeknights.tconstruct.tables;
 import slimeknights.tconstruct.tables.block.entity.table.RetexturedTableBlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.client.color.block.BlockTintSource;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.ARGB;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
@@ -21,6 +25,8 @@ import slimeknights.tconstruct.tables.client.inventory.ModifierWorktableScreen;
 import slimeknights.tconstruct.tables.client.inventory.PartBuilderScreen;
 import slimeknights.tconstruct.tables.client.inventory.TinkerChestScreen;
 import slimeknights.tconstruct.tables.client.inventory.TinkerStationScreen;
+
+import java.util.List;
 
 @SuppressWarnings("unused")
 @EventBusSubscriber(modid=TConstruct.MOD_ID, value=Dist.CLIENT)
@@ -49,17 +55,26 @@ public class TableClientEvents extends ClientEventBase {
     event.register(TinkerTables.tinkerChestContainer.get(), TinkerChestScreen::new);
   }
 
+  /**
+   * 26.1: block colors are a list of tint sources (one per tint index) with separate colors with and without a level; quad tints multiply the
+   * alpha too, so the chest color is made opaque (the old block colors used only RGB).
+   */
   @SubscribeEvent
-  static void registerBlockColors(final RegisterColorHandlersEvent.Block event) {
-    event.register((state, world, pos, index) -> {
-      if (world != null && pos != null) {
-        BlockEntity te = world.getBlockEntity(pos);
-        if (te instanceof TinkersChestBlockEntity) {
-          return ((TinkersChestBlockEntity)te).getColor();
-        }
+  static void registerBlockColors(final RegisterColorHandlersEvent.BlockTintSources event) {
+    event.register(List.of(new BlockTintSource() {
+      @Override
+      public int color(BlockState state) {
+        return -1;
       }
-      return -1;
-    }, TinkerTables.tinkersChest.get());
+
+      @Override
+      public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof TinkersChestBlockEntity chest) {
+          return ARGB.opaque(chest.getColor());
+        }
+        return -1;
+      }
+    }), TinkerTables.tinkersChest.get());
   }
 
   // PORT 1.21.4: RegisterColorHandlersEvent.Item was removed. The tinkers chest block-item tinted itself from
