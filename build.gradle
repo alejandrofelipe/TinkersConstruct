@@ -308,6 +308,9 @@ dependencies {
     // runtimeOnly so the compat actually loads in dev runs (smoke test / uitest); harmless in prod (dep only).
     runtimeOnly "net.blay09.mods:craftingtweaks-neoforge:${craftingtweaks_version}"
     runtimeOnly "net.blay09.mods:balm-neoforge:${balm_version}"
+    // Balm 26.1.2.15 pulls kuma-api 26.1.2.2, whose key modifier reconcile recurses until the client crashes at startup (StackOverflowError
+    // in KeyMapping.kuma$getModifiers); a newer kuma-api replaces it at runtime
+    runtimeOnly "net.blay09.mods:kuma-api-neoforge:${kuma_version}"
 
     // JSON Things compat (optional, standalone). Artifact name embeds the MC version.
     // runtimeOnly so the plugin loads in dev runs (the gametest server loads the thingpack under src/gametest/thingpacks)
