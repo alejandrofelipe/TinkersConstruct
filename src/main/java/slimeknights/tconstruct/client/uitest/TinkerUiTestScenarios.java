@@ -41,6 +41,13 @@ import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.client.resources.model.cuboid.CuboidModel;
+import net.minecraft.client.resources.model.cuboid.UnbakedCuboidGeometry;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -81,6 +88,7 @@ import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
@@ -109,6 +117,7 @@ import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
 import slimeknights.mantle.client.model.util.ModelHelper;
+import slimeknights.mantle.client.model.util.SimpleBlockModel;
 import slimeknights.mantle.client.render.RenderTargetCapture;
 import slimeknights.mantle.client.screen.MultiModuleScreen;
 import slimeknights.mantle.client.screen.book.BookScreen;
@@ -194,16 +203,25 @@ import slimeknights.tconstruct.tools.modules.cosmetic.TrimModule;
 import slimeknights.tconstruct.tools.recipe.severing.PlayerBeheadingRecipe;
 import slimeknights.tconstruct.world.TinkerHeadType;
 import slimeknights.tconstruct.world.TinkerWorld;
+import slimeknights.tconstruct.world.block.FoliageType;
+import slimeknights.tconstruct.smeltery.item.TankItem;
+import org.apache.commons.io.FileUtils;
 import org.lwjgl.glfw.GLFW;
 
 import org.jspecify.annotations.Nullable;
 import java.lang.reflect.Proxy;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -283,6 +301,13 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new JeiSmelterySlotScenario());
     UiTestScenarios.register(new JeiSmelteryTankScenario());
     UiTestScenarios.register(new SmelteryTankWorldScenario());
+    UiTestScenarios.register(new RenderLayerReviewScenario());
+    UiTestScenarios.register(new RenderLayerReviewItemsScenario());
+    UiTestScenarios.register(new MelterTankTintScenario());
+    UiTestScenarios.register(new TranslucentItemLayersScenario());
+    UiTestScenarios.register(new ForceTranslucentBakeScenario());
+    UiTestScenarios.register(new BookExportScenario());
+    UiTestScenarios.register(new FluidDepthTestScenario());
     if (ModList.get().isLoaded("craftingtweaks")) {
       UiTestScenarios.register(new CraftingTweaksRotateScenario());
     }
@@ -1869,6 +1894,485 @@ public class TinkerUiTestScenarios {
     TConstruct.LOG.info("{}: {}", description, stats);
     if (matching * 4 < total * 3) {
       throw new IllegalStateException(description + " has the wrong color: " + stats);
+    }
+  }
+
+  /**
+   * M7 visual review (no menu, no assert): 26.1 dropped {@code render_type} from block models, so the quads of models that declared {@code cutout}
+   * in 1.21.11 now pick their layer from the texture alpha. Shows the affected cases in front of a red wall, so translucent pixels show red:
+   * seared tanks ({@code tconstruct:tank}) holding the fluids whose textures are translucent, a lantern and a gauge on top, the three slime leaves,
+   * and crafting stations retextured with ice, slime and honey blocks ({@code mantle:retextured}). Run the same scenario on 1.21.11 to compare.
+   */
+  private static class RenderLayerReviewScenario implements UiTestScenario {
+    private final BlockPos origin = SITE.offset(230, 0, 0);
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource("render_layer_review");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      ctx.sendCommand("tp @s " + (origin.getX() + 4.5) + " " + origin.getY() + " " + (origin.getZ() - 5.5));
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        // red wall behind, two blocks back
+        for (int x = -2; x <= 10; x++) {
+          for (int y = 0; y <= 4; y++) {
+            level.setBlockAndUpdate(origin.offset(x, y, 2), Blocks.RED_CONCRETE.defaultBlockState());
+          }
+        }
+        // bottom row: tanks with the translucent fluids
+        List<Fluid> fluids = List.of(TinkerFluids.honey.get(), TinkerFluids.earthSlime.get(), TinkerFluids.skySlime.get(), TinkerFluids.enderSlime.get(),
+                                     TinkerFluids.liquidSoul.get(), TinkerFluids.moltenGlass.get(), TinkerFluids.moltenDiamond.get(), TinkerFluids.moltenEmerald.get(),
+                                     TinkerFluids.moltenAmethyst.get());
+        for (int i = 0; i < fluids.size(); i++) {
+          BlockPos tank = origin.offset(i, 0, 0);
+          level.setBlockAndUpdate(tank, TinkerSmeltery.searedTank.get(TankType.FUEL_TANK).defaultBlockState());
+          SmelteryRigs.fillTank(level, tank, new FluidStack(fluids.get(i), TankType.FUEL_TANK.getCapacity()));
+        }
+        // second row: a lantern and a gauge holding honey, the slime leaves, retextured stations
+        BlockPos lantern = origin.offset(0, 1, 0);
+        level.setBlockAndUpdate(lantern, TinkerSmeltery.searedLantern.get().defaultBlockState());
+        SmelteryRigs.fillTank(level, lantern, new FluidStack(TinkerFluids.honey.get(), TinkerSmeltery.searedLantern.get().getCapacity()));
+        BlockPos gauge = origin.offset(1, 1, 0);
+        level.setBlockAndUpdate(gauge, TinkerSmeltery.searedTank.get(TankType.INGOT_GAUGE).defaultBlockState());
+        SmelteryRigs.fillTank(level, gauge, new FluidStack(TinkerFluids.earthSlime.get(), TankType.INGOT_GAUGE.getCapacity()));
+        List<FoliageType> leaves = List.of(FoliageType.EARTH, FoliageType.SKY, FoliageType.ENDER);
+        for (int i = 0; i < leaves.size(); i++) {
+          level.setBlockAndUpdate(origin.offset(2 + i, 1, 0), TinkerWorld.slimeLeaves.get(leaves.get(i)).defaultBlockState().setValue(BlockStateProperties.PERSISTENT, true));
+        }
+        List<Block> textures = List.of(Blocks.ICE, Blocks.SLIME_BLOCK, Blocks.HONEY_BLOCK);
+        for (int i = 0; i < textures.size(); i++) {
+          BlockPos table = origin.offset(5 + i, 1, 0);
+          level.setBlockAndUpdate(table, TinkerTables.craftingStation.get().defaultBlockState());
+          if (level.getBlockEntity(table) instanceof IRetexturedBlockEntity retextured) {
+            retextured.updateTexture(BuiltInRegistries.BLOCK.getKey(textures.get(i)).toString());
+          }
+        }
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 40; // block entity data sync + chunk remesh
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.lookAt(origin.offset(4, 0, 0));
+    }
+
+    @Override
+    public int settleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void close(UiTestContext ctx) { /* nothing open */ }
+  }
+
+  /**
+   * M7 visual review (no assert): the same filled tanks, lantern and gauge as {@link RenderLayerReviewScenario} as items in the GUI (block model
+   * item quads), on a plain screen and on a red band, so translucent pixels show. Run the same scenario on 1.21.11 to compare.
+   */
+  private static class RenderLayerReviewItemsScenario implements UiTestScenario {
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource("render_layer_review_items");
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {}
+
+    @Override
+    public int prepareSettleTicks() {
+      return 5;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      List<ItemStack> stacks = new ArrayList<>();
+      for (Fluid fluid : List.of(TinkerFluids.honey.get(), TinkerFluids.earthSlime.get(), TinkerFluids.skySlime.get(), TinkerFluids.enderSlime.get(),
+                                 TinkerFluids.liquidSoul.get(), TinkerFluids.moltenGlass.get(), TinkerFluids.moltenDiamond.get(), TinkerFluids.moltenEmerald.get())) {
+        stacks.add(TankItem.setTank(new ItemStack(TinkerSmeltery.searedTank.get(TankType.FUEL_TANK)), new FluidStack(fluid, TankType.FUEL_TANK.getCapacity())));
+      }
+      stacks.add(TankItem.setTank(new ItemStack(TinkerSmeltery.searedLantern), new FluidStack(TinkerFluids.honey.get(), TinkerSmeltery.searedLantern.get().getCapacity())));
+      stacks.add(TankItem.setTank(new ItemStack(TinkerSmeltery.searedTank.get(TankType.INGOT_GAUGE)), new FluidStack(TinkerFluids.earthSlime.get(), TankType.INGOT_GAUGE.getCapacity())));
+      stacks.add(new ItemStack(TinkerWorld.slimeLeaves.get(FoliageType.EARTH)));
+      ctx.mc().setScreen(new BandedGridScreen(stacks));
+      ctx.parkMouse();
+    }
+  }
+
+  /**
+   * No menu: a seared tank full of honey right behind a stone block, seen through the stone. The tank fluid (block entity renderer, Mantle's fluid
+   * pipeline) must be hidden by the stone: 26.1 pipelines have no depth test unless they set one, which drew every fluid over the blocks in front.
+   */
+  private static class FluidDepthTestScenario implements UiTestScenario {
+    private static final String NAME = "fluid_depth_test";
+    private final BlockPos tank = SITE.offset(270, 0, 2);
+    /** Center of the stone block in front of the tank: grey stone, not orange honey */
+    private static final float[] STONE_REGION = {600 / 1280f, 320 / 720f, 680 / 1280f, 400 / 720f};
+    private static final IntPredicate GREY = color -> {
+      int max = Math.max(ARGB.red(color), Math.max(ARGB.green(color), ARGB.blue(color)));
+      int min = Math.min(ARGB.red(color), Math.min(ARGB.green(color), ARGB.blue(color)));
+      return max > 0 && max - min < 0.2f * max;
+    };
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      ctx.sendCommand("tp @s " + (tank.getX() + 0.5) + " " + tank.getY() + " " + (tank.getZ() - 3.5));
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        level.setBlockAndUpdate(tank, TinkerSmeltery.searedTank.get(TankType.FUEL_TANK).defaultBlockState());
+        SmelteryRigs.fillTank(level, tank, new FluidStack(TinkerFluids.honey.get(), TankType.FUEL_TANK.getCapacity()));
+        level.setBlockAndUpdate(tank.north(), Blocks.STONE.defaultBlockState());
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 30;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.lookAt(tank.north());
+    }
+
+    @Override
+    public int settleTicks() {
+      return 20;
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+        WornArmorScenario.assertFrameRegion(image, STONE_REGION, NAME + ": stone in front of a honey tank", GREY);
+      }
+    }
+  }
+  /** Plain screen drawing items in a row at 2x scale twice: on the background, then on a red band */
+  private static class BandedGridScreen extends Screen {
+    private final List<ItemStack> stacks;
+
+    private BandedGridScreen(List<ItemStack> stacks) {
+      super(Component.empty());
+      this.stacks = stacks;
+    }
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+      super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+      graphics.fill(0, 70, this.width, 120, 0xFFFF0000);
+      graphics.pose().pushMatrix();
+      graphics.pose().scale(2, 2);
+      for (int i = 0; i < stacks.size(); i++) {
+        graphics.item(stacks.get(i), 10 + i * 20, 15);
+        graphics.item(stacks.get(i), 10 + i * 20, 40);
+      }
+      graphics.pose().popMatrix();
+    }
+  }
+
+  /**
+   * Melter GUI with its tank full of molten ender, whose still texture is grey stone tinted teal ({@code FF105E51}): the GUI tank must draw teal,
+   * so the fluid tint reaches the GUI fluid renderer (26.1: sprite and tint come from the fluid model, {@code FluidRenderInfo}). A lost tint draws grey.
+   */
+  private static class MelterTankTintScenario implements UiTestScenario {
+    private static final String NAME = "melter_tank_tint";
+    private final BlockPos pos = SITE.offset(250, 1, 0);
+    /** Left part of the melter tank (GUI pixels 90,16 52x52 from the screen corner), clear of the scale marks */
+    private static final Rect2i TANK_REGION = new Rect2i(93, 30, 20, 34);
+    /** Molten ender in the GUI tank: dark teal, as captured average #0B3938 */
+    private static final IntPredicate ENDER = hued(150, 200, 0.4f, 30);
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + (pos.getY() - 1) + " " + pos.getZ());
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        // tank placed after the melter so its neighbor update forms the melter, see MelterScenario
+        level.setBlockAndUpdate(pos, TinkerSmeltery.searedMelter.get().defaultBlockState());
+        BlockPos fuel = pos.below();
+        level.setBlockAndUpdate(fuel, TinkerSmeltery.searedTank.get(TankType.FUEL_TANK).defaultBlockState());
+        SmelteryRigs.fillTank(level, fuel, new FluidStack(Fluids.LAVA, 4000));
+      });
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ctx.runOnServer(() -> {
+        if (!(ctx.serverLevel().getBlockEntity(pos) instanceof MelterBlockEntity melter)) {
+          throw new IllegalStateException(NAME + ": expected a melter at " + pos + ", found " + ctx.serverLevel().getBlockEntity(pos));
+        }
+        int capacity = melter.getTank().getCapacity();
+        int filled;
+        try (Transaction tx = Transaction.openRoot()) {
+          filled = melter.getTank().insert(0, FluidResource.of(new FluidStack(TinkerFluids.moltenEnder.get(), capacity)), capacity, tx);
+          tx.commit();
+        }
+        if (filled != capacity) {
+          throw new IllegalStateException(NAME + ": the melter tank accepted only " + filled + "/" + capacity + " mB of molten ender");
+        }
+      });
+      ctx.useBlock(pos);
+      ctx.parkMouse();
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      if (!(ctx.mc().screen instanceof MelterScreen screen)) {
+        throw new IllegalStateException(NAME + ": expected the melter screen, found " + ctx.mc().screen);
+      }
+      try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+        double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
+        TrimmedArmorScenario.assertGuiRegion(image, scale, screen, TANK_REGION, NAME + ": molten ender in the GUI tank", ENDER);
+      }
+      ctx.mc().setScreen(null);
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      ctx.mc().setScreen(null);
+    }
+  }
+
+  /**
+   * Per-quad item layers (26.1: each quad picks its render type from its sprite's transparency): draws a repair kit made of ice, whose material
+   * texture is translucent ({@code tconstruct:material} model, Mantle item layers), and stone as the opaque control, each twice at 4x, over a red
+   * and over a blue band. A translucent pixel blends with the band, so it differs between the two copies; an opaque or cutout pixel is the same
+   * in both (or the plain band when discarded). The ice kit must have such pixels, stone none.
+   */
+  private static class TranslucentItemLayersScenario implements UiTestScenario {
+    private static final String NAME = "translucent_item_layers";
+    /** Item positions in GUI pixels at 4x: the copy over the blue band is {@link #BLUE_OFFSET} below the one over red */
+    private static final int LEFT = 40, TOP = 30, SPACING = 80, BLUE_OFFSET = 90, ITEM_SIZE = 64;
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {}
+
+    @Override
+    public int prepareSettleTicks() {
+      return 5;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      ItemStack kit = TinkerToolParts.repairKit.get().withMaterial(MaterialIds.ice);
+      ctx.mc().setScreen(new TwoBandScreen(List.of(kit, new ItemStack(Items.STONE))));
+      ctx.parkMouse();
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+        double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
+        int[] kit = countPixels(image, scale, 0);
+        int[] stone = countPixels(image, scale, 1);
+        TConstruct.LOG.info("{}: ice repair kit {} of {} drawn pixels blend with the band, stone {} of {}", NAME, kit[1], kit[0], stone[1], stone[0]);
+        if (kit[0] == 0 || stone[0] == 0) {
+          throw new IllegalStateException(NAME + ": an item drew nothing (kit " + kit[0] + ", stone " + stone[0] + " pixels)");
+        }
+        if (kit[1] * 10 < kit[0]) {
+          throw new IllegalStateException(NAME + ": the ice repair kit is not translucent, only " + kit[1] + " of " + kit[0] + " pixels blend with the band");
+        }
+        if (stone[1] * 100 > stone[0]) {
+          throw new IllegalStateException(NAME + ": opaque stone blends with the band in " + stone[1] + " of " + stone[0] + " pixels");
+        }
+      }
+      ctx.mc().setScreen(null);
+    }
+
+    /** Returns {drawn pixels, pixels differing between the red and the blue copy} of the item at the index */
+    private static int[] countPixels(NativeImage image, double scale, int index) {
+      int x0 = (int) Math.round((LEFT + index * SPACING) * scale), y0 = (int) Math.round(TOP * scale);
+      int size = (int) Math.round(ITEM_SIZE * scale), offset = (int) Math.round(BLUE_OFFSET * scale);
+      int drawn = 0, blended = 0;
+      for (int y = y0 + 1; y < y0 + size - 1; y++) {
+        for (int x = x0 + 1; x < x0 + size - 1; x++) {
+          int red = image.getPixel(x, y) & 0xFFFFFF, blue = image.getPixel(x, y + offset) & 0xFFFFFF;
+          // NativeImage#getPixel is ARGB: the plain red band reads 0xFF0000, the blue band 0x0000FF
+          if (red != 0xFF0000 || blue != 0x0000FF) {
+            drawn++;
+            if (red != blue) {
+              blended++;
+            }
+          }
+        }
+      }
+      return new int[] {drawn, blended};
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      ctx.mc().setScreen(null);
+    }
+  }
+
+  /** Screen drawing items at 4x twice: over a red band, and over a blue band below */
+  private static class TwoBandScreen extends Screen {
+    private final List<ItemStack> stacks;
+
+    private TwoBandScreen(List<ItemStack> stacks) {
+      super(Component.empty());
+      this.stacks = stacks;
+    }
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+      super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+      int top = TranslucentItemLayersScenario.TOP, offset = TranslucentItemLayersScenario.BLUE_OFFSET;
+      graphics.fill(0, top - 10, this.width, top + 74, 0xFFFF0000);
+      graphics.fill(0, top + offset - 10, this.width, top + offset + 74, 0xFF0000FF);
+      for (int i = 0; i < stacks.size(); i++) {
+        for (int copy = 0; copy < 2; copy++) {
+          graphics.pose().pushMatrix();
+          graphics.pose().translate(TranslucentItemLayersScenario.LEFT + i * TranslucentItemLayersScenario.SPACING, top + copy * offset);
+          graphics.pose().scale(4, 4);
+          graphics.item(stacks.get(i), 0, 0);
+          graphics.pose().popMatrix();
+        }
+      }
+    }
+  }
+
+  /**
+   * No menu, logic check: {@code force_translucent} on a model texture must reach the quads Mantle bakes at runtime. Parses an element model whose
+   * north face uses opaque stone with {@code "force_translucent": true} and whose south face uses plain stone, resolves its textures through
+   * {@link SimpleBlockModel#materialLookup} (Mantle's runtime lookup, {@code ModelHelper#getMaterial}) and bakes it with
+   * {@link SimpleBlockModel#bakeElements}: the north quad must be on the translucent layer, the south quad solid.
+   */
+  private static class ForceTranslucentBakeScenario implements UiTestScenario {
+    private static final String NAME = "force_translucent_bake";
+    private static final String MODEL = """
+      {"textures": {"forced": {"sprite": "minecraft:block/stone", "force_translucent": true}, "plain": "minecraft:block/stone"},
+       "elements": [{"from": [0, 0, 0], "to": [16, 16, 16], "faces": {"north": {"texture": "#forced"}, "south": {"texture": "#plain"}}}]}""";
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {}
+
+    @Override
+    public int prepareSettleTicks() {
+      return 1;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      CuboidModel model = CuboidModel.GSON.fromJson(MODEL, CuboidModel.class);
+      if (!(model.geometry() instanceof UnbakedCuboidGeometry geometry)) {
+        throw new IllegalStateException(NAME + ": expected element geometry, found " + model.geometry());
+      }
+      TextureSlots textures = new TextureSlots.Resolver().addLast(model.textureSlots()).resolve(() -> NAME);
+      QuadCollection quads = SimpleBlockModel.bakeElements(geometry.elements(), SimpleBlockModel.materialLookup(textures, Map.of(), ModelHelper::getSprite), BlockModelRotation.IDENTITY);
+      Map<Direction, ChunkSectionLayer> layers = new EnumMap<>(Direction.class);
+      for (BakedQuad quad : quads.getAll()) {
+        layers.put(quad.direction(), quad.materialInfo().layer());
+      }
+      TConstruct.LOG.info("{}: baked layers {}", NAME, layers);
+      if (layers.get(Direction.NORTH) != ChunkSectionLayer.TRANSLUCENT || layers.get(Direction.SOUTH) != ChunkSectionLayer.SOLID) {
+        throw new IllegalStateException(NAME + ": expected the forced face translucent and the plain face solid, found " + layers);
+      }
+    }
+
+    @Override
+    public void close(UiTestContext ctx) { /* nothing open */ }
+  }
+
+  /**
+   * Runs {@code /mantle book export_images} for the smallest Tinkers book at scale 1 and checks an exported page: the book content is drawn in
+   * the screen's background pass, which the export skipped from 1.21.6 to M7 (pages had the widgets only). The page must be mostly opaque
+   * (the book background) and hold dark text pixels.
+   */
+  private static class BookExportScenario implements UiTestScenario {
+    private static final String NAME = "book_export";
+    private static final String BOOK = "tconstruct:tinkers_gadgetry";
+
+    private static File exportDir(Minecraft mc) {
+      return new File(mc.gameDirectory, "screenshots/mantle_book/tconstruct/tinkers_gadgetry");
+    }
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      try {
+        FileUtils.deleteDirectory(exportDir(ctx.mc()));
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 1;
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      // client command: runs (and exports) right away on the client thread
+      ctx.sendCommand("mantle book export_images " + BOOK + " 1");
+    }
+
+    @Override
+    public void close(UiTestContext ctx) {
+      File[] pages = exportDir(ctx.mc()).listFiles((dir, name) -> name.startsWith("page_") && name.endsWith(".png"));
+      if (pages == null || pages.length == 0) {
+        throw new IllegalStateException(NAME + ": no page of " + BOOK + " was exported to " + exportDir(ctx.mc()));
+      }
+      String best = null;
+      int bestDark = -1;
+      for (File page : pages) {
+        try (NativeImage image = NativeImage.read(Files.newInputStream(page.toPath()))) {
+          int total = image.getWidth() * image.getHeight(), opaque = 0, dark = 0;
+          for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+              int color = image.getPixel(x, y);
+              if (ARGB.alpha(color) == 255) {
+                opaque++;
+                if (Math.max(ARGB.red(color), Math.max(ARGB.green(color), ARGB.blue(color))) < 90) {
+                  dark++;
+                }
+              }
+            }
+          }
+          // the book background must cover most of the page; text pixels are dark
+          if (opaque * 2 >= total && dark > bestDark) {
+            bestDark = dark;
+            best = page.getName() + " (" + image.getWidth() + "x" + image.getHeight() + ", " + opaque + " opaque)";
+          }
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
+        }
+      }
+      TConstruct.LOG.info("{}: {} page(s) exported, most text on {} with {} dark pixels", NAME, pages.length, best, bestDark);
+      if (bestDark < 200) {
+        throw new IllegalStateException(NAME + ": no exported page of " + BOOK + " shows book content with text (best: " + best + ", " + bestDark + " dark pixels)");
+      }
     }
   }
 
