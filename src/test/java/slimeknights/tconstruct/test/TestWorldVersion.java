@@ -10,7 +10,8 @@ import java.util.Date;
 
 public class TestWorldVersion implements WorldVersion {
   public static final TestWorldVersion INSTANCE = new TestWorldVersion();
-  private static final DataVersion DATA = new DataVersion(0, "tconstruct_test");
+  // 26.1: the file fixer (DataFixers) rejects fixes newer than the game's data version, so a 0 version fails Bootstrap
+  private static final DataVersion DATA = new DataVersion(SharedConstants.WORLD_VERSION, "tconstruct_test");
 
   @Override
   public DataVersion dataVersion() {

@@ -36,6 +36,7 @@ public abstract class ToolItemTest extends BaseMcTest {
       Identifier id = Identifier.fromNamespaceAndPath("test", "toolcore");
       tool = new ModifiableItem(new Item.Properties().stacksTo(1).setId(ResourceKey.create(Registries.ITEM, id)), ToolDefinitionFixture.getStandardToolDefinition());
       Registry.register(BuiltInRegistries.ITEM, id, tool);
+      bindDefaultComponents();
     }
     setupTierSorting();
     // ModifierStatsBuilder.disableFilter();

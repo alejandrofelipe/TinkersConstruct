@@ -9,6 +9,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
 import slimeknights.tconstruct.library.tools.part.ToolPartItem;
+import slimeknights.tconstruct.test.BaseMcTest;
 import slimeknights.tconstruct.tools.stats.HandleMaterialStats;
 import slimeknights.tconstruct.tools.stats.HeadMaterialStats;
 import slimeknights.tconstruct.tools.stats.StatlessMaterialStats;
@@ -33,6 +34,8 @@ public class MaterialItemFixture {
     MATERIAL_ITEM_HEAD = register("test_head", HeadMaterialStats.ID);
     MATERIAL_ITEM_HANDLE = register("test_handle", HandleMaterialStats.ID);
     MATERIAL_ITEM_EXTRA = register("test_extra", StatlessMaterialStats.BINDING.getIdentifier());
+    // 26.1: test items need their default components bound (D-TESTBOOT)
+    BaseMcTest.bindDefaultComponents();
   }
 
   // PORT 1.21.4: Item.Properties now requires an id (Item#<init> reads it); outside the registration

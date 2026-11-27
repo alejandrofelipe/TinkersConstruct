@@ -42,7 +42,8 @@ class DatagenCacheKeeperTest extends BaseMcTest {
   }
 
   private DataGenerator generator() {
-    return new DataGenerator(output, SharedConstants.getCurrentVersion(), true);
+    // 26.1: DataGenerator is abstract; Cached is the cache-backed generator the data run uses
+    return new DataGenerator.Cached(output, SharedConstants.getCurrentVersion(), true);
   }
 
   @Test

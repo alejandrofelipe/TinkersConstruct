@@ -37,6 +37,7 @@ class ToolHarvestLogicTest extends ToolItemTest {
       Identifier id = Identifier.fromNamespaceAndPath("test", "pickaxe");
       pickaxeTool = new ModifiableItem(new Item.Properties().stacksTo(1).setId(ResourceKey.create(Registries.ITEM, id)), ToolDefinitionFixture.getStandardToolDefinition());
       Registry.register(BuiltInRegistries.ITEM, id, pickaxeTool);
+      bindDefaultComponents();
     }
   }
 
@@ -96,6 +97,7 @@ class ToolHarvestLogicTest extends ToolItemTest {
     Identifier toolId = Identifier.fromNamespaceAndPath("test", "tool_with_mining_modifier");
     ModifiableItem toolWithMiningModifier = new ModifiableItem(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, toolId)), definition);
     Registry.register(BuiltInRegistries.ITEM, toolId, toolWithMiningModifier);
+    bindDefaultComponents();
     ItemStack tool = buildTestTool(toolWithMiningModifier);
 
     // boosted by correct block
