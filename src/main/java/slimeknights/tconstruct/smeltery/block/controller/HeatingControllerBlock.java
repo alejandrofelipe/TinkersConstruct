@@ -45,7 +45,7 @@ public abstract class HeatingControllerBlock extends ControllerBlock {
       BlockEntityHelper.get(HeatingStructureBlockEntity.class, world, pos).ifPresent(te -> {
         MultiblockResult result = te.getStructureResult();
         if (!result.isSuccess()) {
-          player.displayClientMessage(result.getMessage(), true);
+          player.sendOverlayMessage(result.getMessage());
           TinkerNetwork.getInstance().sendTo(new StructureErrorPositionPacket(pos, result.getPos()), player);
         }
       });

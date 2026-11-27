@@ -69,7 +69,7 @@ public abstract class TinyMultiblockControllerBlock extends ControllerBlock {
   @Override
   protected boolean displayStatus(Player player, Level world, BlockPos pos, BlockState state) {
     if (!world.isClientSide() && !state.getValue(IN_STRUCTURE)) {
-      player.displayClientMessage(NO_FUEL_TANK, true);
+      player.sendOverlayMessage(NO_FUEL_TANK);
     }
     return true;
   }

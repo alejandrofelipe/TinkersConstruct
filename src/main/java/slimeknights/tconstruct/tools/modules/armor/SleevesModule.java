@@ -49,12 +49,12 @@ public enum SleevesModule implements ModifierModule, GeneralInteractionModifierH
 
   @Override
   public void onInventorySelect(IToolStackView tool, ModifierEntry modifier, Player player, int newIndex, ItemStack stack) {
-    player.displayClientMessage(Component.translatable(SELECTED, stack.getHoverName(), newIndex + 1), true);
+    player.sendOverlayMessage(Component.translatable(SELECTED, stack.getHoverName(), newIndex + 1));
   }
 
   @Override
   public void onDisableSelection(IToolStackView tool, ModifierEntry modifier, Player player) {
-    player.displayClientMessage(DISABLED, true);
+    player.sendOverlayMessage(DISABLED);
   }
 
   @Override

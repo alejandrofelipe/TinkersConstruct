@@ -90,7 +90,7 @@ public class ClientGeneratePartTexturesCommand {
       GeneratorConfiguration generatorConfig = loadGeneratorConfig(manager);
       if (generatorConfig.sprites.isEmpty()) {
         if (player != null) {
-          player.displayClientMessage(NO_PARTS, false);
+          player.sendSystemMessage(NO_PARTS);
         }
         return;
       }
@@ -103,7 +103,7 @@ public class ClientGeneratePartTexturesCommand {
       List<MaterialSpriteInfo> materialSprites = loadMaterialRenderInfoGenerators(manager, validMaterialId);
       if (materialSprites.isEmpty()) {
         if (player != null) {
-          player.displayClientMessage(NO_MATERIALS, false);
+          player.sendSystemMessage(NO_MATERIALS);
         }
         return;
       }
@@ -160,13 +160,13 @@ public class ClientGeneratePartTexturesCommand {
       MaterialPartTextureGenerator.runCallbacks(null);
       log.info("Finished generating {} textures in {} ms", count, deltaTime / 1000000f);
       if (Minecraft.getInstance().player != null) {
-        Minecraft.getInstance().player.displayClientMessage(Component.translatable(SUCCESS_KEY, count, (deltaTime / 1000000) / 1000f, GeneratePackHelper.getOutputComponent(path.toFile())), false);
+        Minecraft.getInstance().player.sendSystemMessage(Component.translatable(SUCCESS_KEY, count, (deltaTime / 1000000) / 1000f, GeneratePackHelper.getOutputComponent(path.toFile())));
       }
     } catch (Exception e) {
       long deltaTime = System.nanoTime() - time;
       log.error("Failed to generate part textures after {} ms", deltaTime / 1000000f, e);
       if (Minecraft.getInstance().player != null) {
-        Minecraft.getInstance().player.displayClientMessage(Component.translatable(FAILURE_KEY, (deltaTime / 1000000) / 1000f, e.getMessage()).withStyle(ChatFormatting.RED), false);
+        Minecraft.getInstance().player.sendSystemMessage(Component.translatable(FAILURE_KEY, (deltaTime / 1000000) / 1000f, e.getMessage()).withStyle(ChatFormatting.RED));
       }
     }
   }

@@ -200,7 +200,7 @@ public class CraftingStationBlockEntity extends RetexturedTableBlockEntity imple
     // if empty, send a message so the player is more aware of why they cannot craft it, sent to chat as status bar is not visible
     // TODO: consider moving into the UI somewhere
     if (level != null && !level.isClientSide()) {
-      player.displayClientMessage(CraftingStationBlockEntity.UNCRAFTABLE, false);
+      player.sendSystemMessage(CraftingStationBlockEntity.UNCRAFTABLE);
     }
   }
 

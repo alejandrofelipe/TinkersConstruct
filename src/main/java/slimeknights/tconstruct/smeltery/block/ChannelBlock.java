@@ -266,10 +266,10 @@ public class ChannelBlock extends Block implements EntityBlock {
 	private BlockState interactWithSide(BlockState state, Level world, BlockPos pos, Player player, Direction side) {
 		if (side == Direction.DOWN) {
 			if (!state.getValue(DOWN) && canConnect(world, pos, side)) {
-				player.displayClientMessage(DOWN_OUT, true);
+				player.sendOverlayMessage(DOWN_OUT);
 				return state.setValue(DOWN, true);
 			} else if (state.getValue(DOWN)) {
-				player.displayClientMessage(DOWN_NONE, true);
+				player.sendOverlayMessage(DOWN_NONE);
 				return state.setValue(DOWN, false);
 			}
 		} else {
@@ -283,7 +283,7 @@ public class ChannelBlock extends Block implements EntityBlock {
 			if (newConnect == ChannelConnection.OUT && facingState.getBlock() != this && !isFluidHandler(world, side.getOpposite(), facingPos)) {
 				newConnect = newConnect.getNext(player.isShiftKeyDown());
 			}
-			player.displayClientMessage(SIDE_CONNECTION.get(newConnect), true);
+			player.sendOverlayMessage(SIDE_CONNECTION.get(newConnect));
 			return state.setValue(prop, newConnect);
 		}
 

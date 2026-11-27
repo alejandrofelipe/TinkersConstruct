@@ -107,7 +107,7 @@ public class ModifierCrystalItem extends Item {
           // ensure no modifier problems after adding
           Component toolValidation = tool.tryValidate();
           if (toolValidation != null) {
-            player.displayClientMessage(toolValidation, false);
+            player.sendSystemMessage(toolValidation);
           } else {
             tool.updateStack(toolItem);
             FluidTransferHelper.playUISound(player, SoundEvents.ENCHANTMENT_TABLE_USE);
@@ -150,14 +150,14 @@ public class ModifierCrystalItem extends Item {
           // ensure no modifier problems after adding
           Component toolValidation = tool.tryValidate();
           if (toolValidation != null) {
-            player.displayClientMessage(toolValidation, false);
+            player.sendSystemMessage(toolValidation);
             return true;
           }
 
           // ask modifiers if it's okay to remove them
           toolValidation = ModifierRemovalHook.onRemoved(original, tool);
           if (toolValidation != null) {
-            player.displayClientMessage(toolValidation, false);
+            player.sendSystemMessage(toolValidation);
             return true;
           }
 

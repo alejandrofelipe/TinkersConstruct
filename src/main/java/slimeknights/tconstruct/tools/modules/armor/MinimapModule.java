@@ -123,12 +123,12 @@ public enum MinimapModule implements ModifierModule, EquipmentChangeModifierHook
 
   @Override
   public void onDisableSelection(IToolStackView tool, ModifierEntry modifier, Player player) {
-    player.displayClientMessage(DISABLED, true);
+    player.sendOverlayMessage(DISABLED);
   }
 
   @Override
   public void onInventorySelect(IToolStackView tool, ModifierEntry modifier, Player player, int newIndex, ItemStack stack) {
-    player.displayClientMessage(Component.translatable(SELECTED, stack.getHoverName(), String.valueOf(stack.get(DataComponents.MAP_ID)), newIndex + 1), true);
+    player.sendOverlayMessage(Component.translatable(SELECTED, stack.getHoverName(), String.valueOf(stack.get(DataComponents.MAP_ID)), newIndex + 1));
   }
 
   @Override
