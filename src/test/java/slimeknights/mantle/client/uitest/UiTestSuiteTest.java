@@ -75,6 +75,33 @@ class UiTestSuiteTest {
   }
 
   @Test
+  void filterFailsOnUnknownTagsAndEmptySelections() {
+    UiTestScenario station = scenario("station_reflow", UiTestTags.GUI);
+    UiTestScenario book = scenario("book_export", UiTestTags.BOOK);
+    List<UiTestScenario> all = List.of(station, book);
+    Set<String> known = Set.of(UiTestTags.GUI, UiTestTags.BOOK, UiTestTags.JEI);
+    // no filter: fine, even with nothing registered
+    assertThat(failure(all, null, null, known)).isNull();
+    assertThat(failure(List.of(), null, " ", known)).isNull();
+    // filters keeping something: fine
+    assertThat(failure(all, "station_", null, known)).isNull();
+    assertThat(failure(all, null, "book", known)).isNull();
+    // a typo in the id filter, a known tag no scenario has, an empty intersection: nothing kept, fails
+    assertThat(failure(all, "typo", null, known)).startsWith("fail: ").contains("mantle.uitest.only=typo").contains("matched no scenarios");
+    assertThat(failure(all, null, "jei", known)).startsWith("fail: ").contains("matched no scenarios");
+    assertThat(failure(all, "station_", "book", known)).startsWith("fail: ").contains("matched no scenarios");
+    // an unknown tag fails even when another listed tag keeps scenarios
+    assertThat(failure(all, null, "gui,guii", known)).startsWith("fail: ").contains("unknown tag(s) [guii]").doesNotContain("matched no scenarios");
+    // both problems at once
+    assertThat(failure(all, null, "guii", known)).contains("unknown tag(s) [guii]").contains("matched no scenarios");
+  }
+
+  /** The filter failure for the selection the suite would make */
+  private static String failure(List<UiTestScenario> all, String only, String tags, Set<String> known) {
+    return UiTestSuite.filterFailure(UiTestSuite.select(all, only, tags).size(), only, tags, known);
+  }
+
+  @Test
   void tagProblemsNeedOneKnownTag() {
     Set<String> known = Set.of(UiTestTags.GUI, UiTestTags.JEI);
     assertThat(UiTestTags.problems(Set.of(UiTestTags.GUI), known)).isEmpty();
