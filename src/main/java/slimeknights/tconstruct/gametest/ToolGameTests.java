@@ -10,9 +10,16 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.CommonHooks;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -555,6 +562,37 @@ public class ToolGameTests {
     CustomData ironData = iron.get(DataComponents.CUSTOM_DATA);
     IMaterialItem.getMaterialFromStack(iron);
     helper.assertTrue(iron.get(DataComponents.CUSTOM_DATA) == ironData, Component.literal("reading an unredirected part replaced its data"));
+    helper.succeed();
+  }
+
+  /**
+   * A chestplate interaction with an empty hand takes over the entity interaction ({@code InteractionHandler#afterEntityInteract})
+   * and calls {@code Entity#interact(player, hand, location)} itself. 26.1 dropped the hit location from that path, so the handler
+   * takes it from the {@code EntityInteractSpecific} event NeoForge fires just before for the same click. Clicks an armor stand at
+   * head height through the same hooks as the server packet handler while the player looks away from it (a location recomputed
+   * from the player's view would miss the stand and swap nothing): the helmet must move to the player's hand, the boots stay.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 20)
+  public static void chestplate_entity_interaction_uses_click_location(GameTestHelper helper) {
+    ArmorStand stand = helper.spawn(EntityType.ARMOR_STAND, new BlockPos(2, 1, 2));
+    stand.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
+    stand.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.IRON_BOOTS));
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(TinkerTools.travelersGear.get(ArmorType.CHESTPLATE)));
+    Vec3 standPos = stand.position();
+    player.setPos(standPos.x - 2, standPos.y, standPos.z);
+    player.setYRot(90); // facing -x, away from the stand
+    player.setXRot(0);
+
+    Vec3 location = new Vec3(0, 1.8, 0); // relative to the stand: head height
+    InteractionResult result = CommonHooks.onInteractEntityAt(player, stand, location, InteractionHand.MAIN_HAND);
+    if (result == null) {
+      result = player.interactOn(stand, InteractionHand.MAIN_HAND, location);
+    }
+    helper.assertTrue(result.consumesAction(), Component.literal("interaction did not consume the action: " + result));
+    helper.assertTrue(player.getMainHandItem().is(Items.IRON_HELMET), Component.literal("expected the helmet in hand, got " + player.getMainHandItem()));
+    helper.assertTrue(stand.getItemBySlot(EquipmentSlot.HEAD).isEmpty(), Component.literal("helmet still on the stand"));
+    helper.assertTrue(stand.getItemBySlot(EquipmentSlot.FEET).is(Items.IRON_BOOTS), Component.literal("boots were taken instead"));
     helper.succeed();
   }
 

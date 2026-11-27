@@ -25,6 +25,7 @@ import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickBlock;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickBlock.Action;
 import net.neoforged.bus.api.EventPriority;
@@ -99,6 +100,32 @@ public class InteractionHandler {
     }
   }
 
+  /** Exact click location of the last {@link EntityInteractSpecific} on this thread (client and server thread run separately) */
+  private record ClickLocation(Player player, Entity target, InteractionHand hand, Vec3 location) {}
+  private static final ThreadLocal<ClickLocation> LAST_CLICK = new ThreadLocal<>();
+
+  /**
+   * Remembers the exact click location. NeoForge fires {@link EntityInteractSpecific} (with the location relative to the target)
+   * right before {@link EntityInteract} for the same click on both sides (when it is canceled, the plain one does not fire).
+   */
+  @SubscribeEvent(priority = EventPriority.LOWEST)
+  static void captureClickLocation(EntityInteractSpecific event) {
+    LAST_CLICK.set(new ClickLocation(event.getEntity(), event.getTarget(), event.getHand(), event.getLocalPos()));
+  }
+
+  /** Gets the click location captured for this interaction, relative to the target position */
+  private static Vec3 takeClickLocation(Player player, Entity target, InteractionHand hand) {
+    ClickLocation click = LAST_CLICK.get();
+    LAST_CLICK.remove();
+    if (click != null && click.player == player && click.target == target && click.hand == hand) {
+      return click.location;
+    }
+    // Player#interactOn called without the specific event (e.g. by another mod): recompute it from the player's view
+    Vec3 eye = player.getEyePosition();
+    Vec3 reach = eye.add(player.getViewVector(1.0f).scale(player.entityInteractionRange() + target.getBbWidth()));
+    return target.getBoundingBox().clip(eye, reach).orElse(target.position()).subtract(target.position());
+  }
+
   /** Implements {@link EntityInteractionModifierHook#afterEntityUse(IToolStackView, ModifierEntry, Player, LivingEntity, InteractionHand, InteractionSource)} for chestplates */
   @SubscribeEvent(priority = EventPriority.LOWEST)
   static void afterEntityInteract(EntityInteract event) {
@@ -114,12 +141,9 @@ public class InteractionHandler {
         InteractionHand hand = event.getHand();
 
         // initial entity interaction
-        // 26.1: Entity#interactAt merged into interact(player, hand, location), which now runs after this event; the event has
-        // no hit location, so recompute it from the player's view like the client does (relative to the entity position)
-        Vec3 eye = player.getEyePosition();
-        Vec3 reach = eye.add(player.getViewVector(1.0f).scale(player.entityInteractionRange() + target.getBbWidth()));
-        Vec3 location = target.getBoundingBox().clip(eye, reach).orElse(target.position()).subtract(target.position());
-        InteractionResult result = target.interact(player, hand, location);
+        // 26.1: Entity#interactAt merged into interact(player, hand, location), which now runs after this event; this event has
+        // no hit location, but EntityInteractSpecific fired just before it for the same click with the exact one
+        InteractionResult result = target.interact(player, hand, takeClickLocation(player, target, hand));
         if (result.consumesAction()) {
           event.setCancellationResult(result);
           return;
