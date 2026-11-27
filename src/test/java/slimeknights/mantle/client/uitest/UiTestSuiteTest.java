@@ -1,5 +1,6 @@
 package slimeknights.mantle.client.uitest;
 
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.neoforged.fml.ModLoadingIssue;
 import net.neoforged.neoforgespi.language.IModInfo;
@@ -51,6 +52,64 @@ class UiTestSuiteTest {
     ModLoadingIssue theirModInOurFile = new ModLoadingIssue(ModLoadingIssue.Severity.WARNING, "fml.modloadingissue.mod", List.of(), null, null, modFile("tconstruct"), mod("craftingtweaks"));
     List<String> own = UiTestSuite.ownModWarnings(List.of(ourFile, theirFile, theirModInOurFile), Set.of("mantle", "tconstruct"));
     assertThat(own).containsExactly("mantle: fml.modloadingissue.file []");
+  }
+
+  @Test
+  void selectAppliesEachFilterAndTheirIntersection() {
+    UiTestScenario station = scenario("station_reflow", UiTestTags.GUI);
+    UiTestScenario jei = scenario("jei_melting_category", UiTestTags.JEI, UiTestTags.GUI);
+    UiTestScenario compat = scenario("crafting_tweaks_rotate", UiTestTags.COMPAT);
+    UiTestScenario book = scenario("book_export", UiTestTags.BOOK);
+    List<UiTestScenario> all = List.of(station, jei, compat, book);
+    // unset or blank runs everything
+    assertThat(UiTestSuite.select(all, null, null)).containsExactlyElementsOf(all);
+    assertThat(UiTestSuite.select(all, " ", "")).containsExactlyElementsOf(all);
+    // id substrings, any token
+    assertThat(UiTestSuite.select(all, "station_,book", null)).containsExactly(station, book);
+    // tags, any listed tag, spaces trimmed
+    assertThat(UiTestSuite.select(all, null, "jei, compat")).containsExactly(jei, compat);
+    assertThat(UiTestSuite.select(all, null, "gui")).containsExactly(station, jei);
+    // both given: intersection
+    assertThat(UiTestSuite.select(all, "jei_,book", "gui")).containsExactly(jei);
+    assertThat(UiTestSuite.select(all, "book", "jei")).isEmpty();
+  }
+
+  @Test
+  void tagProblemsNeedOneKnownTag() {
+    Set<String> known = Set.of(UiTestTags.GUI, UiTestTags.JEI);
+    assertThat(UiTestTags.problems(Set.of(UiTestTags.GUI), known)).isEmpty();
+    assertThat(UiTestTags.problems(Set.of(), known)).containsExactly("no tags");
+    assertThat(UiTestTags.problems(Set.of(UiTestTags.GUI, "guii"), known)).containsExactly("unknown tag 'guii'");
+    // the shared vocabulary is registered by Mantle itself
+    assertThat(UiTestTags.known()).contains(UiTestTags.SMOKE, UiTestTags.SUITE, UiTestTags.GUI, UiTestTags.WORLD, UiTestTags.RENDER,
+                                            UiTestTags.FLUID, UiTestTags.JEI, UiTestTags.BOOK, UiTestTags.COMPAT);
+  }
+
+  /** Scenario stub with an id and tags, never run */
+  private static UiTestScenario scenario(String path, String... tags) {
+    Set<String> tagSet = Set.of(tags);
+    return new UiTestScenario() {
+      @Override
+      public Identifier id() {
+        return Identifier.fromNamespaceAndPath("test", path);
+      }
+
+      @Override
+      public Set<String> tags() {
+        return tagSet;
+      }
+
+      @Override
+      public void prepare(UiTestContext ctx) {}
+
+      @Override
+      public void open(UiTestContext ctx) {}
+
+      @Override
+      public String toString() {
+        return path;
+      }
+    };
   }
 
   /** Mod file stub answering only its mod infos */

@@ -105,6 +105,11 @@ runs {
         if (project.hasProperty('uitestOnly')) {
             systemProperty 'mantle.uitest.only', project.property('uitestOnly')
         }
+        // gradlew runClientUiTest -PuitestTags=jei,compat keeps only scenarios having any of the tags (UiTestTags);
+        // combined with -PuitestOnly both filters apply. See UiTestSuite#select.
+        if (project.hasProperty('uitestTags')) {
+            systemProperty 'mantle.uitest.tags', project.property('uitestTags')
+        }
         arguments.addAll '--quickPlaySingleplayer', 'UITest', '--width', '1280', '--height', '720'
     }
     server { argument '--nogui' }

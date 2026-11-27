@@ -135,6 +135,7 @@ import slimeknights.mantle.client.uitest.UiTestContext;
 import slimeknights.mantle.client.uitest.UiTestScenario;
 import slimeknights.mantle.client.uitest.UiTestScenarios;
 import slimeknights.mantle.client.uitest.UiTestSuite;
+import slimeknights.mantle.client.uitest.UiTestTags;
 import slimeknights.mantle.plugin.jei.entity.EntityIngredientRenderer;
 import slimeknights.mantle.recipe.cooking.BlastingResultRecipe;
 import slimeknights.mantle.recipe.cooking.CampfireResultRecipe;
@@ -248,88 +249,106 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static slimeknights.mantle.client.uitest.UiTestTags.BOOK;
+import static slimeknights.mantle.client.uitest.UiTestTags.COMPAT;
+import static slimeknights.mantle.client.uitest.UiTestTags.FLUID;
+import static slimeknights.mantle.client.uitest.UiTestTags.GUI;
+import static slimeknights.mantle.client.uitest.UiTestTags.JEI;
+import static slimeknights.mantle.client.uitest.UiTestTags.RENDER;
+import static slimeknights.mantle.client.uitest.UiTestTags.SMOKE;
+import static slimeknights.mantle.client.uitest.UiTestTags.WORLD;
+
 /** Registers TConstruct's automated GUI screenshot scenarios (active only with -Dmantle.uitest=true). */
 // NeoForge 21.8 removed EventBusSubscriber.bus(): the bus is inferred per event, FMLClientSetupEvent is a mod-bus event
 @EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT)
 public class TinkerUiTestScenarios {
   /** Fixed build site in the committed superflat world, far from spawn interference. */
   private static final BlockPos SITE = new BlockPos(100, -60, 100);
+  /** uitest tag: the tinker station, part builder and crafting station screens (layout tiers, input, JEI into them) */
+  static final String STATION = UiTestTags.register("station", "Tinkers station screens: tinker station, part builder, crafting station");
+  /** uitest tag: Tinkers armor (trims, armor worn by the player and other entities) */
+  static final String ARMOR = UiTestTags.register("armor", "Tinkers armor: trims, armor worn by the player and other entities");
 
   @SubscribeEvent
   static void clientSetup(FMLClientSetupEvent event) {
     if (!UiTestScenarios.isActive()) {
       return;
     }
-    UiTestScenarios.register(new BlockGuiScenario("tinker_station", SITE.offset(0, 0, 0), () -> TinkerTables.tinkerStation.get().defaultBlockState()));
-    UiTestScenarios.register(new BlockGuiScenario("part_builder", SITE.offset(4, 0, 0), () -> TinkerTables.partBuilder.get().defaultBlockState()));
+    registerAll(UiTestScenarios::register, ModList.get().isLoaded("craftingtweaks"));
+  }
+
+  /** Hands every Tinkers scenario to the registry; separate from {@link #clientSetup} so unit tests can check the scenarios' tags. */
+  static void registerAll(Consumer<UiTestScenario> register, boolean craftingTweaks) {
+    register.accept(new BlockGuiScenario("tinker_station", SITE.offset(0, 0, 0), () -> TinkerTables.tinkerStation.get().defaultBlockState(), Set.of(GUI, STATION, SMOKE)));
+    register.accept(new BlockGuiScenario("part_builder", SITE.offset(4, 0, 0), () -> TinkerTables.partBuilder.get().defaultBlockState(), Set.of(GUI, STATION)));
     // Crafting Tweaks pilot: opens the crafting station so its CT convenience buttons (rotate/balance/clear) render in the shot.
-    UiTestScenarios.register(new BlockGuiScenario("crafting_station", SITE.offset(70, 0, 0), () -> TinkerTables.craftingStation.get().defaultBlockState()));
-    UiTestScenarios.register(new SmelteryScenario());
-    UiTestScenarios.register(new MelterScenario());
-    UiTestScenarios.register(new CastingPourScenario());
-    UiTestScenarios.register(new BookScenario());
-    UiTestScenarios.register(new JeiCategoryScenario<>("melting", TConstructJEIConstants.MELTING));
-    UiTestScenarios.register(new JeiItemListCleanupScenario());
-    UiTestScenarios.register(new JeiCategoryTooltipsScenario());
-    UiTestScenarios.register(new JeiMantleCookingScenario());
-    UiTestScenarios.register(new BookInteriorScenario());
-    UiTestScenarios.register(new StationReflowScenario());
-    UiTestScenarios.register(new StationCollapsedScenario());
-    UiTestScenarios.register(new StationCollapsedOverlayScenario());
-    UiTestScenarios.register(new ExtraHeartsScenario());
-    UiTestScenarios.register(new DynamicBlockModelsScenario());
-    UiTestScenarios.register(new HeadItemsScenario());
-    UiTestScenarios.register(new DynamicItemIconsScenario());
-    UiTestScenarios.register(new ToolInventoryScenario());
-    UiTestScenarios.register(new TrimmedArmorScenario());
-    UiTestScenarios.register(new WornArmorScenario());
-    UiTestScenarios.register(new ItemAtlasGridScenario());
+    register.accept(new BlockGuiScenario("crafting_station", SITE.offset(70, 0, 0), () -> TinkerTables.craftingStation.get().defaultBlockState(), Set.of(GUI, STATION, COMPAT)));
+    register.accept(new SmelteryScenario());
+    register.accept(new MelterScenario());
+    register.accept(new CastingPourScenario());
+    register.accept(new BookScenario());
+    register.accept(new JeiCategoryScenario<>("melting", TConstructJEIConstants.MELTING).smoke());
+    register.accept(new JeiItemListCleanupScenario());
+    register.accept(new JeiCategoryTooltipsScenario());
+    register.accept(new JeiMantleCookingScenario());
+    register.accept(new BookInteriorScenario());
+    register.accept(new StationReflowScenario());
+    register.accept(new StationCollapsedScenario());
+    register.accept(new StationCollapsedOverlayScenario());
+    register.accept(new ExtraHeartsScenario());
+    register.accept(new DynamicBlockModelsScenario());
+    register.accept(new HeadItemsScenario());
+    register.accept(new DynamicItemIconsScenario());
+    register.accept(new ToolInventoryScenario());
+    register.accept(new TrimmedArmorScenario());
+    register.accept(new WornArmorScenario());
+    register.accept(new ItemAtlasGridScenario());
     // every other Tinkers JEI category (JEIPlugin#registerCategories), melting is registered above
     // 1.21.10 (JEI 26) listed all 1859 table / 1016 basin display recipes; JEI 27 hides the ones only showing hidden fluids
     // (container filling with 30 absent compat or tag-hidden fluids: 120 table, 300 basin; variantless potion: 4 table, 10 basin)
-    UiTestScenarios.register(new JeiCategoryScenario<>("casting_table", TConstructJEIConstants.CASTING_TABLE, IDisplayableCastingRecipe::getFluids, 1735));
-    UiTestScenarios.register(new JeiCategoryScenario<>("casting_basin", TConstructJEIConstants.CASTING_BASIN, IDisplayableCastingRecipe::getFluids, 706));
+    register.accept(new JeiCategoryScenario<>("casting_table", TConstructJEIConstants.CASTING_TABLE, IDisplayableCastingRecipe::getFluids, 1735));
+    register.accept(new JeiCategoryScenario<>("casting_basin", TConstructJEIConstants.CASTING_BASIN, IDisplayableCastingRecipe::getFluids, 706));
     // patternless (pick up) molding recipes have a null pattern, which the category used to NPE on
-    UiTestScenarios.register(new JeiCategoryScenario<>("molding", TConstructJEIConstants.MOLDING, "a recipe without pattern", recipe -> recipe.getPattern() == null));
-    UiTestScenarios.register(new JeiCategoryScenario<>("alloy", TConstructJEIConstants.ALLOY));
+    register.accept(new JeiCategoryScenario<>("molding", TConstructJEIConstants.MOLDING, "a recipe without pattern", recipe -> recipe.getPattern() == null));
+    register.accept(new JeiCategoryScenario<>("alloy", TConstructJEIConstants.ALLOY));
     // the generated default recipe is always there, so require a datapack recipe (synced to the client)
     // entity melting and severing must also lay out every recipe: 1.21.11 broke the ones with an entity without spawn egg
     // (e.g. the player) as JEI 27 checks the entity/egg focus link sizes
-    UiTestScenarios.register(new JeiCategoryScenario<>("entity_melting", TConstructJEIConstants.ENTITY_MELTING, "a datapack recipe", recipe -> !(recipe instanceof DefaultEntityMeltingRecipe), true));
-    UiTestScenarios.register(new JeiCategoryScenario<>("foundry", TConstructJEIConstants.FOUNDRY));
-    UiTestScenarios.register(new JeiCategoryScenario<>("modifiers", TConstructJEIConstants.MODIFIERS));
-    UiTestScenarios.register(new JeiCategoryScenario<>("severing", TConstructJEIConstants.SEVERING, "the player beheading recipe", recipe -> recipe instanceof PlayerBeheadingRecipe, true));
-    UiTestScenarios.register(new JeiCategoryScenario<>("tool_building", TConstructJEIConstants.TOOL_BUILDING));
-    UiTestScenarios.register(new JeiCategoryScenario<>("part_builder", TConstructJEIConstants.PART_BUILDER));
-    UiTestScenarios.register(new JeiCategoryScenario<>("worktable", TConstructJEIConstants.MODIFIER_WORKTABLE));
-    UiTestScenarios.register(new BookStructureScenario());
-    UiTestScenarios.register(new FluidBlocksScenario());
-    UiTestScenarios.register(new CastingCoolingScenario());
-    UiTestScenarios.register(new AoeOutlineScenario("aoe_outline", SITE.offset(130, 0, 0), false, true));
-    UiTestScenarios.register(new AoeOutlineScenario("aoe_outline_high_contrast", SITE.offset(136, 0, 0), true, false));
-    UiTestScenarios.register(new StationCarriedClicksScenario());
-    UiTestScenarios.register(new JeiTankClickableScenario());
-    UiTestScenarios.register(new JeiRecipeTransferScenario());
-    UiTestScenarios.register(new JeiTinkerStationTransferScenario());
-    UiTestScenarios.register(new JeiToolInventoryTransferScenario());
-    UiTestScenarios.register(new JeiCraftingStationSlotScenario());
-    UiTestScenarios.register(new JeiSmelterySlotScenario());
-    UiTestScenarios.register(new JeiSmelteryTankScenario());
-    UiTestScenarios.register(new SmelteryTankWorldScenario());
-    UiTestScenarios.register(new RenderLayerReviewScenario());
-    UiTestScenarios.register(new RenderLayerReviewItemsScenario());
-    UiTestScenarios.register(new MelterTankTintScenario());
-    UiTestScenarios.register(new TranslucentItemLayersScenario());
-    UiTestScenarios.register(new ForceTranslucentBakeScenario());
-    UiTestScenarios.register(new BookExportScenario());
-    UiTestScenarios.register(new FluidDepthTestScenario());
-    if (ModList.get().isLoaded("craftingtweaks")) {
-      UiTestScenarios.register(new CraftingTweaksRotateScenario());
+    register.accept(new JeiCategoryScenario<>("entity_melting", TConstructJEIConstants.ENTITY_MELTING, "a datapack recipe", recipe -> !(recipe instanceof DefaultEntityMeltingRecipe), true));
+    register.accept(new JeiCategoryScenario<>("foundry", TConstructJEIConstants.FOUNDRY));
+    register.accept(new JeiCategoryScenario<>("modifiers", TConstructJEIConstants.MODIFIERS));
+    register.accept(new JeiCategoryScenario<>("severing", TConstructJEIConstants.SEVERING, "the player beheading recipe", recipe -> recipe instanceof PlayerBeheadingRecipe, true));
+    register.accept(new JeiCategoryScenario<>("tool_building", TConstructJEIConstants.TOOL_BUILDING));
+    register.accept(new JeiCategoryScenario<>("part_builder", TConstructJEIConstants.PART_BUILDER));
+    register.accept(new JeiCategoryScenario<>("worktable", TConstructJEIConstants.MODIFIER_WORKTABLE));
+    register.accept(new BookStructureScenario());
+    register.accept(new FluidBlocksScenario());
+    register.accept(new CastingCoolingScenario());
+    register.accept(new AoeOutlineScenario("aoe_outline", SITE.offset(130, 0, 0), false, true));
+    register.accept(new AoeOutlineScenario("aoe_outline_high_contrast", SITE.offset(136, 0, 0), true, false));
+    register.accept(new StationCarriedClicksScenario());
+    register.accept(new JeiTankClickableScenario());
+    register.accept(new JeiRecipeTransferScenario());
+    register.accept(new JeiTinkerStationTransferScenario());
+    register.accept(new JeiToolInventoryTransferScenario());
+    register.accept(new JeiCraftingStationSlotScenario());
+    register.accept(new JeiSmelterySlotScenario());
+    register.accept(new JeiSmelteryTankScenario());
+    register.accept(new SmelteryTankWorldScenario());
+    register.accept(new RenderLayerReviewScenario());
+    register.accept(new RenderLayerReviewItemsScenario());
+    register.accept(new MelterTankTintScenario());
+    register.accept(new TranslucentItemLayersScenario());
+    register.accept(new ForceTranslucentBakeScenario());
+    register.accept(new BookExportScenario());
+    register.accept(new FluidDepthTestScenario());
+    if (craftingTweaks) {
+      register.accept(new CraftingTweaksRotateScenario());
     }
   }
 
   /** Places a single block and opens its GUI. */
-  private record BlockGuiScenario(String name, BlockPos pos, Supplier<BlockState> state) implements UiTestScenario {
+  private record BlockGuiScenario(String name, BlockPos pos, Supplier<BlockState> state, Set<String> tags) implements UiTestScenario {
     @Override
     public Identifier id() {
       return TConstruct.getResource(name);
@@ -367,6 +386,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(GUI, FLUID);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {
       BlockPos origin = SITE.offset(10, 0, 0);
       ctx.sendCommand("tp @s " + (origin.getX() + 1) + " " + origin.getY() + " " + (origin.getZ() + 5));
@@ -399,6 +423,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(GUI, FLUID);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {
       ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + (pos.getY() - 1) + " " + pos.getZ());
       ctx.runOnServer(() -> {
@@ -426,6 +455,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource("casting_pour");
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(WORLD, FLUID, RENDER, SMOKE);
     }
 
     @Override
@@ -465,6 +499,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(GUI, BOOK, SMOKE);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {
       // hotbar.0 (not /give) so the book lands in a known slot deterministically: /give places into
       // the first free slot, which is only hotbar 0 for a *totally* empty inventory, and the saved
@@ -499,6 +538,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource("book_interior");
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(GUI, BOOK);
     }
 
     @Override
@@ -541,6 +585,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(JEI);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) { /* nothing to build */ }
 
     @Override
@@ -575,6 +624,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource("jei_category_tooltips");
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(JEI);
     }
 
     @Override
@@ -702,6 +756,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(JEI);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) { /* nothing to build */ }
 
     @Override
@@ -779,6 +838,8 @@ public class TinkerUiTestScenarios {
     private final Function<T, List<FluidStack>> castingFluids;
     /** Minimum number of recipes the recipes GUI must list, when {@link #castingFluids} is set */
     private final int minVisible;
+    /** If true, part of the smoke set, see {@link #smoke()} */
+    private boolean smoke = false;
     /** Re-parks every tick: a recentering cursor event from opening the screen may land after open() */
     private final Consumer<ClientTickEvent.Post> mouseParker = event -> new UiTestContext(Minecraft.getInstance()).parkMouse();
 
@@ -809,9 +870,20 @@ public class TinkerUiTestScenarios {
       this(name, type, "any recipe", recipe -> true);
     }
 
+    /** Also tags this category as part of the smoke set */
+    private JeiCategoryScenario<T> smoke() {
+      this.smoke = true;
+      return this;
+    }
+
     @Override
     public Identifier id() {
       return TConstruct.getResource("jei_" + name + "_category");
+    }
+
+    @Override
+    public Set<String> tags() {
+      return smoke ? Set.of(JEI, GUI, SMOKE) : Set.of(JEI, GUI);
     }
 
     @Override
@@ -900,6 +972,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(GUI, BOOK, RENDER);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {
       // same deterministic hotbar.0 placement as book_materials_and_you (see its comment)
       ctx.sendCommand("item replace entity @s hotbar.0 with tconstruct:mighty_smelting");
@@ -952,6 +1029,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource("crafting_tweaks_rotate");
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(GUI, STATION, COMPAT);
     }
 
     @Override
@@ -1060,6 +1142,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(GUI, STATION);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {
       restoreW = ctx.mc().getWindow().getWidth();
       restoreH = ctx.mc().getWindow().getHeight();
@@ -1109,6 +1196,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource("station_collapsed");
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(GUI, STATION);
     }
 
     @Override
@@ -1170,6 +1262,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource("station_collapsed_overlay");
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(GUI, STATION);
     }
 
     @Override
@@ -1238,6 +1335,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(WORLD, RENDER);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {
       ctx.sendCommand("tp @s " + (origin.getX() - 5) + " " + origin.getY() + " " + origin.getZ());
       ctx.runOnServer(() -> {
@@ -1291,6 +1393,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource("head_items");
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(GUI, RENDER);
     }
 
     @Override
@@ -1375,6 +1482,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource("dynamic_item_icons");
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(GUI, RENDER);
     }
 
     /** Built fresh per call: once on the server thread for the inventory, once on the client thread for the assert */
@@ -1478,6 +1590,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource("tool_inventory");
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(GUI);
     }
 
     @Override
@@ -1605,6 +1722,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource("trimmed_armor");
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(GUI, ARMOR, RENDER);
     }
 
     @Override
@@ -1767,6 +1889,11 @@ public class TinkerUiTestScenarios {
       return TConstruct.getResource("worn_armor");
     }
 
+    @Override
+    public Set<String> tags() {
+      return Set.of(WORLD, ARMOR, RENDER);
+    }
+
     /** Builds an armor piece from the given materials */
     private static ItemStack armor(ModifiableArmorItem item, MaterialId... materials) {
       return ToolStack.createTool(item, item.getToolDefinition(), MaterialNBT.of(Arrays.stream(materials).map(material -> MaterialVariant.of(material, "")).toArray(MaterialVariant[]::new))).createStack();
@@ -1898,6 +2025,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(GUI, RENDER);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {}
 
     @Override
@@ -2017,6 +2149,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(WORLD, RENDER);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {
       ctx.sendCommand("tp @s " + (origin.getX() + 4.5) + " " + origin.getY() + " " + (origin.getZ() - 5.5));
       ctx.runOnServer(() -> {
@@ -2088,6 +2225,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(GUI, RENDER);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {}
 
     @Override
@@ -2134,6 +2276,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(WORLD, FLUID, RENDER);
     }
 
     @Override
@@ -2213,6 +2360,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(GUI, FLUID);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {
       ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + (pos.getY() - 1) + " " + pos.getZ());
       ctx.runOnServer(() -> {
@@ -2277,6 +2429,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(GUI, RENDER);
     }
 
     @Override
@@ -2385,6 +2542,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(RENDER);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {}
 
     @Override
@@ -2430,6 +2592,12 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public Set<String> tags() {
+      // qualified: BOOK in this class is the exported book's id
+      return Set.of(UiTestTags.BOOK);
     }
 
     @Override
@@ -2527,6 +2695,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(WORLD, RENDER);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {
       ctx.sendCommand("tp @s " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
       // 40 max HP -> a full extra heart row, so the custom multi-color rows render; heal to full so all show filled
@@ -2591,6 +2764,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(WORLD, FLUID, RENDER);
     }
 
     @Override
@@ -2687,6 +2865,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(WORLD, FLUID, RENDER);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {
       frozen = false;
       ctx.sendCommand("tp @s " + (origin.getX() - 3) + " " + origin.getY() + " " + origin.getZ());
@@ -2779,6 +2962,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(WORLD, FLUID, RENDER);
     }
 
     @Override
@@ -2913,6 +3101,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(WORLD, RENDER);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {
       started = false;
       previousHighContrast = ctx.mc().options.highContrastBlockOutline().get();
@@ -3018,6 +3211,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(GUI, STATION);
     }
 
     @Override
@@ -3153,6 +3351,11 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
+    public Set<String> tags() {
+      return Set.of(JEI, GUI, FLUID);
+    }
+
+    @Override
     public void prepare(UiTestContext ctx) {
       pressed = false;
       failure = null;
@@ -3275,6 +3478,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(JEI, GUI, STATION);
     }
 
     @Override
@@ -3402,6 +3610,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(JEI, GUI, STATION);
     }
 
     @Override
@@ -3533,6 +3746,11 @@ public class TinkerUiTestScenarios {
     @Override
     public Identifier id() {
       return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(JEI, GUI);
     }
 
     @Override
@@ -3918,6 +4136,11 @@ public class TinkerUiTestScenarios {
    * slot is drawn from the main window corner, while the GUI left JEI reads includes the side panel.
    */
   private static class JeiCraftingStationSlotScenario extends JeiSidePanelScenario {
+    @Override
+    public Set<String> tags() {
+      return Set.of(JEI, GUI, STATION);
+    }
+
     private final BlockPos pos = SITE.offset(156, 0, 0);
 
     JeiCraftingStationSlotScenario() {
@@ -3986,6 +4209,11 @@ public class TinkerUiTestScenarios {
    * from the main window corner like every slot. A feather has no melting recipe, so it stays in the slot.
    */
   private static class JeiSmelterySlotScenario extends JeiSidePanelScenario {
+    @Override
+    public Set<String> tags() {
+      return Set.of(JEI, GUI, FLUID);
+    }
+
     private final AtomicReference<BlockPos> controller = new AtomicReference<>();
 
     JeiSmelterySlotScenario() {
@@ -4035,6 +4263,11 @@ public class TinkerUiTestScenarios {
    * most offset coordinates: the main window corner is right of the GUI left because of the melting side panel.
    */
   private static class JeiSmelteryTankScenario extends JeiSidePanelScenario {
+    @Override
+    public Set<String> tags() {
+      return Set.of(JEI, GUI, FLUID);
+    }
+
     private final AtomicReference<BlockPos> controller = new AtomicReference<>();
 
     JeiSmelteryTankScenario() {
