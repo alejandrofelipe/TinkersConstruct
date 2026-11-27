@@ -5,16 +5,16 @@
       "conditions": {
         "items": [
           {
-            "components": {
+            "count": {
+              "min": 64
+            },
+            "items": "tconstruct:scorched_lantern",
+            "predicates": {
               "tconstruct:tank_fluid": {
                 "amount": 50,
                 "id": "tconstruct:molten_manyullyn"
               }
-            },
-            "count": {
-              "min": 64
-            },
-            "items": "tconstruct:scorched_lantern"
+            }
           }
         ]
       },
@@ -24,16 +24,16 @@
       "conditions": {
         "items": [
           {
-            "components": {
+            "count": {
+              "min": 64
+            },
+            "items": "tconstruct:seared_lantern",
+            "predicates": {
               "tconstruct:tank_fluid": {
                 "amount": 50,
                 "id": "tconstruct:molten_manyullyn"
               }
-            },
-            "count": {
-              "min": 64
-            },
-            "items": "tconstruct:seared_lantern"
+            }
           }
         ]
       },
@@ -46,12 +46,6 @@
     },
     "frame": "challenge",
     "icon": {
-      "components": {
-        "tconstruct:tank_fluid": {
-          "amount": 50,
-          "id": "tconstruct:molten_manyullyn"
-        }
-      },
       "id": "tconstruct:scorched_lantern"
     },
     "title": {

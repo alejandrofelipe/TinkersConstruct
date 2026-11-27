@@ -3,6 +3,10 @@ package slimeknights.tconstruct.gametest;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.criterion.InventoryChangeTrigger;
+import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -14,6 +18,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.common.conditions.ConditionalOps;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
@@ -22,9 +30,14 @@ import net.neoforged.neoforge.resource.NeoForgeReloadListeners;
 import slimeknights.mantle.Mantle;
 import org.jspecify.annotations.Nullable;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.fluids.TinkerFluids;
+import slimeknights.tconstruct.smeltery.TinkerSmeltery;
+import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
+import slimeknights.tconstruct.smeltery.item.TankItem;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +45,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
- * Datapack completeness guards (M7 plan Phase 0.5c, roadmap R1): every recipe, loot table and global loot modifier JSON
+ * Datapack completeness guards (M7 plan Phase 0.5c, roadmap R1): every recipe, loot table, global loot modifier and advancement JSON
  * that Tinkers and Mantle ship must be loaded by the game. A decoder that throws makes the loader log
  * {@code Couldn't parse data file} (or {@code Couldn't parse element}) and skip the file, so the entry silently
  * disappears; no other test fails on a missing recipe outside the few lookups it checks. On 26.1 this is the main hazard
@@ -83,6 +96,43 @@ public class DatapackCompletenessGameTests {
       }
     }
     compare(helper, "loot modifier", expectedIds(helper, server, FileToIdConverter.json("loot_modifiers")), loaded);
+  }
+
+  /**
+   * M7 Phase 4: the blaze subtree (blaze, manyullyn lanterns and plate armor as their child) was dropped on the first load because its exact
+   * tank fluid component predicates and filled tank icons decoded fluid stacks before components were bound.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 200)
+  public static void datapack_advancements_complete(GameTestHelper helper) {
+    MinecraftServer server = helper.getLevel().getServer();
+    Set<Identifier> loaded = server.getAdvancements().getAllAdvancements().stream()
+      .map(AdvancementHolder::id)
+      .filter(id -> NAMESPACES.contains(id.getNamespace()))
+      .collect(Collectors.toCollection(TreeSet::new));
+    compare(helper, "advancement", expectedIds(helper, server, FileToIdConverter.registry(Registries.ADVANCEMENT)), loaded);
+  }
+
+  /** The loaded blaze advancement's {@code tconstruct:tank_fluid} criterion matches a full blazing blood tank only (exact fluid and amount) */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void tank_fluid_advancement_criterion_matches(GameTestHelper helper) {
+    AdvancementHolder blaze = helper.getLevel().getServer().getAdvancements().get(TConstruct.getResource("foundry/blaze"));
+    helper.assertTrue(blaze != null, Component.literal("tconstruct:foundry/blaze is not loaded"));
+    Criterion<?> criterion = blaze.value().criteria().get("seared_fuel_tank");
+    helper.assertTrue(criterion != null && criterion.triggerInstance() instanceof InventoryChangeTrigger.TriggerInstance, Component.literal("expected an inventory criterion seared_fuel_tank, found " + criterion));
+    List<ItemPredicate> items = ((InventoryChangeTrigger.TriggerInstance) criterion.triggerInstance()).items();
+    helper.assertTrue(items.size() == 1, Component.literal("expected one item predicate, found " + items));
+    ItemPredicate predicate = items.getFirst();
+    int capacity = TankType.FUEL_TANK.getCapacity();
+    Block tank = TinkerSmeltery.searedTank.get(TankType.FUEL_TANK);
+    Map<String, Boolean> cases = Map.of(
+      "full blazing blood", predicate.test(TankItem.setTank(new ItemStack(tank), new FluidStack(TinkerFluids.blazingBlood.get(), capacity))),
+      "blazing blood one mB short", predicate.test(TankItem.setTank(new ItemStack(tank), new FluidStack(TinkerFluids.blazingBlood.get(), capacity - 1))),
+      "full lava", predicate.test(TankItem.setTank(new ItemStack(tank), new FluidStack(Fluids.LAVA, capacity))),
+      "empty tank", predicate.test(new ItemStack(tank)),
+      "full blazing blood in a gauge", predicate.test(TankItem.setTank(new ItemStack(TinkerSmeltery.searedTank.get(TankType.FUEL_GAUGE)), new FluidStack(TinkerFluids.blazingBlood.get(), capacity))));
+    helper.assertTrue(cases.get("full blazing blood"), Component.literal("a full blazing blood tank does not match: " + cases));
+    helper.assertTrue(cases.entrySet().stream().filter(Map.Entry::getValue).count() == 1, Component.literal("only the full blazing blood tank may match: " + cases));
+    helper.succeed();
   }
 
   /**

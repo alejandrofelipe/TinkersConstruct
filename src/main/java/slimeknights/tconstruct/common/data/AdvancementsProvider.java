@@ -25,7 +25,6 @@ import net.minecraft.advancements.criterion.PlayerTrigger;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponentExactPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
@@ -49,8 +48,6 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.neoforged.neoforge.common.conditions.ICondition;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.SimpleFluidContent;
 import slimeknights.mantle.data.GenericDataProvider;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.mantle.registration.object.ItemObject;
@@ -82,7 +79,7 @@ import slimeknights.tconstruct.shared.inventory.BlockContainerOpenedTrigger;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.SearedLanternBlock;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock;
-import slimeknights.tconstruct.smeltery.item.TankItem;
+import slimeknights.tconstruct.smeltery.item.TankFluidItemSubPredicate;
 import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.tools.TinkerModifiers;
 import slimeknights.tconstruct.tools.TinkerToolParts;
@@ -382,8 +379,10 @@ public class AdvancementsProvider extends GenericDataProvider {
     AdvancementHolder foundry = builder(TinkerSmeltery.foundryController, resource("foundry/structure"), alloyer, AdvancementType.TASK, builder ->
       builder.addCriterion("open_foundry", containerCriterion(TinkerSmeltery.foundry.get())));
 
-    // foundry: blaze subtree (tank fluid content matching via DataComponentExactPredicate)
-    AdvancementHolder blazingBlood = builder(TankItem.setTank(new ItemStack(TinkerSmeltery.scorchedTank.get(SearedTankBlock.TankType.FUEL_GAUGE)), new FluidStack(TinkerFluids.blazingBlood.get(), SearedTankBlock.TankType.FUEL_GAUGE.getCapacity())),
+    // foundry: blaze subtree (tank fluid content matching via the tconstruct:tank_fluid predicate)
+    // 26.1: the icons are empty tanks. A filled icon writes the tank_fluid component, whose fluid stack codec fails on the first load (fluid
+    // components are bound after every reload listener), which dropped these advancements; up to 1.21.11 the icons held the fluid.
+    AdvancementHolder blazingBlood = builder(new ItemStack(TinkerSmeltery.scorchedTank.get(SearedTankBlock.TankType.FUEL_GAUGE)),
         resource("foundry/blaze"), foundry, AdvancementType.GOAL, builder -> {
       Consumer<SearedTankBlock> with = block ->
         builder.addCriterion(BuiltInRegistries.BLOCK.getKey(block).getPath(), tankFluidCriterion(block, TinkerFluids.blazingBlood.get(), block.getCapacity(), MinMaxBounds.Ints.ANY));
@@ -393,7 +392,7 @@ public class AdvancementsProvider extends GenericDataProvider {
     });
     builder(TinkerTools.plateArmor.get(ArmorType.CHESTPLATE).getRenderTool(), resource("foundry/plate_armor"), blazingBlood, AdvancementType.GOAL, builder ->
       TinkerTools.plateArmor.forEach((type, armor) -> builder.addCriterion("crafted_" + type.getName(), hasItem(armor))));
-    builder(TankItem.setTank(new ItemStack(TinkerSmeltery.scorchedLantern), new FluidStack(TinkerFluids.moltenManyullyn.get(), TinkerSmeltery.scorchedLantern.get().getCapacity())),
+    builder(new ItemStack(TinkerSmeltery.scorchedLantern),
         resource("foundry/manyullyn_lanterns"), foundry, AdvancementType.CHALLENGE, builder -> {
       Consumer<SearedLanternBlock> with = block ->
         builder.addCriterion(BuiltInRegistries.BLOCK.getKey(block).getPath(), tankFluidCriterion(block, TinkerFluids.moltenManyullyn.get(), block.getCapacity(), MinMaxBounds.Ints.atLeast(64)));
@@ -599,12 +598,13 @@ public class AdvancementsProvider extends GenericDataProvider {
       Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().of(BuiltInRegistries.ENTITY_TYPE, entity).build())));
   }
 
-  /** Criterion matching an item whose tank is filled to capacity with the given fluid (exact DataComponentExactPredicate). */
+  /**
+   * Criterion matching an item whose tank is filled to capacity with the given fluid. 26.1: through the {@code tconstruct:tank_fluid} predicate,
+   * not an exact component predicate, which decodes a fluid stack before the fluid's components are bound (see {@link TankFluidItemSubPredicate}).
+   */
   protected static Criterion<?> tankFluidCriterion(ItemLike block, Fluid fluid, int capacity, MinMaxBounds.Ints count) {
     return inventoryTrigger(ItemPredicate.Builder.item().of(BuiltInRegistries.ITEM, block).withCount(count).withComponents(
-      DataComponentMatchers.Builder.components().exact(DataComponentExactPredicate.builder()
-        .expect(TinkerSmeltery.TANK_FLUID.get(), SimpleFluidContent.copyOf(new FluidStack(fluid, capacity)))
-        .build()).build()));
+      DataComponentMatchers.Builder.components().partial(TinkerItemPredicates.TANK_FLUID.get(), new TankFluidItemSubPredicate(fluid, capacity)).build()));
   }
 
 
