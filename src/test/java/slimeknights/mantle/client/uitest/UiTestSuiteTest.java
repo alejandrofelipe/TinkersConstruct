@@ -102,6 +102,24 @@ class UiTestSuiteTest {
   }
 
   @Test
+  void heldModifierMovesTheCaptureBackToTheTickBefore() {
+    // past or at the capture tick: back to the tick before it, so a capture needs a tick after the release
+    assertThat(UiTestSuite.heldPhaseTicks(20, 20)).isEqualTo(19);
+    assertThat(UiTestSuite.heldPhaseTicks(27, 20)).isEqualTo(19);
+    // earlier in the wait: unchanged, never moved forward
+    assertThat(UiTestSuite.heldPhaseTicks(19, 20)).isEqualTo(19);
+    assertThat(UiTestSuite.heldPhaseTicks(3, 20)).isEqualTo(3);
+    // no settle wait: before the first tick
+    assertThat(UiTestSuite.heldPhaseTicks(0, 0)).isEqualTo(-1);
+  }
+
+  @Test
+  void suiteTimeoutNamesTheModifierHold() {
+    assertThat(UiTestSuite.suiteTimeoutResult(0)).isEqualTo("fail: suite timeout");
+    assertThat(UiTestSuite.suiteTimeoutResult(4321)).startsWith("fail: suite timeout").contains("Shift, Ctrl or Alt").contains("4321 tick(s)");
+  }
+
+  @Test
   void tagProblemsNeedOneKnownTag() {
     Set<String> known = Set.of(UiTestTags.GUI, UiTestTags.JEI);
     assertThat(UiTestTags.problems(Set.of(UiTestTags.GUI), known)).isEmpty();
