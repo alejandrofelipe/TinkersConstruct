@@ -2113,12 +2113,18 @@ public class TinkerUiTestScenarios {
   /**
    * No menu: a seared tank full of honey right behind a stone block, seen through the stone. The tank fluid (block entity renderer, Mantle's fluid
    * pipeline) must be hidden by the stone: 26.1 pipelines have no depth test unless they set one, which drew every fluid over the blocks in front.
+   * Positive control: a second honey tank beside the stone, with nothing in front, must show its honey (a fluid not drawn at all fails there).
    */
   private static class FluidDepthTestScenario implements UiTestScenario {
     private static final String NAME = "fluid_depth_test";
     private final BlockPos tank = SITE.offset(270, 0, 2);
+    /** Control tank beside the stone (right of it on screen, the player faces south) */
+    private final BlockPos control = tank.north().west();
     /** Center of the stone block in front of the tank: grey stone, not orange honey */
     private static final float[] STONE_REGION = {600 / 1280f, 320 / 720f, 680 / 1280f, 400 / 720f};
+    /** Window of the control tank's front face: orange honey */
+    private static final float[] CONTROL_REGION = {815 / 1280f, 355 / 720f, 842 / 1280f, 425 / 720f};
+    private static final IntPredicate HONEY = hued(20, 60, 0.35f, 60);
     private static final IntPredicate GREY = color -> {
       int max = Math.max(ARGB.red(color), Math.max(ARGB.green(color), ARGB.blue(color)));
       int min = Math.min(ARGB.red(color), Math.min(ARGB.green(color), ARGB.blue(color)));
@@ -2138,6 +2144,8 @@ public class TinkerUiTestScenarios {
         level.setBlockAndUpdate(tank, TinkerSmeltery.searedTank.get(TankType.FUEL_TANK).defaultBlockState());
         SmelteryRigs.fillTank(level, tank, new FluidStack(TinkerFluids.honey.get(), TankType.FUEL_TANK.getCapacity()));
         level.setBlockAndUpdate(tank.north(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(control, TinkerSmeltery.searedTank.get(TankType.FUEL_TANK).defaultBlockState());
+        SmelteryRigs.fillTank(level, control, new FluidStack(TinkerFluids.honey.get(), TankType.FUEL_TANK.getCapacity()));
       });
     }
 
@@ -2160,6 +2168,7 @@ public class TinkerUiTestScenarios {
     public void close(UiTestContext ctx) {
       try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
         WornArmorScenario.assertFrameRegion(image, STONE_REGION, NAME + ": stone in front of a honey tank", GREY);
+        WornArmorScenario.assertFrameRegion(image, CONTROL_REGION, NAME + ": honey tank with nothing in front (control)", HONEY);
       }
     }
   }
