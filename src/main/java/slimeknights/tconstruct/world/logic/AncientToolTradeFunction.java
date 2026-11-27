@@ -73,7 +73,11 @@ public class AncientToolTradeFunction extends LootItemConditionalFunction {
     return ItemStack.EMPTY;
   }
 
-  /** Emerald cost of an ancient tool with the given materials: 6-8 emeralds per average tier, from 6 (tier 1) to 32 (tier 4) */
+  /**
+   * Emerald cost of an ancient tool with the given materials: 6-8 emeralds per average tier, from 6 (tier 1) to 32 (tier 4), and at least 1.
+   * Ancient materials go down to tier 0: 1.21.11 then offered the tool for 0 emeralds (an empty cost), but a 26.1 trade with a total cost of 0
+   * gives no offer at all, so the minimum keeps the trade.
+   */
   public static int cost(MaterialNBT materials, RandomSource random) {
     float tier = 0;
     if (materials.isEmpty()) {
@@ -85,6 +89,6 @@ public class AncientToolTradeFunction extends LootItemConditionalFunction {
       }
       tier /= materials.size();
     }
-    return Math.round(tier * 6) + random.nextInt(Math.round(2 * tier) + 1);
+    return Math.max(1, Math.round(tier * 6) + random.nextInt(Math.round(2 * tier) + 1));
   }
 }

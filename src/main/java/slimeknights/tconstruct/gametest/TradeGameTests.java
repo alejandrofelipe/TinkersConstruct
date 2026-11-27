@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.VillagerTradeTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
@@ -26,10 +27,13 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.config.Config;
+import slimeknights.tconstruct.library.materials.MaterialRegistry;
+import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
 import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.world.data.VillagerTradeProvider;
+import slimeknights.tconstruct.world.logic.AncientToolTradeFunction;
 
 import java.util.Optional;
 
@@ -105,10 +109,31 @@ public class TradeGameTests {
           tier += material.get().getTier();
         }
         tier /= materials.size();
-        int min = Math.round(tier * 6), max = min + Math.round(2 * tier);
-        helper.assertTrue(cost.getCount() >= Math.max(min, 1) && cost.getCount() <= max, Component.literal("cost " + cost.getCount() + " out of the " + min + "-" + max + " range for average tier " + tier));
+        // at least 1: an all tier 0 tool (0 emeralds in 1.21.11) would otherwise give no offer
+        int min = Math.max(1, Math.round(tier * 6)), max = Math.max(1, Math.round(tier * 6) + Math.round(2 * tier));
+        helper.assertTrue(cost.getCount() >= min && cost.getCount() <= max, Component.literal("cost " + cost.getCount() + " out of the " + min + "-" + max + " range for average tier " + tier));
         helper.assertTrue(offer.getMaxUses() == 1 && offer.getXp() == 15, Component.literal("expected 1 use and 15 xp, got " + offer.getMaxUses() + " / " + offer.getXp()));
       }
+    }
+    helper.succeed();
+  }
+
+  /**
+   * The cost formula for the rare all tier 0 tool, deterministically: ancient materials include tier 0 ones (wood, string, leather...), which give
+   * 0 emeralds by the 1.21.11 formula, and a 26.1 trade with no cost gives no offer. The cost must be 1, for every random roll; tier 2 stays 12-16.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 20)
+  public static void ancient_tool_trade_cost_minimum(GameTestHelper helper) {
+    IMaterial tierZero = MaterialRegistry.getInstance().getAllMaterials().stream().filter(material -> material.getTier() == 0).findFirst().orElse(null);
+    helper.assertTrue(tierZero != null, Component.literal("no tier 0 material loaded"));
+    IMaterial tierTwo = MaterialRegistry.getInstance().getAllMaterials().stream().filter(material -> material.getTier() == 2).findFirst().orElse(null);
+    helper.assertTrue(tierTwo != null, Component.literal("no tier 2 material loaded"));
+    RandomSource random = RandomSource.create(42);
+    for (int i = 0; i < 50; i++) {
+      int zero = AncientToolTradeFunction.cost(MaterialNBT.of(tierZero, tierZero, tierZero), random);
+      helper.assertTrue(zero == 1, Component.literal("all tier 0 tool costs " + zero + ", expected 1"));
+      int two = AncientToolTradeFunction.cost(MaterialNBT.of(tierTwo, tierTwo), random);
+      helper.assertTrue(two >= 12 && two <= 16, Component.literal("tier 2 tool costs " + two + ", expected 12 to 16"));
     }
     helper.succeed();
   }
