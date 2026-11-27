@@ -3,9 +3,11 @@ package slimeknights.mantle.client.uitest;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.neoforged.fml.ModLoadingIssue;
 import net.neoforged.neoforgespi.language.IModInfo;
+import net.neoforged.neoforgespi.locating.IModFile;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +40,29 @@ class UiTestSuiteTest {
     List<String> own = UiTestSuite.ownModWarnings(List.of(ours, theirs, unattributed), Set.of("mantle", "tconstruct"));
     assertThat(own).containsExactly("tconstruct: fml.modloadingissue.test [a]");
     assertThat(UiTestSuite.ownModWarnings(List.of(theirs, unattributed), Set.of("mantle", "tconstruct"))).isEmpty();
+  }
+
+  @Test
+  void ownModWarningsMatchesIssuesAttributedByModFile() {
+    // no affected mod, only the file: any mod of the file counts
+    ModLoadingIssue ourFile = new ModLoadingIssue(ModLoadingIssue.Severity.WARNING, "fml.modloadingissue.file", List.of(), null, null, modFile("other", "mantle"), null);
+    ModLoadingIssue theirFile = new ModLoadingIssue(ModLoadingIssue.Severity.WARNING, "fml.modloadingissue.file", List.of(), null, null, modFile("balm"), null);
+    // the affected mod wins over its file
+    ModLoadingIssue theirModInOurFile = new ModLoadingIssue(ModLoadingIssue.Severity.WARNING, "fml.modloadingissue.mod", List.of(), null, null, modFile("tconstruct"), mod("craftingtweaks"));
+    List<String> own = UiTestSuite.ownModWarnings(List.of(ourFile, theirFile, theirModInOurFile), Set.of("mantle", "tconstruct"));
+    assertThat(own).containsExactly("mantle: fml.modloadingissue.file []");
+  }
+
+  /** Mod file stub answering only its mod infos */
+  private static IModFile modFile(String... ids) {
+    List<IModInfo> infos = Arrays.stream(ids).map(UiTestSuiteTest::mod).toList();
+    return (IModFile) Proxy.newProxyInstance(IModFile.class.getClassLoader(), new Class<?>[] {IModFile.class}, (proxy, method, args) -> switch (method.getName()) {
+      case "getModInfos" -> infos;
+      case "toString" -> "file" + infos;
+      case "hashCode" -> System.identityHashCode(proxy);
+      case "equals" -> proxy == args[0];
+      default -> throw new UnsupportedOperationException(method.getName());
+    });
   }
 
   /** Mod info stub answering only its mod id */
