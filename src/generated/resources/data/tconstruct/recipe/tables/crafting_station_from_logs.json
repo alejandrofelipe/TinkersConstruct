@@ -10,7 +10,6 @@
     "w"
   ],
   "result": {
-    "count": 1,
     "id": "tconstruct:crafting_station"
   },
   "texture": "#minecraft:logs"

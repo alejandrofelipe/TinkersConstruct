@@ -5,7 +5,6 @@
   "experience": 0.2,
   "ingredient": "tconstruct:cobalt_shard",
   "result": {
-    "count": 1,
     "id": "tconstruct:cobalt_nugget"
   }
 }

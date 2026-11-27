@@ -18,7 +18,6 @@
         "translate": "block.tconstruct.tool_forge"
       }
     },
-    "count": 1,
     "id": "tconstruct:scorched_anvil"
   },
   "texture": "#tconstruct:anvil_metal"

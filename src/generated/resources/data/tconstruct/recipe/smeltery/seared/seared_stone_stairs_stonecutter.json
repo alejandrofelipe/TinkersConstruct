@@ -2,7 +2,6 @@
   "type": "minecraft:stonecutting",
   "ingredient": "tconstruct:seared_stone",
   "result": {
-    "count": 1,
     "id": "tconstruct:seared_stone_stairs"
   }
 }

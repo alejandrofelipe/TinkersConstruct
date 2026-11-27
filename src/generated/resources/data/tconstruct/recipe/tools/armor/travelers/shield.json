@@ -32,10 +32,6 @@
     "lc"
   ],
   "result": {
-    "components": {
-      "minecraft:custom_data": {}
-    },
-    "count": 1,
     "id": "tconstruct:travelers_shield"
   }
 }

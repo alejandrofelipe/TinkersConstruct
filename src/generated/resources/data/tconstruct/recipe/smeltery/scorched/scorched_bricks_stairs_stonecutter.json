@@ -2,7 +2,6 @@
   "type": "minecraft:stonecutting",
   "ingredient": "tconstruct:scorched_bricks",
   "result": {
-    "count": 1,
     "id": "tconstruct:scorched_bricks_stairs"
   }
 }

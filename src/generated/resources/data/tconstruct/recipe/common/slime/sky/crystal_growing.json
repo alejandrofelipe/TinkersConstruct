@@ -6,7 +6,6 @@
   "group": "tconstruct:slime_dirt",
   "ingredient": "tconstruct:sky_slime_dirt",
   "result": {
-    "count": 1,
     "id": "tconstruct:sky_slime_crystal"
   }
 }

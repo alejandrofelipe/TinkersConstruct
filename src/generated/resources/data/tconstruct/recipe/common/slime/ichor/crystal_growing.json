@@ -6,7 +6,6 @@
   "group": "tconstruct:slime_dirt",
   "ingredient": "tconstruct:ichor_slime_dirt",
   "result": {
-    "count": 1,
     "id": "tconstruct:ichor_slime_crystal"
   }
 }

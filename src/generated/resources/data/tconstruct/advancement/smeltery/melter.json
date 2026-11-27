@@ -107,7 +107,6 @@
       "translate": "advancements.tconstruct.smeltery.melter.description"
     },
     "icon": {
-      "count": 1,
       "id": "tconstruct:seared_melter"
     },
     "title": {
