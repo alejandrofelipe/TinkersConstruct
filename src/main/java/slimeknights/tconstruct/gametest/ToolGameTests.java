@@ -20,6 +20,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -58,6 +60,7 @@ import slimeknights.tconstruct.tools.TinkerToolParts;
 import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
+import slimeknights.tconstruct.tools.logic.InteractionHandler;
 import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
 
 import java.lang.reflect.Method;
@@ -593,6 +596,15 @@ public class ToolGameTests {
     helper.assertTrue(player.getMainHandItem().is(Items.IRON_HELMET), Component.literal("expected the helmet in hand, got " + player.getMainHandItem()));
     helper.assertTrue(stand.getItemBySlot(EquipmentSlot.HEAD).isEmpty(), Component.literal("helmet still on the stand"));
     helper.assertTrue(stand.getItemBySlot(EquipmentSlot.FEET).is(Items.IRON_BOOTS), Component.literal("boots were taken instead"));
+    helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("click location left captured after the interaction"));
+
+    // a canceled entity interaction clears the captured location too (no stale player/target kept until the next click)
+    CommonHooks.onInteractEntityAt(player, stand, location, InteractionHand.MAIN_HAND);
+    helper.assertTrue(InteractionHandler.hasCapturedClickLocation(), Component.literal("specific interaction did not capture the click location"));
+    PlayerInteractEvent.EntityInteract canceled = new PlayerInteractEvent.EntityInteract(player, InteractionHand.MAIN_HAND, stand);
+    canceled.setCanceled(true);
+    NeoForge.EVENT_BUS.post(canceled);
+    helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("click location left captured after a canceled interaction"));
     helper.succeed();
   }
 

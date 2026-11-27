@@ -100,8 +100,11 @@ public class InteractionHandler {
     }
   }
 
-  /** Exact click location of the last {@link EntityInteractSpecific} on this thread (client and server thread run separately) */
-  private record ClickLocation(Player player, Entity target, InteractionHand hand, Vec3 location) {}
+  /**
+   * Exact click location of the last {@link EntityInteractSpecific} on this thread (client and server thread run separately). Holds entity ids,
+   * not the entities, so a leftover never keeps a player, target or level alive.
+   */
+  private record ClickLocation(int player, int target, InteractionHand hand, Vec3 location) {}
   private static final ThreadLocal<ClickLocation> LAST_CLICK = new ThreadLocal<>();
 
   /**
@@ -110,14 +113,17 @@ public class InteractionHandler {
    */
   @SubscribeEvent(priority = EventPriority.LOWEST)
   static void captureClickLocation(EntityInteractSpecific event) {
-    LAST_CLICK.set(new ClickLocation(event.getEntity(), event.getTarget(), event.getHand(), event.getLocalPos()));
+    LAST_CLICK.set(new ClickLocation(event.getEntity().getId(), event.getTarget().getId(), event.getHand(), event.getLocalPos()));
+  }
+
+  /** Checks if a click location is captured on this thread (gametests: every entity interaction clears it) */
+  public static boolean hasCapturedClickLocation() {
+    return LAST_CLICK.get() != null;
   }
 
   /** Gets the click location captured for this interaction, relative to the target position */
-  private static Vec3 takeClickLocation(Player player, Entity target, InteractionHand hand) {
-    ClickLocation click = LAST_CLICK.get();
-    LAST_CLICK.remove();
-    if (click != null && click.player == player && click.target == target && click.hand == hand) {
+  private static Vec3 clickLocation(@Nullable ClickLocation click, Player player, Entity target, InteractionHand hand) {
+    if (click != null && click.player == player.getId() && click.target == target.getId() && click.hand == hand) {
       return click.location;
     }
     // Player#interactOn called without the specific event (e.g. by another mod): recompute it from the player's view
@@ -126,9 +132,17 @@ public class InteractionHandler {
     return target.getBoundingBox().clip(eye, reach).orElse(target.position()).subtract(target.position());
   }
 
-  /** Implements {@link EntityInteractionModifierHook#afterEntityUse(IToolStackView, ModifierEntry, Player, LivingEntity, InteractionHand, InteractionSource)} for chestplates */
-  @SubscribeEvent(priority = EventPriority.LOWEST)
+  /**
+   * Implements {@link EntityInteractionModifierHook#afterEntityUse(IToolStackView, ModifierEntry, Player, LivingEntity, InteractionHand, InteractionSource)} for chestplates.
+   * Receives canceled events too, only to clear the captured click location for every interaction.
+   */
+  @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
   static void afterEntityInteract(EntityInteract event) {
+    ClickLocation click = LAST_CLICK.get();
+    LAST_CLICK.remove();
+    if (event.isCanceled()) {
+      return;
+    }
     Player player = event.getEntity();
     if (event.getItemStack().isEmpty() && !player.isSpectator()) {
       ItemStack chestplate = player.getItemBySlot(EquipmentSlot.CHEST);
@@ -143,7 +157,7 @@ public class InteractionHandler {
         // initial entity interaction
         // 26.1: Entity#interactAt merged into interact(player, hand, location), which now runs after this event; this event has
         // no hit location, but EntityInteractSpecific fired just before it for the same click with the exact one
-        InteractionResult result = target.interact(player, hand, takeClickLocation(player, target, hand));
+        InteractionResult result = target.interact(player, hand, clickLocation(click, player, target, hand));
         if (result.consumesAction()) {
           event.setCancellationResult(result);
           return;
