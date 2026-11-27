@@ -615,11 +615,11 @@ public final class TinkerSmeltery extends TinkerModule {
     output.accept(scorchedSoulGlassPane);
 
     // casts
-    addCasts(output, CastItemObject::get);
+    addCasts(output, CastItemObject::get, true);
     output.accept(blankSandCast);
-    addCasts(output, CastItemObject::getSand);
+    addCasts(output, CastItemObject::getSand, false);
     output.accept(blankRedSandCast);
-    addCasts(output, CastItemObject::getRedSand);
+    addCasts(output, CastItemObject::getRedSand, false);
     // dummy parts are in tool parts creative tab
 
     // additional texture variants of controllers, drains, and ducts
@@ -637,8 +637,12 @@ public final class TinkerSmeltery extends TinkerModule {
     RetexturedHelper.addTagVariants(variant, scorchedChute, TinkerTags.Items.SCORCHED_BLOCKS);
   }
 
-  /** Adds adds all casts of the given type to the tab */
-  private static void addCasts(CreativeModeTab.Output output, Function<CastItemObject,ItemLike> getter) {
+  /**
+   * Adds adds all casts of the given type to the tab
+   * @param withArrow  If true, adds the arrow cast, which has a single (gold) type. 26.1: NeoForge fails the whole tab on a repeated stack, so
+   *                   it is added once, where the gold casts list it.
+   */
+  private static void addCasts(CreativeModeTab.Output output, Function<CastItemObject,ItemLike> getter, boolean withArrow) {
     // common casts
     accept(output, getter, ingotCast);
     accept(output, getter, nuggetCast);
@@ -668,7 +672,9 @@ public final class TinkerSmeltery extends TinkerModule {
     // ranged
     accept(output, getter, bowLimbCast);
     accept(output, getter, bowGripCast);
-    output.accept(arrowCast);
+    if (withArrow) {
+      output.accept(arrowCast);
+    }
     // no binding cast
     // armor
     accept(output, getter, helmetPlatingCast);

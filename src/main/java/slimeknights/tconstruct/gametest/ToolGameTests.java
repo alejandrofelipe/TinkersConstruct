@@ -10,6 +10,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -22,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -64,6 +66,7 @@ import slimeknights.tconstruct.tools.logic.InteractionHandler;
 import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -617,6 +620,35 @@ public class ToolGameTests {
     helper.succeed();
   }
 
+  /**
+   * Every Tinkers creative tab builds: NeoForge 26.1 fails a tab whose contents repeat a stack, which drops the whole tab and its items from JEI.
+   * M7 Phase 4: the Tools tab (tool variants of materials only usable by fallback parts, e.g. string on a crossbow) and the Smeltery tab (the
+   * gold arrow cast added with each cast type) failed.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 20)
+  public static void creative_tabs_build(GameTestHelper helper) {
+    MinecraftServer server = helper.getLevel().getServer();
+    CreativeModeTab.ItemDisplayParameters parameters = new CreativeModeTab.ItemDisplayParameters(server.getWorldData().enabledFeatures(), true, server.registryAccess());
+    List<String> failures = new java.util.ArrayList<>();
+    int tabs = 0;
+    for (var entry : BuiltInRegistries.CREATIVE_MODE_TAB.entrySet()) {
+      if (!TConstruct.MOD_ID.equals(entry.getKey().identifier().getNamespace())) {
+        continue;
+      }
+      tabs++;
+      try {
+        entry.getValue().buildContents(parameters);
+        if (entry.getValue().getDisplayItems().isEmpty()) {
+          failures.add(entry.getKey().identifier() + " is empty");
+        }
+      } catch (RuntimeException e) {
+        failures.add(entry.getKey().identifier() + ": " + e.getMessage());
+      }
+    }
+    helper.assertTrue(tabs > 0, Component.literal("no tconstruct creative tabs"));
+    helper.assertTrue(failures.isEmpty(), Component.literal(failures.size() + " creative tab(s) fail to build: " + String.join("; ", failures)));
+    helper.succeed();
+  }
   /**
    * Builds a tool part item stack of the given material.
    * @throws IllegalStateException if the part rejects the material, which would otherwise silently

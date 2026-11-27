@@ -4,6 +4,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackLinkedSet;
 import net.minecraft.world.item.component.CustomData;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator;
@@ -25,6 +26,7 @@ import slimeknights.tconstruct.library.tools.part.IToolPart;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -141,10 +143,13 @@ public final class ToolBuildHandler {
       }
       // add all materials to the parent, conditionally to search
       if (!added) {
+        // a material only usable by parts that fall back to the defaults gives the same tool as an earlier material (e.g. string on a crossbow
+        // matches the wooden one); 26.1: NeoForge fails the whole tab on a repeated stack, so each tool is added once
+        Set<ItemStack> tools = ItemStackLinkedSet.createTypeAndComponentsSet();
         for (IMaterial material : MaterialRegistry.getInstance().getVisibleMaterials()) {
           // if we added it and we want a single material, we are done
           ItemStack tool = createSingleMaterial(item, MaterialVariant.of(material));
-          if (!tool.isEmpty()) {
+          if (!tool.isEmpty() && tools.add(tool)) {
             tab.accept(tool);
             // if filter is set we wanted just the 1 item
             if (!showOnlyMaterial.isEmpty()) {
