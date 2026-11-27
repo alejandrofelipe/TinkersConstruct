@@ -157,7 +157,7 @@ public class TinkerTabsWidget implements Renderable, GuiEventListener, Narratabl
   }
 
   @Override
-  public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+  public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
     int sel = this.tabs.selected;
     this.tabs.update(mouseX, mouseY);
     this.tabs.draw(graphics);

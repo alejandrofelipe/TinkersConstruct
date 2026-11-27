@@ -33,7 +33,7 @@ public class PanelTabButton extends Button {
   }
 
   @Override
-  protected void renderContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+  protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     (this.isHovered ? this.backgroundHover : this.background).draw(graphics, this.getX(), this.getY());
     this.icon.render(graphics, this.getX() + 1, this.getY() + 1);
   }

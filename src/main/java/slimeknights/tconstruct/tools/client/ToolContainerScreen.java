@@ -108,10 +108,10 @@ public class ToolContainerScreen extends AbstractContainerScreen<ToolContainerMe
   }
 
   @Override
-  public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+  public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     // 1.21: super.render already runs renderBackground (which draws the container bg) — no explicit call
-    super.render(graphics, mouseX, mouseY, partialTicks);
-    this.renderTooltip(graphics, mouseX, mouseY);
+    super.extractRenderState(graphics, mouseX, mouseY, partialTicks);
+    this.extractTooltip(graphics, mouseX, mouseY);
   }
 
   @Override
@@ -232,16 +232,16 @@ public class ToolContainerScreen extends AbstractContainerScreen<ToolContainerMe
   }
 
   @Override
-  protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    super.renderLabels(graphics, mouseX, mouseY);
+  protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    super.extractLabels(graphics, mouseX, mouseY);
     if (tank != null) {
       tank.highlightHoveredFluid(graphics, mouseX - this.leftPos, mouseY - this.topPos);
     }
   }
 
   @Override
-  protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    super.renderTooltip(graphics, mouseX, mouseY);
+  protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    super.extractTooltip(graphics, mouseX, mouseY);
 
     if (tank != null) {
       tank.renderTooltip(graphics, mouseX, mouseY);

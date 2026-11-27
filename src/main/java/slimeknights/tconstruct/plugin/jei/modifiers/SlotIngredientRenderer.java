@@ -106,7 +106,7 @@ public enum SlotIngredientRenderer implements IIngredientRenderer<SlotCount> {
     if (this != INGREDIENT && slots != null && slots.count() > 0) {
       String text = Integer.toString(slots.count());
       Font fontRenderer = Minecraft.getInstance().font;
-      graphics.drawString(fontRenderer, text, x + 9 - fontRenderer.width(text), y + 5, Color.GRAY.getRGB(), false);
+      graphics.text(fontRenderer, text, x + 9 - fontRenderer.width(text), y + 5, Color.GRAY.getRGB(), false);
     }
     // PORT 1.21.4: GuiGraphicsExtractor.blit(x,y,z,w,h,sprite) was removed; sprites now render through blitSprite(renderType, sprite, ...)
     graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITES.computeIfAbsent(SlotCount.type(slots), SLOT_LOOKUP), x + (this == INGREDIENT ? 0 : 8), y, 16, 16);

@@ -104,7 +104,7 @@ public class ToolBuildingCategory implements IRecipeCategory<ToolBuildingRecipe>
     renderPose.pushMatrix();
     renderPose.translate(5, 6.5f);
     renderPose.scale(3.7f, 3.7f);
-    graphics.renderItem(outputStack, 0, 0);
+    graphics.item(outputStack, 0, 0);
     renderPose.popMatrix();
 
     // next, overlay the item with transparent grey, makes it appear transparent

@@ -91,7 +91,7 @@ public class EntityMeltingRecipeCategory implements IRecipeCategory<EntityMeltin
     String damage = Float.toString(recipe.getDamage() / 2f);
     Font fontRenderer = Minecraft.getInstance().font;
     int x = 84 - fontRenderer.width(damage);
-    graphics.drawString(fontRenderer, damage, x, 8, Color.RED.getRGB(), false);
+    graphics.text(fontRenderer, damage, x, 8, Color.RED.getRGB(), false);
   }
 
   @Override

@@ -140,7 +140,7 @@ public class SlimeGrassBlock extends SnowyBlock implements BonemealableBlock {
       return false;
     }
     // fallback to light level check
-    return LightEngine.getLightBlockInto(targetState, aboveState, Direction.UP, aboveState.getLightBlock()) < LightEngine.MAX_LEVEL;
+    return LightEngine.getLightBlockInto(targetState, aboveState, Direction.UP, aboveState.getLightDampening()) < LightEngine.MAX_LEVEL;
   }
 
   /** Checks if the grass at the given position can spread */

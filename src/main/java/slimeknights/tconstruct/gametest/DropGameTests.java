@@ -166,7 +166,7 @@ public class DropGameTests {
     helper.assertFalse(drop.has(DataComponents.BLOCK_ENTITY_DATA), Component.literal("cast chest item has block entity data: " + drop.getComponentsPatch()));
     ItemContainerContents contents = drop.get(DataComponents.CONTAINER);
     helper.assertTrue(contents != null, Component.literal("cast chest item has no container contents: " + drop.getComponentsPatch()));
-    List<ItemStack> stacks = contents.stream().toList();
+    List<ItemStack> stacks = contents.allItemsCopyStream().toList();
     helper.assertTrue(stacks.size() == expected.length, Component.literal("expected " + expected.length + " container slots, got " + stacks));
     for (int i = 0; i < expected.length; i++) {
       helper.assertTrue(ItemStack.matches(stacks.get(i), expected[i]), Component.literal("container slot " + i + ": expected " + expected[i] + ", got " + stacks.get(i)));

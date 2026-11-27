@@ -72,9 +72,9 @@ public class PartBuilderCategory implements IRecipeCategory<IDisplayPartBuilderR
     if (!variant.isEmpty()) {
       Font fontRenderer = Minecraft.getInstance().font;
       Component name = MaterialTooltipCache.getColoredDisplayName(variant.getVariant());
-      graphics.drawString(fontRenderer, name, 3, 2, -1, true);
+      graphics.text(fontRenderer, name, 3, 2, -1, true);
       String coolingString = I18n.get(KEY_COST, recipe.getCost());
-      graphics.drawString(fontRenderer, coolingString, 3, 35, Color.GRAY.getRGB(), false);
+      graphics.text(fontRenderer, coolingString, 3, 35, Color.GRAY.getRGB(), false);
     } else if (recipe.getMaterialItems().isEmpty()) {
       GuiUtil.renderPattern(graphics, Patterns.INGOT, 25, 16);
     }

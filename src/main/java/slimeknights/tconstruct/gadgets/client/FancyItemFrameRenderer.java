@@ -88,7 +88,7 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
     FrameType frameType = ((FancyItemFrameRenderState) state).frameType;
 
     // base entity rendering logic (nameplate, fires RenderNameTagEvent); calling super would draw the vanilla item frame we are replacing
-    this.submitNameTag(state, matrices, collector, camera);
+    this.submitNameDisplay(state, matrices, collector, camera);
     int packedLight = state.lightCoords;
 
     // orient the renderer

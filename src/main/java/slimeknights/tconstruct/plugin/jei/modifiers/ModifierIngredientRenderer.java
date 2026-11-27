@@ -32,7 +32,7 @@ public record ModifierIngredientRenderer(int width, int height) implements IIngr
     if (entry != null) {
       Component name = entry.getDisplayName();
       Font fontRenderer = getFontRenderer(Minecraft.getInstance(), entry);
-      graphics.drawString(fontRenderer, name, x + (width - fontRenderer.width(name)) / 2, y + 1, -1, true);
+      graphics.text(fontRenderer, name, x + (width - fontRenderer.width(name)) / 2, y + 1, -1, true);
     }
   }
 

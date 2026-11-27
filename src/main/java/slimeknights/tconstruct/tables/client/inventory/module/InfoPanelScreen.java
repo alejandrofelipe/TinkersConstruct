@@ -167,7 +167,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
    * draw above the panel; see {@link GuiUtil} for the first-wins/focused rule they follow.
    */
   public void drawOverlayTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    this.renderTooltip(graphics, mouseX, mouseY);
+    this.extractTooltip(graphics, mouseX, mouseY);
   }
 
   public void setCaption(Component caption) {
@@ -309,13 +309,13 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
   }
 
   @Override
-  protected void renderLabels(GuiGraphicsExtractor graphics, int x, int y) {
+  protected void extractLabels(GuiGraphicsExtractor graphics, int x, int y) {
    // no-op
   }
 
   @Override
-  protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    super.renderTooltip(graphics, mouseX, mouseY);
+  protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    super.extractTooltip(graphics, mouseX, mouseY);
 
     if (this.tooltips == null) {
       return;
@@ -462,7 +462,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
     Matrix3x2fStack pose = graphics.pose();
     pose.pushMatrix();
     pose.translate(x, y);
-    graphics.drawString(this.font, text, 0, 0, color, shadow);
+    graphics.text(this.font, text, 0, 0, color, shadow);
     pose.popMatrix();
   }
 

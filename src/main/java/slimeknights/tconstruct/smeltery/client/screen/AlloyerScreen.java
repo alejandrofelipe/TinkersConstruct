@@ -67,10 +67,10 @@ public class AlloyerScreen extends AbstractContainerScreen<AlloyerContainerMenu>
   }
 
   @Override
-  public void render(GuiGraphicsExtractor graphics, int x, int y, float partialTicks) {
+  public void extractRenderState(GuiGraphicsExtractor graphics, int x, int y, float partialTicks) {
     // 1.21: super.render already runs renderBackground (which draws the container bg) — no explicit call
-    super.render(graphics, x, y, partialTicks);
-    this.renderTooltip(graphics, x, y);
+    super.extractRenderState(graphics, x, y, partialTicks);
+    this.extractTooltip(graphics, x, y);
   }
 
   @Override
@@ -103,8 +103,8 @@ public class AlloyerScreen extends AbstractContainerScreen<AlloyerContainerMenu>
   }
 
   @Override
-  protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    super.renderLabels(graphics, mouseX, mouseY);
+  protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    super.extractLabels(graphics, mouseX, mouseY);
     int checkX = mouseX - this.leftPos;
     int checkY = mouseY - this.topPos;
 
@@ -122,8 +122,8 @@ public class AlloyerScreen extends AbstractContainerScreen<AlloyerContainerMenu>
   }
 
   @Override
-  protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    super.renderTooltip(graphics, mouseX, mouseY);
+  protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    super.extractTooltip(graphics, mouseX, mouseY);
 
     // tank tooltip
     if (outputTank != null) outputTank.renderTooltip(graphics, mouseX, mouseY);

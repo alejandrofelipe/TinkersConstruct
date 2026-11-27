@@ -1885,13 +1885,13 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
-    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-      super.render(graphics, mouseX, mouseY, partialTick);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+      super.extractRenderState(graphics, mouseX, mouseY, partialTick);
       int left = 20;
       graphics.pose().pushMatrix();
       graphics.pose().scale(2, 2);
       for (int i = 0; i < stacks.size(); i++) {
-        graphics.renderItem(stacks.get(i), left / 2 + i * 20, 20);
+        graphics.item(stacks.get(i), left / 2 + i * 20, 20);
       }
       graphics.pose().popMatrix();
       for (int i = 0; i < modifiers.size(); i++) {
@@ -2265,7 +2265,7 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
-    public void renderBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {}
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {}
   }
 
   /**

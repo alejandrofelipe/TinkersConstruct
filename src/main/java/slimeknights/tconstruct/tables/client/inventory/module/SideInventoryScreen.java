@@ -251,9 +251,9 @@ public class SideInventoryScreen<P extends MultiModuleScreen<?>, C extends Abstr
   }
 
   @Override
-  public void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+  public void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     if (this.shouldDrawName()) {
-      graphics.drawString(this.font, this.getTitle().getString(), this.border.w, this.border.h - 1, 0xFF404040, false);
+      graphics.text(this.font, this.getTitle().getString(), this.border.w, this.border.h - 1, 0xFF404040, false);
     }
   }
 

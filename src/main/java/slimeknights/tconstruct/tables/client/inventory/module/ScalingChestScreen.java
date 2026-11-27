@@ -70,5 +70,5 @@ public class ScalingChestScreen<T extends BlockEntity> extends DynamicContainerS
   }
 
   @Override
-  protected void renderLabels(GuiGraphicsExtractor graphics, int x, int y) {}
+  protected void extractLabels(GuiGraphicsExtractor graphics, int x, int y) {}
 }

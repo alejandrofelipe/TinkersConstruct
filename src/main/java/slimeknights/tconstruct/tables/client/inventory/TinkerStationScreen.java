@@ -278,12 +278,12 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   }
 
   @Override
-  public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
-    super.render(graphics, mouseX, mouseY, partialTicks); // base render + the info-overlay pass
+  public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+    super.extractRenderState(graphics, mouseX, mouseY, partialTicks); // base render + the info-overlay pass
     // COLLAPSED tier: the centered selector overlay draws above the slots (its docked draw in renderBg is gated off)
     if (this.overlayOpen == OverlayPanel.SELECTOR) {
       InfoPanelScreen.beginOverlayStratum(graphics); // shared overlay stratum, see InfoPanelScreen.drawOverlay
-      this.buttonsScreen.render(graphics, mouseX, mouseY, partialTicks);
+      this.buttonsScreen.extractRenderState(graphics, mouseX, mouseY, partialTicks);
     }
   }
 
@@ -392,7 +392,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
 
   @Override
   protected void drawContainerName(GuiGraphicsExtractor graphics) {
-    graphics.drawString(this.font, this.getTitle(), 8, 8, 0xFF404040, false);
+    graphics.text(this.font, this.getTitle(), 8, 8, 0xFF404040, false);
   }
 
   public static void renderIcon(GuiGraphicsExtractor graphics, LayoutIcon icon, int x, int y) {
@@ -405,7 +405,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
 
     ItemStack stack = icon.getValue(ItemStack.class);
     if (stack != null) {
-      graphics.renderItem(stack, x, y);
+      graphics.item(stack, x, y);
     }
   }
 
@@ -511,13 +511,13 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
 
     // docked selector draws here (under the slots, to the window's left); the centered overlay draws above slots in render()
     if (!this.selectorCollapsed()) {
-      this.buttonsScreen.render(graphics, mouseX, mouseY, partialTicks);
+      this.buttonsScreen.extractRenderState(graphics, mouseX, mouseY, partialTicks);
     }
 
     // text field
     if (textField != null && textField.visible) {
       TEXT_BOX.draw(graphics, this.cornerX + 79, this.cornerY + 5);
-      this.textField.render(graphics, mouseX, mouseY, partialTicks);
+      this.textField.extractRenderState(graphics, mouseX, mouseY, partialTicks);
     }
 
     renderArmorStand(graphics);
@@ -645,12 +645,12 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   }
 
   @Override
-  public void renderSlot(GuiGraphicsExtractor graphics, Slot slotIn, int mouseX, int mouseY) {
+  public void extractSlot(GuiGraphicsExtractor graphics, Slot slotIn, int mouseX, int mouseY) {
     // don't draw dormant slots with no item
     if (slotIn instanceof TinkerStationSlot && ((TinkerStationSlot) slotIn).isDormant() && !slotIn.hasItem()) {
       return;
     }
-    super.renderSlot(graphics, slotIn, mouseX, mouseY);
+    super.extractSlot(graphics, slotIn, mouseX, mouseY);
   }
 
   @Override

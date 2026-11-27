@@ -14,7 +14,7 @@ public class SearedTintedGlassBlock extends SearedGlassBlock {
   }
 
   @Override
-  public int getLightBlock(BlockState state) {
+  public int getLightDampening(BlockState state) {
     return LightEngine.MAX_LEVEL;
   }
 }

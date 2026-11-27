@@ -149,7 +149,7 @@ public class ModifierRecipeCategory implements IRecipeCategory<IDisplayModifierR
     if (levelText != null) {
       // center string
       Font fontRenderer = Minecraft.getInstance().font;
-      graphics.drawString(fontRenderer, levelText, 86 - fontRenderer.width(levelText) / 2, 16, Color.GRAY.getRGB(), false);
+      graphics.text(fontRenderer, levelText, 86 - fontRenderer.width(levelText) / 2, 16, Color.GRAY.getRGB(), false);
     }
 
     // draw slotless icon if needed. Slots are handled by ingredient renderer.

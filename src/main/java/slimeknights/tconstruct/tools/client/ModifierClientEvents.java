@@ -317,7 +317,7 @@ public class ModifierClientEvents {
         if (data != null && index != null) {
           MapRenderState mapRenderState = new MapRenderState();
           Minecraft.getInstance().getMapRenderer().extractRenderState(index, data, mapRenderState);
-          graphics.submitMapRenderState(mapRenderState);
+          graphics.map(mapRenderState);
         }
         pose.popMatrix();
       }

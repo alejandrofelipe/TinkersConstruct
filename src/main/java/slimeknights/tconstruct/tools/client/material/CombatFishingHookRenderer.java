@@ -206,7 +206,7 @@ public class CombatFishingHookRenderer extends EntityRenderer<CombatFishingHook,
     public static final MaterialTexture EMPTY = new MaterialTexture(BASE, -1, 0);
 
     public MaterialTexture(Identifier texture, int color, int luminosity) {
-      this(RenderTypes.entityCutout(texture), luminosity,
+      this(RenderTypes.entityCutoutCull(texture), luminosity,
         color >> 24 & 255,
         color >> 16 & 255,
         color >> 8 & 255,

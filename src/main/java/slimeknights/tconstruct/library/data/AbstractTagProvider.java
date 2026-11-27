@@ -60,7 +60,7 @@ public abstract class AbstractTagProvider<T> extends GenericDataProvider {
       if (!invalidEntries.isEmpty()) {
         return CompletableFuture.failedFuture(new IllegalArgumentException(String.format("Couldn't define tag %s as it is missing following references: %s", id, invalidEntries.stream().map(Objects::toString).collect(Collectors.joining(",")))));
       } else {
-        return saveJson(cache, id, TagFile.CODEC, new TagFile(tagEntries, entry.getValue().isReplace(), entry.getValue().getRemoveEntries().toList()));
+        return saveJson(cache, id, TagFile.CODEC, new TagFile(tagEntries, entry.getValue().shouldReplace(), entry.getValue().getRemoveEntries().toList()));
       }
     }));
   }

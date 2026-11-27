@@ -101,7 +101,7 @@ public class AlloyRecipeCategory implements IRecipeCategory<AlloyRecipe> {
     Font fontRenderer = Minecraft.getInstance().font;
     String tempString = I18n.get(KEY_TEMPERATURE, recipe.getTemperature());
     int x = 102 - (fontRenderer.width(tempString) / 2);
-    graphics.drawString(fontRenderer, tempString, x, 5, Color.GRAY.getRGB(), false);
+    graphics.text(fontRenderer, tempString, x, 5, Color.GRAY.getRGB(), false);
   }
 
   /**

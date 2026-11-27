@@ -202,8 +202,8 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
   }
 
   @Override
-  public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
-    super.render(graphics, mouseX, mouseY, partialTicks);
+  public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+    super.extractRenderState(graphics, mouseX, mouseY, partialTicks);
     // COLLAPSED tier: the open info panel is skipped in the under-slots module pass; draw it here, above the slots/widgets
     InfoPanelScreen<?,?> overlay = this.activeInfoOverlay();
     if (overlay != null) {
@@ -242,7 +242,7 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
       renderState.lightCoords = LightTexture.FULL_BRIGHT;
       renderState.shadowPieces.clear();
       renderState.outlineColor = 0;
-      graphics.submitEntityRenderState(renderState, this.armorStandScale, ARMOR_STAND_TRANSLATION, pose, null,
+      graphics.entity(renderState, this.armorStandScale, ARMOR_STAND_TRANSLATION, pose, null,
                                        this.armorStandX - halfWidth, this.armorStandY - this.armorStandScale * 5 / 2,
                                        this.armorStandX + halfWidth, this.armorStandY + this.armorStandScale / 2);
 

@@ -87,7 +87,7 @@ public class SlimeskullArmorModel extends MultilayerArmorModel {
         skullState.animationPos = state.wornHeadAnimationPos;
         SubmitNodeCollector collector = context.collector();
         int packedLight = context.packedLight();
-        collector.order(order++).submitModel(headModel, skullState, matrices, RenderTypes.entityCutoutNoCullZOffset(headTexture), packedLight, OverlayTexture.NO_OVERLAY, headColor, null, state.outlineColor, null);
+        collector.order(order++).submitModel(headModel, skullState, matrices, RenderTypes.entityCutoutZOffset(headTexture), packedLight, OverlayTexture.NO_OVERLAY, headColor, null, state.outlineColor, null);
         if (stack.hasFoil()) {
           collector.order(order).submitModel(headModel, skullState, matrices, RenderTypes.armorEntityGlint(), packedLight, OverlayTexture.NO_OVERLAY, headColor, null, state.outlineColor, null);
         }
