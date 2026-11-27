@@ -108,7 +108,7 @@ public class MeltingCategory extends AbstractMeltingCategory {
       fuelHeight = 15;
       builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 2, 22)
              .addRichTooltipCallback(ITEM_FUEL_TOOLTIP)
-             .addItemStacks(MeltingFuelHandler.SOLID_FUELS.get());
+             .addItemStacks(MeltingFuelHandler.solidFuels());
     }
 
     // liquid fuel

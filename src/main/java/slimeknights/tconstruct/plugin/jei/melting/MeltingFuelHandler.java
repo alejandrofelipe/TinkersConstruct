@@ -4,12 +4,10 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.tconstruct.library.recipe.fuel.MeltingFuel;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -22,9 +20,13 @@ public class MeltingFuelHandler {
    */
   private static List<Pair<Integer,List<FluidStack>>> fuelLookup = Collections.emptyList();
 
-  /** List of solid fuels for solid melting */
-  public static final Lazy<List<ItemStack>> SOLID_FUELS = Lazy.of(() -> Arrays.asList(
-    new ItemStack(Items.COAL), new ItemStack(Items.CHARCOAL), new ItemStack(Blocks.OAK_LOG), new ItemStack(Blocks.OAK_PLANKS), new ItemStack(Items.BLAZE_ROD)));
+  /**
+   * List of solid fuels for solid melting. 26.1: built per call rather than cached, since a stack keeps the default components bound when it was
+   * created and they are bound again per load.
+   */
+  public static List<ItemStack> solidFuels() {
+    return List.of(new ItemStack(Items.COAL), new ItemStack(Items.CHARCOAL), new ItemStack(Blocks.OAK_LOG), new ItemStack(Blocks.OAK_PLANKS), new ItemStack(Items.BLAZE_ROD));
+  }
 
   /**
    * Updates the melting cache, called on JEI load
