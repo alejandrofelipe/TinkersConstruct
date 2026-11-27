@@ -91,7 +91,7 @@ public class HeatingStructureScreen extends MultiModuleScreen<HeatingStructureCo
     }
   }
   @Override
-  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void extractContainerBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     // draw stuff with background
     GuiUtil.drawBackground(graphics, this, BACKGROUND);
     // fuel
@@ -100,7 +100,7 @@ public class HeatingStructureScreen extends MultiModuleScreen<HeatingStructureCo
     }
 
     // draw other components
-    super.renderBg(graphics, partialTicks, mouseX, mouseY);
+    super.extractContainerBackground(graphics, mouseX, mouseY, partialTicks);
 
     // render fluids
     if (tank != null) tank.renderFluids(graphics);

@@ -108,14 +108,9 @@ public class ToolContainerScreen extends AbstractContainerScreen<ToolContainerMe
   }
 
   @Override
-  public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
-    // 1.21: super.render already runs renderBackground (which draws the container bg) — no explicit call
-    super.extractRenderState(graphics, mouseX, mouseY, partialTicks);
-    this.extractTooltip(graphics, mouseX, mouseY);
-  }
-
-  @Override
-  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int x, int y) {
+  public void extractBackground(GuiGraphicsExtractor graphics, int x, int y, float partialTicks) {
+    // 26.1: renderBg merged into extractBackground; super draws the screen dim first
+    super.extractBackground(graphics, x, y, partialTicks);
     int xStart = (this.width - this.imageWidth) / 2;
     int yStart = (this.height - this.imageHeight) / 2;
 

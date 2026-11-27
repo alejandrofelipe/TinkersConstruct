@@ -18,8 +18,8 @@ public class CraftingStationScreen extends BaseTabbedScreen<CraftingStationBlock
   }
 
   @Override
-  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void extractContainerBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     this.drawBackground(graphics, CRAFTING_TABLE_GUI_TEXTURES);
-    super.renderBg(graphics, partialTicks, mouseX, mouseY);
+    super.extractContainerBackground(graphics, mouseX, mouseY, partialTicks);
   }
 }

@@ -258,7 +258,7 @@ public class SideInventoryScreen<P extends MultiModuleScreen<?>, C extends Abstr
   }
 
   @Override
-  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void extractContainerBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     this.leftPos += this.border.w;
     this.topPos += this.border.h;
 

@@ -113,7 +113,7 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
   }
 
   @Override
-  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void extractContainerBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     this.drawBackground(graphics, BACKGROUND);
 
     // draw scrollbar
@@ -128,7 +128,7 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
     }
     this.drawModifierIcons(graphics, this.cornerX + MODIFIER_LEFT, this.cornerY + MODIFIER_TOP);
 
-    super.renderBg(graphics, partialTicks, mouseX, mouseY);
+    super.extractContainerBackground(graphics, mouseX, mouseY, partialTicks);
 
     renderArmorStand(graphics);
   }

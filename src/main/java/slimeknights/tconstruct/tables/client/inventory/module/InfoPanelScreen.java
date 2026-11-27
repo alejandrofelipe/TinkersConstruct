@@ -149,7 +149,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
   /** Draws the panel unconditionally at its current position; the collapsed-tier overlay pass calls this above the slots (the normal module pass is gated off by {@link #hidden}/{@link #overlayMode}). */
   public void drawOverlay(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
     beginOverlayStratum(graphics);
-    this.renderBg(graphics, partialTicks, mouseX, mouseY);
+    this.extractContainerBackground(graphics, mouseX, mouseY, partialTicks);
   }
 
   /**
@@ -395,7 +395,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
   }
 
   @Override
-  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void extractContainerBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     this.border.draw(graphics);
     // overlay mode sits over the darkened crafting area (ITEM_COVER + faded icon) and panel.png is partly translucent,
     // so blit it a few times to build opacity: keeps the tint near the docked panel and stops the slot patterns

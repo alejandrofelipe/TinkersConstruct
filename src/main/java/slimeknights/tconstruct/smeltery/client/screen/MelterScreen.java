@@ -41,14 +41,9 @@ public class MelterScreen extends AbstractContainerScreen<MelterContainerMenu> i
   }
 
   @Override
-  public void extractRenderState(GuiGraphicsExtractor graphics, int x, int y, float partialTicks) {
-    // 1.21: super.render already runs renderBackground (which draws the container bg) — no explicit call
-    super.extractRenderState(graphics, x, y, partialTicks);
-    this.extractTooltip(graphics, x, y);
-  }
-
-  @Override
-  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
+  public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+    // 26.1: renderBg merged into extractBackground; super draws the screen dim first
+    super.extractBackground(graphics, mouseX, mouseY, partialTicks);
     GuiUtil.drawBackground(graphics, this, BACKGROUND);
 
     // fuel

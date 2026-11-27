@@ -174,7 +174,7 @@ public class DynamicContainerScreen<P extends MultiModuleScreen<?>, C extends Ab
   }
 
   @Override
-  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void extractContainerBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     if (!this.slider.isHidden()) {
       this.slider.draw(graphics);
 

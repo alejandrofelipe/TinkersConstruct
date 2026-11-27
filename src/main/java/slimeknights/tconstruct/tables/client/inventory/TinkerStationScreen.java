@@ -280,7 +280,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   @Override
   public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     super.extractRenderState(graphics, mouseX, mouseY, partialTicks); // base render + the info-overlay pass
-    // COLLAPSED tier: the centered selector overlay draws above the slots (its docked draw in renderBg is gated off)
+    // COLLAPSED tier: the centered selector overlay draws above the slots (its docked draw in extractContainerBackground is gated off)
     if (this.overlayOpen == OverlayPanel.SELECTOR) {
       InfoPanelScreen.beginOverlayStratum(graphics); // shared overlay stratum, see InfoPanelScreen.drawOverlay
       this.buttonsScreen.extractRenderState(graphics, mouseX, mouseY, partialTicks);
@@ -410,7 +410,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   }
 
   @Override
-  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void extractContainerBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     this.drawBackground(graphics, TINKER_TEXTURE);
 
     int x = 0;
@@ -507,7 +507,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
       }
     }
 
-    super.renderBg(graphics, partialTicks, mouseX, mouseY);
+    super.extractContainerBackground(graphics, mouseX, mouseY, partialTicks);
 
     // docked selector draws here (under the slots, to the window's left); the centered overlay draws above slots in render()
     if (!this.selectorCollapsed()) {

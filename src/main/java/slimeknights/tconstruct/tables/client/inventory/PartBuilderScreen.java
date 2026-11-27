@@ -98,7 +98,7 @@ public class PartBuilderScreen extends BaseTabbedScreen<PartBuilderBlockEntity,P
   }
 
   @Override
-  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void extractContainerBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     this.drawBackground(graphics, BACKGROUND);
 
     // draw scrollbar
@@ -110,7 +110,7 @@ public class PartBuilderScreen extends BaseTabbedScreen<PartBuilderBlockEntity,P
     this.drawIconEmpty(graphics, this.getMenu().getInputSlot(), Icons.INGOT);
     this.drawRecipesItems(graphics, this.cornerX + PATTERN_LEFT, this.cornerY + PATTERN_TOP);
 
-    super.renderBg(graphics, partialTicks, mouseX, mouseY);
+    super.extractContainerBackground(graphics, mouseX, mouseY, partialTicks);
   }
 
   /**

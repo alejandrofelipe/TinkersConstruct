@@ -165,7 +165,7 @@ public class SideButtonsWidgetPaged<T extends Button> extends SideButtonsWidget<
         int endIndex = Math.min(startIndex + columns * MAX_ROWS, button_num);
         for (int i = startIndex; i < endIndex; i++) { //only render buttons in the current page
             T button = this.buttons.get(i);
-            button.render(graphics, mouseX, mouseY, partialTicks);
+            button.extractRenderState(graphics, mouseX, mouseY, partialTicks);
         }
     }
 }
