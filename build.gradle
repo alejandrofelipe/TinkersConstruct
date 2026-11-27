@@ -325,11 +325,13 @@ dependencies {
     // Gradle 9 no longer puts a JUnit Platform Launcher on the test runtime classpath itself;
     // without this, ':test' fails before running anything ("Failed to load JUnit Platform").
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
-    testImplementation 'org.mockito:mockito-core:5.11.0'
+    // 26.1.2 (Java 25): Mockito 5.20 brings Byte Buddy 1.17.7, the first with Java 25 class file support (static mocks in BaseMcTest)
+    testImplementation 'org.mockito:mockito-core:5.20.0'
     testImplementation 'org.assertj:assertj-core:3.25.3'
 }
 
-jacoco { toolVersion = '0.8.12' }
+// 26.1.2 (Java 25): JaCoCo 0.8.14 is the first release that officially supports Java 25 class files
+jacoco { toolVersion = '0.8.14' }
 
 test {
     useJUnitPlatform()
