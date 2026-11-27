@@ -1655,6 +1655,12 @@ public class TinkerUiTestScenarios {
     @Override
     public void cleanup(UiTestContext ctx) {
       ctx.mc().setScreen(null);
+      // close the menu on the server too: the client screen alone leaves the ToolContainerMenu open, which keeps the tool in the hotbar
+      ctx.runOnServer(() -> {
+        ServerPlayer player = ctx.serverLevel().getServer().getPlayerList().getPlayers().getFirst();
+        player.closeContainer();
+        player.getInventory().clearContent();
+      });
       ctx.clearInventory();
       // look ahead again: the following screen captures show the world behind them
       ctx.sendCommand("tp @s ~ ~ ~ 0 0");
@@ -1735,6 +1741,9 @@ public class TinkerUiTestScenarios {
       ctx.runOnServer(() -> {
         ServerPlayer player = ctx.serverLevel().getServer().getPlayerList().getPlayers().getFirst();
         player.getInventory().clearContent();
+        if (!player.getInventory().isEmpty()) {
+          throw new IllegalStateException("trimmed_armor: inventory not empty after clearing, a previous scenario leaked items into it");
+        }
         for (Trim trim : WORN) {
           player.setItemSlot(trim.type.getSlot(), trim.build());
         }
