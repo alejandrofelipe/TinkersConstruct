@@ -109,14 +109,19 @@ public class InteractionHandler {
 
   /**
    * Remembers the exact click location. NeoForge fires {@link EntityInteractSpecific} (with the location relative to the target)
-   * right before {@link EntityInteract} for the same click on both sides (when it is canceled, the plain one does not fire).
+   * right before {@link EntityInteract} for the same click on both sides. Nothing is kept when the plain event will not follow: the specific event
+   * is canceled (then the plain one does not fire) or the player is a spectator ({@code Player#interactOn} returns before the plain event).
    */
-  @SubscribeEvent(priority = EventPriority.LOWEST)
+  @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
   static void captureClickLocation(EntityInteractSpecific event) {
-    LAST_CLICK.set(new ClickLocation(event.getEntity().getId(), event.getTarget().getId(), event.getHand(), event.getLocalPos()));
+    if (event.isCanceled() || event.getEntity().isSpectator()) {
+      LAST_CLICK.remove();
+    } else {
+      LAST_CLICK.set(new ClickLocation(event.getEntity().getId(), event.getTarget().getId(), event.getHand(), event.getLocalPos()));
+    }
   }
 
-  /** Checks if a click location is captured on this thread (gametests: every entity interaction clears it) */
+  /** Checks if a click location is captured on this thread (gametests: an interaction that reaches the plain event clears it) */
   public static boolean hasCapturedClickLocation() {
     return LAST_CLICK.get() != null;
   }

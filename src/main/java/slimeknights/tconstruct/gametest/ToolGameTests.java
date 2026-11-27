@@ -605,6 +605,15 @@ public class ToolGameTests {
     canceled.setCanceled(true);
     NeoForge.EVENT_BUS.post(canceled);
     helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("click location left captured after a canceled interaction"));
+
+    // paths where the plain event never follows keep nothing: a canceled specific event, a spectator (interactOn returns before the plain event)
+    PlayerInteractEvent.EntityInteractSpecific canceledSpecific = new PlayerInteractEvent.EntityInteractSpecific(player, InteractionHand.MAIN_HAND, stand, location);
+    canceledSpecific.setCanceled(true);
+    NeoForge.EVENT_BUS.post(canceledSpecific);
+    helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("a canceled specific interaction captured the click location"));
+    Player spectator = helper.makeMockPlayer(GameType.SPECTATOR);
+    CommonHooks.onInteractEntityAt(spectator, stand, location, InteractionHand.MAIN_HAND);
+    helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("a spectator click captured the click location"));
     helper.succeed();
   }
 
