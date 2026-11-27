@@ -76,7 +76,7 @@ public class ShapedMaterialExtension implements ICraftingCategoryExtension<Shape
   private static ItemStack getResult(ShapedMaterialRecipe recipe) {
     for (RecipeDisplay display : recipe.display()) {
       if (display.result() instanceof SlotDisplay.ItemStackSlotDisplay stackDisplay) {
-        return stackDisplay.stack();
+        return stackDisplay.stack().create();
       }
     }
     return ItemStack.EMPTY;

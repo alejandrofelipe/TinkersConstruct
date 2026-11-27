@@ -6,7 +6,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.ItemLike;
 import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.shared.block.SlimeType;
@@ -39,7 +39,7 @@ public class SlimeParticle extends BreakingItemParticle {
     @Override
     public Particle createParticle(SimpleParticleType typeIn, ClientLevel worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
       // 1.21.9: particles take the item sprite instead of the item render state
-      return new SlimeParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, this.getSprite(new ItemStack(slime), worldIn, random));
+      return new SlimeParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, this.getSprite(new ItemStackTemplate(slime.asItem()), worldIn, random));
     }
   }
 }

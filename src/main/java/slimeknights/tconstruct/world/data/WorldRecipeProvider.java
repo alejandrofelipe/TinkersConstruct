@@ -8,6 +8,7 @@ import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CookingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
@@ -117,12 +118,12 @@ public class WorldRecipeProvider extends BaseRecipeProvider implements ICommonRe
                        .unlockedBy("has_item", has(geode.asItem()))
                        .group("tconstruct:slime_crystal_block")
                        .save(consumer, recipeKey(location(folder + "crystal_block")));
-    SimpleCookingRecipeBuilder.blasting(Ingredient.of(geode), RecipeCategory.MISC, TinkerCommons.slimeball.get(slime), 0.2f, 200)
+    SimpleCookingRecipeBuilder.blasting(Ingredient.of(geode), RecipeCategory.MISC, CookingBookCategory.MISC, TinkerCommons.slimeball.get(slime), 0.2f, 200)
                               .unlockedBy("has_crystal", has(geode))
                               .group("tconstruct:slime_crystal")
                               .save(consumer, recipeKey(location(folder + "crystal_smelting")));
     ItemLike dirt = TinkerWorld.slimeDirt.get(slime.asDirt());
-    SimpleCookingRecipeBuilder.blasting(Ingredient.of(dirt), RecipeCategory.MISC, geode, 0.2f, 400)
+    SimpleCookingRecipeBuilder.blasting(Ingredient.of(dirt), RecipeCategory.MISC, CookingBookCategory.MISC, geode, 0.2f, 400)
                               .unlockedBy("has_dirt", has(dirt))
                               .group("tconstruct:slime_dirt")
                               .save(consumer, recipeKey(location(folder + "crystal_growing")));

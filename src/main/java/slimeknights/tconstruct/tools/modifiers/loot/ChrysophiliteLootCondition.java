@@ -6,8 +6,6 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
-import slimeknights.tconstruct.tools.TinkerModifiers;
 import slimeknights.tconstruct.tools.modifiers.traits.skull.ChrysophiliteModifier;
 
 import java.util.Set;
@@ -31,7 +29,7 @@ public class ChrysophiliteLootCondition implements LootItemCondition {
   }
 
   @Override
-  public LootItemConditionType getType() {
-    return TinkerModifiers.chrysophiliteLootCondition.get();
+  public MapCodec<ChrysophiliteLootCondition> codec() {
+    return CODEC;
   }
 }

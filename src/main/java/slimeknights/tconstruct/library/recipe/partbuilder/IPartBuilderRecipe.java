@@ -68,7 +68,7 @@ public interface IPartBuilderRecipe extends ICommonRecipe<IPartBuilderContainer>
 
   /** Assembles the result with the given pattern */
   default ItemStack assemble(IPartBuilderContainer inv, HolderLookup.Provider access, Pattern pattern) {
-    return assemble(inv, access);
+    return assemble(inv);
   }
 
   /* Recipe data */

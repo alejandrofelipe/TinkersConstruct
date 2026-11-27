@@ -116,11 +116,11 @@ public class ToolCastingRecipe extends PartSwapCastingRecipe implements IMultiRe
   }
 
   @Override
-  public ItemStack assemble(ICastingContainer inv, HolderLookup.Provider access) {
+  public ItemStack assemble(ICastingContainer inv) {
     // if the cast is the result, we are part swapping, replace the last material
     ItemStack cast = inv.getStack();
     if (cast.getItem() == result) {
-      return super.assemble(inv, access);
+      return super.assemble(inv);
     } else {
       // figure out how to apply our materials
       MaterialVariant fluidMaterial = getFluidRecipe(inv).getOutput();

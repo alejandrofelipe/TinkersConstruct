@@ -2,6 +2,7 @@ package slimeknights.tconstruct.library.recipe.partbuilder;
 
 import lombok.Getter;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -110,8 +111,8 @@ public class ItemPartRecipe implements IDisplayPartBuilderRecipe {
   }
 
   @Override
-  public ItemStack assemble(IPartBuilderContainer inv, HolderLookup.Provider access) {
-    ItemStack result = getResultItem(access).copy();
+  public ItemStack assemble(IPartBuilderContainer inv) {
+    ItemStack result = getResultItem(RegistryAccess.EMPTY).copy();
     IMaterialValue materialRecipe = inv.getMaterial();
     if (materialRecipe != null) {
       // if no leftover, give them more parts provided we have the patterns for it

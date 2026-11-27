@@ -9,12 +9,10 @@ import lombok.AllArgsConstructor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.neoforged.neoforge.common.ModConfigSpec.BooleanValue;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.config.Config;
-import slimeknights.tconstruct.shared.TinkerCommons;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -54,11 +52,6 @@ public class ConfigEnabledCondition implements ICondition, LootItemCondition {
   }
 
   @Override
-  public MapCodec<? extends ICondition> codec() {
-    return CODEC;
-  }
-
-  @Override
   public boolean test(IContext context) {
     return supplier.getAsBoolean();
   }
@@ -69,8 +62,8 @@ public class ConfigEnabledCondition implements ICondition, LootItemCondition {
   }
 
   @Override
-  public LootItemConditionType getType() {
-    return TinkerCommons.lootConfig.get();
+  public MapCodec<ConfigEnabledCondition> codec() {
+    return CODEC;
   }
 
   /**

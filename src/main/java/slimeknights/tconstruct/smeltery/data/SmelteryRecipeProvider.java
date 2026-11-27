@@ -3,6 +3,8 @@ package slimeknights.tconstruct.smeltery.data;
 import slimeknights.tconstruct.library.recipe.ingredient.LazyTagIngredient;
 
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -11,6 +13,7 @@ import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.data.recipes.SingleItemRecipeBuilder;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
@@ -19,10 +22,14 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.crafting.CookingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
@@ -39,7 +46,6 @@ import net.neoforged.neoforge.common.conditions.ModLoadedCondition;
 import net.neoforged.neoforge.common.conditions.NotCondition;
 import net.neoforged.neoforge.common.conditions.OrCondition;
 import net.neoforged.neoforge.common.conditions.RegisteredCondition;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import slimeknights.mantle.datagen.MantleTags;
 import slimeknights.mantle.recipe.condition.TagFilledCondition;
@@ -48,6 +54,7 @@ import slimeknights.mantle.recipe.data.ConsumerWrapperBuilder;
 import slimeknights.mantle.recipe.data.ICommonRecipeHelper;
 import slimeknights.mantle.recipe.data.ItemNameIngredient;
 import slimeknights.mantle.recipe.data.ItemNameOutput;
+import slimeknights.mantle.recipe.helper.FluidOutput;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.mantle.recipe.ingredient.EntityIngredient;
 import slimeknights.mantle.recipe.ingredient.FluidIngredient;
@@ -67,6 +74,7 @@ import slimeknights.tconstruct.library.data.recipe.SmelteryRecipeBuilder;
 import slimeknights.tconstruct.library.data.recipe.SmelteryRecipeBuilder.CommonRecipe;
 import slimeknights.tconstruct.library.data.recipe.SmelteryRecipeBuilder.MetalMelting;
 import slimeknights.tconstruct.library.data.recipe.SmelteryRecipeBuilder.ToolItemMelting;
+import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.recipe.alloying.AlloyRecipeBuilder;
 import slimeknights.tconstruct.library.recipe.casting.ItemCastingRecipeBuilder;
@@ -81,6 +89,7 @@ import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer.OreRateT
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeBuilder;
 import slimeknights.tconstruct.library.recipe.molding.MoldingRecipeBuilder;
+import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 import slimeknights.tconstruct.shared.TinkerCommons;
 import slimeknights.tconstruct.shared.TinkerMaterials;
 import slimeknights.tconstruct.shared.block.SlimeType;
@@ -190,15 +199,15 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
                           .save(consumer, recipeKey(wrap(TinkerSmeltery.grout, folder, "_multiple")));
 
     // seared bricks from grout
-    SimpleCookingRecipeBuilder.smelting(Ingredient.of(TinkerSmeltery.grout), RecipeCategory.BUILDING_BLOCKS, TinkerSmeltery.searedBrick, 0.3f, 200)
+    SimpleCookingRecipeBuilder.smelting(Ingredient.of(TinkerSmeltery.grout), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.MISC, TinkerSmeltery.searedBrick, 0.3f, 200)
                         .unlockedBy("has_item", has(TinkerSmeltery.grout))
                         .save(consumer, recipeKey(prefix(TinkerSmeltery.searedBrick, folder)));
     // fast grout: use the ceramics kiln if loaded, otherwise a vanilla blast furnace
     Identifier kilnId = wrap(TinkerSmeltery.searedBrick, folder, "_kiln");
-    SimpleCookingRecipeBuilder.blasting(Ingredient.of(TinkerSmeltery.grout), RecipeCategory.BUILDING_BLOCKS, TinkerSmeltery.searedBrick, 0.3f, 100)
+    SimpleCookingRecipeBuilder.blasting(Ingredient.of(TinkerSmeltery.grout), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.MISC, TinkerSmeltery.searedBrick, 0.3f, 100)
                         .unlockedBy("has_item", has(TinkerSmeltery.grout))
                         .save(withCondition(ConsumerWrapperBuilder.wrap(Identifier.fromNamespaceAndPath("ceramics", "kiln")).build(consumer), new ModLoadedCondition("ceramics")), recipeKey(kilnId));
-    SimpleCookingRecipeBuilder.blasting(Ingredient.of(TinkerSmeltery.grout), RecipeCategory.BUILDING_BLOCKS, TinkerSmeltery.searedBrick, 0.3f, 100)
+    SimpleCookingRecipeBuilder.blasting(Ingredient.of(TinkerSmeltery.grout), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.MISC, TinkerSmeltery.searedBrick, 0.3f, 100)
                         .unlockedBy("has_item", has(TinkerSmeltery.grout))
                         .save(withCondition(consumer, new NotCondition(new ModLoadedCondition("ceramics"))), recipeKey(kilnId.withSuffix("_blasting")));
 
@@ -221,11 +230,11 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
                        .save(consumer, recipeKey(prefix(TinkerSmeltery.searedLadder, folder)));
 
     // cobble -> stone
-    SimpleCookingRecipeBuilder.smelting(Ingredient.of(TinkerSmeltery.searedCobble.get()), RecipeCategory.BUILDING_BLOCKS, TinkerSmeltery.searedStone, 0.1f, 200)
+    SimpleCookingRecipeBuilder.smelting(Ingredient.of(TinkerSmeltery.searedCobble.get()), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.BLOCKS, TinkerSmeltery.searedStone, 0.1f, 200)
                         .unlockedBy("has_item", has(TinkerSmeltery.searedCobble.get()))
                         .save(consumer, recipeKey(wrap(TinkerSmeltery.searedStone, folder, "_smelting")));
     // stone -> paver
-    SimpleCookingRecipeBuilder.smelting(Ingredient.of(TinkerSmeltery.searedStone.get()), RecipeCategory.BUILDING_BLOCKS, TinkerSmeltery.searedPaver, 0.1f, 200)
+    SimpleCookingRecipeBuilder.smelting(Ingredient.of(TinkerSmeltery.searedStone.get()), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.BLOCKS, TinkerSmeltery.searedPaver, 0.1f, 200)
                         .unlockedBy("has_item", has(TinkerSmeltery.searedStone.get()))
                         .save(consumer, recipeKey(wrap(TinkerSmeltery.searedPaver, folder, "_smelting")));
     // stone -> bricks
@@ -236,7 +245,7 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
                        .unlockedBy("has_item", has(TinkerSmeltery.searedStone))
                        .save(consumer, recipeKey(wrap(TinkerSmeltery.searedBricks, folder, "_crafting")));
     // bricks -> cracked
-    SimpleCookingRecipeBuilder.smelting(Ingredient.of(TinkerSmeltery.searedBricks), RecipeCategory.BUILDING_BLOCKS, TinkerSmeltery.searedCrackedBricks, 0.1f, 200)
+    SimpleCookingRecipeBuilder.smelting(Ingredient.of(TinkerSmeltery.searedBricks), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.BLOCKS, TinkerSmeltery.searedCrackedBricks, 0.1f, 200)
                         .unlockedBy("has_item", has(TinkerSmeltery.searedBricks))
                         .save(consumer, recipeKey(wrap(TinkerSmeltery.searedCrackedBricks, folder, "_smelting")));
     // brick slabs -> fancy
@@ -639,15 +648,15 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
                           .save(consumer, recipeKey(wrap(TinkerSmeltery.netherGrout, folder, "_multiple")));
 
     // scorched bricks from grout
-    SimpleCookingRecipeBuilder.smelting(Ingredient.of(TinkerSmeltery.netherGrout), RecipeCategory.BUILDING_BLOCKS, TinkerSmeltery.scorchedBrick, 0.3f, 200)
+    SimpleCookingRecipeBuilder.smelting(Ingredient.of(TinkerSmeltery.netherGrout), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.MISC, TinkerSmeltery.scorchedBrick, 0.3f, 200)
                               .unlockedBy("has_item", has(TinkerSmeltery.netherGrout))
                               .save(consumer, recipeKey(prefix(TinkerSmeltery.scorchedBrick, folder)));
     // fast grout: use the ceramics kiln if loaded, otherwise a vanilla blast furnace
     Identifier scorchedKilnId = wrap(TinkerSmeltery.scorchedBrick, folder, "_kiln");
-    SimpleCookingRecipeBuilder.blasting(Ingredient.of(TinkerSmeltery.netherGrout), RecipeCategory.BUILDING_BLOCKS, TinkerSmeltery.scorchedBrick, 0.3f, 100)
+    SimpleCookingRecipeBuilder.blasting(Ingredient.of(TinkerSmeltery.netherGrout), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.MISC, TinkerSmeltery.scorchedBrick, 0.3f, 100)
                               .unlockedBy("has_item", has(TinkerSmeltery.netherGrout))
                               .save(withCondition(ConsumerWrapperBuilder.wrap(Identifier.fromNamespaceAndPath("ceramics", "kiln")).build(consumer), new ModLoadedCondition("ceramics")), recipeKey(scorchedKilnId));
-    SimpleCookingRecipeBuilder.blasting(Ingredient.of(TinkerSmeltery.netherGrout), RecipeCategory.BUILDING_BLOCKS, TinkerSmeltery.scorchedBrick, 0.3f, 100)
+    SimpleCookingRecipeBuilder.blasting(Ingredient.of(TinkerSmeltery.netherGrout), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.MISC, TinkerSmeltery.scorchedBrick, 0.3f, 100)
                               .unlockedBy("has_item", has(TinkerSmeltery.netherGrout))
                               .save(withCondition(consumer, new NotCondition(new ModLoadedCondition("ceramics"))), recipeKey(scorchedKilnId.withSuffix("_blasting")));
 
@@ -683,7 +692,7 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
                        .unlockedBy("has_item", has(TinkerSmeltery.polishedScorchedStone))
                        .save(consumer, recipeKey(wrap(TinkerSmeltery.scorchedBricks, folder, "_crafting")));
     // stone -> road
-    SimpleCookingRecipeBuilder.smelting(Ingredient.of(TinkerSmeltery.scorchedStone), RecipeCategory.BUILDING_BLOCKS, TinkerSmeltery.scorchedRoad, 0.1f, 200)
+    SimpleCookingRecipeBuilder.smelting(Ingredient.of(TinkerSmeltery.scorchedStone), RecipeCategory.BUILDING_BLOCKS, CookingBookCategory.BLOCKS, TinkerSmeltery.scorchedRoad, 0.1f, 200)
                         .unlockedBy("has_item", has(TinkerSmeltery.scorchedStone))
                         .save(consumer, recipeKey(wrap(TinkerSmeltery.scorchedRoad, folder, "_smelting")));
     // brick slabs -> chiseled
@@ -1187,25 +1196,25 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
     this.ingotCasting(consumer, TinkerFluids.moltenDebris, Items.NETHERITE_SCRAP, metalFolder + "netherite/scrap");
     this.tagCasting(consumer, TinkerFluids.moltenDebris, FluidValues.NUGGET, TinkerSmeltery.nuggetCast, TinkerTags.Items.NUGGETS_NETHERITE_SCRAP.location().getPath(), metalFolder + "netherite/debris_nugget", false);
     // ancient is not castable, outside of repair kits
-    this.castingWithCast(consumer, TinkerFluids.moltenDebris, FluidValues.INGOT * 2, TinkerSmeltery.repairKitCast, ItemOutput.fromStack(TinkerToolParts.repairKit.get().withMaterialForDisplay(MaterialIds.ancient)), metalFolder + "netherite/ancient_repair_kit");
+    this.castingWithCast(consumer, TinkerFluids.moltenDebris, FluidValues.INGOT * 2, TinkerSmeltery.repairKitCast, materialItem(TinkerToolParts.repairKit.get(), MaterialIds.ancient), metalFolder + "netherite/ancient_repair_kit");
 
     // water
     String waterFolder = folder + "water/";
     ItemCastingRecipeBuilder.basinRecipe(Blocks.MUD)
-                            .setFluidAndTime(new FluidStack(Fluids.WATER, FluidValues.BOTTLE))
+                            .setFluidAndTime(Fluids.WATER, FluidValues.BOTTLE)
                             .setCast(new BlockTagIngredient(BlockTags.CONVERTABLE_TO_MUD).toVanilla(), true)
                             .save(consumer, location(waterFolder + "mud"));
-    ItemCastingRecipeBuilder.tableRecipe(ItemOutput.fromStack(PotionContents.createItemStack(Items.POTION, Potions.WATER)))
+    ItemCastingRecipeBuilder.tableRecipe(waterBottle(Items.POTION))
                             .setFluid(MantleTags.Fluids.WATER, FluidValues.BOTTLE * 2)
                             .setCoolingTime(1)
                             .setCast(Items.GLASS_BOTTLE, true)
                             .save(consumer, location(waterFolder + "bottle"));
-    ItemCastingRecipeBuilder.tableRecipe(ItemOutput.fromStack(PotionContents.createItemStack(Items.SPLASH_POTION, Potions.WATER)))
+    ItemCastingRecipeBuilder.tableRecipe(waterBottle(Items.SPLASH_POTION))
                             .setFluid(MantleTags.Fluids.WATER, FluidValues.BOTTLE * 2)
                             .setCoolingTime(1)
                             .setCast(TinkerTags.Items.SPLASH_BOTTLE, true)
                             .save(consumer, location(waterFolder + "splash"));
-    ItemCastingRecipeBuilder.tableRecipe(ItemOutput.fromStack(PotionContents.createItemStack(Items.LINGERING_POTION, Potions.WATER)))
+    ItemCastingRecipeBuilder.tableRecipe(waterBottle(Items.LINGERING_POTION))
                             .setFluid(MantleTags.Fluids.WATER, FluidValues.BOTTLE * 2)
                             .setCoolingTime(1)
                             .setCast(TinkerTags.Items.LINGERING_BOTTLE, true)
@@ -1219,7 +1228,7 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
     // casting concrete
     BiConsumer<Block,Block> concreteCasting = (powder, block) ->
       ItemCastingRecipeBuilder.basinRecipe(block)
-                              .setFluidAndTime(new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME / 10))
+                              .setFluidAndTime(Fluids.WATER, FluidType.BUCKET_VOLUME / 10)
                               .setCast(powder, true)
                               .save(consumer, prefix(id(block), waterFolder));
     concreteCasting.accept(Blocks.WHITE_CONCRETE_POWDER,      Blocks.WHITE_CONCRETE);
@@ -1856,9 +1865,9 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
     // fuels
     MeltingFuelBuilder.solid(800)
                       .save(consumer, location(folder + "fuel/solid"));
-    MeltingFuelBuilder.fuel(new FluidStack(Fluids.LAVA, 50), 100)
+    MeltingFuelBuilder.fuel(FluidIngredient.of(Fluids.LAVA, 50), 100, IMeltingRecipe.getTemperature(Fluids.LAVA))
                       .save(consumer, location(folder + "fuel/lava"));
-    MeltingFuelBuilder.fuel(new FluidStack(TinkerFluids.blazingBlood.get(), 50), 150)
+    MeltingFuelBuilder.fuel(FluidIngredient.of(TinkerFluids.blazingBlood.get(), 50), 150, IMeltingRecipe.getTemperature(TinkerFluids.blazingBlood.get()))
                       .save(consumer, location(folder + "fuel/blaze"));
   }
 
@@ -2156,7 +2165,7 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
 
     // melt skeletons to get the milk out
     EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityIngredient.of(EntityTypeTags.SKELETONS), EntityIngredient.of(EntityType.SKELETON_HORSE)),
-                                       new FluidStack(NeoForgeMod.MILK.value(), FluidType.BUCKET_VOLUME / 10))
+                                       FluidOutput.fromFluid(NeoForgeMod.MILK.value(), FluidType.BUCKET_VOLUME / 10))
                               .save(consumer, location(folder + "skeletons"));
     MeltingRecipeBuilder.melting(Ingredient.of(Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, TinkerWorld.heads.get(TinkerHeadType.STRAY)), NeoForgeMod.MILK.value(), FluidType.BUCKET_VOLUME / 4)
                         .save(consumer, location(headFolder + "skeleton"));
@@ -2179,7 +2188,7 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
     // 4 * 9 gives 36, which is larger
     EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.IRON_GOLEM), TinkerFluids.moltenIron.result(FluidValues.NUGGET), 4)
                               .save(consumer, location(folder + "iron_golem"));
-    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.SNOW_GOLEM), new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME / 10))
+    EntityMeltingRecipeBuilder.melting(EntityIngredient.of(EntityType.SNOW_GOLEM), FluidOutput.fromFluid(Fluids.WATER, FluidType.BUCKET_VOLUME / 10))
                               .save(consumer, location(folder + "snow_golem"));
 
     // "melt" blazes to get fuel
@@ -2442,12 +2451,12 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
 
     // lava bricks, lava byproduct
     MeltingRecipeBuilder.melting(ceramicsItem.apply("lava_bricks_slab"), TinkerFluids.moltenClay, FluidValues.BRICK * 2, 1.33f)
-      .addByproduct(new FluidStack(Fluids.LAVA, lavaPerBlock / 2))
+      .addByproduct(FluidOutput.fromFluid(Fluids.LAVA, lavaPerBlock / 2))
       .save(ceramicsConsumer, location(clayFolder + "lava_bricks_slab"));
     MeltingRecipeBuilder.melting(ItemNameIngredient.from(
       ceramicsId.apply("lava_bricks"), ceramicsId.apply("lava_bricks_stairs"), ceramicsId.apply("lava_bricks_wall")
     ).toVanilla(), TinkerFluids.moltenClay, FluidValues.BRICK_BLOCK, 2f)
-      .addByproduct(new FluidStack(Fluids.LAVA, lavaPerBlock))
+      .addByproduct(FluidOutput.fromFluid(Fluids.LAVA, lavaPerBlock))
       .save(ceramicsConsumer, location(clayFolder + "lava_bricks_block"));
 
     // gauge, partially glass
@@ -2531,19 +2540,19 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
     // lava bricks
     ItemCastingRecipeBuilder.basinRecipe(ceramicsOutput.apply("lava_bricks"))
       .setCast(Blocks.BRICKS, true)
-      .setFluidAndTime(new FluidStack(Fluids.LAVA, lavaPerBlock))
+      .setFluidAndTime(Fluids.LAVA, lavaPerBlock)
       .save(ceramicsConsumer, location(castingFolder + "lava_bricks"));
     ItemCastingRecipeBuilder.basinRecipe(ceramicsOutput.apply("lava_bricks_slab"))
       .setCast(Blocks.BRICK_SLAB, true)
-      .setFluidAndTime(new FluidStack(Fluids.LAVA, lavaPerBlock / 2))
+      .setFluidAndTime(Fluids.LAVA, lavaPerBlock / 2)
       .save(ceramicsConsumer, location(castingFolder + "lava_bricks_slab"));
     ItemCastingRecipeBuilder.basinRecipe(ceramicsOutput.apply("lava_bricks_stairs"))
       .setCast(Blocks.BRICK_STAIRS, true)
-      .setFluidAndTime(new FluidStack(Fluids.LAVA, lavaPerBlock))
+      .setFluidAndTime(Fluids.LAVA, lavaPerBlock)
       .save(ceramicsConsumer, location(castingFolder + "lava_bricks_stairs"));
     ItemCastingRecipeBuilder.basinRecipe(ceramicsOutput.apply("lava_bricks_wall"))
       .setCast(Blocks.BRICK_WALL, true)
-      .setFluidAndTime(new FluidStack(Fluids.LAVA, lavaPerBlock))
+      .setFluidAndTime(Fluids.LAVA, lavaPerBlock)
       .save(ceramicsConsumer, location(castingFolder + "lava_bricks_wall"));
 
     // golden bricks
@@ -2748,5 +2757,19 @@ public class SmelteryRecipeProvider extends BaseRecipeProvider implements ISmelt
                           .setOre(OreRateType.GEM)
                           .save(consumer, location(folder + "bud_" + bud.getName()));
     }
+  }
+
+  /* 26.1 template helpers: datagen has no bound item components, so outputs are built from templates */
+
+  /** Creates an output for a water bottle of the given potion item, as {@link PotionContents#createItemStack} would */
+  private static ItemOutput waterBottle(Item item) {
+    return ItemOutput.fromTemplate(new ItemStackTemplate(item, 1, DataComponentPatch.builder().set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER)).build()));
+  }
+
+  /** Creates an output for a material item with the given material, as {@link IMaterialItem#withMaterialForDisplay} would */
+  private static ItemOutput materialItem(Item item, MaterialVariantId material) {
+    CompoundTag tag = new CompoundTag();
+    tag.putString(IMaterialItem.MATERIAL_TAG, material.toString());
+    return ItemOutput.fromTemplate(new ItemStackTemplate(item, 1, DataComponentPatch.builder().set(DataComponents.CUSTOM_DATA, CustomData.of(tag)).build()));
   }
 }

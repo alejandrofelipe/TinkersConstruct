@@ -15,11 +15,9 @@ import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount.FormulaT
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount.OreDrops;
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount.UniformBonusCount;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import slimeknights.tconstruct.tools.TinkerModifiers;
 import slimeknights.tconstruct.tools.modifiers.traits.skull.ChrysophiliteModifier;
 
 import java.util.List;
@@ -101,7 +99,7 @@ public class ChrysophiliteBonusFunction extends LootItemConditionalFunction {
   }
 
   @Override
-  public LootItemFunctionType<ChrysophiliteBonusFunction> getType() {
-    return TinkerModifiers.chrysophiliteBonusFunction.get();
+  public MapCodec<ChrysophiliteBonusFunction> codec() {
+    return CODEC;
   }
 }

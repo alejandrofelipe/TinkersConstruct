@@ -72,7 +72,8 @@ import java.util.stream.Collectors;
 
 public class BlockLootTableProvider extends BlockLootSubProvider {
   /** 1.21.9: {@code ContextNbtProvider.BLOCK_ENTITY} was removed and the block entity source has no public factory, so decode it like a loot table would */
-  private static final NbtProvider BLOCK_ENTITY_NBT = ContextNbtProvider.INLINE_CODEC.parse(JsonOps.INSTANCE, new JsonPrimitive(LootContext.BlockEntityTarget.BLOCK_ENTITY.getSerializedName())).getOrThrow();
+  /** 26.1: an instance field, nothing decodes in static init (NoStacksInStaticInitTest) */
+  private final NbtProvider BLOCK_ENTITY_NBT = ContextNbtProvider.INLINE_CODEC.parse(JsonOps.INSTANCE, new JsonPrimitive(LootContext.BlockEntityTarget.BLOCK_ENTITY.getSerializedName())).getOrThrow();
   protected BlockLootTableProvider(HolderLookup.Provider registries) {
     super(Set.of(), FeatureFlags.REGISTRY.allFlags(), registries);
   }

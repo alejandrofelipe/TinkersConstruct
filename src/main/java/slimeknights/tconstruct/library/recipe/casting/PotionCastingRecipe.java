@@ -86,7 +86,7 @@ public class PotionCastingRecipe implements ICastingRecipe, IMultiRecipe<Display
   @Override
   @SuppressWarnings("unchecked")
   public RecipeSerializer<? extends Recipe<ICastingContainer>> getSerializer() {
-    return (RecipeSerializer<? extends Recipe<ICastingContainer>>) serializer;
+    return (RecipeSerializer<? extends Recipe<ICastingContainer>>) serializer.serializer();
   }
 
   @Override
@@ -115,7 +115,7 @@ public class PotionCastingRecipe implements ICastingRecipe, IMultiRecipe<Display
   }
 
   @Override
-  public ItemStack assemble(ICastingContainer inv, HolderLookup.Provider access) {
+  public ItemStack assemble(ICastingContainer inv) {
     ItemStack result = new ItemStack(this.result);
     // copy the potion contents from the fluid onto the result item
     result.applyComponents(inv.getFluidComponents());
@@ -132,7 +132,7 @@ public class PotionCastingRecipe implements ICastingRecipe, IMultiRecipe<Display
    */
   @Nullable
   protected static PotionContents getPotionContents(DataComponentPatch components) {
-    var optional = components.get(DataComponents.POTION_CONTENTS);
+    var optional = components.getPatch(DataComponents.POTION_CONTENTS);
     if (optional != null && optional.isPresent()) {
       return optional.get();
     }

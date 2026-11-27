@@ -9,6 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.Consumable;
@@ -24,6 +25,7 @@ import slimeknights.tconstruct.fluids.util.ConstantFluidContainerWrapper;
 
 import org.jspecify.annotations.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -76,7 +78,7 @@ public class ContainerFoodItem extends Item {
 
   @Override
   public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity living) {
-    ItemStack container = stack.getCraftingRemainder();
+    ItemStack container = Optional.ofNullable(stack.getCraftingRemainder()).map(ItemStackTemplate::create).orElse(ItemStack.EMPTY);
     ItemStack result = super.finishUsingItem(stack, level, living);
     Player player = living instanceof Player p ? p : null;
     if (player == null || !player.getAbilities().instabuild) {

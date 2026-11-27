@@ -55,12 +55,9 @@ class NoStacksInStaticInitTest {
    * making each one lazy and then deleting its entry. An entry that no longer creates stacks fails the test, so the list
    * can only shrink.
    */
-  private static final Map<String, String> KNOWN = Map.of(
-    "slimeknights.mantle.client.book.data.content.ContentSmelting", "FUELS: the smelting book page's 28 fuel stacks",
-    "slimeknights.tconstruct.gametest.FluidEffectGameTests", "LAVA fluid stack; gametest classes are initialized when the tests register, before any datapack load",
-    "slimeknights.tconstruct.gametest.SmelteryTransferGameTests", "GOLD/COPPER/WATER fluid resources, same registration timing",
-    "slimeknights.tconstruct.common.data.loot.BlockLootTableProvider", "BLOCK_ENTITY_NBT decodes an NbtProvider (no stack) in a datagen provider; make it lazy with the D-DATAGEN pass"
-  );
+  // emptied in M7 Phase 2B: ContentSmelting FUELS lazy (Mantle 1b), FluidEffectGameTests LAVA and
+  // SmelteryTransferGameTests GOLD/COPPER/WATER built per test, BlockLootTableProvider BLOCK_ENTITY_NBT an instance field
+  private static final Map<String, String> KNOWN = Map.of();
 
   @Test
   void noStackCreationInStaticInit() throws IOException, URISyntaxException {

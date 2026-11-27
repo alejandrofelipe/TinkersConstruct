@@ -8,6 +8,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
@@ -25,6 +26,7 @@ import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.tools.TinkerModifiers;
 
 import org.jspecify.annotations.Nullable;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 /** Recipe for applying overslime in the crafting table */
@@ -43,7 +45,6 @@ public class OverslimeCraftingTableRecipe extends CustomRecipe {
   private final int restoreAmount;
 
   public OverslimeCraftingTableRecipe(Identifier id, Ingredient tools, Ingredient ingredient, int restoreAmount) {
-    super(CraftingBookCategory.EQUIPMENT);
     this.id = id;
     this.tools = tools;
     this.ingredient = ingredient;
@@ -104,7 +105,7 @@ public class OverslimeCraftingTableRecipe extends CustomRecipe {
   }
 
   @Override
-  public ItemStack assemble(CraftingInput inv, HolderLookup.Provider registryAccess) {
+  public ItemStack assemble(CraftingInput inv) {
     ToolFound match = findTool(inv, tools, ingredient);
     if (match == null) {
       TConstruct.LOG.error("Overslime crafting table recipe {} failed to find tool after matching", id);
@@ -128,7 +129,7 @@ public class OverslimeCraftingTableRecipe extends CustomRecipe {
         }
         repairNeeded -= repairPerItem;
       }
-      ItemStack remainder = stack.getItem().getCraftingRemainder();
+      ItemStack remainder = Optional.ofNullable(stack.getItem().getCraftingRemainder()).map(ItemStackTemplate::create).orElse(ItemStack.EMPTY);
       if (!remainder.isEmpty()) {
         list.set(i, remainder);
       }
@@ -155,5 +156,11 @@ public class OverslimeCraftingTableRecipe extends CustomRecipe {
   @Override
   public RecipeSerializer<? extends CustomRecipe> getSerializer() {
     return TinkerModifiers.craftingOverslimeSerializer.get();
+  }
+
+  /** 26.1: {@link CustomRecipe} lost its category constructor */
+  @Override
+  public CraftingBookCategory category() {
+    return CraftingBookCategory.EQUIPMENT;
   }
 }

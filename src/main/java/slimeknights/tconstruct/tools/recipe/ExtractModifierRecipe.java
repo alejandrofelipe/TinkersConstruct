@@ -3,6 +3,7 @@ package slimeknights.tconstruct.tools.recipe;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import slimeknights.mantle.data.loadable.field.ContextKey;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
@@ -30,7 +31,7 @@ public class ExtractModifierRecipe extends ModifierRemovalRecipe {
   /** Recipe loadable */
   public static final RecordLoadable<ExtractModifierRecipe> LOADER = RecordLoadable.create(ContextKey.ID.nullableField(), NAME_FIELD, TOOLS_FIELD, INPUTS_FIELD, LEFTOVERS_FIELD, MODIFIER_PREDICATE_FIELD, ExtractModifierRecipe::new);
 
-  public ExtractModifierRecipe(Identifier id, String name, SizedIngredient toolRequirements, List<SizedIngredient> inputs, List<ItemStack> leftovers, IJsonPredicate<ModifierId> modifierPredicate) {
+  public ExtractModifierRecipe(Identifier id, String name, SizedIngredient toolRequirements, List<SizedIngredient> inputs, List<ItemStackTemplate> leftovers, IJsonPredicate<ModifierId> modifierPredicate) {
     super(id, name, toolRequirements, inputs, leftovers, modifierPredicate);
   }
 

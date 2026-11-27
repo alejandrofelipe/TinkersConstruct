@@ -1,8 +1,10 @@
 package slimeknights.tconstruct.smeltery.block.entity.module;
 
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.transfer.EmptyResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
@@ -64,7 +66,7 @@ public class SolidFuelModule extends FuelModule {
         if (consume) {
           // extract the item and put back its container in one transaction, anything that does not fit back is dropped
           boolean extracted = false;
-          ItemStack container = resource.getItem().getCraftingRemainder();
+          ItemStack container = Optional.ofNullable(resource.getItem().getCraftingRemainder()).map(ItemStackTemplate::create).orElse(ItemStack.EMPTY);
           int notInserted = 0;
           try (Transaction tx = Transaction.openRoot()) {
             if (handler.extract(i, resource, 1, tx) == 1) {
@@ -84,9 +86,9 @@ public class SolidFuelModule extends FuelModule {
             // if we cannot insert the container back, spit it on the ground
             if (notInserted > 0) {
               Level world = getLevel();
-              double x = (world.random.nextFloat() * 0.5F) + 0.25D;
-              double y = (world.random.nextFloat() * 0.5F) + 0.25D;
-              double z = (world.random.nextFloat() * 0.5F) + 0.25D;
+              double x = (world.getRandom().nextFloat() * 0.5F) + 0.25D;
+              double y = (world.getRandom().nextFloat() * 0.5F) + 0.25D;
+              double z = (world.getRandom().nextFloat() * 0.5F) + 0.25D;
               ItemEntity itementity = new ItemEntity(world, fuelPos.getX() + x, fuelPos.getY() + y, fuelPos.getZ() + z, container.copyWithCount(notInserted));
               itementity.setDefaultPickUpDelay();
               world.addFreshEntity(itementity);

@@ -7,6 +7,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.EventHooks;
 import slimeknights.tconstruct.library.transfer.TransferUtil;
@@ -30,6 +31,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class PartBuilderBlockEntity extends RetexturedTableBlockEntity implements ILazyCrafter {
@@ -263,7 +265,7 @@ public class PartBuilderBlockEntity extends RetexturedTableBlockEntity implement
     }
     ItemStack stack = getItem(slot);
     if (!stack.isEmpty()) {
-      ItemStack container = stack.getCraftingRemainder().copy();
+      ItemStack container = Optional.ofNullable(stack.getCraftingRemainder()).map(ItemStackTemplate::create).orElse(ItemStack.EMPTY);
       if (amount > 1) {
         container.setCount(container.getCount() * amount);
       }

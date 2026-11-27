@@ -145,10 +145,10 @@ public class ContentTool extends PageContent {
   /** PORT 1.21.4: Recipe#getResultItem was removed; read the result from the shaped/shapeless result field (AT-widened). */
   private static ItemStack craftingResult(CraftingRecipe recipe) {
     if (recipe instanceof ShapedRecipe shaped) {
-      return shaped.result;
+      return shaped.result.create();
     }
     if (recipe instanceof ShapelessRecipe shapeless) {
-      return shapeless.result;
+      return shapeless.result.create();
     }
     return ItemStack.EMPTY;
   }

@@ -7,8 +7,6 @@ import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
-import slimeknights.tconstruct.shared.TinkerCommons;
 
 /**
  * Loot condition that only runs if all required values in the given loot context set are present. Good heuristic for using that set.
@@ -26,8 +24,8 @@ public record HasLootContextSetCondition(ContextKeySet set) implements LootItemC
   }
 
   @Override
-  public LootItemConditionType getType() {
-    return TinkerCommons.hasLootContextSet.get();
+  public MapCodec<HasLootContextSetCondition> codec() {
+    return CODEC;
   }
 
   @Override

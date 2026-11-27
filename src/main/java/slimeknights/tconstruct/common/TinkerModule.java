@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.common;
 
+import com.google.common.base.Suppliers;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.HolderSet.Named;
 import net.minecraft.core.Registry;
@@ -14,6 +15,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTab.TabVisibility;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
@@ -22,15 +24,16 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import slimeknights.mantle.item.BlockTooltipItem;
 import slimeknights.mantle.item.RetexturedBlockItem;
 import slimeknights.mantle.item.TooltipItem;
+import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
 import slimeknights.mantle.registration.deferred.BlockEntityTypeDeferredRegister;
 import slimeknights.mantle.registration.deferred.EntityTypeDeferredRegister;
 import slimeknights.mantle.registration.deferred.EnumDeferredRegister;
@@ -75,9 +78,9 @@ public abstract class TinkerModule {
   // datapacks
   protected static final SynchronizedDeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = SynchronizedDeferredRegister.create(BuiltInRegistries.RECIPE_SERIALIZER, TConstruct.MOD_ID);
   protected static final SynchronizedDeferredRegister<MapCodec<? extends IGlobalLootModifier>> GLOBAL_LOOT_MODIFIERS = SynchronizedDeferredRegister.create(NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, TConstruct.MOD_ID);
-  protected static final SynchronizedDeferredRegister<LootItemConditionType> LOOT_CONDITIONS = SynchronizedDeferredRegister.create(Registries.LOOT_CONDITION_TYPE, TConstruct.MOD_ID);
-  protected static final SynchronizedDeferredRegister<LootItemFunctionType<?>> LOOT_FUNCTIONS = SynchronizedDeferredRegister.create(Registries.LOOT_FUNCTION_TYPE, TConstruct.MOD_ID);
-  protected static final SynchronizedDeferredRegister<LootPoolEntryType> LOOT_ENTRIES = SynchronizedDeferredRegister.create(Registries.LOOT_POOL_ENTRY_TYPE, TConstruct.MOD_ID);
+  protected static final SynchronizedDeferredRegister<MapCodec<? extends LootItemCondition>> LOOT_CONDITIONS = SynchronizedDeferredRegister.create(Registries.LOOT_CONDITION_TYPE, TConstruct.MOD_ID);
+  protected static final SynchronizedDeferredRegister<MapCodec<? extends LootItemFunction>> LOOT_FUNCTIONS = SynchronizedDeferredRegister.create(Registries.LOOT_FUNCTION_TYPE, TConstruct.MOD_ID);
+  protected static final SynchronizedDeferredRegister<MapCodec<? extends LootPoolEntryContainer>> LOOT_ENTRIES = SynchronizedDeferredRegister.create(Registries.LOOT_POOL_ENTRY_TYPE, TConstruct.MOD_ID);
 
   // base item properties
   protected static final Item.Properties ITEM_PROPS = new Item.Properties();
@@ -95,6 +98,19 @@ public abstract class TinkerModule {
   /** Creates an item resource key matching the registry name of the given (already registered) block, for its block item */
   protected static ResourceKey<Item> blockItemKey(Block block) {
     return ResourceKey.create(Registries.ITEM, BuiltInRegistries.BLOCK.getKey(block));
+  }
+
+  /**
+   * Registers a type aware recipe serializer. 26.1: {@link RecipeSerializer} is a final record, so the registry holds
+   * {@link TypeAwareRecipeSerializer#serializer()} while recipes and builders keep using the (serializer, type) pair.
+   * @param name     Serializer name
+   * @param factory  Pair factory, called once
+   * @return  Supplier of the pair whose serializer is the registered value
+   */
+  protected static <T extends Recipe<?>> Supplier<TypeAwareRecipeSerializer<T>> registerTyped(String name, Supplier<TypeAwareRecipeSerializer<T>> factory) {
+    Supplier<TypeAwareRecipeSerializer<T>> typed = Suppliers.memoize(factory::get);
+    RECIPE_SERIALIZERS.register(name, () -> typed.get().serializer());
+    return typed;
   }
 
   /** Called during construction to initialize the registers for this mod */

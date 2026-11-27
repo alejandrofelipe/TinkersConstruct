@@ -21,6 +21,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.ToolMaterial;
@@ -394,7 +395,7 @@ public class ModifierProvider extends AbstractModifierProvider {
       .addModule(new GlowWalkerModule(new LevelingValue(2, 1), 3, 5))
       .addModule(new ProjectilePlaceGlowModule(5, true, true))
       .addModule(ShowOffhandModule.DISALLOW_BROKEN).addModule(ShowInteractionSourceModule.INSTANCE)
-      .addModule(new BlockItemProviderModule(new ItemStack(TinkerCommons.glowBlock.asItem()), 5, ModifierCondition.ANY_TOOL.with(ToolStackPredicate.tag(TinkerTags.Items.HELD))));
+      .addModule(new BlockItemProviderModule(new ItemStackTemplate(TinkerCommons.glowBlock.asItem()), 5, ModifierCondition.ANY_TOOL.with(ToolStackPredicate.tag(TinkerTags.Items.HELD))));
     buildModifier(ModifierIds.firestarter)
       .levelDisplay(ModifierLevelDisplay.NO_LEVELS)
       .addModule(PlaceFireModule.INSTANCE)
@@ -643,7 +644,7 @@ public class ModifierProvider extends AbstractModifierProvider {
     buildModifier(ModifierIds.crystalshot).priority(50) // after bulk quiver
       .levelDisplay(ModifierLevelDisplay.NO_LEVELS)
       .addModule(ModifierVariantColorModule.INSTANCE)
-      .addModule(new InfinityModule(new ItemStack(TinkerTools.crystalshotItem), CrystalshotItem.TAG_VARIANT,  4, true));
+      .addModule(new InfinityModule(new ItemStackTemplate(TinkerTools.crystalshotItem.asItem()), CrystalshotItem.TAG_VARIANT,  4, true));
     buildModifier(ModifierIds.barebow)
       .levelDisplay(ModifierLevelDisplay.NO_LEVELS)
       .addModule(new VolatileFlagModule(BowAmmoModifierHook.SKIP_INVENTORY_AMMO));

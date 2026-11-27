@@ -156,7 +156,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
       MoldingRecipe recipe = findMoldingRecipe();
       if (recipe != null) {
         // if hand is empty, pick up the result (hand empty will only match recipes with no mold item)
-        ItemStack result = recipe.assemble(moldingInventory, level.registryAccess());
+        ItemStack result = recipe.assemble(moldingInventory);
         result.onCraftedBy(player, 1);
         if (held.isEmpty()) {
           setItem(INPUT, ItemStack.EMPTY);
@@ -181,7 +181,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
         recipe = findMoldingRecipe();
         if (recipe != null) {
           setItem(INPUT, ItemStack.EMPTY);
-          TransferUtil.giveItemToPlayer(player, recipe.assemble(moldingInventory, level.registryAccess()), player.getInventory().getSelectedSlot());
+          TransferUtil.giveItemToPlayer(player, recipe.assemble(moldingInventory), player.getInventory().getSelectedSlot());
           return;
         }
       }
@@ -303,7 +303,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
 
         // actual recipe result
         boolean consumed = currentRecipe.isConsumed(castingInventory);
-        ItemStack output = currentRecipe.assemble(castingInventory, level.registryAccess());
+        ItemStack output = currentRecipe.assemble(castingInventory);
         if (currentRecipe.switchSlots() != lastRedstone) {
           if (!consumed) {
             setItem(OUTPUT, getItem(INPUT));
@@ -336,8 +336,8 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
     FluidStack currentFluid = tank.getFluid();
     if (currentFluid.getAmount() >= tank.getCapacity() && !currentFluid.isEmpty()) {
       timer++;
-      if (level.random.nextFloat() > 0.9f) {
-        level.addParticle(ParticleTypes.SMOKE, pos.getX() + level.random.nextDouble(), pos.getY() + 1.1d, pos.getZ() + level.random.nextDouble(), 0.0D, 0.0D, 0.0D);
+      if (level.getRandom().nextFloat() > 0.9f) {
+        level.addParticle(ParticleTypes.SMOKE, pos.getX() + level.getRandom().nextDouble(), pos.getY() + 1.1d, pos.getZ() + level.getRandom().nextDouble(), 0.0D, 0.0D, 0.0D);
       }
     }
   }
@@ -503,7 +503,7 @@ public abstract class CastingBlockEntity extends TableBlockEntity implements Wor
         return ItemStack.EMPTY;
       }
       castingInventory.setFluid(tank.getFluid());
-      lastOutput = currentRecipe.assemble(castingInventory, level.registryAccess());
+      lastOutput = currentRecipe.assemble(castingInventory);
     }
     return lastOutput;
   }

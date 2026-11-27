@@ -7,7 +7,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.component.ProvidesTrimMaterial;
 import net.minecraft.world.item.equipment.trim.MaterialAssetGroup;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.level.ItemLike;
@@ -43,7 +42,7 @@ public class TrimMaterialProvider {
    * 1.21.5: vanilla and the armor trim modifier find the material from the {@link DataComponents#PROVIDES_TRIM_MATERIAL} component of the ingredient.
    */
   public static void addIngredientComponents(ModifyDefaultComponentsEvent event) {
-    materials((material, ingredient, color, modelIndex) -> event.modify(ingredient, builder -> builder.set(DataComponents.PROVIDES_TRIM_MATERIAL, new ProvidesTrimMaterial(key(material)))));
+    materials((material, ingredient, color, modelIndex) -> event.modify(ingredient, (builder, lookup, item) -> builder.set(DataComponents.PROVIDES_TRIM_MATERIAL, lookup.getOrThrow(key(material)))));
   }
 
   /** Lists all trim materials */

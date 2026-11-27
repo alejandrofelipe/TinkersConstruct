@@ -15,6 +15,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CookingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
@@ -149,7 +150,7 @@ public class GadgetRecipeProvider extends BaseRecipeProvider {
     // furnace is 200 ticks
     Identifier outputId = id(output);
     Criterion<InventoryChangeTrigger.TriggerInstance> criteria = has(input);
-    SimpleCookingRecipeBuilder.smelting(Ingredient.of(input), RecipeCategory.FOOD, output, experience, 200)
+    SimpleCookingRecipeBuilder.smelting(Ingredient.of(input), RecipeCategory.FOOD, CookingBookCategory.FOOD, output, experience, 200)
                               .unlockedBy("has_item", criteria)
                               .save(consumer, recipeKey(wrap(outputId, folder, "_furnace")));
     // smoker 100 ticks

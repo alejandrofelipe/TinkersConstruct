@@ -34,7 +34,7 @@ public abstract class AbstractMaterialCastingRecipe extends AbstractCastingRecip
 
   public AbstractMaterialCastingRecipe(TypeAwareRecipeSerializer<?> serializer, Identifier id, String group, Ingredient cast, int itemCost, boolean consumed, boolean switchSlots, IJsonPredicate<MaterialVariantId> materials) {
     super(serializer.getType(), id, group, cast, consumed, switchSlots);
-    this.serializer = serializer;
+    this.serializer = serializer.serializer();
     this.itemCost = itemCost;
     this.materials = materials;
   }

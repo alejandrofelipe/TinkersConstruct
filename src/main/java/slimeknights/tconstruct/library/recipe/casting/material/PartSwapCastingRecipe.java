@@ -157,7 +157,7 @@ public class PartSwapCastingRecipe extends AbstractMaterialCastingRecipe impleme
   }
 
   @Override
-  public ItemStack assemble(ICastingContainer inv, HolderLookup.Provider access) {
+  public ItemStack assemble(ICastingContainer inv) {
     MaterialFluidRecipe fluidRecipe = getFluidRecipe(inv);
     MaterialVariant material = fluidRecipe.getOutput();
     ItemStack cast = inv.getStack();

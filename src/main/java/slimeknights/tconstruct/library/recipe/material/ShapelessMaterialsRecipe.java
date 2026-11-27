@@ -4,17 +4,17 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import lombok.Getter;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
-import net.minecraft.world.item.crafting.display.RecipeDisplay;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
 import slimeknights.mantle.data.loadable.Loadable;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.tables.TinkerTables;
@@ -35,25 +35,16 @@ public class ShapelessMaterialsRecipe extends ShapelessRecipe implements Materia
   @Getter
   private final List<MaterialVariantId> extraMaterials;
 
-  public ShapelessMaterialsRecipe(String group, net.minecraft.world.item.crafting.CraftingBookCategory category, ItemStack result, List<Ingredient> ingredients, int partCount, List<MaterialVariantId> extraMaterials) {
-    super(group, category, result, ingredients);
+  public ShapelessMaterialsRecipe(Recipe.CommonInfo commonInfo, CraftingRecipe.CraftingBookInfo bookInfo, ItemStackTemplate result, List<Ingredient> ingredients, int partCount, List<MaterialVariantId> extraMaterials) {
+    super(commonInfo, bookInfo, result, ingredients);
     this.ingredients = ingredients;
     this.partCount = partCount;
     this.extraMaterials = extraMaterials;
   }
 
   public ShapelessMaterialsRecipe(ShapelessRecipe recipe, int partCount, List<MaterialVariantId> extraMaterials) {
-    this(recipe.group(), recipe.category(), baseResult(recipe), recipe.placementInfo().ingredients(), partCount, extraMaterials);
-  }
-
-  /** Reads the stored result of a recipe from its display, as {@link ShapelessRecipe} no longer exposes it directly in 1.21.4 */
-  private static ItemStack baseResult(ShapelessRecipe recipe) {
-    for (RecipeDisplay display : recipe.display()) {
-      if (display.result() instanceof SlotDisplay.ItemStackSlotDisplay stackDisplay) {
-        return stackDisplay.stack();
-      }
-    }
-    return ItemStack.EMPTY;
+    // 26.1: result is public through the Tinkers access transformer
+    this(new Recipe.CommonInfo(recipe.showNotification()), new CraftingRecipe.CraftingBookInfo(recipe.category(), recipe.group()), recipe.result, recipe.placementInfo().ingredients(), partCount, extraMaterials);
   }
 
   @Override
@@ -68,8 +59,8 @@ public class ShapelessMaterialsRecipe extends ShapelessRecipe implements Materia
   }
 
   @Override
-  public ItemStack assemble(CraftingInput inventory, HolderLookup.Provider registryAccess) {
-    return ShapedMaterialsRecipe.assemble(super.assemble(inventory, registryAccess), inventory, ingredients, partCount, false, extraMaterials);
+  public ItemStack assemble(CraftingInput inventory) {
+    return ShapedMaterialsRecipe.assemble(super.assemble(inventory), inventory, ingredients, partCount, false, extraMaterials);
   }
 
   @Override
@@ -79,29 +70,27 @@ public class ShapelessMaterialsRecipe extends ShapelessRecipe implements Materia
     return (RecipeSerializer<ShapelessRecipe>) (RecipeSerializer<?>) TinkerTables.shapelessMaterialsRecipeSerializer.get();
   }
 
-  public static class Serializer implements RecipeSerializer<ShapelessMaterialsRecipe> {
+  /** 26.1: {@link RecipeSerializer} is a record of the two codecs, built by {@link #create()} */
+  public static final class Serializer {
     static final Loadable<List<MaterialVariantId>> EXTRA_MATERIALS = ShapedMaterialsRecipe.Serializer.EXTRA_MATERIALS;
 
     private static final MapCodec<ShapelessMaterialsRecipe> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-      RecipeSerializer.SHAPELESS_RECIPE.codec().forGetter(r -> (ShapelessRecipe) r),
+      ShapelessRecipe.MAP_CODEC.forGetter(r -> (ShapelessRecipe) r),
       Codec.INT.fieldOf("parts").forGetter(r -> r.partCount),
       EXTRA_MATERIALS.codec().optionalFieldOf("extra_materials", List.of()).forGetter(r -> r.extraMaterials)
     ).apply(inst, ShapelessMaterialsRecipe::new));
 
     private static final StreamCodec<RegistryFriendlyByteBuf,ShapelessMaterialsRecipe> STREAM_CODEC = StreamCodec.composite(
-      ShapelessRecipe.Serializer.STREAM_CODEC, r -> r,
+      ShapelessRecipe.STREAM_CODEC, r -> r,
       ByteBufCodecs.VAR_INT, r -> r.partCount,
       EXTRA_MATERIALS.streamCodec(), r -> r.extraMaterials,
       ShapelessMaterialsRecipe::new);
 
-    @Override
-    public MapCodec<ShapelessMaterialsRecipe> codec() {
-      return CODEC;
-    }
+    private Serializer() {}
 
-    @Override
-    public StreamCodec<RegistryFriendlyByteBuf,ShapelessMaterialsRecipe> streamCodec() {
-      return STREAM_CODEC;
+    /** Creates the serializer to register */
+    public static RecipeSerializer<ShapelessMaterialsRecipe> create() {
+      return new RecipeSerializer<>(CODEC, STREAM_CODEC);
     }
   }
 }

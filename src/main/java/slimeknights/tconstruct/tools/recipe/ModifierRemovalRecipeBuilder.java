@@ -11,6 +11,7 @@ import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
@@ -27,8 +28,8 @@ import java.util.List;
 /** Builder for {@link ModifierRemovalRecipe} and {@link ExtractModifierRecipe} */
 @RequiredArgsConstructor(staticName = "removal")
 public class ModifierRemovalRecipeBuilder extends AbstractSizedIngredientRecipeBuilder<ModifierRemovalRecipeBuilder> {
-  private final Function6<Identifier,String,SizedIngredient,List<SizedIngredient>,List<ItemStack>,IJsonPredicate<ModifierId>,ModifierRemovalRecipe> constructor;
-  private final List<ItemStack> leftovers = new ArrayList<>();
+  private final Function6<Identifier,String,SizedIngredient,List<SizedIngredient>,List<ItemStackTemplate>,IJsonPredicate<ModifierId>,ModifierRemovalRecipe> constructor;
+  private final List<ItemStackTemplate> leftovers = new ArrayList<>();
   @Accessors(chain = true)
   @Setter
   private String name = "modifiers";
@@ -69,7 +70,15 @@ public class ModifierRemovalRecipeBuilder extends AbstractSizedIngredientRecipeB
    * Adds a leftover stack to the recipe
    */
   public ModifierRemovalRecipeBuilder addLeftover(ItemStack stack) {
-    leftovers.add(stack);
+    leftovers.add(ItemStackTemplate.fromNonEmptyStack(stack));
+    return this;
+  }
+
+  /**
+   * Adds a leftover to the recipe. 26.1: datagen has no bound item components, so prefer this over {@link #addLeftover(ItemStack)}
+   */
+  public ModifierRemovalRecipeBuilder addLeftover(ItemStackTemplate template) {
+    leftovers.add(template);
     return this;
   }
 
@@ -77,12 +86,12 @@ public class ModifierRemovalRecipeBuilder extends AbstractSizedIngredientRecipeB
    * Adds a leftover stack to the recipe
    */
   public ModifierRemovalRecipeBuilder addLeftover(ItemLike item) {
-    return addLeftover(new ItemStack(item));
+    return addLeftover(new ItemStackTemplate(item.asItem()));
   }
 
   @Override
   public void save(RecipeOutput output) {
-    save(output, BuiltInRegistries.ITEM.getKey(leftovers.get(0).getItem()));
+    save(output, BuiltInRegistries.ITEM.getKey(leftovers.get(0).item().value()));
   }
 
   public void save(RecipeOutput output, Identifier id) {

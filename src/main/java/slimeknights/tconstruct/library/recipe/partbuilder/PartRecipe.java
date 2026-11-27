@@ -151,7 +151,7 @@ public class PartRecipe implements IPartBuilderRecipe, IMultiRecipe<IDisplayPart
   }
 
   @Override
-  public ItemStack assemble(IPartBuilderContainer inv, HolderLookup.Provider access) {
+  public ItemStack assemble(IPartBuilderContainer inv) {
     MaterialVariant material = MaterialVariant.UNKNOWN;
     int count = outputCount;
     IMaterialValue materialRecipe = inv.getMaterial();

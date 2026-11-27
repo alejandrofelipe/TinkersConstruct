@@ -2,6 +2,7 @@ package slimeknights.tconstruct.smeltery.block.entity.inventory;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.inventory.SingleItemHandler;
@@ -12,6 +13,7 @@ import slimeknights.tconstruct.library.transfer.TransferUtil;
 import slimeknights.tconstruct.library.utils.WeakListenerList;
 import slimeknights.tconstruct.smeltery.block.entity.component.DuctBlockEntity;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -76,7 +78,7 @@ public class DuctItemHandler extends SingleItemHandler<DuctBlockEntity> {
   protected boolean isItemValid(ItemStack stack) {
     // the item or its container must be in the tag
     if (!stack.is(TinkerTags.Items.DUCT_CONTAINERS)) {
-      ItemStack container = stack.getItem().getCraftingRemainder();
+      ItemStack container = Optional.ofNullable(stack.getItem().getCraftingRemainder()).map(ItemStackTemplate::create).orElse(ItemStack.EMPTY);
       if (container.isEmpty() || !container.is(TinkerTags.Items.DUCT_CONTAINERS)) {
         return false;
       }

@@ -64,7 +64,7 @@ public class ItemCastingRecipe extends AbstractCastingRecipe implements IDisplay
   @Override
   @SuppressWarnings("unchecked")
   public RecipeSerializer<? extends Recipe<ICastingContainer>> getSerializer() {
-    return (RecipeSerializer<? extends Recipe<ICastingContainer>>) serializer;
+    return (RecipeSerializer<? extends Recipe<ICastingContainer>>) serializer.serializer();
   }
 
   @Override

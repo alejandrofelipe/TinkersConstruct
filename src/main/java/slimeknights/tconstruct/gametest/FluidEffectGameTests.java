@@ -22,8 +22,10 @@ import slimeknights.tconstruct.library.modifiers.fluid.FluidEffects;
  * reports the same consumption as executing but changes nothing.
  */
 public class FluidEffectGameTests {
-  /** Lava effects from the datapack, one level's worth (1/20 of a bucket) */
-  private static final FluidStack LAVA = new FluidStack(Fluids.LAVA, 50);
+  /** Lava effects from the datapack, one level's worth (1/20 of a bucket). 26.1: built per test, fluid stacks need bound components (D-STATIC) */
+  private static FluidStack lava() {
+    return new FluidStack(Fluids.LAVA, 50);
+  }
 
   private static FluidEffects lavaEffects(GameTestHelper helper) {
     FluidEffects effects = FluidEffectManager.INSTANCE.find(Fluids.LAVA);
@@ -40,11 +42,11 @@ public class FluidEffectGameTests {
     BlockPos absolute = helper.absolutePos(stone);
     BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(absolute).add(0, 0.5, 0), Direction.UP, absolute, false);
 
-    int simulated = effects.applyToBlock(LAVA, 1, FluidEffectContext.builder(helper.getLevel()).block(hit), FluidAction.SIMULATE);
-    helper.assertTrue(simulated == LAVA.getAmount(), Component.literal("simulating should consume " + LAVA.getAmount() + " but reported " + simulated));
+    int simulated = effects.applyToBlock(lava(), 1, FluidEffectContext.builder(helper.getLevel()).block(hit), FluidAction.SIMULATE);
+    helper.assertTrue(simulated == lava().getAmount(), Component.literal("simulating should consume " + lava().getAmount() + " but reported " + simulated));
     helper.assertBlockPresent(Blocks.AIR, stone.above());
 
-    int executed = effects.applyToBlock(LAVA, 1, FluidEffectContext.builder(helper.getLevel()).block(hit), FluidAction.EXECUTE);
+    int executed = effects.applyToBlock(lava(), 1, FluidEffectContext.builder(helper.getLevel()).block(hit), FluidAction.EXECUTE);
     helper.assertTrue(executed == simulated, Component.literal("executing consumed " + executed + " but simulating reported " + simulated));
     helper.assertBlockPresent(Blocks.FIRE, stone.above());
     helper.succeed();
@@ -59,12 +61,12 @@ public class FluidEffectGameTests {
     float health = pig.getHealth();
     int fireTicks = pig.getRemainingFireTicks();
 
-    int simulated = effects.applyToEntity(LAVA, 1, FluidEffectContext.builder(helper.getLevel()).target(pig), FluidAction.SIMULATE);
-    helper.assertTrue(simulated == LAVA.getAmount(), Component.literal("simulating should consume " + LAVA.getAmount() + " but reported " + simulated));
+    int simulated = effects.applyToEntity(lava(), 1, FluidEffectContext.builder(helper.getLevel()).target(pig), FluidAction.SIMULATE);
+    helper.assertTrue(simulated == lava().getAmount(), Component.literal("simulating should consume " + lava().getAmount() + " but reported " + simulated));
     helper.assertTrue(pig.getHealth() == health, Component.literal("simulating damaged the pig: " + health + " -> " + pig.getHealth()));
     helper.assertTrue(pig.getRemainingFireTicks() == fireTicks, Component.literal("simulating ignited the pig: " + fireTicks + " -> " + pig.getRemainingFireTicks()));
 
-    int executed = effects.applyToEntity(LAVA, 1, FluidEffectContext.builder(helper.getLevel()).target(pig), FluidAction.EXECUTE);
+    int executed = effects.applyToEntity(lava(), 1, FluidEffectContext.builder(helper.getLevel()).target(pig), FluidAction.EXECUTE);
     helper.assertTrue(executed == simulated, Component.literal("executing consumed " + executed + " but simulating reported " + simulated));
     helper.assertTrue(pig.getHealth() < health, Component.literal("executing did not damage the pig, health " + pig.getHealth()));
     helper.assertTrue(pig.getRemainingFireTicks() > 0, Component.literal("executing did not ignite the pig, fire ticks " + pig.getRemainingFireTicks()));

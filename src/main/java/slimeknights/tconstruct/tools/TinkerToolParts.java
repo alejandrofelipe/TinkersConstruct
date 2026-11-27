@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.tools;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.item.equipment.ArmorType;
 
 import net.minecraft.util.RandomSource;
@@ -9,7 +10,7 @@ import net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import slimeknights.mantle.registration.object.EnumObject;
 import slimeknights.mantle.registration.object.ItemObject;
@@ -108,7 +109,7 @@ public final class TinkerToolParts extends TinkerModule {
   public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<MaterialBlockEntity>> materialBlock = BLOCK_ENTITIES.register("material_block", MaterialBlockEntity::new, fakeStorageBlock);
 
   // loot
-  public static final DeferredHolder<LootPoolEntryType,LootPoolEntryType> toolPartLootEntry = LOOT_ENTRIES.register("tool_part", () -> new LootPoolEntryType(ToolPartLootEntry.CODEC));
+  public static final DeferredHolder<MapCodec<? extends LootPoolEntryContainer>,MapCodec<ToolPartLootEntry>> toolPartLootEntry = LOOT_ENTRIES.register("tool_part", () -> ToolPartLootEntry.CODEC);
 
   /** Adds all relevant items to the creative tab */
   private static void addTabItems(ItemDisplayParameters itemDisplayParameters, CreativeModeTab.Output tab) {

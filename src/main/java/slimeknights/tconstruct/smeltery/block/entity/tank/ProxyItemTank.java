@@ -1,8 +1,10 @@
 package slimeknights.tconstruct.smeltery.block.entity.tank;
 
+import java.util.Optional;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -117,7 +119,7 @@ public class ProxyItemTank<T extends MantleBlockEntity & IFluidTankUpdater> exte
     // can only store items that are fluid handlers, though allow blacklist in case something is really broken
     // blacklist is mostly used for items that don't support incremental filling, as this block really isn't good at working with them
     // we check the container item so we don't have to put every bucket in the tag. Not bothering with complex container items; odds are item stack sensitive just returns the same item
-    ItemStack craftRemaining = stack.getItem().getCraftingRemainder();
+    ItemStack craftRemaining = Optional.ofNullable(stack.getItem().getCraftingRemainder()).map(ItemStackTemplate::create).orElse(ItemStack.EMPTY);
     return !stack.is(TinkerTags.Items.PROXY_TANK_BLACKLIST)
       && (craftRemaining.isEmpty() || !craftRemaining.is(TinkerTags.Items.PROXY_TANK_BLACKLIST))
       // transaction safe: called by the native item handler while inserting

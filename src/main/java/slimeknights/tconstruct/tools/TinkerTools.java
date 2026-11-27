@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.tools;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.item.equipment.ArmorType;
 
 import net.minecraft.advancements.criterion.ItemPredicate;
@@ -19,12 +20,12 @@ import net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.DispenserBlock;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.component.BlocksAttacks;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -189,7 +190,7 @@ public final class TinkerTools extends TinkerModule {
                                   .build());
 
   /** Loot function type for tool add data */
-  public static final DeferredHolder<LootItemFunctionType<?>,LootItemFunctionType<AddToolDataFunction>> lootAddToolData = LOOT_FUNCTIONS.register("add_tool_data", () -> new LootItemFunctionType<>(AddToolDataFunction.CODEC));
+  public static final DeferredHolder<MapCodec<? extends LootItemFunction>,MapCodec<AddToolDataFunction>> lootAddToolData = LOOT_FUNCTIONS.register("add_tool_data", () -> AddToolDataFunction.CODEC);
 
   /*
    * Items

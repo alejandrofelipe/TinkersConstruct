@@ -30,7 +30,7 @@ public class CastDuplicationRecipe extends ItemCastingRecipe implements IMultiRe
   }
 
   @Override
-  public ItemStack assemble(ICastingContainer inv, HolderLookup.Provider access) {
+  public ItemStack assemble(ICastingContainer inv) {
     return inv.getStack().copy();
   }
 

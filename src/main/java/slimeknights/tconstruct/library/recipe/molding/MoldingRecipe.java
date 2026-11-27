@@ -50,7 +50,7 @@ public class MoldingRecipe implements ICommonRecipe<IMoldingContainer> {
   @SuppressWarnings("unchecked")
   public MoldingRecipe(TypeAwareRecipeSerializer<?> serializer, Identifier id, Ingredient material, @Nullable Ingredient pattern, boolean patternConsumed, ItemOutput recipeOutput) {
     this.type = (RecipeType<? extends Recipe<IMoldingContainer>>) serializer.getType();
-    this.serializer = (RecipeSerializer<? extends Recipe<IMoldingContainer>>) serializer;
+    this.serializer = (RecipeSerializer<? extends Recipe<IMoldingContainer>>) serializer.serializer();
     this.id = id;
     this.material = material;
     this.pattern = pattern;

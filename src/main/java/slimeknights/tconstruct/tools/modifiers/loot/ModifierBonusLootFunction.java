@@ -14,13 +14,11 @@ import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount.FormulaT
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount.OreDrops;
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount.UniformBonusCount;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
-import slimeknights.tconstruct.tools.TinkerModifiers;
 
 import java.util.List;
 import java.util.Map;
@@ -89,8 +87,8 @@ public class ModifierBonusLootFunction extends LootItemConditionalFunction {
   }
 
   @Override
-  public LootItemFunctionType<ModifierBonusLootFunction> getType() {
-    return TinkerModifiers.modifierBonusFunction.get();
+  public MapCodec<ModifierBonusLootFunction> codec() {
+    return CODEC;
   }
 
   @Override
@@ -100,7 +98,8 @@ public class ModifierBonusLootFunction extends LootItemConditionalFunction {
 
   @Override
   protected ItemStack run(ItemStack stack, LootContext context) {
-    int level = ModifierUtil.getModifierLevel(context.getParameter(LootContextParams.TOOL), modifier);
+    // 26.1: the tool parameter is an ItemInstance; tools are always stacks
+    int level = context.getParameter(LootContextParams.TOOL) instanceof ItemStack tool ? ModifierUtil.getModifierLevel(tool, modifier) : 0;
     if (!includeBase) {
       level--;
     }

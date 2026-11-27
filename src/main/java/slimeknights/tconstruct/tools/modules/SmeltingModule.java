@@ -210,7 +210,7 @@ public record SmeltingModule(RecipeType<? extends AbstractCookingRecipe> recipeT
             if (recipe != null) {
               // attempt to assemble the recipe, use a try/catch in case their assemble logic is bad
               try {
-                ItemStack result = recipe.assemble(new SingleRecipeInput(stack), level.registryAccess());
+                ItemStack result = recipe.assemble(new SingleRecipeInput(stack));
 
                 // check again if we have space for the result now that we know its size
                 if (!result.isEmpty()) {

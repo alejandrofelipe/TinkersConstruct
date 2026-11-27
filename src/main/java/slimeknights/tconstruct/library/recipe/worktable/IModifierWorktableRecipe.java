@@ -111,7 +111,7 @@ public interface IModifierWorktableRecipe extends ICommonRecipe<ITinkerableConta
 
   @Deprecated
   @Override
-  default ItemStack assemble(ITinkerableContainer inv, HolderLookup.Provider access) {
+  default ItemStack assemble(ITinkerableContainer inv) {
     return ItemStack.EMPTY;
   }
 }

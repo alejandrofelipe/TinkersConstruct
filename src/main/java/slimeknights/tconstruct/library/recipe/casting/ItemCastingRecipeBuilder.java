@@ -200,6 +200,21 @@ public class ItemCastingRecipeBuilder extends AbstractRecipeBuilder<ItemCastingR
    * @param fluid      Fluid object instance
    * @param amount     amount of fluid
    */
+  public ItemCastingRecipeBuilder setFluidAndTime(Fluid fluid, int amount) {
+    // 26.1: stack free variant of setFluidAndTime(FluidStack), datagen has no bound fluid components
+    this.fluid = FluidIngredient.of(fluid, amount);
+    if (this.coolingTime == -1) {
+      this.coolingTime = ICastingRecipe.calcCoolingTime(getTemperature(fluid), amount);
+    }
+    return this;
+  }
+
+  /**
+   * Sets the fluid for this recipe, and cooling time if unset.
+   * @param fluid   Fluid object
+   * @param amount  Fluid amount
+   * @return  Builder instance
+   */
   public ItemCastingRecipeBuilder setFluidAndTime(FluidObject<?> fluid, int amount) {
     setFluid(fluid.ingredient(amount));
     setCoolingTime(getTemperature(fluid), amount);

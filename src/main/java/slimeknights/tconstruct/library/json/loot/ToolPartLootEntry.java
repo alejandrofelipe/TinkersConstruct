@@ -8,7 +8,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
 import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -17,7 +16,6 @@ import slimeknights.mantle.util.RegistryHelper;
 import slimeknights.tconstruct.library.materials.RandomMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.tools.part.IToolPart;
-import slimeknights.tconstruct.tools.TinkerToolParts;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -41,8 +39,8 @@ public class ToolPartLootEntry extends LootPoolSingletonContainer {
   }
 
   @Override
-  public LootPoolEntryType getType() {
-    return TinkerToolParts.toolPartLootEntry.get();
+  public MapCodec<ToolPartLootEntry> codec() {
+    return CODEC;
   }
 
   @Override

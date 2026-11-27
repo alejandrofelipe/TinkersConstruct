@@ -49,7 +49,7 @@ public interface ITinkerStationRecipe extends ICommonRecipe<ITinkerStationContai
 
   /**
    * Updates the input stacks upon crafting this recipe
-   * @param result  Result from {@link #assemble(ITinkerStationContainer, HolderLookup.Provider)}. Generally should not be modified.
+   * @param result  Result from {@link #getValidatedResult(ITinkerStationContainer, HolderLookup.Provider)}. Generally should not be modified.
    * @param inv     Inventory instance to modify inputs
    * @param isServer  If true, this is on the serverside. Use to handle randomness, {@link IMutableTinkerStationContainer#giveItem(ItemStack)} should handle being called serverside only
    */
@@ -70,12 +70,6 @@ public interface ITinkerStationRecipe extends ICommonRecipe<ITinkerStationContai
     return ItemStack.EMPTY;
   }
 
-  /** @deprecated use {@link #getValidatedResult(ITinkerStationContainer, HolderLookup.Provider)}*/
-  @Deprecated
-  @Override
-  default ItemStack assemble(ITinkerStationContainer inv, HolderLookup.Provider access) {
-    return getResultItem(access).copy();
-  }
 
   /** @deprecated use {@link #updateInputs(LazyToolStack, IMutableTinkerStationContainer, boolean)} */
   @Deprecated

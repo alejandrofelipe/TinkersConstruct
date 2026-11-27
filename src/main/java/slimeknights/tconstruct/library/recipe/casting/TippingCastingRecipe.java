@@ -60,7 +60,7 @@ public class TippingCastingRecipe extends PotionCastingRecipe {
   }
 
   @Override
-  public ItemStack assemble(ICastingContainer inv, HolderLookup.Provider access) {
+  public ItemStack assemble(ICastingContainer inv) {
     ItemStack result = inv.getStack().copy();
     String potionId = getPotionId(inv.getFluidComponents());
     if (!potionId.isEmpty()) {

@@ -13,9 +13,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
-import slimeknights.mantle.data.loadable.common.ItemStackLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.data.predicate.item.ItemPredicate;
+import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.json.LevelingInt;
@@ -43,12 +43,12 @@ import java.util.List;
 
 /**
  * Module that makes a tool edible
- * @param representativeItem  Stack used for mods like Diet to know what we ate.
+ * @param representativeItem  Stack used for mods like Diet to know what we ate. 26.1: an output, modifiers decode before item components are bound
  */
-public record EdibleModule(ItemStack representativeItem, LevelingInt duration, LevelingInt durabilityUsage, LevelingValue chance, ModifierCondition<IToolStackView> condition) implements ModifierModule, GeneralInteractionModifierHook, UsingToolModifierHook, OnAttackedModifierHook, ConditionalModule<IToolStackView> {
+public record EdibleModule(ItemOutput representativeItem, LevelingInt duration, LevelingInt durabilityUsage, LevelingValue chance, ModifierCondition<IToolStackView> condition) implements ModifierModule, GeneralInteractionModifierHook, UsingToolModifierHook, OnAttackedModifierHook, ConditionalModule<IToolStackView> {
   private static final List<ModuleHook<?>> DEFAULT_HOOKS = HookProvider.<EdibleModule>defaultHooks(ModifierHooks.GENERAL_INTERACT, ModifierHooks.TOOL_USING, ModifierHooks.ON_ATTACKED);
   public static final RecordLoadable<EdibleModule> LOADER = RecordLoadable.create(
-    ItemStackLoadable.OPTIONAL_ITEM_NBT.defaultField("representative_item", ItemStack.EMPTY, EdibleModule::representativeItem),
+    ItemOutput.Loadable.OPTIONAL_ITEM.emptyField("representative_item", EdibleModule::representativeItem),
     LevelingInt.LOADABLE.requiredField("duration", EdibleModule::duration),
     LevelingInt.LOADABLE.requiredField("durability_usage", EdibleModule::durabilityUsage),
     LevelingValue.LOADABLE.requiredField("counter_chance", EdibleModule::chance),
@@ -59,7 +59,7 @@ public record EdibleModule(ItemStack representativeItem, LevelingInt duration, L
   public static final FloatToolStat SATURATION = new FloatToolStat(new ToolStatId(TConstruct.MOD_ID, "saturation"), 0xFFF0A8A4, 0, 0, 200, ItemPredicate.or(ItemPredicate.tag(TinkerTags.Items.INTERACTABLE_CHARGE), ItemPredicate.tag(TinkerTags.Items.ARMOR)));
 
   public EdibleModule(ItemLike representativeItem, LevelingInt duration, LevelingInt durabilityUsage, LevelingValue chance) {
-    this(new ItemStack(representativeItem), duration, durabilityUsage, chance, ModifierCondition.ANY_TOOL);
+    this(ItemOutput.fromItem(representativeItem), duration, durabilityUsage, chance, ModifierCondition.ANY_TOOL);
   }
 
   @Override
@@ -99,8 +99,8 @@ public record EdibleModule(ItemStack representativeItem, LevelingInt duration, L
       Level world = player.level();
       float saturation = stats.get(SATURATION);
       player.getFoodData().eat(hunger, saturation);
-      world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.GENERIC_EAT, SoundSource.NEUTRAL, 1.0F, 1.0F + (world.random.nextFloat() - world.random.nextFloat()) * 0.4F);
-      world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_BURP, SoundSource.NEUTRAL, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
+      world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.GENERIC_EAT, SoundSource.NEUTRAL, 1.0F, 1.0F + (world.getRandom().nextFloat() - world.getRandom().nextFloat()) * 0.4F);
+      world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_BURP, SoundSource.NEUTRAL, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.9F);
 
       // 15 damage for a bite per level, does not process reinforced/overslime, your teeth are tough
       int damage = this.durabilityUsage.compute(modifier.getEffectiveLevel());
@@ -112,7 +112,7 @@ public record EdibleModule(ItemStack representativeItem, LevelingInt duration, L
 
   /** Gets the item for particles and Diet */
   private ItemStack getRepresentativeItem(LivingEntity entity) {
-    return !representativeItem.isEmpty() ? representativeItem : entity.getUseItem();
+    return !representativeItem.isEmpty() ? representativeItem.get() : entity.getUseItem();
   }
 
   /** Plays effects for eating */
@@ -140,7 +140,7 @@ public record EdibleModule(ItemStack representativeItem, LevelingInt duration, L
       }
       // if we have not finished drinking, and we can drink, play effects
       else if (useTime < duration && useTime % 4 == 0 && entity instanceof Player player && player.canEat(false)) {
-        eatEffects(entity, representativeItem, 5);
+        eatEffects(entity, representativeItem.get(), 5);
       }
     }
   }
@@ -163,8 +163,8 @@ public record EdibleModule(ItemStack representativeItem, LevelingInt duration, L
     if (!tool.isBroken() && tool.hasTag(TinkerTags.Items.ARMOR) && condition.matches(tool, modifier) && tool.getStats().getInt(HUNGER) > 0) {
       LivingEntity entity = context.getEntity();
       float level = CounterModule.getLevel(tool, modifier, slotType, entity);
-      if (context.getLevel().random.nextFloat() < chance.compute(level) && entity instanceof Player player && player.canEat(false)) {
-        eat(tool, modifier, player, !representativeItem.isEmpty() ? representativeItem : entity.getItemBySlot(slotType));
+      if (context.getLevel().getRandom().nextFloat() < chance.compute(level) && entity instanceof Player player && player.canEat(false)) {
+        eat(tool, modifier, player, !representativeItem.isEmpty() ? representativeItem.get() : entity.getItemBySlot(slotType));
       }
     }
   }

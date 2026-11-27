@@ -128,7 +128,7 @@ public class AutosmeltModule implements ModifierModule, ProcessLootModifierHook 
     AbstractCookingRecipe recipe = findCachedRecipe(stack, world);
     if (recipe != null) {
       // fetch recipe result, may be input sensitive
-      ItemStack output = recipe.assemble(new SingleRecipeInput(stack), world.registryAccess());
+      ItemStack output = recipe.assemble(new SingleRecipeInput(stack));
       // scale the stack size based on the input size
       if (stack.getCount() > 1) {
         // recipe output is a copy, safe to modify

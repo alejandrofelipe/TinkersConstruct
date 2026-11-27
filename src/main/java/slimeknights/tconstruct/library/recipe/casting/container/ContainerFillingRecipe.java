@@ -61,7 +61,7 @@ public class ContainerFillingRecipe implements ICastingRecipe, IMultiRecipe<Disp
   @Override
   @SuppressWarnings("unchecked")
   public RecipeSerializer<? extends Recipe<ICastingContainer>> getSerializer() {
-    return (RecipeSerializer<? extends Recipe<ICastingContainer>>) serializer;
+    return (RecipeSerializer<? extends Recipe<ICastingContainer>>) serializer.serializer();
   }
 
   @Override
@@ -105,7 +105,7 @@ public class ContainerFillingRecipe implements ICastingRecipe, IMultiRecipe<Disp
   }
 
   @Override
-  public ItemStack assemble(ICastingContainer inv, HolderLookup.Provider access) {
+  public ItemStack assemble(ICastingContainer inv) {
     ItemStack stack = inv.getStack();
     if (!TransferUtil.hasFluidHandler(stack)) {
       return stack.copy();

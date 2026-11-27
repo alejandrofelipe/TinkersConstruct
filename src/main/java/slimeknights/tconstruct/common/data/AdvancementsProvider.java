@@ -39,6 +39,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.level.ItemLike;
@@ -496,21 +497,24 @@ public class AdvancementsProvider extends GenericDataProvider {
 
   /** Root builder: has a background image and no parent */
   protected AdvancementHolder builder(ItemLike display, Identifier name, Identifier background, AdvancementType frame, Consumer<Advancement.Builder> consumer) {
-    return builder(new ItemStack(display), name, null, background, frame, consumer);
+    return builder(new ItemStackTemplate(display.asItem()), name, null, background, frame, consumer);
   }
 
   /** Child builder from an item display, parented, no background */
   protected AdvancementHolder builder(ItemLike display, Identifier name, AdvancementHolder parent, AdvancementType frame, Consumer<Advancement.Builder> consumer) {
-    return builder(new ItemStack(display), name, parent, null, frame, consumer);
+    return builder(new ItemStackTemplate(display.asItem()), name, parent, null, frame, consumer);
   }
 
-  /** Child builder from a stack display, parented, no background */
+  /**
+   * Child builder from a stack display, parented, no background.
+   * 26.1: building the stack needs bound item components, which datagen does not have yet (D-DATAGEN, Phase 3).
+   */
   protected AdvancementHolder builder(ItemStack display, Identifier name, AdvancementHolder parent, AdvancementType frame, Consumer<Advancement.Builder> consumer) {
-    return builder(display, name, parent, null, frame, consumer);
+    return builder(ItemStackTemplate.fromNonEmptyStack(display), name, parent, null, frame, consumer);
   }
 
-  /** Core builder: builds, registers into {@link #advancements}, and returns the holder for use as a parent */
-  protected AdvancementHolder builder(ItemStack display, Identifier name, @Nullable AdvancementHolder parent, @Nullable Identifier background, AdvancementType frame, Consumer<Advancement.Builder> consumer) {
+  /** Core builder: builds, registers into {@link #advancements}, and returns the holder for use as a parent. 26.1: the icon is a template */
+  protected AdvancementHolder builder(ItemStackTemplate display, Identifier name, @Nullable AdvancementHolder parent, @Nullable Identifier background, AdvancementType frame, Consumer<Advancement.Builder> consumer) {
     Advancement.Builder builder = Advancement.Builder.advancement();
     if (parent != null) {
       builder.parent(parent);

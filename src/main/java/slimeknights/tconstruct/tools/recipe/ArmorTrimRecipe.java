@@ -14,7 +14,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SmithingTemplateItem;
-import net.minecraft.world.item.component.ProvidesTrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimMaterials;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
@@ -132,7 +131,9 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
     }
     // validate the material nad pattern items
     // 1.21.5: the material comes from the ingredient's provides trim material component, and may be a direct holder
-    ResourceKey<TrimMaterial> material = TrimMaterials.getFromIngredient(access, trimItems.material).flatMap(Holder::unwrapKey).orElse(null);
+    // 26.1: TrimMaterials#getFromIngredient was removed and the component holds a plain holder
+    Holder<TrimMaterial> provides = trimItems.material.get(DataComponents.PROVIDES_TRIM_MATERIAL);
+    ResourceKey<TrimMaterial> material = provides != null ? provides.unwrapKey().orElse(null) : null;
     if (material == null) {
       return RecipeResult.failure(KEY_INVALID_MATERIAL, trimItems.material.getDisplayName());
     }
@@ -216,8 +217,8 @@ public class ArmorTrimRecipe implements ITinkerStationRecipe, IMultiRecipe<IDisp
       // 1.21.5: trim materials no longer store their ingredient, find the items providing this material
       ResourceKey<TrimMaterial> materialKey = holder.key();
       this.material = BuiltInRegistries.ITEM.stream().filter(item -> {
-        ProvidesTrimMaterial provides = item.components().get(DataComponents.PROVIDES_TRIM_MATERIAL);
-        return provides != null && provides.unwrap(access).flatMap(Holder::unwrapKey).filter(materialKey::equals).isPresent();
+        Holder<TrimMaterial> provides = item.components().get(DataComponents.PROVIDES_TRIM_MATERIAL);
+        return provides != null && provides.unwrapKey().filter(materialKey::equals).isPresent();
       }).map(ItemStack::new).toList();
       this.variant = material.description().plainCopy();
 

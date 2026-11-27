@@ -28,7 +28,6 @@ import org.jspecify.annotations.Nullable;
 /** Recipe using repair kits in the crafting table */
 public class CraftingTableRepairKitRecipe extends CustomRecipe {
   public CraftingTableRepairKitRecipe() {
-    super(CraftingBookCategory.EQUIPMENT);
   }
 
   /**
@@ -103,7 +102,7 @@ public class CraftingTableRepairKitRecipe extends CustomRecipe {
   }
 
   @Override
-  public ItemStack assemble(CraftingInput inv, HolderLookup.Provider access) {
+  public ItemStack assemble(CraftingInput inv) {
     ToolRepair inputs = getRelevantInputs(inv);
     if (inputs == null) {
       TConstruct.LOG.error("Recipe repair failed to find items after matching");
@@ -140,5 +139,11 @@ public class CraftingTableRepairKitRecipe extends CustomRecipe {
   @Override
   public RecipeSerializer<? extends CraftingTableRepairKitRecipe> getSerializer() {
     return TinkerTables.craftingTableRepairSerializer.get();
+  }
+
+  /** 26.1: {@link CustomRecipe} lost its category constructor */
+  @Override
+  public CraftingBookCategory category() {
+    return CraftingBookCategory.EQUIPMENT;
   }
 }

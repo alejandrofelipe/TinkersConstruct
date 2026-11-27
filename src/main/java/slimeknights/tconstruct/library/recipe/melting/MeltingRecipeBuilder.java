@@ -110,7 +110,9 @@ public class MeltingRecipeBuilder extends AbstractRecipeBuilder<MeltingRecipeBui
    * @return  Builder instance
    */
   public static MeltingRecipeBuilder melting(Ingredient input, Fluid fluid, int amount, float timeFactor) {
-    return melting(input, new FluidStack(fluid, amount), timeFactor);
+    // 26.1: no fluid stack, datagen has no bound fluid components
+    int temperature = getTemperature(fluid);
+    return melting(input, FluidOutput.fromFluid(fluid, amount), temperature, IMeltingRecipe.calcTime(temperature, timeFactor));
   }
 
   /**

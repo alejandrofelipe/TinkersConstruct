@@ -55,7 +55,8 @@ public class MaterialMeltingRecipeBuilder extends AbstractRecipeBuilder<Material
 
   /** Creates a recipe using the fluids temperature */
   public static MaterialMeltingRecipeBuilder material(MaterialVariantId materialId, Fluid result, int amount) {
-    return material(materialId, new FluidStack(result, amount));
+    // 26.1: no fluid stack, datagen has no bound fluid components
+    return material(materialId, getTemperature(result), FluidOutput.fromFluid(result, amount));
   }
 
   /**

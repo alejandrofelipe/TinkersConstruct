@@ -46,9 +46,16 @@ import java.util.List;
  * through the heater), and the proxy tank's fluid handler.
  */
 public class SmelteryTransferGameTests {
-  private static final FluidResource GOLD = FluidResource.of(TinkerFluids.moltenGold.get());
-  private static final FluidResource COPPER = FluidResource.of(TinkerFluids.moltenCopper.get());
-  private static final FluidResource WATER = FluidResource.of(Fluids.WATER);
+  // 26.1: resources are built per test, gametest classes initialize before components are bound (D-STATIC)
+  private static FluidResource gold() {
+    return FluidResource.of(TinkerFluids.moltenGold.get());
+  }
+  private static FluidResource copper() {
+    return FluidResource.of(TinkerFluids.moltenCopper.get());
+  }
+  private static FluidResource water() {
+    return FluidResource.of(Fluids.WATER);
+  }
 
   /** Gets the formed heating structure at the position, failing the test if missing */
   private static HeatingStructureBlockEntity structure(GameTestHelper helper, BlockPos controller) {
@@ -105,8 +112,8 @@ public class SmelteryTransferGameTests {
 
         // aborted: no change
         try (Transaction tx = Transaction.openRoot()) {
-          tank.insert(COPPER, FluidValues.INGOT, tx);
-          tank.extract(GOLD, FluidValues.INGOT, tx);
+          tank.insert(copper(), FluidValues.INGOT, tx);
+          tank.extract(gold(), FluidValues.INGOT, tx);
         }
         assertFluids(helper, tank, List.of(new FluidStack(TinkerFluids.moltenGold.get(), FluidValues.INGOT * 2), new FluidStack(Fluids.WATER, 500)), "after the aborted transaction");
 

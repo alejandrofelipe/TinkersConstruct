@@ -5,8 +5,6 @@ import lombok.NoArgsConstructor;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
-import slimeknights.tconstruct.shared.TinkerCommons;
 
 /** Loot condition matching when either a block state or an entity is present in the loot context. */
 @NoArgsConstructor
@@ -16,8 +14,8 @@ public class BlockOrEntityCondition implements LootItemCondition {
   public static final MapCodec<BlockOrEntityCondition> CODEC = MapCodec.unit(INSTANCE);
 
   @Override
-  public LootItemConditionType getType() {
-    return TinkerCommons.lootBlockOrEntity.get();
+  public MapCodec<BlockOrEntityCondition> codec() {
+    return CODEC;
   }
 
   @Override

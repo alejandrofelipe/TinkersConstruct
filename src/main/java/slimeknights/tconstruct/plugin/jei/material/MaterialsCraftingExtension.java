@@ -88,7 +88,7 @@ public class MaterialsCraftingExtension<T extends CraftingRecipe & MaterialsCraf
   protected static ItemStack getResult(CraftingRecipe recipe) {
     for (RecipeDisplay display : recipe.display()) {
       if (display.result() instanceof SlotDisplay.ItemStackSlotDisplay stackDisplay) {
-        return stackDisplay.stack();
+        return stackDisplay.stack().create();
       }
     }
     return ItemStack.EMPTY;

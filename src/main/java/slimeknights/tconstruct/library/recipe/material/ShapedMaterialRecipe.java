@@ -2,18 +2,17 @@ package slimeknights.tconstruct.library.recipe.material;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
-import net.minecraft.world.item.crafting.display.RecipeDisplay;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.Level;
 import slimeknights.mantle.data.loadable.Loadable;
 import slimeknights.tconstruct.TConstruct;
@@ -33,23 +32,14 @@ import java.util.Optional;
 public class ShapedMaterialRecipe extends ShapedRecipe {
   private MaterialValueIngredient material;
   private final List<MaterialVariantId> extraMaterials;
-  public ShapedMaterialRecipe(String group, CraftingBookCategory category, ShapedRecipePattern pattern, ItemStack result, boolean showNotification, List<MaterialVariantId> extraMaterials) {
-    super(group, category, pattern, result, showNotification);
+  public ShapedMaterialRecipe(Recipe.CommonInfo commonInfo, CraftingRecipe.CraftingBookInfo bookInfo, ShapedRecipePattern pattern, ItemStackTemplate result, List<MaterialVariantId> extraMaterials) {
+    super(commonInfo, bookInfo, pattern, result);
     this.extraMaterials = extraMaterials;
   }
 
   public ShapedMaterialRecipe(ShapedRecipe recipe, List<MaterialVariantId> extraMaterials) {
-    this(recipe.group(), recipe.category(), recipe.pattern, baseResult(recipe), recipe.showNotification(), extraMaterials);
-  }
-
-  /** Reads the stored result of a shaped recipe from its display, as {@link ShapedRecipe} no longer exposes it directly in 1.21.4 */
-  private static ItemStack baseResult(ShapedRecipe recipe) {
-    for (RecipeDisplay display : recipe.display()) {
-      if (display.result() instanceof SlotDisplay.ItemStackSlotDisplay stackDisplay) {
-        return stackDisplay.stack();
-      }
-    }
-    return ItemStack.EMPTY;
+    // 26.1: the shaped recipe result is a public template again
+    this(new Recipe.CommonInfo(recipe.showNotification()), new CraftingRecipe.CraftingBookInfo(recipe.category(), recipe.group()), recipe.pattern, recipe.result, extraMaterials);
   }
 
   /** @deprecated use {@link #ShapedMaterialRecipe(ShapedRecipe,List)} */
@@ -130,8 +120,8 @@ public class ShapedMaterialRecipe extends ShapedRecipe {
   }
 
   @Override
-  public ItemStack assemble(CraftingInput inventory, HolderLookup.Provider registryAccess) {
-    ItemStack stack = super.assemble(inventory, registryAccess);
+  public ItemStack assemble(CraftingInput inventory) {
+    ItemStack stack = super.assemble(inventory);
     MaterialVariantId material = findMaterial(inventory);
     if (material != null) {
       setMaterial(stack, material);
@@ -139,32 +129,32 @@ public class ShapedMaterialRecipe extends ShapedRecipe {
     return stack;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public RecipeSerializer<? extends ShapedRecipe> getSerializer() {
-    return TinkerTables.shapedMaterialRecipeSerializer.get();
+  public RecipeSerializer<ShapedRecipe> getSerializer() {
+    // 26.1: ShapedRecipe#getSerializer returns the invariant RecipeSerializer<ShapedRecipe>
+    return (RecipeSerializer<ShapedRecipe>) (RecipeSerializer<?>) TinkerTables.shapedMaterialRecipeSerializer.get();
   }
 
-  public static class Serializer implements RecipeSerializer<ShapedMaterialRecipe> {
+  /** 26.1: {@link RecipeSerializer} is a record of the two codecs, built by {@link #SERIALIZER} */
+  public static final class Serializer {
     static final Loadable<List<MaterialVariantId>> EXTRA_MATERIALS = ShapedMaterialsRecipe.Serializer.EXTRA_MATERIALS;
 
     private static final MapCodec<ShapedMaterialRecipe> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-      ShapedRecipe.Serializer.CODEC.forGetter(r -> (ShapedRecipe) r),
+      ShapedRecipe.MAP_CODEC.forGetter(r -> (ShapedRecipe) r),
       EXTRA_MATERIALS.codec().optionalFieldOf("extra_materials", List.of()).forGetter(r -> r.extraMaterials)
     ).apply(inst, ShapedMaterialRecipe::new));
 
     private static final StreamCodec<RegistryFriendlyByteBuf,ShapedMaterialRecipe> STREAM_CODEC = StreamCodec.composite(
-      ShapedRecipe.Serializer.STREAM_CODEC, r -> r,
+      ShapedRecipe.STREAM_CODEC, r -> r,
       EXTRA_MATERIALS.streamCodec(), r -> r.extraMaterials,
       ShapedMaterialRecipe::new);
 
-    @Override
-    public MapCodec<ShapedMaterialRecipe> codec() {
-      return CODEC;
-    }
+    private Serializer() {}
 
-    @Override
-    public StreamCodec<RegistryFriendlyByteBuf,ShapedMaterialRecipe> streamCodec() {
-      return STREAM_CODEC;
+    /** Creates the serializer to register */
+    public static RecipeSerializer<ShapedMaterialRecipe> create() {
+      return new RecipeSerializer<>(CODEC, STREAM_CODEC);
     }
   }
 }

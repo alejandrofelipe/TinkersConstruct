@@ -9,6 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
@@ -23,6 +24,7 @@ import slimeknights.tconstruct.fluids.util.ConstantFluidContainerWrapper;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /** Magma bottle instance, which lights the drinker on fire */
@@ -62,7 +64,7 @@ public class MagmaBottleItem extends Item {
   @Override
   public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity living) {
     living.igniteForSeconds(fireTime);
-    ItemStack container = stack.getCraftingRemainder();
+    ItemStack container = Optional.ofNullable(stack.getCraftingRemainder()).map(ItemStackTemplate::create).orElse(ItemStack.EMPTY);
     Player player = living instanceof Player p ? p : null;
     if (player == null || !player.getAbilities().instabuild) {
       stack.shrink(1);

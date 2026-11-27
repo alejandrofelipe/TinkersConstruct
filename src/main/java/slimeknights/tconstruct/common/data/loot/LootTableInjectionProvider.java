@@ -15,6 +15,7 @@ import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.common.conditions.ModLoadedCondition;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStackTemplate;
 import net.neoforged.neoforge.fluids.FluidType;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.mantle.loot.AbstractLootTableInjectionProvider;
@@ -65,7 +66,7 @@ public class LootTableInjectionProvider extends AbstractLootTableInjectionProvid
     AddToolDataFunction.Builder ancientToolData2 = AddToolDataFunction.builder().addMaterial(random).addMaterial(random);
     injectGameplay("piglin_bartering")
       .addToPool("main", LootItem.lootTableItem(TinkerSmeltery.scorchedLantern).setWeight(20)
-                                 .apply(SetFluidLootFunction.builder(new FluidStack(TinkerFluids.blazingBlood.get(), FluidValues.LANTERN_CAPACITY)))
+                                 .apply(SetFluidLootFunction.builder(new FluidStackTemplate(TinkerFluids.blazingBlood.get(), FluidValues.LANTERN_CAPACITY)))
                                  .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 4)))
                                  .build())
       .addToPool("main", LootItem.lootTableItem(TinkerTools.battlesign.get())
@@ -168,7 +169,7 @@ public class LootTableInjectionProvider extends AbstractLootTableInjectionProvid
     }
 
     // swashers are found in the ocean in all sorts of places, maybe there were pirates once
-    LootItemConditionalFunction.Builder<?> setFluid = SetFluidLootFunction.builder(new FluidStack(Fluids.LAVA, FluidType.BUCKET_VOLUME));
+    LootItemConditionalFunction.Builder<?> setFluid = SetFluidLootFunction.builder(new FluidStackTemplate(Fluids.LAVA, FluidType.BUCKET_VOLUME));
     injectChest("buried_treasure")
       .addToPool("pool3", LootItem.lootTableItem(TinkerTools.swasher.get())
                                   .setWeight(2) // 50% chance because the vanilla stuff in that table is trash anyways

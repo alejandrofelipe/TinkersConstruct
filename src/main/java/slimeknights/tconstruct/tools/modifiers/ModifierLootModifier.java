@@ -29,19 +29,21 @@ import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 public class ModifierLootModifier extends LootModifier {
   public static final MapCodec<ModifierLootModifier> CODEC = RecordCodecBuilder.mapCodec(inst -> codecStart(inst).apply(inst, ModifierLootModifier::new));
 
-  protected ModifierLootModifier(LootItemCondition[] conditionsIn) {
-    super(conditionsIn);
+  /** 26.1: NeoForge loot modifiers take a priority, read and written by {@link #codecStart} (default omitted) */
+  protected ModifierLootModifier(LootItemCondition[] conditionsIn, int priority) {
+    super(conditionsIn, priority);
   }
 
   /** Creates a builder for datagen */
   public static GenericLootModifierBuilder<ModifierLootModifier> builder() {
-    return new GenericLootModifierBuilder<>(ModifierLootModifier::new);
+    return new GenericLootModifierBuilder<>(conditions -> new ModifierLootModifier(conditions, IGlobalLootModifier.DEFAULT_PRIORITY));
   }
 
   @Override
   protected ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
     // tool is for harvest
-    ItemStack stack = context.getOptionalParameter(LootContextParams.TOOL);
+    // 26.1: the tool parameter is an ItemInstance; tools are always stacks
+    ItemStack stack = context.getOptionalParameter(LootContextParams.TOOL) instanceof ItemStack tool ? tool : null;
 
     // if null, try killer entity
     if (stack == null) {

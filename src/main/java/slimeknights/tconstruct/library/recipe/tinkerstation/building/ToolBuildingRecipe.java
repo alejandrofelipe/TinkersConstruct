@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -324,7 +325,8 @@ public class ToolBuildingRecipe implements ITinkerStationRecipe {
 
   @Deprecated
   @Override
-  public ItemStack assemble(ITinkerStationContainer inv, HolderLookup.Provider access) {
-    return getValidatedResult(inv, access).getResult().getStack();
+  public ItemStack assemble(ITinkerStationContainer inv) {
+    // 26.1: Recipe#assemble has no registries; tool building never reads them (the station calls getValidatedResult with the level registries)
+    return getValidatedResult(inv, RegistryAccess.EMPTY).getResult().getStack();
   }
 }
