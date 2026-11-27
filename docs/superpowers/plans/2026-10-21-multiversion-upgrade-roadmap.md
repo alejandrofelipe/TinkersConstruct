@@ -103,6 +103,27 @@ releases piggyback onto the next checkpoint), gating each with the full test bat
   in both repos. Release bugs found on the way (backport pending decision): worn Tinkers armor drawn as vanilla iron and
   worn trims on pre-1.21.4 texture paths, both since 1.21.4. Gotchas:
   [`repo/docs/migration/1.21.10-to-1.21.11.md`](../../../../repo/docs/migration/1.21.10-to-1.21.11.md).
+  **→ Released 2026-11-26:** Mantle `1.17` / Tinkers `3.16.0`, tags `v1.21.11-1.17` / `v1.21.11-3.16.0` pushed; not deployed.
+- **M7 starts 2026-11-26 on 26.1.2 / NF 26.1.2.130** (26.1 + 26.1.1 folded in, NeoForge beta-only there). Pins re-verified
+  against Maven metadata: JEI `29.54.0.123` (new transitive dep `mezz_config`), Crafting Tweaks `26.1.2.4` + Balm `26.1.2.15`,
+  JSON Things `0.18.5`; IE stays excluded. Toolchain: NeoGradle 7.1.39 / Gradle 9.2.1 unchanged (official MDK), **Java 25**,
+  **no Parchment**, Lombok pinned to `1.18.42` (1.18.32 crashes javac 25). Mantle baseline: **770 compile errors / 90 files**.
+  Decisions by the user (2026-11-26): D-PUSH backup pushes without tags, **D-TPL** Mantle `ItemOutput`/`FluidOutput` stay the
+  boundary (templates inside, stacks built lazily), **D-N2 JSpecify `@Nullable` migrated now, in an isolated phase on
+  `1.21.11`** (Phase 0.6), D-REL Mantle `1.18` / Tinkers `3.17.0`, D-SCREEN AT `protected-f` on `imageWidth/imageHeight`,
+  **D-TOOL** jar diff + compiler-driven member applier, **D-R3 no more pre-port rendering seams in M7** (GUI widget seam
+  dropped; R3 resumes for 26.2's `MultiBufferSource` removal), D-HOTSWAP JBR 25 installed by hand when needed. Branch
+  `26.1.2`. Detailed plan: [`2026-11-26-m7-26.1.2-port.md`](2026-11-26-m7-26.1.2-port.md).
+- **M7 status (2026-11-27): Phases 0–6 done, Phase 7 (release Mantle `1.18` / Tinkers `3.17.0`, tags `v26.1.2-1.18` /
+  `v26.1.2-3.17.0`) pending the user's OK — not released yet.** Compile errors: **Mantle 770 → 237 by the class map → 204 by
+  the applier → 0; Tinkers 1246 → 647 → 568 → 0**. Datagen: Mantle byte-identical; Tinkers `"count": 1` dropped by the
+  template codecs (190 recipes + 41 advancements), `global_loot_modifiers.json` deleted (NeoForge dropped the index; GLM
+  order is now explicit priorities), structure `DataVersion`, trades as data. Battery on the final code: `build` both repos +
+  **813 unit** (2 skipped) + **172 gametest** + **57/57 uitest** (56 scenarios + `mantle:suite_setup`), side by side with a
+  1.21.11 reference run in Phase 4; 0 JEI `[removal]` warnings. User decisions on the way: wandering trader trade as data with
+  6 config-gated copies (default chance = 1.21.11), `render_type` removal accepted as is (retextured ice/slime/honey stations
+  translucent, the seared lantern shows its fluid). Gotchas:
+  [`repo/docs/migration/1.21.11-to-26.1.2.md`](../../../../repo/docs/migration/1.21.11-to-26.1.2.md).
 
 ## Global constraints (apply to every milestone)
 
@@ -133,7 +154,7 @@ Above 1.21.1: `1.21.2 → 1.21.3 → 1.21.4 → 1.21.5 → 1.21.6 → 1.21.7 →
 | **M4** | 1.21.8 / NF 21.8.57 (was 1.21.6) | 1.21.6, 1.21.7 | 🔴 Serialization `CompoundTag` → **`ValueInput`/`ValueOutput`**; **deferred GUI** (`RenderPipelines` blits, `Matrix3x2fStack`, PiP, GUI item atlas); UBO shaders + fog; tag datagen appenders | 🟠 **Alto** (smaller than predicted — tool NBT untouched; the cost was silent GUI breakage) |
 | **M5** | 1.21.10 / NF 21.10.64 (was 1.21.9) | 1.21.9 | 🔴 NeoForge **transfer API rework** (`ResourceHandler<FluidResource/ItemResource>`, `ItemAccess`, transactions; old capabilities removed); **two-phase rendering** (BER/entity/layer/particle extract + `submit`, `ExtractBlockOutlineRenderStateEvent`, `AtlasManager`); **event-based input** (`MouseButtonEvent`/`KeyEvent`/`InputWithModifiers`, `KeyMapping.Category`); `Level#isClientSide()`, `Entity#getServer()` removed, reload `SharedState`, FML `getDist()`/`isProduction()`, `TypedEntityData`, `ContainerUser`, `entityInside(…, boolean)` | 🔴 **Alto** (actual; predicted 🟠 médio-alto) — Mantle 100 errors / 48 files, Tinkers **594 / 239** (est. 450–650; 202 of them `isClientSide`); the transfer API was done twice: native registered handlers + new → legacy bridges to compile, then a full migration of 713 legacy references / 123 Tinkers files to 0 `[removal]`; two-phase rendering (9 BERs, 5 entity renderers, particles) and event input broke silently; `verifyComponentsAfterLoad` removal needed a design (lazy verification + Tinkers' first mixin). Battery 674 → 793 unit, 58 → 138 gametest, 31 → 43 uitest |
 | **M6** | 1.21.11 / NF 21.11.48 | — (1.21.10 moved into M5) | **`ResourceLocation` → `Identifier`** (Mojang rename, confirmed); vanilla `MethodsReturnNonnullByDefault`/`FieldsAreNonnullByDefault` removed (breaks every `package-info`); `BakedQuad` no longer `int[]`; vanilla render types → `RenderTypes`; game rules, buttons, `FMLLoader.isProduction()` | 🟠 **Mecânico mas pervasivo** (actual: as predicted for volume; the judgment went to render/atlas) — `ResourceLocation` in Mantle 174 / Tinkers 511 files; `package-info` 78 + 278; `BakedQuad` 6 + 24; render types 7 + 15. Phase 0: `javax.annotation` (jsr305) **still ships** (NeoForm library list) — no forced migration; `FMLLoader`/`FMLEnvironment.isProduction()` still exist; added: item atlas split, permissions. Actual: Mantle 1172 errors / 263 files, Tinkers **3570 / 869**; the R4 scripts left 145 / 221. The silent part: **item atlas split** (per-atlas item layers, `BLOCK_OR_ITEM`, trims on the items atlas), `RenderSetup` render types, `BakedQuad` records, JEI 27 behaviour (dead `getRegistryName`, empty stacks dropped), an AT the rename never sees — and worn Tinkers armor found drawn as iron since 1.21.4. Battery 793 → 796 unit, 143 → 159 gametest, 43 → 48 uitest. Pins: NF `21.11.48`, JEI `27.55.0.122`, CT `21.11.5` / Balm `21.11.9.1`, Parchment `2025.12.20`, JSON Things `0.17.0`, NeoGradle 7.1.39 / Gradle 9.2.1 / **Java 21** |
-| **M7** | 26.1.2 / NF 26.1.2.130 | 26.1, 26.1.1 (NeoForge beta-only) | 🔴 **Java 25**; **unobfuscated jar → no Parchment** (drop the Parchment block); `ItemStack`/`FluidStack` require loaded registries; `ItemStackTemplate` in recipes; `RecipeSerializer` becomes a record; `GuiGraphics` → `GuiGraphicsExtractor` + renamed render methods; loot `*Type`s removed | 🔴 **Alto** — the biggest jump: `FluidStack` in 188 Tinkers files; `RecipeSerializer` 11 + 68; `GuiGraphics` 29 + 52. Pins: NF `26.1.2.130` (4-part versions from 26.x), JEI `29.54.0.123`, CT `26.1.2.4` / Balm `26.1.2.15` (new transitive dep `kuma-api-neoforge` — repository filters may block it, like JSON Things did), JSON Things `0.18.5`, NeoGradle 7.1.39 / Gradle 9.2.1 / **Java 25** (installed: `C:\Users\aleja\scoop\apps\temurin25-jdk\current`) |
+| **M7** | 26.1.2 / NF 26.1.2.130 | 26.1, 26.1.1 (NeoForge beta-only) | 🔴 **Java 25**; **unobfuscated jar → no Parchment** (drop the Parchment block); `ItemStack`/`FluidStack` require loaded registries; `ItemStackTemplate` in recipes; `RecipeSerializer` becomes a record; `GuiGraphics` → `GuiGraphicsExtractor` + renamed render methods; loot `*Type`s removed | 🔴 **Alto** — the biggest jump: `FluidStack` in 188 Tinkers files; `RecipeSerializer` 11 + 68; `GuiGraphics` 29 + 52. Actual: 🔴 as predicted, but smaller in volume than M6 and deeper in semantics — Mantle 770 errors / 90 files, Tinkers **1246 / 285** (est. 2000–2600; unresolved classes hide member errors); the jar-diff tools left 237 / 647. The silent part: **stacks need bound data components** (decode, datagen, static init, unit tests — recipes/loot/advancements dropped with a log line), **per-quad render layers** (`render_type` removed), fluid models, pipelines without a default depth test, non-abstract `renderBg` successor, head items' skull transform, creative tabs rejecting repeated stacks, GLM index gone. Battery 796 → 813 unit, 159 → 172 gametest, 48 → 57 uitest. Pins: NF `26.1.2.130` (4-part versions from 26.x), JEI `29.54.0.123`, CT `26.1.2.4` / Balm `26.1.2.15` (new transitive dep `kuma-api-neoforge` — repository filters may block it, like JSON Things did), JSON Things `0.18.5`, NeoGradle 7.1.39 / Gradle 9.2.1 / **Java 25** (installed: `C:\Users\aleja\scoop\apps\temurin25-jdk\current`) |
 | **M8** 🏁 | 26.2 / NF 26.2.0.95 | — | 🔴 **Rendering rewrite**: `MultiBufferSource` removed, **inverted depth test**; advancements packages + `EntityPredicate` changed; `EntityType.X` → `EntityTypes` | 🟠 **Médio-alto** — tank/smeltery renderers, the 42-advancement provider rewritten, `EntityTypes` 25 Tinkers files. Pins: NF `26.2.0.95`, JEI `30.48.0.244` (no new builds since 2026-10-28), CT `26.2.0.4` / Balm `26.2.0.9`, JSON Things `0.19.0`, Java 25. Legacy transfer API still present (deprecated) — removed only in 26.3, so M5 Phase 6 (full transfer migration) keeps us ahead |
 
 > Sources to pull each milestone's exact checklist from: NeoForge release notes
@@ -172,7 +193,9 @@ incremental measures folded into the recipe above:
   ships with the next Mantle release): `FluidRenderInfo` + `FluidRenderer.submitCuboid/submitPouring/submitTiledBox` +
   `MantleRenderTypes.FLUID_NO_CULL`; world fluid-path metric 6 → 1 Tinkers files (the one left is the error-block lines),
   pixel parity verified, new uitest `smeltery_tank_world`. Continue: GUI fluid/tank widgets next (26.1), then
-  item-in-world rendering.
+  item-in-world rendering. **M7 (D-R3): no further seam before 26.1** — the 26.1 GUI changes were renames (D-TOOL), and the
+  pilot meant the fluid model change (sprite + tint lookup) landed in Mantle's `FluidRenderInfo.of` with Tinkers call sites
+  unchanged; R3 resumes for 26.2's `MultiBufferSource` removal (M8).
 - **R4 — rename-map tool** (`repo/scripts/rename-map/`): step 1 also produces the milestone's map file from the primer
   (from 26.1, unobfuscated jars allow a jar-to-jar API diff to seed it); steps 3–4 apply it before hand fixes. First built
   in M6 Phase 0.5.
@@ -299,6 +322,38 @@ incremental measures folded into the recipe above:
     vanilla trim regression (Tinkers models), and the invisible JSON Things plain armor + cape offset (worn armor fix).
   - **R2 held at its first application:** keeping `MantleCommand.PERMISSION_*` as ints with `hasPermission` helpers meant
     Tinkers' 9 subcommands and two item checks never touch the vanilla permission types; a gametest pins the level mapping.
+- **Lessons from M7 (26.1.2):**
+  - **R4's jar diff replaced the hand-written map.** With unobfuscated jars, `Find-ApiRenames` found every class rename the
+    plan had listed by hand plus some it hadn't (179 pairs), and the compiler-driven applier did the receiver-dependent
+    member renames (`drawString` → `text`, `render*` → `extract*`) that a regex can't: Mantle 770 → 204, Tinkers 1246 → 568
+    without a hand edit. **What a diff can't see goes in the overrides file:** same-simple-name swaps (old `Material` →
+    `SpriteId` while a new `Material` exists), same-name member swaps (`RenderTypes.entityCutout` now means no-cull — the old
+    call compiles and silently loses culling) and removed methods with no successor (`renderBg`, a `hint`).
+  - **R1 guards written before the port paid off on the first 26.1.2 run.** Datapack completeness (recipes, loot tables,
+    GLMs) and the static-init stack scan were proven on the green 1.21.11 line, so "a recipe decoder that builds a stack is
+    skipped with a log line" was visible immediately instead of as missing content later. Add an "everything shipped is
+    loaded" guard for every data type (advancements got theirs in Phase 4, after three were found dropped).
+  - **Isolate cross-cutting mechanical changes on the green previous line.** The JSpecify `@Nullable` migration ran on
+    `1.21.11` (battery green, `javap` identical before/after) and was merged in, so it never mixed with port errors.
+  - **Load-time vs. bound-time is the new axis for every API that builds a stack**: decoders, datagen, static init,
+    registration, item model loading, unit tests and caches across reloads. Templates at the boundary (D-TPL) plus one
+    binding helper for data runs and unit tests (`DatagenComponents`, `BaseMcTest#bindDefaultComponents`) covered it with no
+    provider rewrite. `ItemStack#getPrototype()` can't detect stale stacks: drop caches from reload listeners.
+  - **The first boot is datagen.** It found the load blockers (a mixin target, a constructor-time component read) before
+    any gametest; and a 26.1 `PackOutput.PathProvider` with an empty folder wrote to the drive root — check outside the repo
+    after the first data run.
+  - **The reference run found real regressions this time** (fluids through blocks from the pipeline depth default, upside-down
+    head items, two whole creative tabs missing, JEI side-panel slot areas), all invisible to the compiler and the logic
+    tests. Keep viewing every PNG pair, and add a pixel/state assert for each fix (`fluid_depth_test` with a positive
+    control, `head_items`, `creative_tabs_build`).
+  - **Behaviour decisions go to the user with evidence.** `render_type` removal changed how translucent textures render; a
+    side-by-side review page (crops + full shots) made "accept as is" a quick, informed decision. The trade rewrite went
+    through two user decisions (on/off, then 6 gated copies that reproduce the old chance) — compute the old probability
+    before replacing a weight-based mechanic.
+  - **Link-check optional compat jars against the runtime versions** (CT built on an older Balm) and pin transitive runtime
+    deps that crash (kuma). A required runtime mod that is not jar-in-jar (JEI 29 → `mezz_config`) is a deploy note.
+  - **Make the uitest suite get past new startup screens without hiding problems:** proceed past third-party warnings and a
+    plain world upgrade (`warn:`), fail on our own mods' warnings and any other world prompt.
 
 ## Progress
 
@@ -309,6 +364,6 @@ incremental measures folded into the recipe above:
 - [x] **M3 patch** — Tinkers `3.13.1` (2026-10-24): mob head item rendering + legacy tool model cleanup (16 uitest)
 - [x] **M4** — **1.21.8** / NF 21.8.57 (1.21.6 + 1.21.7 folded in) 🔴 — **FECHADO 🏁 2026-11-23**: Fases 0–7 ✅ (2026-10-24 → 2026-11-23), release Mantle `1.15` / Tinkers `3.14.0`, tags `v1.21.8-1.15` / `v1.21.8-3.14.0` pushadas; battery: build + 674 unit + 58 gametest (57 + vanilla `always_pass`) + 31/31 uitest (visual verified vs 1.21.5 reference). Plano [`2026-10-24-m4-1.21.8-port.md`](2026-10-24-m4-1.21.8-port.md); gotchas [`repo/docs/migration/1.21.5-to-1.21.8.md`](../../../../repo/docs/migration/1.21.5-to-1.21.8.md)
 - [x] **M5** — **1.21.10** / NF 21.10.64 (1.21.9 folded in) 🔴 — **FECHADO 🏁 2026-11-25**: Fases 0–8 ✅ (2026-11-23 → 2026-11-25), release Mantle `1.16` / Tinkers `3.15.0`, tags `v1.21.10-1.16` / `v1.21.10-3.15.0` pushadas; battery: build + 793 unit + 143 gametest + 43/43 uitest (42 scenarios + `mantle:suite_setup`); 0 transfer/JEI `[removal]` warnings. Plano [`2026-11-23-m5-1.21.10-port.md`](2026-11-23-m5-1.21.10-port.md); gotchas [`repo/docs/migration/1.21.8-to-1.21.10.md`](../../../../repo/docs/migration/1.21.8-to-1.21.10.md)
-- [ ] **M6** — 1.21.11 / NF 21.11.48 (1.21.10 moved into M5) 🟠 — **em andamento**: Fases 0–6 ✅ (2026-11-25 → 2026-11-26), branch `1.21.11`; battery: build + 796 unit (2 skipped) + 159 gametest (158 + vanilla `always_pass`) + 48/48 uitest (47 scenarios + `mantle:suite_setup`); 0 JEI `[removal]` warnings; **não lançado** — próximo: Fase 7 (release Mantle `1.17` / Tinkers `3.16.0`, tags `v1.21.11-*`, push só com OK). Plano [`2026-11-25-m6-1.21.11-port.md`](2026-11-25-m6-1.21.11-port.md); gotchas [`repo/docs/migration/1.21.10-to-1.21.11.md`](../../../../repo/docs/migration/1.21.10-to-1.21.11.md)
-- [ ] **M7** — 26.1.2 / NF 26.1.2.130 (26.1 + 26.1.1 folded in; Java 25, unobfuscated → no Parchment)
+- [x] **M6** — 1.21.11 / NF 21.11.48 (1.21.10 moved into M5) 🟠 — **FECHADO 🏁 2026-11-26**: Fases 0–7 ✅ (2026-11-25 → 2026-11-26), release Mantle `1.17` / Tinkers `3.16.0`, tags `v1.21.11-1.17` / `v1.21.11-3.16.0` pushadas; battery: build + 796 unit (2 skipped) + 159 gametest (158 + vanilla `always_pass`) + 48/48 uitest (47 scenarios + `mantle:suite_setup`); 0 JEI `[removal]` warnings. Plano [`2026-11-25-m6-1.21.11-port.md`](2026-11-25-m6-1.21.11-port.md); gotchas [`repo/docs/migration/1.21.10-to-1.21.11.md`](../../../../repo/docs/migration/1.21.10-to-1.21.11.md)
+- [ ] **M7** — 26.1.2 / NF 26.1.2.130 (26.1 + 26.1.1 folded in; Java 25, unobfuscated → no Parchment) 🔴 — **em andamento**: Fases 0–6 ✅ (2026-11-26 → 2026-11-27, incl. 0.5 tooling/guards e 0.6 JSpecify), branch `26.1.2` (backup push, sem tags); battery: build + 813 unit (2 skipped) + 172 gametest + 57/57 uitest (56 scenarios + `mantle:suite_setup`); 0 JEI `[removal]` warnings; **não lançado** — próximo: Fase 7 (release Mantle `1.18` / Tinkers `3.17.0`, tags `v26.1.2-*`, push só com OK). Plano [`2026-11-26-m7-26.1.2-port.md`](2026-11-26-m7-26.1.2-port.md); gotchas [`repo/docs/migration/1.21.11-to-26.1.2.md`](../../../../repo/docs/migration/1.21.11-to-26.1.2.md)
 - [ ] **M8** — 26.2 / NF 26.2.0.95 (Java 25) 🏁 target — revisit 26.3 (NeoForge-stable since 2026-10-11) after M8
