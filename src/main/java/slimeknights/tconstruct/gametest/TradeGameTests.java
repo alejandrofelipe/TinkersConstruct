@@ -26,6 +26,8 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.config.Config;
+import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
+import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.world.data.VillagerTradeProvider;
 
@@ -77,8 +79,8 @@ public class TradeGameTests {
   }
 
   /**
-   * Each copy produces an offer like the 1.21.11 listing: a tool from the trader tools tag with materials, a cost of 6 to 32
-   * emeralds (the tier formula), 1 use and 15 xp; the cost component is consumed by the trade (not left on the tool).
+   * Each copy produces an offer like the 1.21.11 listing: a tool from the trader tools tag with materials, a cost from the
+   * tier formula (6 to 8 emeralds per average material tier), 1 use and 15 xp; the cost component is consumed by the trade (not left on the tool).
    */
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 20)
   public static void ancient_tool_trade_offer(GameTestHelper helper) {
@@ -96,7 +98,15 @@ public class TradeGameTests {
         helper.assertTrue(!ToolStack.from(result).getMaterials().isEmpty(), Component.literal("offered tool has no materials: " + result));
         ItemStack cost = offer.getBaseCostA();
         helper.assertTrue(cost.is(Items.EMERALD), Component.literal("cost is not emeralds: " + cost));
-        helper.assertTrue(cost.getCount() >= 6 && cost.getCount() <= 32, Component.literal("cost out of the 6-32 range: " + cost.getCount()));
+        // the 1.21.11 tier formula: round(6 * average tier) plus 0 to round(2 * average tier); ancient materials go down to tier 0 (5 emeralds or less)
+        float tier = 0;
+        MaterialNBT materials = ToolStack.from(result).getMaterials();
+        for (MaterialVariant material : materials) {
+          tier += material.get().getTier();
+        }
+        tier /= materials.size();
+        int min = Math.round(tier * 6), max = min + Math.round(2 * tier);
+        helper.assertTrue(cost.getCount() >= Math.max(min, 1) && cost.getCount() <= max, Component.literal("cost " + cost.getCount() + " out of the " + min + "-" + max + " range for average tier " + tier));
         helper.assertTrue(offer.getMaxUses() == 1 && offer.getXp() == 15, Component.literal("expected 1 use and 15 xp, got " + offer.getMaxUses() + " / " + offer.getXp()));
       }
     }
