@@ -54,6 +54,9 @@ import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operatio
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
+import slimeknights.tconstruct.world.logic.AncientToolTradeFunction;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import slimeknights.mantle.registration.object.EntityObject;
 import slimeknights.mantle.registration.object.EnumObject;
@@ -311,6 +314,12 @@ public final class TinkerWorld extends TinkerModule {
   public static final DeferredHolder<ParticleType<?>, SimpleParticleType> skySlimeParticle = PARTICLE_TYPES.register("sky_slime", () -> new SimpleParticleType(false));
   public static final DeferredHolder<ParticleType<?>, SimpleParticleType> enderSlimeParticle = PARTICLE_TYPES.register("ender_slime", () -> new SimpleParticleType(false));
   public static final DeferredHolder<ParticleType<?>, SimpleParticleType> terracubeParticle = PARTICLE_TYPES.register("terracube", () -> new SimpleParticleType(false));
+
+  /*
+   * Trades
+   */
+  /** Item modifier of the wandering trader ancient tool trade ({@code tconstruct:ancient_tool} villager trade) */
+  public static final DeferredHolder<MapCodec<? extends LootItemFunction>,MapCodec<AncientToolTradeFunction>> ancientToolTradeFunction = LOOT_FUNCTIONS.register("ancient_tool_trade", () -> AncientToolTradeFunction.CODEC);
 
   /*
    * Features

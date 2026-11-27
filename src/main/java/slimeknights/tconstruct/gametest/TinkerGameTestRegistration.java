@@ -33,7 +33,7 @@ public final class TinkerGameTestRegistration {
     DatapackTagGapGameTests.class, RecipeValidationGameTests.class, WorldgenGameTests.class, SaveCompatGameTests.class,
     RecipeSyncGameTests.class, DropGameTests.class, BlockEntityRoundTripGameTests.class, FluidTransferGameTests.class, SmelteryTransferGameTests.class,
     MenuSlotGameTests.class, FluidEffectGameTests.class, HandlerRegistrationGameTests.class, PermissionGameTests.class, DeathGameTests.class,
-    ProjectileGameTests.class, DatapackCompletenessGameTests.class);
+    ProjectileGameTests.class, DatapackCompletenessGameTests.class, TradeGameTests.class);
 
   private static final DeferredRegister<Consumer<GameTestHelper>> TEST_FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, TConstruct.MOD_ID);
   private static final List<Entry> TESTS = new ArrayList<>();

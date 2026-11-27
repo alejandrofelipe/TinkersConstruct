@@ -1,0 +1,21 @@
+{
+  "gives": {
+    "id": "tconstruct:war_pick"
+  },
+  "given_item_modifiers": [
+    {
+      "function": "tconstruct:ancient_tool_trade"
+    }
+  ],
+  "max_uses": 1.0,
+  "merchant_predicate": {
+    "condition": "tconstruct:config",
+    "prop": "wanderer_ancient_tool"
+  },
+  "reputation_discount": 1.0,
+  "wants": {
+    "count": 0.0,
+    "id": "minecraft:emerald"
+  },
+  "xp": 15.0
+}

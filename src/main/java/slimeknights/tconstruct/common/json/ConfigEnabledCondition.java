@@ -107,4 +107,6 @@ public class ConfigEnabledCondition implements ICondition, LootItemCondition {
   public static final ConfigEnabledCondition FORCE_INTEGRATION_MATERIALS = add("force_integration_materials", Config.COMMON.forceIntegrationMaterials);
   public static final ConfigEnabledCondition SLIMY_LOOT_CHESTS = add("slimy_loot_chests", Config.COMMON.slimyLootChests);
   public static final ConfigEnabledCondition SYNC_KNOCKBACK_RESISTANCE = add("sync_knockback_resistance", Config.COMMON.syncKnockbackResistance);
+  /** 26.1: trades are data, so the old trade weight only switches the {@code tconstruct:ancient_tool} trade on (> 0) or off (0) */
+  public static final ConfigEnabledCondition WANDERER_ANCIENT_TOOL = add("wanderer_ancient_tool", () -> Config.COMMON.wandererAncientToolWeight.get() > 0);
 }

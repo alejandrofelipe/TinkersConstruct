@@ -70,6 +70,8 @@ import slimeknights.tconstruct.tools.TinkerTools;
 import slimeknights.tconstruct.tools.data.material.TrimMaterialProvider;
 import slimeknights.tconstruct.world.TinkerStructures;
 import slimeknights.tconstruct.world.TinkerWorld;
+import slimeknights.tconstruct.world.data.VillagerTradeProvider;
+import slimeknights.tconstruct.world.data.VillagerTradeTagProvider;
 import slimeknights.tconstruct.world.data.WorldgenProvider;
 
 import java.util.Locale;
@@ -226,6 +228,7 @@ public class TConstruct {
     DamageTypeProvider.register(registrySetBuilder);
     WorldgenProvider.register(registrySetBuilder);
     TrimMaterialProvider.register(registrySetBuilder);
+    VillagerTradeProvider.register(registrySetBuilder);
     DatapackBuiltinEntriesProvider datapackRegistryProvider = new DatapackBuiltinEntriesProvider(packOutput, lookupProvider, registrySetBuilder, Set.of(MOD_ID));
     event.addProvider(datapackRegistryProvider);
 
@@ -241,6 +244,7 @@ public class TConstruct {
     event.addProvider(new MenuTypeTagProvider(packOutput, lookupProvider));
     event.addProvider(new PotionTagProvider(packOutput, lookupProvider));
     event.addProvider(new DamageTypeTagProvider(packOutput, datapackRegistryProvider.getRegistryProvider()));
+    event.addProvider(new VillagerTradeTagProvider(packOutput, datapackRegistryProvider.getRegistryProvider()));
 
     // other datagen
     event.addProvider(new TConstructLootTableProvider(packOutput, lookupProvider));
