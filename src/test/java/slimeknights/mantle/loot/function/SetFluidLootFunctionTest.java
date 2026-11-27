@@ -1,5 +1,8 @@
 package slimeknights.mantle.loot.function;
 
+import com.google.gson.JsonParser;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluids;
@@ -58,6 +61,36 @@ class SetFluidLootFunctionTest extends BaseMcTest {
     // 26.1: the function holds a FluidStackTemplate, which cannot be empty, so the old empty fluid case is gone
     ItemStack stick = new ItemStack(Items.STICK);
     assertThat(run(stick, new FluidStackTemplate(Fluids.WATER, 1000))).isSameAs(stick);
+  }
+
+  /** Parses the function JSON body (no conditions) through the function codec */
+  private static DataResult<SetFluidLootFunction> parse(String json) {
+    return SetFluidLootFunction.CODEC.codec().parse(JsonOps.INSTANCE, JsonParser.parseString(json));
+  }
+
+  @Test
+  void codec_parsesFluidObject() {
+    assertThat(parse("{\"fluid\": {\"id\": \"minecraft:water\", \"amount\": 250}}").isSuccess()).isTrue();
+  }
+
+  @Test
+  void codec_parsesBareFluidIdAsABucket() {
+    // FluidStackTemplate.CODEC accepts a bare id as 1000 mB
+    SetFluidLootFunction function = parse("{\"fluid\": \"minecraft:lava\"}").getOrThrow();
+    assertThat(function.apply(new ItemStack(Items.BUCKET), null).is(Items.LAVA_BUCKET)).isTrue();
+  }
+
+  /**
+   * An empty or missing fluid (or a zero amount) fails to parse, so the loot table using it fails to load. Same JSON behaviour as the 1.21.11
+   * {@code FluidStack.CODEC} (non-empty fluid, positive amount); 26.1 only dropped the programmatic empty fluid ({@link FluidStackTemplate} cannot
+   * be empty) and added the bare id form.
+   */
+  @Test
+  void codec_rejectsEmptyOrMissingFluid() {
+    assertThat(parse("{\"fluid\": {\"id\": \"minecraft:empty\", \"amount\": 1000}}").isError()).isTrue();
+    assertThat(parse("{\"fluid\": \"minecraft:empty\"}").isError()).isTrue();
+    assertThat(parse("{\"fluid\": {\"id\": \"minecraft:water\", \"amount\": 0}}").isError()).isTrue();
+    assertThat(parse("{}").isError()).isTrue();
   }
 
   @Test
