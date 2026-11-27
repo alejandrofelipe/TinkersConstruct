@@ -22,6 +22,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.neoforged.neoforge.common.data.GlobalLootModifierProvider;
+import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.neoforge.common.loot.LootTableIdCondition;
 import slimeknights.mantle.loot.AddEntryLootModifier;
 import slimeknights.mantle.loot.ReplaceItemLootModifier;
@@ -51,6 +52,13 @@ import java.util.concurrent.CompletableFuture;
 import static slimeknights.mantle.Mantle.commonResource;
 
 public class GlobalLootModifiersProvider extends GlobalLootModifierProvider {
+  /**
+   * Next priority to assign. 26.1: NeoForge applies loot modifiers sorted by priority (highest first) and the {@code global_loot_modifiers.json} index
+   * that fixed their order is gone, so each modifier gets its own priority, counting down from the default, in the order of the old index: e.g. the
+   * modifier hook (melting, ...) must see the drops before lustrous adds its nuggets.
+   */
+  private int priority = IGlobalLootModifier.DEFAULT_PRIORITY;
+
   public GlobalLootModifiersProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
     super(output, registries, TConstruct.MOD_ID);
   }
@@ -58,17 +66,20 @@ public class GlobalLootModifiersProvider extends GlobalLootModifierProvider {
   @SuppressWarnings("removal")
   @Override
   protected void start() {
+    priority = IGlobalLootModifier.DEFAULT_PRIORITY;
     add("wither_bone", ReplaceItemLootModifier.builder(Ingredient.of(Items.BONE), ItemOutput.fromItem(TinkerMaterials.necroticBone))
+      .priority(priority--)
       .addCondition(LootTableIdCondition.builder(Identifier.parse("entities/wither_skeleton")).build())
       .addCondition(ConfigEnabledCondition.WITHER_BONE_DROP)
       .build());
 
     // generic modifier hook
     // TODO: look into migrating this fully to loot tables
-    add("modifier_hook", ModifierLootModifier.builder().addCondition(BlockOrEntityCondition.INSTANCE).build());
+    add("modifier_hook", ModifierLootModifier.builder().priority(priority--).addCondition(BlockOrEntityCondition.INSTANCE).build());
 
     // tasty drops more bacon
     add("tasty_bacon", AddEntryLootModifier.builder(LootItem.lootTableItem(TinkerCommons.bacon))
+      .priority(priority--)
       // this target must be a bacon producer
       .addCondition(new HasLootContextSetCondition(LootContextParamSets.ENTITY))
       .addCondition(LootItemEntityPropertyCondition.hasProperties(EntityTarget.THIS, EntityPredicate.Builder.entity().entityType(EntityTypePredicate.of(this.registries.lookupOrThrow(Registries.ENTITY_TYPE), TinkerTags.EntityTypes.BACON_PRODUCER))).build())
@@ -81,6 +92,7 @@ public class GlobalLootModifiersProvider extends GlobalLootModifierProvider {
 
     // chrysophilite modifier hook
     add("chrysophilite_modifier", AddEntryLootModifier.builder(LootItem.lootTableItem(Items.GOLD_NUGGET))
+      .priority(priority--)
       .addCondition(new BlockTagLootCondition(TinkerTags.Blocks.CHRYSOPHILITE_ORES))
       .addCondition(new ContainsItemModifierLootCondition(LazyTagIngredient.of(TinkerTags.Items.CHRYSOPHILITE_ORES)).inverted())
       .addCondition(ChrysophiliteLootCondition.INSTANCE)
@@ -106,7 +118,7 @@ public class GlobalLootModifiersProvider extends GlobalLootModifierProvider {
   private void addLustrous(String name, boolean optional) {
     TagKey<Item> nuggets = TagKey.create(Registries.ITEM, commonResource("nuggets/" + name));
     Identifier ores = commonResource("ores/" + name);
-    AddEntryLootModifier.Builder builder = AddEntryLootModifier.builder(TagPreferenceLootEntry.tagPreference(nuggets));
+    AddEntryLootModifier.Builder builder = AddEntryLootModifier.builder(TagPreferenceLootEntry.tagPreference(nuggets)).priority(priority--);
     builder.addCondition(new BlockTagLootCondition(TagKey.create(Registries.BLOCK, ores)))
            .addCondition(new ContainsItemModifierLootCondition(LazyTagIngredient.of(TagKey.create(Registries.ITEM, ores))).inverted());
     if (optional) {

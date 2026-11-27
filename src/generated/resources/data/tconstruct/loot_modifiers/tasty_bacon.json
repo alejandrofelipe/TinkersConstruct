@@ -41,5 +41,6 @@
       "function": "minecraft:enchanted_count_increase"
     }
   ],
-  "post_conditions": []
+  "post_conditions": [],
+  "priority": 998
 }

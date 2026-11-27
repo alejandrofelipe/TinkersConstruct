@@ -46,5 +46,6 @@
         "ingredient": "#c:ores/platinum"
       }
     }
-  ]
+  ],
+  "priority": 985
 }

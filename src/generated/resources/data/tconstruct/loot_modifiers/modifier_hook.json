@@ -4,5 +4,6 @@
     {
       "condition": "tconstruct:block_or_entity"
     }
-  ]
+  ],
+  "priority": 999
 }

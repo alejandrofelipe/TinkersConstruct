@@ -42,5 +42,6 @@
         "ingredient": "#c:ores/iron"
       }
     }
-  ]
+  ],
+  "priority": 996
 }

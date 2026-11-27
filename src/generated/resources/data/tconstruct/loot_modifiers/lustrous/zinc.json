@@ -46,5 +46,6 @@
         "ingredient": "#c:ores/zinc"
       }
     }
-  ]
+  ],
+  "priority": 986
 }

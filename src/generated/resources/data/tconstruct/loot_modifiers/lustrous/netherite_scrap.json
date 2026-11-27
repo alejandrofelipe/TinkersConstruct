@@ -42,5 +42,6 @@
         "ingredient": "#c:ores/netherite_scrap"
       }
     }
-  ]
+  ],
+  "priority": 992
 }

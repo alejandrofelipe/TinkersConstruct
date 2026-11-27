@@ -98,6 +98,35 @@ public class DatapackCompletenessGameTests {
     compare(helper, "loot modifier", expectedIds(helper, server, FileToIdConverter.json("loot_modifiers")), loaded);
   }
 
+  /** Order of the Tinkers loot modifiers up to 1.21.11, from the removed {@code global_loot_modifiers.json} index */
+  private static final List<String> LOOT_MODIFIER_ORDER = List.of(
+    "wither_bone", "modifier_hook", "tasty_bacon", "chrysophilite_modifier",
+    "lustrous/iron", "lustrous/gold", "lustrous/copper", "lustrous/cobalt", "lustrous/netherite_scrap",
+    "lustrous/tin", "lustrous/aluminum", "lustrous/lead", "lustrous/silver", "lustrous/nickel", "lustrous/zinc", "lustrous/platinum",
+    "lustrous/tungsten", "lustrous/osmium", "lustrous/uranium", "lustrous/chromium", "lustrous/cadmium");
+
+  /**
+   * 26.1: NeoForge applies the loot modifiers sorted by priority only (highest first, ties in hash order), the index that ordered them is gone. Each
+   * Tinkers modifier has its own priority so they keep the 1.21.11 order (e.g. the modifier hook melts the drops before lustrous adds nuggets).
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void loot_modifiers_keep_the_old_order(GameTestHelper helper) {
+    LootModifierManager manager = helper.getLevel().getServer().getServerResources().managers().getListener(NeoForgeReloadListeners.LOOT_MODIFIERS_KEY);
+    List<String> applied = new ArrayList<>();
+    List<Integer> priorities = new ArrayList<>();
+    for (IGlobalLootModifier modifier : manager.getSortedModifiers()) {
+      Identifier id = manager.getId(modifier);
+      if (id != null && TConstruct.MOD_ID.equals(id.getNamespace())) {
+        applied.add(id.getPath());
+        priorities.add(modifier.priority());
+      }
+    }
+    helper.assertTrue(applied.equals(LOOT_MODIFIER_ORDER), Component.literal("loot modifiers apply in the order " + applied + ", expected " + LOOT_MODIFIER_ORDER));
+    // distinct priorities, else the order of a tie depends on the identifier hashes
+    helper.assertTrue(Set.copyOf(priorities).size() == priorities.size(), Component.literal("loot modifiers share a priority: " + applied + " -> " + priorities));
+    helper.succeed();
+  }
+
   /**
    * M7 Phase 4: the blaze subtree (blaze, manyullyn lanterns and plate armor as their child) was dropped on the first load because its exact
    * tank fluid component predicates and filled tank icons decoded fluid stacks before components were bound.

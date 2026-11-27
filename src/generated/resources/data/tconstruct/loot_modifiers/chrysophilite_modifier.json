@@ -40,5 +40,6 @@
         "ingredient": "#tconstruct:chrysophilite_ores"
       }
     }
-  ]
+  ],
+  "priority": 997
 }

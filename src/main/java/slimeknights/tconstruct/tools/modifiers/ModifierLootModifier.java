@@ -36,7 +36,7 @@ public class ModifierLootModifier extends LootModifier {
 
   /** Creates a builder for datagen */
   public static GenericLootModifierBuilder<ModifierLootModifier> builder() {
-    return new GenericLootModifierBuilder<>(conditions -> new ModifierLootModifier(conditions, IGlobalLootModifier.DEFAULT_PRIORITY));
+    return new GenericLootModifierBuilder<>((conditions, priority) -> new ModifierLootModifier(conditions, priority));
   }
 
   @Override

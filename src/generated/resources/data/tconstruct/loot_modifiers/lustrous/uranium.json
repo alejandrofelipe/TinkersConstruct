@@ -46,5 +46,6 @@
         "ingredient": "#c:ores/uranium"
       }
     }
-  ]
+  ],
+  "priority": 982
 }

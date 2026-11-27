@@ -42,5 +42,6 @@
         "ingredient": "#c:ores/copper"
       }
     }
-  ]
+  ],
+  "priority": 994
 }
