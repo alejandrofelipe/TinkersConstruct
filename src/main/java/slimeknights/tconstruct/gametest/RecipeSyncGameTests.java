@@ -10,7 +10,11 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.crafting.FireworkStarRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -20,13 +24,16 @@ import net.neoforged.neoforge.network.connection.ConnectionType;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.recipe.RecipeLookupPopulator;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -61,12 +68,14 @@ public class RecipeSyncGameTests {
           continue;
         }
         byte[] second = encode(access, decoded);
-        String unordered = UNORDERED_STREAM_CODECS.get(holder.value().getSerializer());
+        UnorderedCodec unordered = UNORDERED_STREAM_CODECS.get(holder.value().getSerializer());
         if (unordered != null) {
-          // only the order of the map entries may change: same bytes, possibly permuted
-          if (!Arrays.equals(sortedCopy(first), sortedCopy(second))) {
-            TConstruct.LOG.error("Synced recipe {} re-encodes with different content:\n  first:  {}\n  second: {}", id, ByteBufUtil.hexDump(first), ByteBufUtil.hexDump(second));
-            failures.put(id, "re-encoding has different content (" + first.length + " vs " + second.length + " bytes; entry order is exempt: " + unordered + ")");
+          // only the order of the map entries may change: both recipes with their maps sorted must encode to the same bytes
+          byte[] sortedFirst = encode(access, new RecipeHolder<>(holder.id(), unordered.sorted().apply(holder.value())));
+          byte[] sortedSecond = encode(access, new RecipeHolder<>(decoded.id(), unordered.sorted().apply(decoded.value())));
+          if (!Arrays.equals(sortedFirst, sortedSecond)) {
+            TConstruct.LOG.error("Synced recipe {} re-encodes with different content:\n  first:  {}\n  second: {}", id, ByteBufUtil.hexDump(sortedFirst), ByteBufUtil.hexDump(sortedSecond));
+            failures.put(id, "re-encoding has different content (" + first.length + " vs " + second.length + " bytes; entry order is exempt: " + unordered.reason() + ")");
           }
         } else if (!Arrays.equals(first, second)) {
           TConstruct.LOG.error("Synced recipe {} re-encodes differently:\n  first:  {}\n  second: {}", id, ByteBufUtil.hexDump(first), ByteBufUtil.hexDump(second));
@@ -181,18 +190,35 @@ public class RecipeSyncGameTests {
     helper.succeed();
   }
 
+  /** A recipe whose stream codec does not keep its map order: a copy of the recipe with the map in a fixed order, and why the order changes */
+  private record UnorderedCodec(UnaryOperator<Recipe<?>> sorted, String reason) {}
+
   /**
    * Serializers whose stream codec decodes a map into a hash map, so a decoded recipe re-encodes the same entries in another order. Their
-   * round trip only requires the same bytes in any order (a lost or changed entry still fails). Vanilla only; each with the reason.
+   * round trip compares both recipes with the map sorted, byte for byte (a lost, added or changed entry still fails). Vanilla only; each with the reason.
    */
-  private static final Map<RecipeSerializer<?>, String> UNORDERED_STREAM_CODECS = Map.of(
-    FireworkStarRecipe.SERIALIZER, "26.1 vanilla FireworkStarRecipe.STREAM_CODEC decodes the shapes into a HashMap keyed by an enum (identity hash order), "
-      + "while the JSON codec keeps the file order; the map's content and the recipe's behaviour are the same");
+  private static final Map<RecipeSerializer<?>, UnorderedCodec> UNORDERED_STREAM_CODECS = Map.of(
+    FireworkStarRecipe.SERIALIZER, new UnorderedCodec(RecipeSyncGameTests::sortedShapes,
+      "26.1 vanilla FireworkStarRecipe.STREAM_CODEC decodes the shapes into a HashMap keyed by an enum (identity hash order), "
+      + "while the JSON codec keeps the file order; the map's content and the recipe's behaviour are the same"));
 
-  private static byte[] sortedCopy(byte[] bytes) {
-    byte[] sorted = bytes.clone();
-    Arrays.sort(sorted);
-    return sorted;
+  /** Copy of a firework star recipe with its shapes in enum order; its fields are private and have no getters */
+  @SuppressWarnings("unchecked")
+  private static Recipe<?> sortedShapes(Recipe<?> recipe) {
+    try {
+      Map<FireworkExplosion.Shape, Ingredient> shapes = new EnumMap<>(FireworkExplosion.Shape.class);
+      shapes.putAll((Map<FireworkExplosion.Shape, Ingredient>) field("shapes").get(recipe));
+      return new FireworkStarRecipe(shapes, (Ingredient) field("trail").get(recipe), (Ingredient) field("twinkle").get(recipe),
+                                    (Ingredient) field("fuel").get(recipe), (Ingredient) field("dye").get(recipe), (ItemStackTemplate) field("result").get(recipe));
+    } catch (ReflectiveOperationException e) {
+      throw new IllegalStateException("cannot read the firework star recipe fields", e);
+    }
+  }
+
+  private static Field field(String name) throws NoSuchFieldException {
+    Field field = FireworkStarRecipe.class.getDeclaredField(name);
+    field.setAccessible(true);
+    return field;
   }
 
   private static RegistryFriendlyByteBuf buffer(RegistryAccess access, ByteBuf buf) {
