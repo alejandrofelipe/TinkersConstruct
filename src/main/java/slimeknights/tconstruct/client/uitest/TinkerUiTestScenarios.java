@@ -127,7 +127,6 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
 import slimeknights.mantle.client.model.util.ModelHelper;
 import slimeknights.mantle.client.model.util.SimpleBlockModel;
-import slimeknights.mantle.client.render.RenderTargetCapture;
 import slimeknights.mantle.client.screen.MultiModuleScreen;
 import slimeknights.mantle.client.screen.book.BookScreen;
 import slimeknights.mantle.client.screen.book.element.StructureElement;
@@ -1451,7 +1450,7 @@ public class TinkerUiTestScenarios {
       if (!(ctx.mc().screen instanceof InventoryScreen screen)) {
         throw new IllegalStateException("head_items: the inventory closed before the capture, found " + ctx.mc().screen);
       }
-      try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+      try (NativeImage image = ctx.captureFrame()) {
         double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
         for (int i = 0; i < 9; i++) {
           Slot slot = screen.getMenu().slots.get(InventoryMenu.USE_ROW_SLOT_START + i);
@@ -1843,7 +1842,7 @@ public class TinkerUiTestScenarios {
     public void close(UiTestContext ctx) {
       // the frame just captured is still in the main target
       if (ctx.mc().screen instanceof InventoryScreen screen) {
-        try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+        try (NativeImage image = ctx.captureFrame()) {
           double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
           // the copper plating beside a neutral stripe: grey (vanilla iron) armor fails the first, skin or hair fails at least one of them
           assertGuiRegion(image, scale, screen, HELMET_REGION, "trimmed_armor: worn copper helmet", COPPER);
@@ -1974,7 +1973,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void close(UiTestContext ctx) {
       // the frame just captured is still in the main target
-      try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+      try (NativeImage image = ctx.captureFrame()) {
         assertFrameRegion(image, SLIME_REGION, "worn_armor: skyslime suit on the armor stand", SKYSLIME);
         assertFrameRegion(image, TRAVELERS_REGION, "worn_armor: travelers cuirass on the armor stand", LEATHER);
         assertFrameRegion(image, ZOMBIE_REGION, "worn_armor: gold plate on the zombie", GOLD);
@@ -2313,7 +2312,7 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+      try (NativeImage image = ctx.captureFrame()) {
         WornArmorScenario.assertFrameRegion(image, STONE_REGION, NAME + ": stone in front of a honey tank", GREY);
         WornArmorScenario.assertFrameRegion(image, CONTROL_REGION, NAME + ": honey tank with nothing in front (control)", HONEY);
       }
@@ -2402,7 +2401,7 @@ public class TinkerUiTestScenarios {
       if (!(ctx.mc().screen instanceof MelterScreen screen)) {
         throw new IllegalStateException(NAME + ": expected the melter screen, found " + ctx.mc().screen);
       }
-      try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+      try (NativeImage image = ctx.captureFrame()) {
         double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
         TrimmedArmorScenario.assertGuiRegion(image, scale, screen, TANK_REGION, NAME + ": molten ender in the GUI tank", ENDER);
       }
@@ -2453,7 +2452,7 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+      try (NativeImage image = ctx.captureFrame()) {
         double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
         int[] kit = countPixels(image, scale, 0);
         int[] stone = countPixels(image, scale, 1);
@@ -3050,7 +3049,7 @@ public class TinkerUiTestScenarios {
         throw new IllegalStateException(NAME + ": expected a liquid below a gas in the client tank, found " + fluids);
       }
       // the frame just captured is still in the main target
-      try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+      try (NativeImage image = ctx.captureFrame()) {
         WornArmorScenario.assertFrameRegion(image, LIQUID_REGION, NAME + ": molten cobalt layer", COBALT);
         WornArmorScenario.assertFrameRegion(image, GAS_REGION, NAME + ": ichor gas layer", ICHOR);
         WornArmorScenario.assertFrameRegion(image, EMPTY_REGION, NAME + ": empty top of the tank", ICHOR.negate().and(COBALT.negate()));
