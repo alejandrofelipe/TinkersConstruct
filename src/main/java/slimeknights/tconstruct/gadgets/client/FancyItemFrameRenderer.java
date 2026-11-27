@@ -5,6 +5,7 @@ import net.neoforged.neoforge.client.event.ModelEvent;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -129,7 +130,7 @@ public class FancyItemFrameRenderer<T extends FancyItemFrameEntity> extends Item
         // 26.1: blocks are submitted as model parts with tint layers instead of a model and an RGB color
         random.setSeed(42L);
         model.collectParts(BlockAndTintGetter.EMPTY, BlockPos.ZERO, Blocks.AIR.defaultBlockState(), random, parts);
-        collector.submitBlockModel(matrices, Sheets.cutoutBlockSheet(), List.copyOf(parts), new int[0], packedLight, OverlayTexture.NO_OVERLAY, state.outlineColor);
+        collector.submitBlockModel(matrices, Sheets.cutoutBlockSheet(), List.copyOf(parts), BlockModelRenderState.EMPTY_TINTS, packedLight, OverlayTexture.NO_OVERLAY, state.outlineColor);
         parts.clear();
       }
       matrices.popPose();

@@ -119,7 +119,9 @@ public final class FluidContainerModel {
     /** Transformation the model was baked with, applied as the layer transform */
     private final Matrix4fc transformation;
     /** FluidStack does not override equals/hashCode, so key by fluid and components or the cache never hits */
-    private final Map<FluidStack, BakedItem> cache = Collections.synchronizedMap(new Object2ObjectOpenCustomHashMap<>(FluidStackLinkedSet.TYPE_AND_COMPONENTS));
+    /** Model of the static fluid, set on first render */
+    @Nullable private volatile BakedItem staticModel;
+    private final Map<FluidStack, BakedItem> cache =Collections.synchronizedMap(new Object2ObjectOpenCustomHashMap<>(FluidStackLinkedSet.TYPE_AND_COMPONENTS));
 
     Baked(ItemTransforms itemTransforms, @Nullable Material base, @Nullable Material fluidMask, @Nullable Material particle, @Nullable FluidStackTemplate staticFluid, boolean flipGas, Matrix4fc transformation) {
       this.itemTransforms = itemTransforms;
@@ -176,15 +178,18 @@ public final class FluidContainerModel {
 
     @Override
     public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
-      FluidStack fluid;
+      BakedItem model;
       if (staticFluid != null) {
-        // 26.1: created per render, the default fluid components are bound per world join
-        fluid = staticFluid.create();
+        // 26.1: the stack is created on first render, after the default fluid components are bound; cached like any other fluid
+        model = staticModel;
+        if (model == null) {
+          model = staticModel = getCachedModel(staticFluid.create());
+        }
       } else {
         // first fluid of one container, native capability
-        fluid = FluidUtil.getFirstStackContained(stack);
+        model = getCachedModel(FluidUtil.getFirstStackContained(stack));
       }
-      ItemModelUtil.renderModel(renderState, stack, displayContext, getCachedModel(fluid), transformation);
+      ItemModelUtil.renderModel(renderState, stack, displayContext, model, transformation);
     }
   }
 }
