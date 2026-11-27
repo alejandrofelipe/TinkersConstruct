@@ -266,7 +266,7 @@ public class EnchantmentConvertingRecipe extends AbstractWorktableRecipe {
 
   /** Cached list of all enchantable tools, since its item instance controlled only needs to be computed once per load */
   @Nullable
-  private static List<ItemStack> ALL_ENCHANTABLE_TOOLS;
+  private static volatile List<ItemStack> ALL_ENCHANTABLE_TOOLS;
   static {
     // 26.1 binds the default components per load (/reload, joining a world) and the list holds stacks built from them (enchantability is a
     // component), so drop it with the other recipe caches; a stack's getPrototype() is its holder's current components, so it can't tell staleness
@@ -275,8 +275,10 @@ public class EnchantmentConvertingRecipe extends AbstractWorktableRecipe {
 
   /** Gets a list of all enchantable tools. This is expensive, so it is cached until the next recipe reload. */
   public static List<ItemStack> getAllEnchantableTools() {
-    if (ALL_ENCHANTABLE_TOOLS == null) {
-      ALL_ENCHANTABLE_TOOLS = BuiltInRegistries.ITEM.stream().map(item -> {
+    // read once: on an integrated server the invalidation runs on a reload worker while the client thread (JEI) reads the list
+    List<ItemStack> tools = ALL_ENCHANTABLE_TOOLS;
+    if (tools == null) {
+      tools = BuiltInRegistries.ITEM.stream().map(item -> {
         if (item != Items.BOOK) {
           ItemStack stack = new ItemStack(item);
           if (stack.isEnchantable()) {
@@ -285,7 +287,8 @@ public class EnchantmentConvertingRecipe extends AbstractWorktableRecipe {
         }
         return ItemStack.EMPTY;
       }).filter(stack -> !stack.isEmpty()).toList();
+      ALL_ENCHANTABLE_TOOLS = tools;
     }
-    return ALL_ENCHANTABLE_TOOLS;
+    return tools;
   }
 }
