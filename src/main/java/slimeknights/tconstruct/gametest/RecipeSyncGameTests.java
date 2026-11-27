@@ -75,7 +75,7 @@ public class RecipeSyncGameTests {
           byte[] sortedSecond = encode(access, new RecipeHolder<>(decoded.id(), unordered.sorted().apply(decoded.value())));
           if (!Arrays.equals(sortedFirst, sortedSecond)) {
             TConstruct.LOG.error("Synced recipe {} re-encodes with different content:\n  first:  {}\n  second: {}", id, ByteBufUtil.hexDump(sortedFirst), ByteBufUtil.hexDump(sortedSecond));
-            failures.put(id, "re-encoding has different content (" + first.length + " vs " + second.length + " bytes; entry order is exempt: " + unordered.reason() + ")");
+            failures.put(id, "re-encoding has different content (" + sortedFirst.length + " vs " + sortedSecond.length + " bytes; entry order is exempt: " + unordered.reason() + ")");
           }
         } else if (!Arrays.equals(first, second)) {
           TConstruct.LOG.error("Synced recipe {} re-encodes differently:\n  first:  {}\n  second: {}", id, ByteBufUtil.hexDump(first), ByteBufUtil.hexDump(second));
