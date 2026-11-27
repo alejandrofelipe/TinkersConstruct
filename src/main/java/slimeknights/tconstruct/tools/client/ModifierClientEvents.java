@@ -266,14 +266,14 @@ public class ModifierClientEvents {
         int x = scaledWidth / 2 + (rightHanded ? -117 : 101);
         int y = scaledHeight - 38;
         graphics.blit(RenderPipelines.GUI_TEXTURED, Icons.ICONS, x - 3, y - 3, emptyOffhand ? 211 : 189, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
-        mc.gui.renderSlot(graphics, x, y, partialTicks, player, nextOffhand, 11);
+        mc.gui.extractSlot(graphics, x, y, partialTicks, player, nextOffhand, 11);
       }
       // want to the side above the normal offhand item
       if (renderSleeves) {
         int x = scaledWidth / 2 + (rightHanded ? -136 : 120);
         int y = scaledHeight - 19;
         graphics.blit(RenderPipelines.GUI_TEXTURED, Icons.ICONS, x - 3, y - 3, emptyOffhand ? 211 : rightHanded ? 145 : 123, 0, SLOT_BACKGROUND_SIZE, SLOT_BACKGROUND_SIZE, 256, 256);
-        mc.gui.renderSlot(graphics, x, y, partialTicks, player, currentSleeve, 11);
+        mc.gui.extractSlot(graphics, x, y, partialTicks, player, currentSleeve, 11);
       }
 
       // TODO: cannot remember why this was needed before. Reconfirm if bug still exists.
@@ -374,13 +374,13 @@ public class ModifierClientEvents {
         xStart += 3; yStart += 3; // offset from item start instead of frame start
         for (int r = 0; r < lastRow; r++) {
           for (int c = 0; c < columns; c++) {
-            mc.gui.renderSlot(graphics, xStart + c * SLOT_BACKGROUND_SIZE, yStart + r * SLOT_BACKGROUND_SIZE, partialTicks, player, itemFrames.get(i), i);
+            mc.gui.extractSlot(graphics, xStart + c * SLOT_BACKGROUND_SIZE, yStart + r * SLOT_BACKGROUND_SIZE, partialTicks, player, itemFrames.get(i), i);
             i++;
           }
         }
         // align last row
         for (int c = 0; c < inLastRow; c++) {
-          mc.gui.renderSlot(graphics, xStart + c * SLOT_BACKGROUND_SIZE + lastRowOffset, yStart + lastRow * SLOT_BACKGROUND_SIZE, partialTicks, player, itemFrames.get(i), i);
+          mc.gui.extractSlot(graphics, xStart + c * SLOT_BACKGROUND_SIZE + lastRowOffset, yStart + lastRow * SLOT_BACKGROUND_SIZE, partialTicks, player, itemFrames.get(i), i);
           i++;
         }
       }
