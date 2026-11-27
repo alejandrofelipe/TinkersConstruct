@@ -1,17 +1,16 @@
 package slimeknights.tconstruct.shared.client;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SingleQuadParticle;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.util.RandomSource;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
+import slimeknights.mantle.client.render.FluidRenderInfo;
 import slimeknights.mantle.client.render.FluidRenderer;
 import slimeknights.tconstruct.shared.particle.FluidParticleData;
+
+import java.util.Objects;
 
 /** Particle type that renders a fluid still texture */
 public class FluidParticle extends SingleQuadParticle {
@@ -19,11 +18,15 @@ public class FluidParticle extends SingleQuadParticle {
   private final float uCoord;
   private final float vCoord;
   protected FluidParticle(ClientLevel world, double x, double y, double z, double motionX, double motionY, double motionZ, FluidStack fluid) {
-    super(world, x, y, z, motionX, motionY, motionZ, getStillSprite(fluid));
+    this(world, x, y, z, motionX, motionY, motionZ, fluid, Objects.requireNonNull(FluidRenderInfo.of(fluid), "Fluid particle needs a fluid"));
+  }
+
+  /** 26.1: sprite and tint come from the fluid model */
+  private FluidParticle(ClientLevel world, double x, double y, double z, double motionX, double motionY, double motionZ, FluidStack fluid, FluidRenderInfo info) {
+    super(world, x, y, z, motionX, motionY, motionZ, info.still());
     this.fluid = fluid;
-    IClientFluidTypeExtensions attributes = IClientFluidTypeExtensions.of(fluid.getFluid());
     this.gravity = 1.0F;
-    int color = attributes.getTintColor(fluid);
+    int color = info.color();
     this.alpha = ((color >> 24) & 0xFF) / 255f;
     this.rCol   = ((color >> 16) & 0xFF) / 255f;
     this.gCol = ((color >>  8) & 0xFF) / 255f;
@@ -33,14 +36,10 @@ public class FluidParticle extends SingleQuadParticle {
     this.vCoord = this.random.nextFloat() * 3.0F;
   }
 
-  /** Gets the still sprite of the fluid from the block atlas */
-  private static TextureAtlasSprite getStillSprite(FluidStack fluid) {
-    return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(IClientFluidTypeExtensions.of(fluid.getFluid()).getStillTexture(fluid));
-  }
-
   @Override
   protected Layer getLayer() {
-    return Layer.TERRAIN;
+    // 26.1: the 1.21.11 TERRAIN layer (translucent, blocks atlas) was renamed
+    return Layer.TRANSLUCENT_TERRAIN;
   }
 
   @Override

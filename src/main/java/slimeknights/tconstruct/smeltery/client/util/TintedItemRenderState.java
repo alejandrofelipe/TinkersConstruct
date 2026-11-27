@@ -1,5 +1,7 @@
 package slimeknights.tconstruct.smeltery.client.util;
 
+import it.unimi.dsi.fastutil.ints.IntList;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -64,31 +66,39 @@ public class TintedItemRenderState extends ItemStackRenderState {
         continue;
       }
       // find a free tint index for untinted quads
-      int[] oldTints = layer.prepareTintLayers(0).clone();
-      int untinted = oldTints.length;
+      // 26.1: the tint layers are a list filled by the item model's tint sources
+      IntList tints = layer.tintLayers();
+      int oldSize = tints.size();
+      int untinted = oldSize;
       for (BakedQuad quad : quads) {
-        untinted = Math.max(untinted, quad.tintIndex() + 1);
+        untinted = Math.max(untinted, quad.materialInfo().tintIndex() + 1);
       }
       // multiply the color into the existing tints, -1 (white) is used for missing tints
-      int[] tints = layer.prepareTintLayers(untinted + 1);
       for (int i = 0; i < untinted; i++) {
-        tints[i] = ARGB.multiply(i < oldTints.length ? oldTints[i] : -1, color);
+        int tint = ARGB.multiply(i < oldSize ? tints.getInt(i) : -1, color);
+        if (i < oldSize) {
+          tints.set(i, tint);
+        } else {
+          tints.add(tint);
+        }
       }
-      tints[untinted] = color;
+      tints.add(color);
       // quad list belongs to this state, so it is safe to swap in quads using the new tint index
       for (int i = 0; i < quads.size(); i++) {
         BakedQuad quad = quads.get(i);
-        if (!quad.isTinted()) {
-          // 1.21.11: quads are records of positions and packed UVs plus NeoForge's normals and colors, copy every field but the tint
+        BakedQuad.MaterialInfo material = quad.materialInfo();
+        // fade requires a translucent render type, solid and cutout ignore vertex alpha
+        // 26.1: the render type is per quad (was the layer's), 1.21.11's itemEntityTranslucentCull is now itemTranslucent
+        RenderType renderType = translucent ? RenderTypes.itemTranslucent(material.sprite().atlasLocation()) : material.itemRenderType();
+        int tintIndex = material.isTinted() ? material.tintIndex() : untinted;
+        if (renderType != material.itemRenderType() || tintIndex != material.tintIndex()) {
+          // copy every field but the material info, which gets the new tint index and render type
           quads.set(i, new BakedQuad(quad.position0(), quad.position1(), quad.position2(), quad.position3(),
-                                     quad.packedUV0(), quad.packedUV1(), quad.packedUV2(), quad.packedUV3(),
-                                     untinted, quad.direction(), quad.sprite(), quad.shade(), quad.lightEmission(),
-                                     quad.bakedNormals(), quad.bakedColors(), quad.hasAmbientOcclusion()));
+                                     quad.packedUV0(), quad.packedUV1(), quad.packedUV2(), quad.packedUV3(), quad.direction(),
+                                     new BakedQuad.MaterialInfo(material.sprite(), material.layer(), renderType, tintIndex, material.shade(),
+                                                                material.lightEmission(), material.ambientOcclusion()),
+                                     quad.bakedNormals(), quad.bakedColors()));
         }
-      }
-      // fade requires a translucent render type, solid and cutout ignore vertex alpha
-      if (translucent) {
-        layer.setRenderType(RenderTypes.itemEntityTranslucentCull(quads.getFirst().sprite().atlasLocation()));
       }
     }
   }

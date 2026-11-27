@@ -13,7 +13,7 @@ import net.minecraft.client.resources.model.SimpleModelWrapper;
 import net.minecraft.client.renderer.block.dispatch.SingleVariant;
 import net.minecraft.client.renderer.block.dispatch.Variant;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.renderer.block.dispatch.ModelState;
@@ -27,7 +27,6 @@ import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.model.UnbakedModelLoader;
 import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -38,6 +37,7 @@ import slimeknights.mantle.client.model.util.ColoredBlockModel.ColorData;
 import slimeknights.mantle.client.model.util.DynamicBakedWrapper;
 import slimeknights.mantle.client.model.util.ElementModelData;
 import slimeknights.mantle.client.model.util.ModelHelper;
+import slimeknights.mantle.client.render.FluidRenderInfo;
 import slimeknights.mantle.util.JsonHelper;
 import slimeknights.mantle.util.LogicHelper;
 import slimeknights.mantle.util.RetexturedHelper;
@@ -202,11 +202,12 @@ public class FluidTextureModel extends ColoredBlockModel {
       }
       int luminosity = 0;
       int fluidColor = -1;
-      if (!key.fluid.isEmpty()) {
-        IClientFluidTypeExtensions attributes = IClientFluidTypeExtensions.of(key.fluid.getFluid());
-        fluidColor = attributes.getTintColor(key.fluid);
-        luminosity = key.fluid.getFluid().getFluidType().getLightLevel(key.fluid);
-        SpriteId stillTexture = new SpriteId(TextureAtlas.LOCATION_BLOCKS, attributes.getStillTexture(key.fluid));
+      // 26.1: sprite and tint come from the fluid model
+      FluidRenderInfo info = FluidRenderInfo.of(key.fluid);
+      if (info != null) {
+        fluidColor = info.color();
+        luminosity = info.lightLevel();
+        SpriteId stillTexture = new SpriteId(info.still().atlasLocation(), info.still().contents().name());
         for (String name : fluids) {
           replacements.put(name, stillTexture);
         }
@@ -214,7 +215,7 @@ public class FluidTextureModel extends ColoredBlockModel {
 
       // start baking
       // PORT 1.21.5: rebaked at runtime through the block atlas (SpriteId#sprite); verify fluid textures in the uitest phase
-      Function<String,TextureAtlasSprite> sprites = data.runtimeSprites(replacements);
+      Function<String,Material.Baked> materials = data.runtimeMaterials(replacements);
       ModelState state = data.state();
       List<CuboidModelElement> elements = data.elements();
       List<ColorData> colorData = data.colorData();
@@ -226,11 +227,11 @@ public class FluidTextureModel extends ColoredBlockModel {
         ModelState partState = colors.uvlock() == null ? state : ModelHelper.withUvLock(state, colors.uvlock());
         if (fluidParts.get(i)) {
           UnaryOperator<BakedQuad> fluidTransformer = fluidColor == -1 ? UnaryOperator.identity() : ColoredBlockModel.applyColorQuadTransformer(fluidColor);
-          ColoredBlockModel.bakePart(builder, element, luminosity, sprites, partState, fluidTransformer);
+          ColoredBlockModel.bakePart(builder, element, luminosity, materials, partState, fluidTransformer);
         } else {
           int partColor = colors.color();
           UnaryOperator<BakedQuad> partTransformer = partColor == -1 ? UnaryOperator.identity() : ColoredBlockModel.applyColorQuadTransformer(partColor);
-          ColoredBlockModel.bakePart(builder, element, colors.luminosity(), sprites, partState, partTransformer);
+          ColoredBlockModel.bakePart(builder, element, colors.luminosity(), materials, partState, partTransformer);
         }
       }
       return data.part(builder.build(), data.particle(replacements));
@@ -277,12 +278,12 @@ public class FluidTextureModel extends ColoredBlockModel {
     }
 
     @Override
-    public TextureAtlasSprite particleIcon(BlockAndTintGetter level, BlockPos pos, BlockState state) {
+    public Material.Baked particleMaterial(BlockAndTintGetter level, BlockPos pos, BlockState state) {
       BakedCacheKey key = getKey(level, pos);
       if (key != null) {
-        return getCachedModel(key).particleIcon();
+        return getCachedModel(key).particleMaterial();
       }
-      return super.particleIcon(level, pos, state);
+      return super.particleMaterial(level, pos, state);
     }
 
     @Override

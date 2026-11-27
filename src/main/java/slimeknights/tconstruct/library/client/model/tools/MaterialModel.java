@@ -27,8 +27,9 @@ import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
-import slimeknights.mantle.client.model.util.ElementModelData;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
 import slimeknights.tconstruct.library.client.materials.MaterialRenderInfo;
 import slimeknights.tconstruct.library.client.materials.MaterialRenderInfo.TintedSprite;
@@ -110,7 +111,7 @@ public class MaterialModel {
   /** Builds the transform for the given pixel offset */
   public static Transformation offsetTransform(Vec2 offset) {
     if (Vec2.ZERO.equals(offset)) {
-      return Transformation.identity();
+      return Transformation.IDENTITY;
     }
     // divide by 16 to convert from pixels to base values; negate Y as positive is up for transforms but down for pixels
     return new Transformation(new Vector3f(offset.x / 16, -offset.y / 16, 0), null, null, null);
@@ -152,14 +153,14 @@ public class MaterialModel {
     }
 
     @Override
-    public ItemModel bake(ItemModel.BakingContext context) {
+    public ItemModel bake(ItemModel.BakingContext context, Matrix4fc transformation) {
       // 1.21.5: bake the base model like vanilla BlockModelWrapper, BakedModel is gone
       ModelBaker baker = context.blockModelBaker();
       ResolvedModel resolved = baker.getModel(model);
       TextureSlots slots = resolved.getTopTextureSlots();
       List<BakedQuad> quads = resolved.bakeTopGeometry(slots, baker, BlockModelRotation.IDENTITY).getAll();
-      BakedItem base = new BakedItem(quads, ModelRenderProperties.fromResolvedModel(baker, resolved, slots), ElementModelData.itemRenderTypes(resolved));
-      return new Baked(base, index, material.orElse(null), offsetTransform(offset));
+      BakedItem base = new BakedItem(quads, ModelRenderProperties.fromResolvedModel(baker, resolved, slots));
+      return new Baked(base, index, material.orElse(null), offsetTransform(offset), new Matrix4f(transformation));
     }
   }
 
@@ -170,13 +171,16 @@ public class MaterialModel {
     @Nullable
     private final MaterialVariantId material;
     private final Transformation transform;
+    /** Transformation the item model was baked with, applied as the layer transform */
+    private final Matrix4fc transformation;
     private final Map<MaterialVariantId, BakedItem> cache = new ConcurrentHashMap<>();
 
-    public Baked(BakedItem base, int index, @Nullable MaterialVariantId material, Transformation transform) {
+    public Baked(BakedItem base, int index, @Nullable MaterialVariantId material, Transformation transform, Matrix4fc transformation) {
       this.base = base;
       this.index = index;
       this.material = material;
       this.transform = transform;
+      this.transformation = transformation;
     }
 
     /** Rebakes the item-layer quads for the given material */
@@ -188,7 +192,7 @@ public class MaterialModel {
       // PORT 1.21.4: tint index -1 - material color is baked into the quads rather than resolved via ItemColors
       List<BakedQuad> quads = MantleItemLayerModel.getQuadsForSprite(sprite.color(), -1, sprite.sprite(), transform, sprite.emissivity());
       // 1.21.4 built a composite model without block light, keep that
-      return new BakedItem(quads, ItemModelUtil.properties(false, sprite.sprite(), base.properties().transforms()), ItemModelUtil.defaultRenderTypes());
+      return new BakedItem(quads, ItemModelUtil.properties(false, sprite.sprite(), base.properties().transforms()));
     }
 
     /** Gets the cached baked model for the given material */
@@ -202,7 +206,7 @@ public class MaterialModel {
     @Override
     public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
       MaterialVariantId variant = material != null ? material : IMaterialItem.getMaterialFromStack(stack);
-      ItemModelUtil.renderModel(renderState, stack, displayContext, getCachedModel(variant));
+      ItemModelUtil.renderModel(renderState, stack, displayContext, getCachedModel(variant), transformation);
     }
   }
 }

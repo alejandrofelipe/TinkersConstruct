@@ -40,8 +40,7 @@ import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.sprite.SpriteId;
-import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -1743,7 +1742,7 @@ public class TinkerUiTestScenarios {
    * Draws a grid of item models and modifier icons whose atlas lookups the 1.21.11 items/blocks atlas split changed: the copper can and a tank
    * (fluid container models, one layer per atlas), material-less parts (the base part texture), molten fluid buckets, and modifier icons made of
    * {@code minecraft:item/...} textures (now on the items atlas) over Tinkers {@code gui/modifiers} frames (blocks atlas). Asserts each icon
-   * texture resolves through {@code BLOCK_OR_ITEM}, then captures the grid on a plain screen.
+   * texture resolves like a model texture (26.1: atlas-free {@code Material}, blocks then items atlas), then captures the grid on a plain screen.
    */
   private static class ItemAtlasGridScenario implements UiTestScenario {
     /** Modifiers whose icons start with a vanilla item texture, see {@code tinkering/modifier_icons.json} */
@@ -1787,7 +1786,7 @@ public class TinkerUiTestScenarios {
       }
       // the vanilla item textures used by those icons must resolve through the items atlas, not to the missing sprite
       for (String texture : List.of("item/echo_shard", "item/diamond", "item/emerald", "item/netherite_ingot", "item/slime_ball")) {
-        TextureAtlasSprite sprite = ModelHelper.getSprite(new SpriteId(ModelManager.BLOCK_OR_ITEM, Identifier.withDefaultNamespace(texture)));
+        TextureAtlasSprite sprite = ModelHelper.getSprite(new Material(Identifier.withDefaultNamespace(texture)));
         if (MissingTextureAtlasSprite.getLocation().equals(sprite.contents().name())) {
           throw new IllegalStateException("item_atlas_grid: modifier icon texture minecraft:" + texture + " resolves to the missing sprite");
         }

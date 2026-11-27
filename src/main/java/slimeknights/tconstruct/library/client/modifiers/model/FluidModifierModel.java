@@ -2,15 +2,14 @@ package slimeknights.tconstruct.library.client.modifiers.model;
 
 import com.mojang.math.Transformation;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
+import slimeknights.mantle.client.render.FluidRenderInfo;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.util.ItemLayerPixels;
 import slimeknights.tconstruct.TConstruct;
@@ -76,15 +75,17 @@ public record FluidModifierModel(SpriteId small, @Nullable SpriteId large, ToolT
   public static void addQuads(FluidStack fluid, SpriteId template, Function<SpriteId,TextureAtlasSprite> spriteGetter, Transformation transforms, Consumer<Collection<BakedQuad>> quadConsumer) {
     // must have texture for the proper state
     // fluid properties
-    IClientFluidTypeExtensions attributes = IClientFluidTypeExtensions.of(fluid.getFluid());
-    TextureAtlasSprite fluidSprite = spriteGetter.apply(new SpriteId(TextureAtlas.LOCATION_BLOCKS, attributes.getStillTexture(fluid)));
+    // 26.1: sprite and tint come from the fluid model
+    FluidRenderInfo info = FluidRenderInfo.of(fluid);
+    if (info == null) {
+      return;
+    }
+    TextureAtlasSprite fluidSprite = info.still();
     TextureAtlasSprite maskSprite = spriteGetter.apply(template);
 
     // PORT 1.21.4: UnbakedGeometryHelper was removed; build the fluid clipped to the template shape via the Mantle
     // masked item-layer baker (mask = template, texture = fluid). Color and luminosity are baked in.
-    int luminosity = fluid.getFluid().getFluidType().getLightLevel(fluid);
-    int color = attributes.getTintColor(fluid);
-    List<BakedQuad> fluidQuads = MantleItemLayerModel.getMaskedQuadsForSprite(color, -1, maskSprite, fluidSprite, transforms.compose(FluidContainerModel.FLUID_TRANSFORM), luminosity, null);
+    List<BakedQuad> fluidQuads = MantleItemLayerModel.getMaskedQuadsForSprite(info.color(), -1, maskSprite, fluidSprite, transforms.compose(FluidContainerModel.FLUID_TRANSFORM), info.lightLevel(), null);
     quadConsumer.accept(fluidQuads);
   }
 }

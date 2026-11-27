@@ -14,9 +14,9 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.joml.Matrix3x2f;
+import slimeknights.mantle.client.render.FluidRenderInfo;
 import slimeknights.mantle.client.screen.ElementScreen;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
 
@@ -128,11 +128,11 @@ public final class GuiUtil {
    * @param depth   Unused since 1.21.8 (the GUI has no depth anymore), kept for source compatibility
    */
   public static void renderTiledFluid(GuiGraphicsExtractor graphics, AbstractContainerScreen<?> screen, FluidStack stack, int x, int y, int width, int height, int depth) {
-    if (!stack.isEmpty()) {
-      IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(stack.getFluid());
-      TextureAtlasSprite fluidSprite = screen.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(clientFluid.getStillTexture(stack));
+    // 26.1: sprite and tint come from the fluid model
+    FluidRenderInfo fluid = FluidRenderInfo.of(stack);
+    if (fluid != null) {
       // 1.21.5: tint is passed as vertex color instead of the shader color
-      renderTiledTextureAtlas(graphics, screen, fluidSprite, x, y, width, height, depth, stack.getFluid().getFluidType().isLighterThanAir(), clientFluid.getTintColor(stack));
+      renderTiledTextureAtlas(graphics, screen, fluid.still(), x, y, width, height, depth, fluid.isGas(), fluid.color());
     }
   }
 

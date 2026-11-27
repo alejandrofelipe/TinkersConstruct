@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.item.ModelRenderProperties;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvedModel;
@@ -25,7 +26,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.RenderTypeGroup;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
 import slimeknights.mantle.util.ItemLayerPixels;
@@ -161,8 +163,7 @@ public class ToolModel {
                                              List<MaterialVariantId> materials, @Nullable IToolStackView tool,
                                              boolean useBlockLight, net.minecraft.client.resources.model.cuboid.ItemTransforms itemTransforms) {
     Function<SpriteId,TextureAtlasSprite> spriteGetter = Minecraft.getInstance().getAtlasManager()::get;
-    RenderTypeGroup renderTypes = ItemModelUtil.defaultRenderTypes();
-    Transformation smallTransforms = Transformation.identity();
+    Transformation smallTransforms = Transformation.IDENTITY;
 
     ReversedListBuilder<Collection<BakedQuad>> smallQuads = new ReversedListBuilder<>();
     ItemLayerPixels smallPixels = new ItemLayerPixels();
@@ -217,14 +218,14 @@ public class ToolModel {
         guiAll.add(quad);
       }
     }
-    BakedItem small = new BakedItem(List.copyOf(smallAll), properties, renderTypes);
-    BakedItem gui = new BakedItem(List.copyOf(guiAll), properties, renderTypes);
+    BakedItem small = new BakedItem(List.copyOf(smallAll), properties);
+    BakedItem gui = new BakedItem(List.copyOf(guiAll), properties);
 
     BakedItem right;
     if (largeTransforms != null) {
       List<BakedQuad> largeAll = new ArrayList<>();
       largeQuads.build(coll -> largeAll.addAll(coll));
-      right = new BakedItem(List.copyOf(largeAll), properties, renderTypes);
+      right = new BakedItem(List.copyOf(largeAll), properties);
     } else {
       right = small;
     }
@@ -307,18 +308,18 @@ public class ToolModel {
     }
 
     @Override
-    public ItemModel bake(ItemModel.BakingContext context) {
+    public ItemModel bake(ItemModel.BakingContext context, Matrix4fc transformation) {
       ModelBaker baker = context.blockModelBaker();
       // 1.21.5: display transforms and gui light are read from the resolved transform model
       ResolvedModel transforms = baker.getModel(transformModel);
       // load modifier models using the bake-time sprite getter
-      ModifierModelMap modifierMap = ModifierModelMapManager.INSTANCE.getModelsForTool(material -> baker.sprites().get(material, transforms), modifierModels, List.of(), List.of(), BAKE_LOCATION);
+      ModifierModelMap modifierMap = ModifierModelMapManager.INSTANCE.getModelsForTool(sprite -> baker.materials().get(new Material(sprite.texture()), transforms).sprite(), modifierModels, List.of(), List.of(), BAKE_LOCATION);
       // large tools are stretched in X and Y by 200%, with a special offset
       Transformation largeTransforms = large ? new Transformation(new Vector3f((offset.x - 8) / 32, (-offset.y - 8) / 32, 0), null, new Vector3f(2, 2, 1), null) : null;
       List<ToolPart> toolParts = parts.isEmpty() ? ToolPart.DEFAULT_PARTS : parts;
       Function<String,SpriteId> materialGetter = name -> material(textures.getOrDefault(name, MissingTextureAtlasSprite.getLocation()));
       return new Baked(materialGetter, toolParts, largeTransforms, modifierMap, firstModifiers, showTraits,
-                       transforms.getTopGuiLight().lightLikeBlock(), transforms.getTopTransforms());
+                       transforms.getTopGuiLight().lightLikeBlock(), transforms.getTopTransforms(), new Matrix4f(transformation));
     }
   }
 
@@ -336,6 +337,8 @@ public class ToolModel {
     private final boolean showTraits;
     private final boolean useBlockLight;
     private final net.minecraft.client.resources.model.cuboid.ItemTransforms itemTransforms;
+    /** Transformation the item model was baked with, applied as the layer transform */
+    private final Matrix4fc transformation;
     /**
      * Base (no material/modifier) variants.
      * PORT 1.21.4: baked lazily. {@link #bakeInternal} composites quads via {@code Minecraft.getInstance().getAtlasManager()::get} (the live block
@@ -351,7 +354,7 @@ public class ToolModel {
 
     Baked(Function<String,SpriteId> materialGetter, List<ToolPart> toolParts, @Nullable Transformation largeTransforms, ModifierModelMap modifierModels,
           List<FirstModifier> firstModifiers, boolean showTraits, boolean useBlockLight,
-          net.minecraft.client.resources.model.cuboid.ItemTransforms itemTransforms) {
+          net.minecraft.client.resources.model.cuboid.ItemTransforms itemTransforms, Matrix4fc transformation) {
       this.materialGetter = materialGetter;
       this.toolParts = toolParts;
       this.largeTransforms = largeTransforms;
@@ -360,6 +363,7 @@ public class ToolModel {
       this.showTraits = showTraits;
       this.useBlockLight = useBlockLight;
       this.itemTransforms = itemTransforms;
+      this.transformation = transformation;
     }
 
     /** Lazily bakes the base (no material/modifier) variant on first render, when the block atlas is initialized */
@@ -446,7 +450,7 @@ public class ToolModel {
     @Override
     public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
       BakedToolModel model = resolve(stack);
-      ItemModelUtil.renderModel(renderState, stack, displayContext, model.forContext(displayContext));
+      ItemModelUtil.renderModel(renderState, stack, displayContext, model.forContext(displayContext), transformation);
     }
   }
 

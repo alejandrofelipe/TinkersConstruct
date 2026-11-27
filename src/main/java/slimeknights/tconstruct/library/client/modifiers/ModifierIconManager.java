@@ -11,8 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.sprite.SpriteId;
-import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -128,8 +127,8 @@ public class ModifierIconManager implements IEarlySafeManagerReloadListener {
     if (!icons.isEmpty()) {
       for (Identifier icon : icons) {
         // 1.21.11: item textures (such as minecraft:item/...) left the blocks atlas, while gui/modifiers icons are only stitched into it,
-        // so resolve icons like model textures: items atlas first, then blocks atlas
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ModelHelper.getSprite(new SpriteId(ModelManager.BLOCK_OR_ITEM, icon)), x, y, size, size);
+        // so resolve icons like model textures (26.1: blocks atlas first, then items atlas)
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ModelHelper.getSprite(new Material(icon)), x, y, size, size);
       }
     } else {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, atlas.getSprite(DEFAULT_PAGES), x, y, size, size);

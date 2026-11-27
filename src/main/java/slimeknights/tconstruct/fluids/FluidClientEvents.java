@@ -1,35 +1,18 @@
 package slimeknights.tconstruct.fluids;
 
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import slimeknights.mantle.registration.object.FlowingFluidObject;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.ClientEventBase;
 import slimeknights.tconstruct.library.client.model.FluidContainerModel;
 
 @EventBusSubscriber(modid = TConstruct.MOD_ID, value = Dist.CLIENT)
 public class FluidClientEvents extends ClientEventBase {
-  @SubscribeEvent
-  static void clientSetup(final FMLClientSetupEvent event) {
-    setTranslucent(TinkerFluids.honey);
-    // slime
-    setTranslucent(TinkerFluids.earthSlime);
-    setTranslucent(TinkerFluids.skySlime);
-    setTranslucent(TinkerFluids.enderSlime);
-    // molten
-    setTranslucent(TinkerFluids.moltenDiamond);
-    setTranslucent(TinkerFluids.moltenEmerald);
-    setTranslucent(TinkerFluids.moltenGlass);
-    setTranslucent(TinkerFluids.moltenGlass);
-    setTranslucent(TinkerFluids.liquidSoul);
-    setTranslucent(TinkerFluids.moltenSoulsteel);
-    setTranslucent(TinkerFluids.moltenAmethyst);
-  }
+  // 26.1: ItemBlockRenderTypes is gone, the fluid render layer comes from the fluid model (Mantle registers one per fluid texture), which picks it
+  // from the texture alpha: the translucent fluids (honey, slimes, diamond, emerald, glass, soul, amethyst) have translucent textures; molten
+  // soulsteel is fully opaque, so it renders solid instead of the identical-looking translucent layer.
 
   // PORT 1.21.4: RegisterColorHandlersEvent.Item was removed; the potion fluid item's tint should move to a registered
   // ItemTintSource referenced from its item JSON (deferred to the item-tint batch).
@@ -38,10 +21,5 @@ public class FluidClientEvents extends ClientEventBase {
   @SubscribeEvent
   static void registerItemModels(RegisterItemModelsEvent event) {
     event.register(TConstruct.getResource("fluid_container"), FluidContainerModel.Unbaked.MAP_CODEC);
-  }
-
-  private static void setTranslucent(FlowingFluidObject<?> fluid) {
-    ItemBlockRenderTypes.setRenderLayer(fluid.getStill(), ChunkSectionLayer.TRANSLUCENT);
-    ItemBlockRenderTypes.setRenderLayer(fluid.getFlowing(), ChunkSectionLayer.TRANSLUCENT);
   }
 }

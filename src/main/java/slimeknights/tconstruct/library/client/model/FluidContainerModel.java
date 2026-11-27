@@ -12,24 +12,26 @@ import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.sprite.SpriteId;
-import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ResolvedModel;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidStackLinkedSet;
+import net.neoforged.neoforge.fluids.FluidStackTemplate;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.transfer.fluid.FluidUtil;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
 import slimeknights.mantle.client.model.util.ModelHelper;
+import slimeknights.mantle.client.render.FluidRenderInfo;
+import slimeknights.mantle.client.render.FluidRenderer;
 import slimeknights.tconstruct.library.client.model.ItemModelUtil.BakedItem;
 
 import org.jspecify.annotations.Nullable;
@@ -56,31 +58,30 @@ public final class FluidContainerModel {
 
   /**
    * Builds a material for a texture from the model JSON (base, fluid mask, particle).
-   * 1.21.11: item textures left the blocks atlas, so like vanilla model JSON textures these may be in either atlas.
+   * 26.1: like vanilla model JSON textures these are atlas-free {@link Material}s, found in the blocks atlas first, then the items atlas.
    */
-  private static SpriteId material(Identifier texture) {
-    return new SpriteId(ModelManager.BLOCK_OR_ITEM, texture);
+  private static Material material(Identifier texture) {
+    return new Material(texture);
   }
 
-  /** Builds a block-atlas material, for fluid textures */
-  private static SpriteId blockMaterial(Identifier texture) {
-    return new SpriteId(TextureAtlas.LOCATION_BLOCKS, texture);
-  }
-
-  /** Looks up a sprite, 1.21.9 replacement for {@code SpriteId#sprite()}. 1.21.11: resolves {@link ModelManager#BLOCK_OR_ITEM} items atlas first, like the model bakery */
-  private static TextureAtlasSprite sprite(SpriteId material) {
+  /** Looks up a sprite at runtime, see {@link ModelHelper#getSprite(Material)} */
+  private static TextureAtlasSprite sprite(Material material) {
     return ModelHelper.getSprite(material);
   }
 
-  /** Unbaked fluid container item model */
+  /**
+   * Unbaked fluid container item model.
+   * 26.1: the contained fluid is a {@link FluidStackTemplate}: item models load before the client binds the default fluid components, so the
+   * stack is only created when rendering (same JSON as the 1.21.11 {@code FluidStack} field).
+   */
   public record Unbaked(Identifier transformModel, Optional<Identifier> base, Optional<Identifier> fluidMask,
-                        Optional<Identifier> particle, FluidStack fluid, boolean flipGas) implements ItemModel.Unbaked {
+                        Optional<Identifier> particle, Optional<FluidStackTemplate> fluid, boolean flipGas) implements ItemModel.Unbaked {
     public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
       Identifier.CODEC.fieldOf("transform_model").forGetter(Unbaked::transformModel),
       Identifier.CODEC.optionalFieldOf("base").forGetter(Unbaked::base),
       Identifier.CODEC.optionalFieldOf("fluid").forGetter(Unbaked::fluidMask),
       Identifier.CODEC.optionalFieldOf("particle").forGetter(Unbaked::particle),
-      FluidStack.OPTIONAL_CODEC.optionalFieldOf("contained_fluid", FluidStack.EMPTY).forGetter(Unbaked::fluid),
+      FluidStackTemplate.CODEC.optionalFieldOf("contained_fluid").forGetter(Unbaked::fluid),
       Codec.BOOL.optionalFieldOf("flip_gas", true).forGetter(Unbaked::flipGas)
     ).apply(inst, Unbaked::new));
 
@@ -95,7 +96,7 @@ public final class FluidContainerModel {
     }
 
     @Override
-    public ItemModel bake(ItemModel.BakingContext context) {
+    public ItemModel bake(ItemModel.BakingContext context, Matrix4fc transformation) {
       // 1.21.5: display transforms are read from the resolved transform model
       ResolvedModel transforms = context.blockModelBaker().getModel(transformModel);
       return new Baked(
@@ -103,64 +104,66 @@ public final class FluidContainerModel {
         base.map(FluidContainerModel::material).orElse(null),
         fluidMask.map(FluidContainerModel::material).orElse(null),
         particle.map(FluidContainerModel::material).orElse(null),
-        fluid, flipGas);
+        fluid.orElse(null), flipGas, new Matrix4f(transformation));
     }
   }
 
   /** Baked fluid container model */
   public static final class Baked implements ItemModel {
     private final ItemTransforms itemTransforms;
-    @Nullable private final SpriteId base;
-    @Nullable private final SpriteId fluidMask;
-    @Nullable private final SpriteId particle;
-    private final FluidStack staticFluid;
+    @Nullable private final Material base;
+    @Nullable private final Material fluidMask;
+    @Nullable private final Material particle;
+    @Nullable private final FluidStackTemplate staticFluid;
     private final boolean flipGas;
+    /** Transformation the model was baked with, applied as the layer transform */
+    private final Matrix4fc transformation;
     /** FluidStack does not override equals/hashCode, so key by fluid and components or the cache never hits */
     private final Map<FluidStack, BakedItem> cache = Collections.synchronizedMap(new Object2ObjectOpenCustomHashMap<>(FluidStackLinkedSet.TYPE_AND_COMPONENTS));
 
-    Baked(ItemTransforms itemTransforms, @Nullable SpriteId base, @Nullable SpriteId fluidMask, @Nullable SpriteId particle, FluidStack staticFluid, boolean flipGas) {
+    Baked(ItemTransforms itemTransforms, @Nullable Material base, @Nullable Material fluidMask, @Nullable Material particle, @Nullable FluidStackTemplate staticFluid, boolean flipGas, Matrix4fc transformation) {
       this.itemTransforms = itemTransforms;
       this.base = base;
       this.fluidMask = fluidMask;
       this.particle = particle;
       this.staticFluid = staticFluid;
       this.flipGas = flipGas;
+      this.transformation = transformation;
     }
 
     /** Builds the composite model for the given fluid */
     private BakedItem bakeWith(FluidStack fluid) {
       TextureAtlasSprite baseSprite = base != null ? sprite(base) : null;
       TextureAtlasSprite maskSprite = fluidMask != null ? sprite(fluidMask) : null;
-      IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(fluid.getFluid());
-      TextureAtlasSprite fluidSprite = !fluid.isEmpty() ? sprite(blockMaterial(clientFluid.getStillTexture(fluid))) : null;
+      // 26.1: sprite and tint come from the fluid model
+      FluidRenderInfo fluidInfo = FluidRenderInfo.of(fluid);
+      TextureAtlasSprite fluidSprite = fluidInfo != null ? fluidInfo.still() : null;
 
       // determine particle
       TextureAtlasSprite particleSprite = particle != null ? sprite(particle) : null;
       if (particleSprite == null) particleSprite = fluidSprite;
       if (particleSprite == null) particleSprite = baseSprite;
-      if (particleSprite == null) particleSprite = sprite(blockMaterial(MissingTextureAtlasSprite.getLocation()));
+      if (particleSprite == null) particleSprite = FluidRenderer.getBlockSprite(MissingTextureAtlasSprite.getLocation());
 
       // container is rendered flat: block light false
       List<BakedQuad> builder = new ArrayList<>();
 
       // base layer
       if (baseSprite != null) {
-        builder.addAll(MantleItemLayerModel.getQuadsForSprite(-1, -1, baseSprite, Transformation.identity(), 0));
+        builder.addAll(MantleItemLayerModel.getQuadsForSprite(-1, -1, baseSprite, Transformation.IDENTITY, 0));
       }
 
       // fluid layer, clipped to the mask
-      if (fluidSprite != null && maskSprite != null) {
+      if (fluidInfo != null && maskSprite != null) {
         // PORT 1.21.4: gas flip rotates 180 about the center; may need Phase-4 tuning of the flip origin
         Transformation fluidTransform = FLUID_TRANSFORM;
-        if (flipGas && fluid.getFluid().getFluidType().isLighterThanAir()) {
+        if (flipGas && fluidInfo.isGas()) {
           fluidTransform = new Transformation(null, new Quaternionf(0, 0, 1, 0), null, null).applyOrigin(new Vector3f(0.5f, 0.5f, 0.5f)).compose(FLUID_TRANSFORM);
         }
-        int light = fluid.getFluid().getFluidType().getLightLevel(fluid);
-        int color = clientFluid.getTintColor(fluid);
-        List<BakedQuad> quads = MantleItemLayerModel.getMaskedQuadsForSprite(color, -1, maskSprite, fluidSprite, fluidTransform, light, null);
+        List<BakedQuad> quads = MantleItemLayerModel.getMaskedQuadsForSprite(fluidInfo.color(), -1, maskSprite, fluidSprite, fluidTransform, fluidInfo.lightLevel(), null);
         builder.addAll(quads);
       }
-      return new BakedItem(List.copyOf(builder), ItemModelUtil.properties(false, particleSprite, itemTransforms), ItemModelUtil.defaultRenderTypes());
+      return new BakedItem(List.copyOf(builder), ItemModelUtil.properties(false, particleSprite, itemTransforms));
     }
 
     /** Gets the cached model for the given fluid */
@@ -173,12 +176,15 @@ public final class FluidContainerModel {
 
     @Override
     public void update(ItemStackRenderState renderState, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
-      FluidStack fluid = staticFluid;
-      if (fluid.isEmpty()) {
+      FluidStack fluid;
+      if (staticFluid != null) {
+        // 26.1: created per render, the default fluid components are bound per world join
+        fluid = staticFluid.create();
+      } else {
         // first fluid of one container, native capability
         fluid = FluidUtil.getFirstStackContained(stack);
       }
-      ItemModelUtil.renderModel(renderState, stack, displayContext, getCachedModel(fluid));
+      ItemModelUtil.renderModel(renderState, stack, displayContext, getCachedModel(fluid), transformation);
     }
   }
 }

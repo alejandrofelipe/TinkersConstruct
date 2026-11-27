@@ -12,8 +12,8 @@ import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.resources.model.SimpleModelWrapper;
 import net.minecraft.client.renderer.block.dispatch.SingleVariant;
 import net.minecraft.client.renderer.block.dispatch.Variant;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.renderer.block.dispatch.ModelState;
@@ -25,16 +25,15 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.model.UnbakedModelLoader;
 import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.model.data.ModelData;
 import slimeknights.mantle.client.model.util.ColoredBlockModel;
 import slimeknights.mantle.client.model.util.DynamicBakedWrapper;
 import slimeknights.mantle.client.model.util.ElementModelData;
 import slimeknights.mantle.client.model.util.SimpleBlockModel;
+import slimeknights.mantle.client.render.FluidRenderInfo;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.client.model.ModelProperties;
@@ -172,13 +171,13 @@ public class TankModel extends SimpleBlockModel {
      */
     private SimpleModelWrapper bakeWithFluid(Map<String,SpriteId> replacements, CuboidModelElement fluid, int color, int luminosity) {
       // PORT 1.21.5: rebaked at runtime through the block atlas (SpriteId#sprite); verify tank fluids in the uitest phase
-      Function<String,TextureAtlasSprite> sprites = data.runtimeSprites(replacements);
+      Function<String,Material.Baked> materials = data.runtimeMaterials(replacements);
       QuadCollection.Builder builder = new QuadCollection.Builder();
       // first, add all regular elements
-      data.bake(builder, sprites);
+      data.bake(builder, materials);
       // next, add in the fluid
       UnaryOperator<BakedQuad> fluidTransformer = color == -1 ? UnaryOperator.identity() : ColoredBlockModel.applyColorQuadTransformer(color);
-      ColoredBlockModel.bakePart(builder, fluid, luminosity, sprites, data.state(), fluidTransformer);
+      ColoredBlockModel.bakePart(builder, fluid, luminosity, materials, data.state(), fluidTransformer);
       return data.part(builder.build(), data.particle(replacements));
     }
 
@@ -189,20 +188,22 @@ public class TankModel extends SimpleBlockModel {
      */
     private SimpleModelWrapper getModel(CacheKey key) {
       // fetch fluid data
-      FluidStack stack = key.fluid();
-      IClientFluidTypeExtensions attributes = IClientFluidTypeExtensions.of(stack.getFluid());
-      FluidType type = stack.getFluid().getFluidType();
-      int color = attributes.getTintColor(stack);
-      int luminosity = type.getLightLevel(stack);
+      // 26.1: sprites and tint come from the fluid model; only non-empty fluids get a cache key
+      FluidRenderInfo info = Objects.requireNonNull(FluidRenderInfo.of(key.fluid()), "Tank model fluid is empty");
       Map<String,SpriteId> replacements = new HashMap<>();
-      replacements.put("fluid", new SpriteId(TextureAtlas.LOCATION_BLOCKS, attributes.getStillTexture(stack)));
-      replacements.put("flowing_fluid", new SpriteId(TextureAtlas.LOCATION_BLOCKS, attributes.getFlowingTexture(stack)));
+      replacements.put("fluid", spriteId(info.still()));
+      replacements.put("flowing_fluid", spriteId(info.flowing()));
 
       // add fluid part
-      CuboidModelElement fluid = original.fluid.getPart(key.increments, type.isLighterThanAir());
+      CuboidModelElement fluid = original.fluid.getPart(key.increments, info.isGas());
       // bake the model
       // 1.21.5: the GUI variant only matters for items, which render the static geometry, so it is not baked here
-      return bakeWithFluid(replacements, fluid, color, luminosity);
+      return bakeWithFluid(replacements, fluid, info.color(), info.lightLevel());
+    }
+
+    /** Gets the sprite ID of a stitched sprite, for texture replacements */
+    private static SpriteId spriteId(TextureAtlasSprite sprite) {
+      return new SpriteId(sprite.atlasLocation(), sprite.contents().name());
     }
 
     /**

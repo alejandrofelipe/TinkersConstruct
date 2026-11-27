@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.item.ModelRenderProperties;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.renderer.block.dispatch.ModelState;
@@ -43,6 +44,8 @@ import net.neoforged.neoforge.client.model.UnbakedModelLoader;
 import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
 import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.model.data.ModelProperty;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import slimeknights.mantle.client.model.RetexturedModel;
 import slimeknights.mantle.client.model.util.ColoredBlockModel;
 import slimeknights.mantle.client.model.util.DynamicBakedWrapper;
@@ -213,10 +216,12 @@ public class MaterialBlockModel extends SimpleBlockModel {
         Map<SpriteId, TintedSprite> seen = new HashMap<>();
         TextureSlots textures = data.textures();
         for (String name : retextured) {
-          SpriteId texture = textures.getMaterial(name);
-          if (texture == null) {
+          Material modelTexture = textures.getMaterial(name);
+          if (modelTexture == null) {
             continue;
           }
+          // 26.1: model textures name no atlas, so use the atlas the texture is stitched to (blocks first, like the model bakery)
+          SpriteId texture = new SpriteId(ModelHelper.getSprite(modelTexture).atlasLocation(), modelTexture.sprite());
           TintedSprite tinted = seen.get(texture);
           if (tinted == null) {
             tinted = info.getSprite(texture, spriteGetter);
@@ -246,7 +251,6 @@ public class MaterialBlockModel extends SimpleBlockModel {
 
       // delegate material fetching
       // PORT 1.21.5: rebaked at runtime through the block atlas (SpriteId#sprite); verify material blocks/anvils in the uitest phase
-      // 1.21.11: model JSON textures use the block_or_item atlas, which AtlasManager#get rejects, so resolve them like the model bakery
       Function<SpriteId,TextureAtlasSprite> spriteGetter = ModelHelper::getSprite;
       fetchMaterials(materials, spriteGetter, replacements, tints);
 
@@ -261,7 +265,7 @@ public class MaterialBlockModel extends SimpleBlockModel {
       }
 
       // need to tint or apply light to some textures: manual per-part bake
-      Function<String,TextureAtlasSprite> sprites = data.runtimeSprites(replacements);
+      Function<String,Material.Baked> materialLookup = data.runtimeMaterials(replacements);
       ModelState state = data.state();
       QuadCollection.Builder builder = new QuadCollection.Builder();
       for (CuboidModelElement part : data.elements()) {
@@ -278,9 +282,9 @@ public class MaterialBlockModel extends SimpleBlockModel {
         // apply color if we have it
         if (tint != null) {
           UnaryOperator<BakedQuad> partTransformer = tint.color() == -1 ? UnaryOperator.identity() : ColoredBlockModel.applyColorQuadTransformer(tint.color());
-          ColoredBlockModel.bakePart(builder, part, tint.emissivity(), sprites, state, partTransformer);
+          ColoredBlockModel.bakePart(builder, part, tint.emissivity(), materialLookup, state, partTransformer);
         } else {
-          SimpleBlockModel.bakePart(builder, part, sprites, state, UnaryOperator.identity());
+          SimpleBlockModel.bakePart(builder, part, materialLookup, state, UnaryOperator.identity());
         }
       }
       return data.part(builder.build(), data.particle(replacements));
@@ -382,7 +386,7 @@ public class MaterialBlockModel extends SimpleBlockModel {
   }
 
   /** Placeholder cached when a material resolves to the base model, as the caches cannot hold null */
-  private static final SimpleModelWrapper NO_MODEL = new SimpleModelWrapper(QuadCollection.EMPTY, false, null, null);
+  private static final SimpleModelWrapper NO_MODEL = new SimpleModelWrapper(QuadCollection.EMPTY, false, null);
 
   /** Converts the cache placeholder back to null */
   @Nullable
@@ -583,12 +587,12 @@ public class MaterialBlockModel extends SimpleBlockModel {
     }
 
     @Override
-    public TextureAtlasSprite particleIcon(BlockAndTintGetter level, BlockPos pos, BlockState state) {
+    public Material.Baked particleMaterial(BlockAndTintGetter level, BlockPos pos, BlockState state) {
       SimpleModelWrapper model = dynamic.resolveParticle(level.getModelData(pos));
       if (model != null) {
-        return model.particleIcon();
+        return model.particleMaterial();
       }
-      return super.particleIcon(level, pos, state);
+      return super.particleMaterial(level, pos, state);
     }
 
     @Override
@@ -623,15 +627,15 @@ public class MaterialBlockModel extends SimpleBlockModel {
     }
 
     @Override
-    public ItemModel bake(ItemModel.BakingContext context) {
-      // base model, matching vanilla BlockModelWrapper
+    public ItemModel bake(ItemModel.BakingContext context, Matrix4fc transformation) {
+      // base model, matching vanilla CuboidItemModelWrapper
       ModelBaker baker = context.blockModelBaker();
       ResolvedModel resolved = baker.getModel(model);
       TextureSlots slots = resolved.getTopTextureSlots();
       List<BakedQuad> quads = resolved.bakeTopGeometry(slots, baker, BlockModelRotation.IDENTITY).getAll();
       ModelRenderProperties properties = ModelRenderProperties.fromResolvedModel(baker, resolved, slots);
-      BakedItem base = new BakedItem(quads, properties, ElementModelData.itemRenderTypes(resolved));
-      return new Baked(base, bakeDynamic(baker, resolved, BlockModelRotation.IDENTITY));
+      BakedItem base = new BakedItem(quads, properties);
+      return new Baked(base, bakeDynamic(baker, resolved, BlockModelRotation.IDENTITY), new Matrix4f(transformation));
     }
 
     /** Baked item model wrapping the dynamic material logic */
@@ -639,17 +643,20 @@ public class MaterialBlockModel extends SimpleBlockModel {
       private final BakedItem base;
       @Nullable
       private final AbstractBaked<?,?> dynamic;
+      /** Transformation the item model was baked with, applied as the layer transform */
+      private final Matrix4fc transformation;
       private final Map<SimpleModelWrapper,BakedItem> cache = new ConcurrentHashMap<>();
 
-      public Baked(BakedItem base, @Nullable AbstractBaked<?,?> dynamic) {
+      public Baked(BakedItem base, @Nullable AbstractBaked<?,?> dynamic, Matrix4fc transformation) {
         this.base = base;
         this.dynamic = dynamic;
+        this.transformation = transformation;
       }
 
       /** Converts a baked block part to an item variant */
       private BakedItem toItem(SimpleModelWrapper part) {
         assert dynamic != null;
-        return new BakedItem(part.quads().getAll(), dynamic.getData().itemProperties(part.particleIcon()), base.renderTypes());
+        return new BakedItem(part.quads().getAll(), dynamic.getData().itemProperties(part.particleMaterial().sprite()));
       }
 
       @Override
@@ -661,7 +668,7 @@ public class MaterialBlockModel extends SimpleBlockModel {
             resolved = cache.computeIfAbsent(part, this::toItem);
           }
         }
-        ItemModelUtil.renderModel(renderState, stack, displayContext, resolved);
+        ItemModelUtil.renderModel(renderState, stack, displayContext, resolved, transformation);
       }
     }
   }
