@@ -69,9 +69,9 @@ public final class TinkerGameTestRegistration {
 
   /** Registers the environment and one test instance per test function */
   private static void registerTests(RegisterGameTestsEvent event) {
-    Holder<TestEnvironmentDefinition> environment = event.registerEnvironment(TConstruct.getResource("default"));
+    Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(TConstruct.getResource("default"));
     for (Entry entry : TESTS) {
-      TestData<Holder<TestEnvironmentDefinition>> data = new TestData<>(environment, TConstruct.getResource(entry.test.template()), entry.test.timeoutTicks(), 0, true);
+      TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(environment, TConstruct.getResource(entry.test.template()), entry.test.timeoutTicks(), 0, true);
       event.registerTest(entry.function.identifier(), new FunctionGameTestInstance(entry.function, data));
     }
   }

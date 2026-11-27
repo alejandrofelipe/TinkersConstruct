@@ -21,7 +21,8 @@ public class TinkersCraftingGridProvider implements CraftingGridProvider {
 
   @Override
   public void buildCraftingGrids(CraftingGridBuilder builder, AbstractContainerMenu menu) {
-    builder.addGrid(0,9).setButtonAlignment(ButtonAlignment.LEFT);
+    // 26.1: addGrid(start, size) became addGrid(start, width, height); the old size 9 meant a 3x3 grid
+    builder.addGrid(0, 3, 3).setButtonAlignment(ButtonAlignment.LEFT);
   }
 
   @Override

@@ -9,9 +9,6 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition.Builder;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.neoforged.neoforge.common.util.Lazy;
 import slimeknights.mantle.data.loadable.Loadables;
@@ -19,7 +16,6 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.plugin.jsonthings.block.FlexBurningLiquidBlock;
 import slimeknights.tconstruct.plugin.jsonthings.block.FlexMobEffectLiquidBlock;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -51,16 +47,8 @@ public class FlexBlockTypes {
       Identifier fluidField = Loadables.RESOURCE_LOCATION.getOrDefault(data, "fluid", null);
       int burnTime = GsonHelper.getAsInt(data, "burn_time");
       float damage = GsonHelper.getAsFloat(data, "damage");
-      return (props, builder) -> {
-        final List<Property<?>> _properties = builder.getProperties();
-        return new FlexBurningLiquidBlock(props, builder.getPropertyDefaultValues(), fluidSupplier(Objects.requireNonNullElse(fluidField, builder.getRegistryName())), burnTime, damage) {
-          @Override
-          protected void createBlockStateDefinition(Builder<Block,BlockState> stateBuilder) {
-            super.createBlockStateDefinition(stateBuilder);
-            _properties.forEach(stateBuilder::add);
-          }
-        };
-      };
+      // 26.1: FlexLiquidBlock takes the builder and adds its state properties itself (no anonymous subclass needed)
+      return (props, builder) -> new FlexBurningLiquidBlock(props, builder, fluidSupplier(Objects.requireNonNullElse(fluidField, builder.getRegistryName())), burnTime, damage);
     });
     register("mob_effect_liquid", data -> {
       Identifier fluidField = Loadables.RESOURCE_LOCATION.getOrDefault(data, "fluid", null);
@@ -68,21 +56,15 @@ public class FlexBlockTypes {
       // legacy thingpacks set the level in burn_time, which upstream read it from
       int effectLevel = data.has("level") ? GsonHelper.getAsInt(data, "level") : GsonHelper.getAsInt(data, "burn_time");
       return (props, builder) -> {
-        final List<Property<?>> _properties = builder.getProperties();
         Lazy<MobEffect> effect = Lazy.of(() -> Loadables.MOB_EFFECT.fromKey(effectName, "effect"));
-        return new FlexMobEffectLiquidBlock(props, builder.getPropertyDefaultValues(), fluidSupplier(Objects.requireNonNullElse(fluidField, builder.getRegistryName())), () -> new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect.get()), 5*20, effectLevel - 1)) {
-          @Override
-          protected void createBlockStateDefinition(Builder<Block,BlockState> stateBuilder) {
-            super.createBlockStateDefinition(stateBuilder);
-            _properties.forEach(stateBuilder::add);
-          }
-        };
+        return new FlexMobEffectLiquidBlock(props, builder, fluidSupplier(Objects.requireNonNullElse(fluidField, builder.getRegistryName())), () -> new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect.get()), 5*20, effectLevel - 1));
       };
     });
   }
 
   /** Local helper to register our stuff */
   private static <T extends Block & IFlexBlock> void register(String name, IBlockSerializer<T> factory) {
-    FlexBlockType.register(TConstruct.resourceString(name), factory, FlexBlockType.DefaultTypeProperties.builder().defaultLayer("translucent").defaultSeeThrough(true).defaultIgnitedByLava(false).defaultReplaceable(true));
+    // 26.1: no default render layer any more (layers follow the fluid model's texture alpha)
+    FlexBlockType.register(TConstruct.resourceString(name), factory, FlexBlockType.DefaultTypeProperties.builder().defaultSeeThrough(true).defaultIgnitedByLava(false).defaultReplaceable(true));
   }
 }

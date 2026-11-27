@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.plugin.jsonthings.block;
 
 import dev.gigaherz.jsonthings.things.blocks.FlexLiquidBlock;
+import dev.gigaherz.jsonthings.things.builders.BlockBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -8,17 +9,15 @@ import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.FlowingFluid;
 
-import java.util.Map;
 import java.util.function.Supplier;
 
 /** Json Things version of {@link slimeknights.tconstruct.fluids.block.MobEffectLiquidBlock} */
 public class FlexMobEffectLiquidBlock extends FlexLiquidBlock {
   private final Supplier<MobEffectInstance> effect;
-  public FlexMobEffectLiquidBlock(Properties properties, Map<Property<?>,Comparable<?>> propertyDefaultValues, Supplier<FlowingFluid> fluidSupplier, Supplier<MobEffectInstance> effect) {
-    super(properties, propertyDefaultValues, fluidSupplier.get());
+  public FlexMobEffectLiquidBlock(Properties properties, BlockBuilder builder, Supplier<FlowingFluid> fluidSupplier, Supplier<MobEffectInstance> effect) {
+    super(properties, builder, fluidSupplier.get());
     this.effect = effect;
   }
 
