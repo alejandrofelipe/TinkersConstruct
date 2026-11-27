@@ -1,9 +1,9 @@
 package slimeknights.tconstruct.library.client.modifiers;
 
 import com.mojang.math.Transformation;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -32,7 +32,7 @@ public class FluidModifierModel extends NormalModifierModel {
   private static final Identifier BAKE_LOCATION = TConstruct.getResource("dynamic_fluid_model");
 
   /**
-   * The vanilla model bakery uses an orgin of 0.5,0.5,0.5, and forges dynamic fluid code uses the vanilla model bakery. (see{@link net.minecraft.client.renderer.block.model.FaceBakery} {@code #rotateVertexBy()} for vanilla bakery)
+   * The vanilla model bakery uses an orgin of 0.5,0.5,0.5, and forges dynamic fluid code uses the vanilla model bakery. (see{@link net.minecraft.client.resources.model.cuboid.FaceBakery} {@code #rotateVertexBy()} for vanilla bakery)
    * However, item layer wants an origin of 0,0,0, which is what we expect in our tool models. So cancel out the origin.
   */
   private static final Vector3f ORIGIN = new Vector3f(-0.5f, -0.5f, -0.5f);
@@ -43,17 +43,17 @@ public class FluidModifierModel extends NormalModifierModel {
   /** Logic for fetching the fluid */
   protected final ToolTankHelper helper;
   /** Textures to show */
-  protected final Material[] fluidTextures;
+  protected final SpriteId[] fluidTextures;
 
-  protected FluidModifierModel(ToolTankHelper helper, @Nullable Material smallTexture, @Nullable Material largeTexture, Material[] fluidTextures) {
+  protected FluidModifierModel(ToolTankHelper helper, @Nullable SpriteId smallTexture, @Nullable SpriteId largeTexture, SpriteId[] fluidTextures) {
     super(smallTexture, largeTexture);
     this.helper = helper;
     this.fluidTextures = fluidTextures;
   }
 
-  public FluidModifierModel(ToolTankHelper helper, @Nullable Material smallTexture, @Nullable Material largeTexture,
-                            @Nullable Material smallFull, @Nullable Material largeFull) {
-    this(helper, smallTexture, largeTexture, new Material[] { smallFull, largeFull });
+  public FluidModifierModel(ToolTankHelper helper, @Nullable SpriteId smallTexture, @Nullable SpriteId largeTexture,
+                            @Nullable SpriteId smallFull, @Nullable SpriteId largeFull) {
+    this(helper, smallTexture, largeTexture, new SpriteId[] { smallFull, largeFull });
   }
 
   @Override
@@ -73,19 +73,19 @@ public class FluidModifierModel extends NormalModifierModel {
   }
 
   @Nullable
-  protected Material getTemplate(IToolStackView tool, ModifierEntry entry, FluidStack fluid, boolean isLarge) {
+  protected SpriteId getTemplate(IToolStackView tool, ModifierEntry entry, FluidStack fluid, boolean isLarge) {
     return fluidTextures[(isLarge ? 1 : 0)];
   }
 
   @Override
-  public void addQuads(IToolStackView tool, ModifierEntry entry, Function<Material,TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
+  public void addQuads(IToolStackView tool, ModifierEntry entry, Function<SpriteId,TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
     // first, determine stored fluid
     // modifier must be tank
     FluidStack fluid = helper.getFluid(tool);
     // must have fluid
     if (!fluid.isEmpty()) {
       // must have texture for the proper state
-      Material template = getTemplate(tool, entry, fluid, isLarge);
+      SpriteId template = getTemplate(tool, entry, fluid, isLarge);
       if (template != null) {
         slimeknights.tconstruct.library.client.modifiers.model.FluidModifierModel.addQuads(fluid, template, spriteGetter, transforms, quadConsumer);
       }
@@ -100,11 +100,11 @@ public class FluidModifierModel extends NormalModifierModel {
   public record Unbaked(ToolTankHelper helper) implements IUnbakedModifierModel {
     @Nullable
     @Override
-    public IBakedModifierModel forTool(Function<String,Material> smallGetter, Function<String,Material> largeGetter) {
-      Material smallTexture = smallGetter.apply("");
-      Material largeTexture = largeGetter.apply("");
-      Material smallFluid = smallGetter.apply("_full");
-      Material largeFluid = largeGetter.apply("_full");
+    public IBakedModifierModel forTool(Function<String,SpriteId> smallGetter, Function<String,SpriteId> largeGetter) {
+      SpriteId smallTexture = smallGetter.apply("");
+      SpriteId largeTexture = largeGetter.apply("");
+      SpriteId smallFluid = smallGetter.apply("_full");
+      SpriteId largeFluid = largeGetter.apply("_full");
       if (smallTexture != null || largeTexture != null || smallFluid != null || largeFluid != null) {
         return new FluidModifierModel(helper, smallTexture, largeTexture, smallFluid, largeFluid);
       }

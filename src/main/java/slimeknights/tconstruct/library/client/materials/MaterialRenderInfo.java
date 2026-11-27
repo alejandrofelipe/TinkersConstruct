@@ -2,7 +2,7 @@ package slimeknights.tconstruct.library.client.materials;
 
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import slimeknights.mantle.data.loadable.common.ColorLoadable;
@@ -36,8 +36,8 @@ public record MaterialRenderInfo(MaterialVariantId id, @Nullable Identifier text
    * @return  Sprite if valid, null if missing
    */
   @Nullable
-  private TextureAtlasSprite trySprite(Material base, String suffix, Function<Material,TextureAtlasSprite> spriteGetter) {
-    Material materialTexture = getMaterial(base.texture(), suffix);
+  private TextureAtlasSprite trySprite(SpriteId base, String suffix, Function<SpriteId,TextureAtlasSprite> spriteGetter) {
+    SpriteId materialTexture = getMaterial(base.texture(), suffix);
     TextureAtlasSprite sprite = spriteGetter.apply(materialTexture);
     if (!MissingTextureAtlasSprite.getLocation().equals(sprite.contents().name())) {
       return sprite;
@@ -51,7 +51,7 @@ public record MaterialRenderInfo(MaterialVariantId id, @Nullable Identifier text
    * @param spriteGetter       Logic to get a sprite
    * @return  Pair of the sprite, and a boolean indicating whether the sprite should be tinted
    */
-  public TintedSprite getSprite(Material base, Function<Material,TextureAtlasSprite> spriteGetter) {
+  public TintedSprite getSprite(SpriteId base, Function<SpriteId,TextureAtlasSprite> spriteGetter) {
     TextureAtlasSprite sprite;
     if (texture != null) {
       sprite = trySprite(base, getSuffix(texture), spriteGetter);
@@ -86,10 +86,10 @@ public record MaterialRenderInfo(MaterialVariantId id, @Nullable Identifier text
    * Gets a material for the given resource locations
    * @param texture   Texture path
    * @param suffix    Material or fallback suffix name
-   * @return  Material instance
+   * @return  SpriteId instance
    */
-  private static Material getMaterial(Identifier texture, String suffix) {
-    return new Material(TextureAtlas.LOCATION_BLOCKS, Objects.requireNonNull(Identifier.tryBuild(texture.getNamespace(), texture.getPath() + "_" + suffix)));
+  private static SpriteId getMaterial(Identifier texture, String suffix) {
+    return new SpriteId(TextureAtlas.LOCATION_BLOCKS, Objects.requireNonNull(Identifier.tryBuild(texture.getNamespace(), texture.getPath() + "_" + suffix)));
   }
 
   /**

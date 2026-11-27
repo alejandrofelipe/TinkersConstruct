@@ -17,7 +17,7 @@ import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -82,7 +82,7 @@ public class EntityMeltingRecipeCategory implements IRecipeCategory<EntityMeltin
   }
 
   @Override
-  public void draw(EntityMeltingRecipe recipe, IRecipeSlotsView slot, GuiGraphics graphics, double mouseX, double mouseY) {
+  public void draw(EntityMeltingRecipe recipe, IRecipeSlotsView slot, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
     // the background first, where JEI drew getBackground() (deprecated for removal): same pose, right before draw
     background.draw(graphics);
     arrow.draw(graphics, 71, 21);

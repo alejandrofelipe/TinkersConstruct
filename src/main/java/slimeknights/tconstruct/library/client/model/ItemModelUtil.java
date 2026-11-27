@@ -1,9 +1,9 @@
 package slimeknights.tconstruct.library.client.model;
 
 import com.google.common.base.Suppliers;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.item.BlockModelWrapper;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.cuboid.ItemTransforms;
+import net.minecraft.client.renderer.item.CuboidItemModelWrapper;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.ModelRenderProperties;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  * instead populates {@link ItemStackRenderState} layers.
  * <p>
  * 1.21.5: {@code BakedModel} is gone, so dynamically rebaked item models are kept as a {@link BakedItem} (quads, render
- * properties and render type), attached as a layer the same way vanilla's {@link BlockModelWrapper} does.
+ * properties and render type), attached as a layer the same way vanilla's {@link CuboidItemModelWrapper} does.
  */
 public class ItemModelUtil {
   private ItemModelUtil() {}
@@ -64,7 +64,7 @@ public class ItemModelUtil {
    */
   public record BakedItem(List<BakedQuad> quads, ModelRenderProperties properties, @Nullable RenderTypeGroup renderTypes, Supplier<Vector3fc[]> extents, boolean animated) {
     public BakedItem(List<BakedQuad> quads, ModelRenderProperties properties, @Nullable RenderTypeGroup renderTypes) {
-      this(quads, properties, renderTypes, Suppliers.memoize(() -> BlockModelWrapper.computeExtents(quads)), ModelHelper.hasAnimatedSprite(quads));
+      this(quads, properties, renderTypes, Suppliers.memoize(() -> CuboidItemModelWrapper.computeExtents(quads)), ModelHelper.hasAnimatedSprite(quads));
     }
 
     /** Gets the particle sprite of this model */

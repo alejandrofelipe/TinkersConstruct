@@ -4,9 +4,9 @@ import com.mojang.math.Transformation;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.util.ItemLayerPixels;
@@ -39,8 +39,8 @@ public class MaterialModifierModel implements SimpleModifierModel {
   public static final RecordLoadable<MaterialModifierModel> LOADER = SimpleModifierModel.loader(MaterialModifierModel::new);
   /** Fetches relevant material textures after checking if the texture exists */
   @Nullable
-  private static Material stitchMaterialTextures(Function<String,Material> textureGetter) {
-    Material baseTexture = textureGetter.apply("");
+  private static SpriteId stitchMaterialTextures(Function<String,SpriteId> textureGetter) {
+    SpriteId baseTexture = textureGetter.apply("");
     if (baseTexture != null) {
       for (MaterialRenderInfo info : MaterialRenderInfoLoader.INSTANCE.getAllRenderInfos()) {
         Identifier texture = info.texture();
@@ -58,8 +58,8 @@ public class MaterialModifierModel implements SimpleModifierModel {
   /** @deprecated legacy system, use {@link #LOADER} */
   @Deprecated
   public static final IUnbakedModifierModel UNBAKED_INSTANCE = (smallGetter, largeGetter) -> {
-    Material smallTexture = stitchMaterialTextures(smallGetter);
-    Material largeTexture = stitchMaterialTextures(largeGetter);
+    SpriteId smallTexture = stitchMaterialTextures(smallGetter);
+    SpriteId largeTexture = stitchMaterialTextures(largeGetter);
     if (smallTexture != null || largeTexture != null) {
       return new MaterialModifierModel(smallTexture, largeTexture);
     }
@@ -67,9 +67,9 @@ public class MaterialModifierModel implements SimpleModifierModel {
   };
 
   @Nullable
-  private final Material small;
+  private final SpriteId small;
   @Nullable
-  private final Material large;
+  private final SpriteId large;
 
   @Override
   public RecordLoadable<? extends ModifierModel> getLoader() {
@@ -77,7 +77,7 @@ public class MaterialModifierModel implements SimpleModifierModel {
   }
 
   @Override
-  public void validate(Function<Material, TextureAtlasSprite> spriteGetter) {
+  public void validate(Function<SpriteId, TextureAtlasSprite> spriteGetter) {
     SimpleModifierModel.super.validate(spriteGetter);
     if (Config.CLIENT.logMissingMaterialTextures.get()) {
       for (MaterialRenderInfo info : MaterialRenderInfoLoader.INSTANCE.getAllRenderInfos()) {
@@ -104,8 +104,8 @@ public class MaterialModifierModel implements SimpleModifierModel {
   }
 
   @Override
-  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<Material,TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
-    Material texture = isLarge ? large : small;
+  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<SpriteId,TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
+    SpriteId texture = isLarge ? large : small;
     if (texture != null) {
       MaterialVariantId material = getMaterial(tool, modifier.getModifier());
       if (material != null) {

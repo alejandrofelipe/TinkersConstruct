@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.IdentifierException;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
@@ -193,7 +193,7 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
   }
 
   /** Gets a map of modifier models for the given tool */
-  public ModifierModelMap getModelsForTool(Function<Material, TextureAtlasSprite> spriteGetter, List<Identifier> options) {
+  public ModifierModelMap getModelsForTool(Function<SpriteId, TextureAtlasSprite> spriteGetter, List<Identifier> options) {
     // quick exit: no options
     if (options.isEmpty()) {
       return ModifierModelMap.EMPTY;
@@ -235,7 +235,7 @@ public class ModifierModelMapManager extends MergingJsonDataLoader<Builder> {
   }
 
   /** Gets a map of modifier models for the given tool, considering the legacy model system */
-  public ModifierModelMap getModelsForTool(Function<Material, TextureAtlasSprite> spriteGetter, List<Identifier> options, List<Identifier> smallRoots, List<Identifier> largeRoots, Identifier modelLocation) {
+  public ModifierModelMap getModelsForTool(Function<SpriteId, TextureAtlasSprite> spriteGetter, List<Identifier> options, List<Identifier> smallRoots, List<Identifier> largeRoots, Identifier modelLocation) {
     ModifierModelMap models = getModelsForTool(spriteGetter, options);
     // if not using the legacy system, we are done
     if (smallRoots.isEmpty() && largeRoots.isEmpty()) {

@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.gadgets.item;
 
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
@@ -198,7 +198,7 @@ public class PiggyBackPackItem extends TooltipItem {
         };
 
         /** Common logic to render the icon */
-        private void renderIcon(MobEffectInstance effect, GuiGraphics graphics, int x, int y) {
+        private void renderIcon(MobEffectInstance effect, GuiGraphicsExtractor graphics, int x, int y) {
           int amplifier = effect.getAmplifier();
           if (amplifier > 2) {
             amplifier = 2;
@@ -208,13 +208,13 @@ public class PiggyBackPackItem extends TooltipItem {
         }
 
         @Override
-        public boolean renderInventoryIcon(MobEffectInstance effect, AbstractContainerScreen<?> gui, GuiGraphics graphics, int x, int y, int z) {
+        public boolean renderInventoryIcon(MobEffectInstance effect, AbstractContainerScreen<?> gui, GuiGraphicsExtractor graphics, int x, int y, int z) {
           renderIcon(effect, graphics, x, y + 7);
           return true;
         }
 
         @Override
-        public boolean renderGuiIcon(MobEffectInstance effect, Gui gui, GuiGraphics graphics, int x, int y, float z, float alpha) {
+        public boolean renderGuiIcon(MobEffectInstance effect, Gui gui, GuiGraphicsExtractor graphics, int x, int y, float z, float alpha) {
           renderIcon(effect, graphics, x + 3, y + 3);
           return true;
         }

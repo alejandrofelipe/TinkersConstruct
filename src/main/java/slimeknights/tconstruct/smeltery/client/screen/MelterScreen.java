@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.smeltery.client.screen;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -41,14 +41,14 @@ public class MelterScreen extends AbstractContainerScreen<MelterContainerMenu> i
   }
 
   @Override
-  public void render(GuiGraphics graphics, int x, int y, float partialTicks) {
+  public void render(GuiGraphicsExtractor graphics, int x, int y, float partialTicks) {
     // 1.21: super.render already runs renderBackground (which draws the container bg) — no explicit call
     super.render(graphics, x, y, partialTicks);
     this.renderTooltip(graphics, x, y);
   }
 
   @Override
-  protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
     GuiUtil.drawBackground(graphics, this, BACKGROUND);
 
     // fuel
@@ -67,7 +67,7 @@ public class MelterScreen extends AbstractContainerScreen<MelterContainerMenu> i
   }
 
   @Override
-  protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+  protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     super.renderLabels(graphics, mouseX, mouseY);
     int checkX = mouseX - this.leftPos;
     int checkY = mouseY - this.topPos;
@@ -87,7 +87,7 @@ public class MelterScreen extends AbstractContainerScreen<MelterContainerMenu> i
   }
 
   @Override
-  protected void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+  protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     super.renderTooltip(graphics, mouseX, mouseY);
 
     // tank tooltip

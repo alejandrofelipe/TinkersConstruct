@@ -3,9 +3,9 @@ package slimeknights.tconstruct.library.client.modifiers.model;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.math.Transformation;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import slimeknights.mantle.data.loadable.array.ArrayLoadable;
 import slimeknights.mantle.data.loadable.primitive.IntLoadable;
 import slimeknights.mantle.data.loadable.primitive.StringLoadable;
@@ -51,7 +51,7 @@ public final class MaterialHasFallbackModifierModel implements ModifierModel, Fu
   }
 
   @Override
-  public void validate(Function<Material, TextureAtlasSprite> spriteGetter) {
+  public void validate(Function<SpriteId, TextureAtlasSprite> spriteGetter) {
     ifTrue.validate(spriteGetter);
     ifFalse.validate(spriteGetter);
   }
@@ -73,7 +73,7 @@ public final class MaterialHasFallbackModifierModel implements ModifierModel, Fu
   }
 
   @Override
-  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<Material, TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
+  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<SpriteId, TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
     (hasFallback(tool) ? ifTrue : ifFalse).addQuads(tool, modifier, spriteGetter, transforms, isLarge, startTintIndex, quadConsumer, pixels);
   }
 

@@ -5,11 +5,11 @@ import net.minecraft.world.item.equipment.ArmorType;
 import com.mojang.math.Transformation;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
@@ -64,7 +64,7 @@ public interface TrimModifierModel extends ModifierModel {
   boolean warnOnMissingTexture();
 
   @Override
-  default void addQuads(IToolStackView tool, ModifierEntry modifier, Function<Material,TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
+  default void addQuads(IToolStackView tool, ModifierEntry modifier, Function<SpriteId,TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
     // material must be set
     String materialId = tool.getPersistentData().getString(TrimModule.materialKey(modifier.getId()));
     if (!materialId.isEmpty()) {
@@ -89,7 +89,7 @@ public interface TrimModifierModel extends ModifierModel {
               // 1.21.11: vanilla stitches the vanilla material permutations on the items atlas, while Tinkers stitches the
               // permutations in its own materials and the custom roots on the blocks atlas. Mantle's item models split the
               // quads into one layer per atlas, drawing the items atlas trim after the blocks atlas tool.
-              TextureAtlasSprite sprite = spriteGetter.apply(new Material(TextureAtlas.LOCATION_ITEMS, path));
+              TextureAtlasSprite sprite = spriteGetter.apply(new SpriteId(TextureAtlas.LOCATION_ITEMS, path));
               if (isMissing(sprite)) {
                 sprite = spriteGetter.apply(ModifierModel.blockAtlas(path));
               }
@@ -146,7 +146,7 @@ public interface TrimModifierModel extends ModifierModel {
     }
 
     @Override
-    public void validate(Function<Material, TextureAtlasSprite> spriteGetter) {
+    public void validate(Function<SpriteId, TextureAtlasSprite> spriteGetter) {
       spriteGetter.apply(ModifierModel.blockAtlas(root));
       // clear the cache as this is the best spot called post reload to reset it
       cache.clear();
@@ -224,7 +224,7 @@ public interface TrimModifierModel extends ModifierModel {
     }
 
     @Override
-    public void validate(Function<Material, TextureAtlasSprite> spriteGetter) {
+    public void validate(Function<SpriteId, TextureAtlasSprite> spriteGetter) {
       spriteGetter.apply(ModifierModel.blockAtlas(smallRoot));
       if (largeCache != null) {
         spriteGetter.apply(ModifierModel.blockAtlas(largeRoot));

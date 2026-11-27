@@ -1,10 +1,10 @@
 package slimeknights.tconstruct.library.client.modifiers.model;
 
 import com.mojang.math.Transformation;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -43,7 +43,7 @@ public record BannerModifierModel(@Nullable Identifier smallPrefix, @Nullable Id
   }
 
   @Override
-  public void validate(Function<Material, TextureAtlasSprite> spriteGetter) {
+  public void validate(Function<SpriteId, TextureAtlasSprite> spriteGetter) {
     // since these are dynamically loaded, condition based on the config option
     if (Config.CLIENT.logMissingModifierTextures.get()) {
       // PORT M3: BannerPattern moved from BuiltInRegistries to the datapack registry Registries.BANNER_PATTERN in 1.21,
@@ -58,7 +58,7 @@ public record BannerModifierModel(@Nullable Identifier smallPrefix, @Nullable Id
   }
 
   @Override
-  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<Material, TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
+  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<SpriteId, TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
     Identifier prefix = isLarge ? largePrefix : smallPrefix;
     if (prefix != null) {
       IModDataView modData = tool.getPersistentData();

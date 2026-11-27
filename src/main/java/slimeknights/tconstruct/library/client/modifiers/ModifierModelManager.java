@@ -7,7 +7,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -150,8 +150,8 @@ public class ModifierModelManager implements IEarlySafeManagerReloadListener {
    * @return  Path to the modifier
    */
   @SuppressWarnings("removal")
-  private static Material getModifierTexture(Identifier modifierRoot, Identifier modifierId, String suffix) {
-    return new Material(TextureAtlas.LOCATION_BLOCKS, Identifier.fromNamespaceAndPath(modifierRoot.getNamespace(), modifierRoot.getPath() + modifierId.getNamespace() + "_" + modifierId.getPath() + suffix));
+  private static SpriteId getModifierTexture(Identifier modifierRoot, Identifier modifierId, String suffix) {
+    return new SpriteId(TextureAtlas.LOCATION_BLOCKS, Identifier.fromNamespaceAndPath(modifierRoot.getNamespace(), modifierRoot.getPath() + modifierId.getNamespace() + "_" + modifierId.getPath() + suffix));
   }
 
   /**
@@ -163,14 +163,14 @@ public class ModifierModelManager implements IEarlySafeManagerReloadListener {
    * @return  Texture, or null if missing
    */
   @Nullable
-  private static Material getTexture(List<Identifier> modifierRoots, Predicate<Material> textureAdder, Identifier modifier, String suffix) {
+  private static SpriteId getTexture(List<Identifier> modifierRoots, Predicate<SpriteId> textureAdder, Identifier modifier, String suffix) {
     if (modifierModels.isEmpty()) {
       return null;
     }
 
     // try the non-logging ones first
     for (Identifier root : modifierRoots) {
-      Material texture = getModifierTexture(root, modifier, suffix);
+      SpriteId texture = getModifierTexture(root, modifier, suffix);
       if (textureAdder.test(texture)) {
         return texture;
       }
@@ -186,7 +186,7 @@ public class ModifierModelManager implements IEarlySafeManagerReloadListener {
    * @param largeModifierRoots  List of modifier roots for large tools, null if the tool is not large
    * @return  Map of models
    */
-  public static Map<ModifierId,IBakedModifierModel> getModelsForTool(Function<Material,TextureAtlasSprite> spriteGetter, List<Identifier> smallModifierRoots, List<Identifier> largeModifierRoots) {
+  public static Map<ModifierId,IBakedModifierModel> getModelsForTool(Function<SpriteId,TextureAtlasSprite> spriteGetter, List<Identifier> smallModifierRoots, List<Identifier> largeModifierRoots) {
     return getModelsForTool(spriteGetter, smallModifierRoots, largeModifierRoots, Set.of(), Set.of());
   }
 
@@ -199,7 +199,7 @@ public class ModifierModelManager implements IEarlySafeManagerReloadListener {
    * @param blacklist          Models in this blacklist are skipped when parsing. Used to suppress problematic models in legacy parsing.
    * @return Map of models
    */
-  public static Map<ModifierId,IBakedModifierModel> getModelsForTool(Function<Material,TextureAtlasSprite> spriteGetter, List<Identifier> smallModifierRoots, List<Identifier> largeModifierRoots, Collection<ModifierId> skip, Set<IUnbakedModifierModel> blacklist) {
+  public static Map<ModifierId,IBakedModifierModel> getModelsForTool(Function<SpriteId,TextureAtlasSprite> spriteGetter, List<Identifier> smallModifierRoots, List<Identifier> largeModifierRoots, Collection<ModifierId> skip, Set<IUnbakedModifierModel> blacklist) {
     // if we have no modifier models, or both lists of modifier roots are empty, nothing to do
     if (modifierModels.isEmpty() || (smallModifierRoots.isEmpty() && largeModifierRoots.isEmpty())) {
       return Collections.emptyMap();
@@ -209,7 +209,7 @@ public class ModifierModelManager implements IEarlySafeManagerReloadListener {
     ImmutableMap.Builder<ModifierId,IBakedModifierModel> modelMap = ImmutableMap.builder();
 
     // create two texture adders, so we only log on the final option if missing
-    Predicate<Material> validator = DynamicTextureLoader.getTextureValidator(spriteGetter, Config.CLIENT.logMissingModifierTextures.get());
+    Predicate<SpriteId> validator = DynamicTextureLoader.getTextureValidator(spriteGetter, Config.CLIENT.logMissingModifierTextures.get());
 
     // load each modifier
     for (Entry<ModifierId, IUnbakedModifierModel> entry : modifierModels.entrySet()) {

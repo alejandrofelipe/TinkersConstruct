@@ -5,7 +5,7 @@ import mezz.jei.api.ingredients.rendering.IIngredientRenderContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -28,7 +28,7 @@ public record ModifierIngredientRenderer(int width, int height) implements IIngr
   }
 
   @Override
-  public void render(GuiGraphics graphics, @Nullable ModifierEntry entry, int x, int y, IIngredientRenderContext context) {
+  public void render(GuiGraphicsExtractor graphics, @Nullable ModifierEntry entry, int x, int y, IIngredientRenderContext context) {
     if (entry != null) {
       Component name = entry.getDisplayName();
       Font fontRenderer = getFontRenderer(Minecraft.getInstance(), entry);
@@ -39,7 +39,7 @@ public record ModifierIngredientRenderer(int width, int height) implements IIngr
   /** JEI 27 still declares this overload abstract, but only calls the positioned one above */
   @SuppressWarnings("removal")
   @Override
-  public void render(GuiGraphics graphics, @Nullable ModifierEntry entry) {
+  public void render(GuiGraphicsExtractor graphics, @Nullable ModifierEntry entry) {
     render(graphics, entry, 0, 0, IIngredientRenderContext.INGREDIENT);
   }
 

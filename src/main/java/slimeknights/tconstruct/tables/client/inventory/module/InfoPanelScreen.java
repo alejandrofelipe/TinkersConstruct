@@ -3,7 +3,7 @@ package slimeknights.tconstruct.tables.client.inventory.module;
 import com.google.common.collect.Lists;
 import lombok.Setter;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
@@ -147,7 +147,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
   }
 
   /** Draws the panel unconditionally at its current position; the collapsed-tier overlay pass calls this above the slots (the normal module pass is gated off by {@link #hidden}/{@link #overlayMode}). */
-  public void drawOverlay(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+  public void drawOverlay(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
     beginOverlayStratum(graphics);
     this.renderBg(graphics, partialTicks, mouseX, mouseY);
   }
@@ -157,7 +157,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
    * manually after the parent's whole render(). Everything submitted afterwards paints over what was drawn before, so the
    * centered overlay covers the station's faded tool icon and the slots (replaces clearing the depth buffer before 1.21.6).
    */
-  public static void beginOverlayStratum(GuiGraphics graphics) {
+  public static void beginOverlayStratum(GuiGraphicsExtractor graphics) {
     graphics.nextStratum();
   }
 
@@ -166,7 +166,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
    * normal tooltip pass is gated off by {@link #overlayMode}. Tooltips are deferred to the end of the frame, so they always
    * draw above the panel; see {@link GuiUtil} for the first-wins/focused rule they follow.
    */
-  public void drawOverlayTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+  public void drawOverlayTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     this.renderTooltip(graphics, mouseX, mouseY);
   }
 
@@ -309,12 +309,12 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
   }
 
   @Override
-  protected void renderLabels(GuiGraphics graphics, int x, int y) {
+  protected void renderLabels(GuiGraphicsExtractor graphics, int x, int y) {
    // no-op
   }
 
   @Override
-  protected void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+  protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     super.renderTooltip(graphics, mouseX, mouseY);
 
     if (this.tooltips == null) {
@@ -395,7 +395,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
   }
 
   @Override
-  protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
     this.border.draw(graphics);
     // overlay mode sits over the darkened crafting area (ITEM_COVER + faded icon) and panel.png is partly translucent,
     // so blit it a few times to build opacity: keeps the tint near the docked panel and stops the slot patterns
@@ -457,8 +457,8 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
     this.slider.draw(graphics);
   }
 
-  /** Draws text at a sub-pixel position, as {@link GuiGraphics#drawString} only takes integer coordinates since 1.21.6 */
-  protected void drawString(GuiGraphics graphics, FormattedCharSequence text, float x, float y, int color, boolean shadow) {
+  /** Draws text at a sub-pixel position, as {@link GuiGraphicsExtractor#drawString} only takes integer coordinates since 1.21.6 */
+  protected void drawString(GuiGraphicsExtractor graphics, FormattedCharSequence text, float x, float y, int color, boolean shadow) {
     Matrix3x2fStack pose = graphics.pose();
     pose.pushMatrix();
     pose.translate(x, y);
@@ -468,7 +468,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
   /** COLLAPSED tier: a hidden tab draws nothing; the open overlay is drawn above the slots by {@code ToolTableScreen.render} via {@link #drawOverlay}. */
   @Override
-  public void handleDrawGuiContainerBackgroundLayer(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+  public void handleDrawGuiContainerBackgroundLayer(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
     if (this.hidden || this.overlayMode) {
       return;
     }
@@ -477,7 +477,7 @@ public class InfoPanelScreen<P extends MultiModuleScreen<?>, C extends AbstractC
 
   /** COLLAPSED tier: a hidden tab is inert; the overlay skips the normal tooltip pass (it would draw under the panel, which renders later). */
   @Override
-  public void handleRenderHoveredTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+  public void handleRenderHoveredTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     if (this.hidden || this.overlayMode) {
       return;
     }

@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.smeltery.client.screen.module;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
@@ -72,9 +72,9 @@ public class GuiSmelteryTank implements IScreenWithFluidTank {
 
   /**
    * Renders the smeltery tank
-   * @param graphics  GuiGraphics instance
+   * @param graphics  GuiGraphicsExtractor instance
    */
-  public void renderFluids(GuiGraphics graphics) {
+  public void renderFluids(GuiGraphicsExtractor graphics) {
     // draw liquids
     if (tank.getContained() > 0) {
       int[] heights = calcLiquidHeights(true);
@@ -120,11 +120,11 @@ public class GuiSmelteryTank implements IScreenWithFluidTank {
 
   /**
    * Renders a highlight on the hovered fluid
-   * @param graphics  GuiGraphics instance
+   * @param graphics  GuiGraphicsExtractor instance
    * @param mouseX    Mouse X
    * @param mouseY    Mouse Y
    */
-  public void renderHighlight(GuiGraphics graphics, int mouseX, int mouseY) {
+  public void renderHighlight(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     int checkX = mouseX - parent.leftPos;
     int checkY = mouseY - parent.topPos;
     if (withinTank(checkX, checkY)) {
@@ -147,11 +147,11 @@ public class GuiSmelteryTank implements IScreenWithFluidTank {
 
   /**
    * Gets the tooltip for the tank based on the given mouse position
-   * @param graphics  GuiGraphics instance
+   * @param graphics  GuiGraphicsExtractor instance
    * @param mouseX    Mouse X
    * @param mouseY    Mouse Y
    */
-  public void drawTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+  public void drawTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     // Liquids
     int checkX = mouseX - parent.leftPos;
     int checkY = mouseY - parent.topPos;

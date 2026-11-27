@@ -5,9 +5,9 @@ import com.mojang.math.Transformation;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
 import slimeknights.mantle.data.loadable.common.ColorLoadable;
 import slimeknights.mantle.data.loadable.field.LoadableField;
@@ -41,15 +41,15 @@ public class NormalModifierModel implements SimpleModifierModel {
 
   /** Textures to show */
   @Nullable
-  private final Material small;
+  private final SpriteId small;
   @Nullable
-  private final Material large;
+  private final SpriteId large;
   /** Color to apply to the texture */
   private final int color;
   /** Luminosity to apply to the texture */
   private final int luminosity;
 
-  public NormalModifierModel(@Nullable Material smallTexture, @Nullable Material largeTexture) {
+  public NormalModifierModel(@Nullable SpriteId smallTexture, @Nullable SpriteId largeTexture) {
     this(smallTexture, largeTexture, -1, 0);
   }
 
@@ -59,7 +59,7 @@ public class NormalModifierModel implements SimpleModifierModel {
   }
 
   @Override
-  public void validate(Function<Material, TextureAtlasSprite> spriteGetter) {
+  public void validate(Function<SpriteId, TextureAtlasSprite> spriteGetter) {
     if (small != null) {
       spriteGetter.apply(small);
     }
@@ -69,8 +69,8 @@ public class NormalModifierModel implements SimpleModifierModel {
   }
 
   @Override
-  public void addQuads(IToolStackView tool, ModifierEntry entry, Function<Material,TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
-    Material spriteName = isLarge ? large : small;
+  public void addQuads(IToolStackView tool, ModifierEntry entry, Function<SpriteId,TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
+    SpriteId spriteName = isLarge ? large : small;
     if (spriteName != null) {
       quadConsumer.accept(MantleItemLayerModel.getQuadsForSprite(color, -1, spriteGetter.apply(spriteName), transforms, luminosity, pixels));
     }
@@ -79,9 +79,9 @@ public class NormalModifierModel implements SimpleModifierModel {
   private record Unbaked(int color, int luminosity) implements IUnbakedModifierModel {
     @Nullable
     @Override
-    public IBakedModifierModel forTool(Function<String,Material> smallGetter, Function<String,Material> largeGetter) {
-      Material smallTexture = smallGetter.apply("");
-      Material largeTexture = largeGetter.apply("");
+    public IBakedModifierModel forTool(Function<String,SpriteId> smallGetter, Function<String,SpriteId> largeGetter) {
+      SpriteId smallTexture = smallGetter.apply("");
+      SpriteId largeTexture = largeGetter.apply("");
       if (smallTexture != null || largeTexture != null) {
         return new NormalModifierModel(smallTexture, largeTexture, color, luminosity);
       }

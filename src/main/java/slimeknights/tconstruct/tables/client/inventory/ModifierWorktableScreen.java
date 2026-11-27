@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.tables.client.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -113,7 +113,7 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
   }
 
   @Override
-  protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
     this.drawBackground(graphics, BACKGROUND);
 
     // draw scrollbar
@@ -160,7 +160,7 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
   }
 
   @Override
-  protected void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+  protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     super.renderTooltip(graphics, mouseX, mouseY);
 
     // determime which button we are hovering
@@ -176,7 +176,7 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
   }
 
   /** Draw backgrounds for all modifiers */
-  private void drawModifierBackgrounds(GuiGraphics graphics, int mouseX, int mouseY, int left, int top) {
+  private void drawModifierBackgrounds(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int left, int top) {
     if (tile != null) {
       int selectedIndex = this.tile.getSelectedIndex();
       int max = Math.min(this.modifierIndexOffset + MAX_MODIFIER, this.getModifierCount());
@@ -196,7 +196,7 @@ public class ModifierWorktableScreen extends ToolTableScreen<ModifierWorktableBl
   }
 
   /** Draw slot icons for all patterns */
-  private void drawModifierIcons(GuiGraphics graphics, int left, int top) {
+  private void drawModifierIcons(GuiGraphicsExtractor graphics, int left, int top) {
     // use block texture list
     if (tile != null) {
       assert this.minecraft != null;

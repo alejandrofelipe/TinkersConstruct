@@ -3,8 +3,8 @@ package slimeknights.tconstruct.library.client.model.block;
 import com.google.gson.JsonObject;
 import com.mojang.math.Quadrant;
 import lombok.Getter;
-import net.minecraft.client.renderer.block.model.BlockElement;
-import net.minecraft.client.renderer.block.model.BlockElementFace;
+import net.minecraft.client.resources.model.cuboid.CuboidModelElement;
+import net.minecraft.client.resources.model.cuboid.CuboidFace;
 import net.minecraft.core.Direction;
 import net.minecraft.util.GsonHelper;
 import org.joml.Vector3f;
@@ -31,7 +31,7 @@ public class IncrementalFluidCuboid extends FluidCuboid {
    * @return  Fluid part
    */
   @SuppressWarnings("WeakerAccess")
-  public BlockElement getPart(int amount, boolean gas) {
+  public CuboidModelElement getPart(int amount, boolean gas) {
     // set cube height based on stack amount
     Vector3f from = getFrom();
     Vector3f to = getTo();
@@ -47,21 +47,21 @@ public class IncrementalFluidCuboid extends FluidCuboid {
     }
 
     // create faces based on face data
-    Map<Direction,BlockElementFace> faces = new EnumMap<>(Direction.class);
+    Map<Direction,CuboidFace> faces = new EnumMap<>(Direction.class);
     for (Entry<Direction, FluidFace> entry : this.getFaces().entrySet()) {
       // only add the face if requested
       Direction dir = entry.getKey();
       FluidFace face = entry.getValue();
       // calculate in flowing and rotations
       boolean isFlowing = face.isFlowing();
-      faces.put(dir, new BlockElementFace(
+      faces.put(dir, new CuboidFace(
         null, 0, isFlowing ? "flowing_fluid" : "fluid",
         getFaceUvs(from ,to, dir, face.rotation(), isFlowing ? 0.5f : 1f), Quadrant.parseJson(face.rotation())));
     }
 
     // create the part with the fluid
-    // PORT 1.21.4: BlockElement gained a lightEmission arg (0 = none)
-    return new BlockElement(from, to, faces, null, false, 0);
+    // PORT 1.21.4: CuboidModelElement gained a lightEmission arg (0 = none)
+    return new CuboidModelElement(from, to, faces, null, false, 0);
   }
 
   /**
@@ -73,7 +73,7 @@ public class IncrementalFluidCuboid extends FluidCuboid {
    * @param scale     UV scale, set to 0.5 for flowing fluids
    * @return  Face UVs, the rotation is applied separately as a {@link Quadrant}
    */
-  private static BlockElementFace.UVs getFaceUvs(Vector3f from, Vector3f to, Direction side, int rotation, float scale) {
+  private static CuboidFace.UVs getFaceUvs(Vector3f from, Vector3f to, Direction side, int rotation, float scale) {
     // first, translate from and to into texture coords
     float u1, u2, v1, v2;
     switch (side) {
@@ -121,9 +121,9 @@ public class IncrementalFluidCuboid extends FluidCuboid {
     }
     // rotations need swapped UV
     if ((rotation % 180) == 90) {
-      return new BlockElementFace.UVs(v1 * scale, u1 * scale, v2 * scale, u2 * scale);
+      return new CuboidFace.UVs(v1 * scale, u1 * scale, v2 * scale, u2 * scale);
     } else {
-      return new BlockElementFace.UVs(u1 * scale, v1 * scale, u2 * scale, v2 * scale);
+      return new CuboidFace.UVs(u1 * scale, v1 * scale, u2 * scale, v2 * scale);
     }
   }
 

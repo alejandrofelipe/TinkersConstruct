@@ -1,9 +1,9 @@
 package slimeknights.tconstruct.library.client.modifiers.model;
 
 import com.mojang.math.Transformation;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.util.ItemLayerPixels;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -32,7 +32,7 @@ public record TraitModel(ModifierId modifier, ModifierModel nested) implements M
   }
 
   @Override
-  public void validate(Function<Material, TextureAtlasSprite> spriteGetter) {
+  public void validate(Function<SpriteId, TextureAtlasSprite> spriteGetter) {
     nested.validate(spriteGetter);
   }
 
@@ -56,7 +56,7 @@ public record TraitModel(ModifierId modifier, ModifierModel nested) implements M
   }
 
   @Override
-  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<Material, TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
+  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<SpriteId, TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
     ModifierEntry trait = getEntry(tool);
     if (trait.getLevel() > 0) {
       nested.addQuads(tool, trait, spriteGetter, transforms, isLarge, startTintIndex, quadConsumer, pixels);

@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.tables.client.inventory;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.contents.PlainTextContents;
@@ -115,7 +115,7 @@ public class PartInfoPanelScreen extends InfoPanelScreen<PartBuilderScreen,PartB
   }
 
   @Override
-  protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
     this.border.draw(graphics);
     BACKGROUND.drawScaled(graphics, this.leftPos + 4, this.topPos + 4, this.imageWidth - 8, this.imageHeight - 8);
 

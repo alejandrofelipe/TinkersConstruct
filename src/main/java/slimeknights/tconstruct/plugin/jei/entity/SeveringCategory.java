@@ -11,7 +11,7 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import slimeknights.mantle.plugin.jei.MantleJEIConstants;
@@ -59,7 +59,7 @@ public class SeveringCategory implements IRecipeCategory<SeveringRecipe> {
   }
 
   @Override
-  public void draw(SeveringRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
+  public void draw(SeveringRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
     // the background, where JEI drew getBackground() (deprecated for removal): same pose, right before draw
     background.draw(graphics);
   }

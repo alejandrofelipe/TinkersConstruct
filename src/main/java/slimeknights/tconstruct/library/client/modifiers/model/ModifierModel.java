@@ -1,10 +1,10 @@
 package slimeknights.tconstruct.library.client.modifiers.model;
 
 import com.mojang.math.Transformation;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 import slimeknights.mantle.data.loadable.Loadables;
 import slimeknights.mantle.data.loadable.primitive.StringLoadable;
@@ -26,7 +26,7 @@ import java.util.function.Function;
 public interface ModifierModel extends IBakedModifierModel, IHaveLoader {
   ModifierModel EMPTY = SingletonLoader.singleton(loader -> new ModifierModel() {
     @Override
-    public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<Material, TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {}
+    public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<SpriteId, TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {}
 
     @Nullable
     @Override
@@ -40,21 +40,21 @@ public interface ModifierModel extends IBakedModifierModel, IHaveLoader {
     }
 
     @Override
-    public void validate(Function<Material, TextureAtlasSprite> spriteGetter) {}
+    public void validate(Function<SpriteId, TextureAtlasSprite> spriteGetter) {}
   });
 
   /** Loader for registering modifier models */
   GenericLoaderRegistry<ModifierModel> LOADER = new GenericLoaderRegistry<>("Modifier Model", EMPTY, false);
   /** Loadable for reading materials, a common feature of modifier models */
-  StringLoadable<Material> MATERIAL_LOADABLE = Loadables.RESOURCE_LOCATION.flatXmap(ModifierModel::blockAtlas, Material::texture);
+  StringLoadable<SpriteId> MATERIAL_LOADABLE = Loadables.RESOURCE_LOCATION.flatXmap(ModifierModel::blockAtlas, SpriteId::texture);
 
   @Override
   RecordLoadable<? extends ModifierModel> getLoader();
 
   /** Validates that all textures in this model exist. */
-  void validate(Function<Material, TextureAtlasSprite> spriteGetter);
+  void validate(Function<SpriteId, TextureAtlasSprite> spriteGetter);
 
-  static Material blockAtlas(Identifier path) {
-    return new Material(TextureAtlas.LOCATION_BLOCKS, path);
+  static SpriteId blockAtlas(Identifier path) {
+    return new SpriteId(TextureAtlas.LOCATION_BLOCKS, path);
   }
 }

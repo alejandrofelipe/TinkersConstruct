@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
@@ -56,18 +56,18 @@ public abstract class AbstractModifierModelMapProvider extends GenericDataProvid
   }
 
   /** Creates a new material for the given texture */
-  protected Material material(Identifier texture) {
+  protected SpriteId material(Identifier texture) {
     return ModifierModel.blockAtlas(texture);
   }
 
   /** Creates a new material for the given texture */
   @SuppressWarnings("removal")
-  protected Material material(String texture) {
+  protected SpriteId material(String texture) {
     return ModifierModel.blockAtlas(Identifier.fromNamespaceAndPath(modId, texture));
   }
 
   /** Creates a tool texture for the given name */
-  protected Material toolMaterial(String texture) {
+  protected SpriteId toolMaterial(String texture) {
     return material("item/tool/" + texture);
   }
 
@@ -238,8 +238,8 @@ public abstract class AbstractModifierModelMapProvider extends GenericDataProvid
     /** Adds models for a tank, with a partial and full state */
     public Builder fluid(String folder, @Nullable String largeFolder, ModifierId modifier) {
       String name = suffix(modifier);
-      Material tank = toolMaterial(folder + '/' + name);
-      Material full = toolMaterial(folder + '/' + name + "_full");
+      SpriteId tank = toolMaterial(folder + '/' + name);
+      SpriteId full = toolMaterial(folder + '/' + name + "_full");
       if (largeFolder != null) {
         return modifier(modifier,
           new FluidModifierModel(full, toolMaterial(largeFolder + '/' + name + "_full")),
@@ -258,9 +258,9 @@ public abstract class AbstractModifierModelMapProvider extends GenericDataProvid
     /** Adds models for a tank, with a partial and full state */
     public Builder tank(String folder, @Nullable String largeFolder) {
       String name = suffix(ModifierIds.tank);
-      Material tank = toolMaterial(folder + '/' + name);
-      Material partial = toolMaterial(folder + '/' + name + "_partial");
-      Material full = toolMaterial(folder + '/' + name + "_full");
+      SpriteId tank = toolMaterial(folder + '/' + name);
+      SpriteId partial = toolMaterial(folder + '/' + name + "_partial");
+      SpriteId full = toolMaterial(folder + '/' + name + "_full");
       if (largeFolder != null) {
         return modifier(ModifierIds.tank,
           new TankModifierModel(partial, full, toolMaterial(largeFolder + '/' + name + "_partial"), toolMaterial(largeFolder + '/' + name + "_full"), 0),
@@ -340,7 +340,7 @@ public abstract class AbstractModifierModelMapProvider extends GenericDataProvid
       }
       if (model.getLoader() == NormalModifierModel.LOADER) {
         NormalModifierModel basic = (NormalModifierModel) model;
-        Material small = basic.small();
+        SpriteId small = basic.small();
         if (small != null && basic.large() == null && basic.luminosity() == 0 && basic.color() == -1) {
           return new JsonPrimitive(small.texture().toString());
         }

@@ -6,15 +6,15 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.cuboid.ItemTransforms;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.resources.Identifier;
@@ -58,17 +58,17 @@ public final class FluidContainerModel {
    * Builds a material for a texture from the model JSON (base, fluid mask, particle).
    * 1.21.11: item textures left the blocks atlas, so like vanilla model JSON textures these may be in either atlas.
    */
-  private static Material material(Identifier texture) {
-    return new Material(ModelManager.BLOCK_OR_ITEM, texture);
+  private static SpriteId material(Identifier texture) {
+    return new SpriteId(ModelManager.BLOCK_OR_ITEM, texture);
   }
 
   /** Builds a block-atlas material, for fluid textures */
-  private static Material blockMaterial(Identifier texture) {
-    return new Material(TextureAtlas.LOCATION_BLOCKS, texture);
+  private static SpriteId blockMaterial(Identifier texture) {
+    return new SpriteId(TextureAtlas.LOCATION_BLOCKS, texture);
   }
 
-  /** Looks up a sprite, 1.21.9 replacement for {@code Material#sprite()}. 1.21.11: resolves {@link ModelManager#BLOCK_OR_ITEM} items atlas first, like the model bakery */
-  private static TextureAtlasSprite sprite(Material material) {
+  /** Looks up a sprite, 1.21.9 replacement for {@code SpriteId#sprite()}. 1.21.11: resolves {@link ModelManager#BLOCK_OR_ITEM} items atlas first, like the model bakery */
+  private static TextureAtlasSprite sprite(SpriteId material) {
     return ModelHelper.getSprite(material);
   }
 
@@ -110,15 +110,15 @@ public final class FluidContainerModel {
   /** Baked fluid container model */
   public static final class Baked implements ItemModel {
     private final ItemTransforms itemTransforms;
-    @Nullable private final Material base;
-    @Nullable private final Material fluidMask;
-    @Nullable private final Material particle;
+    @Nullable private final SpriteId base;
+    @Nullable private final SpriteId fluidMask;
+    @Nullable private final SpriteId particle;
     private final FluidStack staticFluid;
     private final boolean flipGas;
     /** FluidStack does not override equals/hashCode, so key by fluid and components or the cache never hits */
     private final Map<FluidStack, BakedItem> cache = Collections.synchronizedMap(new Object2ObjectOpenCustomHashMap<>(FluidStackLinkedSet.TYPE_AND_COMPONENTS));
 
-    Baked(ItemTransforms itemTransforms, @Nullable Material base, @Nullable Material fluidMask, @Nullable Material particle, FluidStack staticFluid, boolean flipGas) {
+    Baked(ItemTransforms itemTransforms, @Nullable SpriteId base, @Nullable SpriteId fluidMask, @Nullable SpriteId particle, FluidStack staticFluid, boolean flipGas) {
       this.itemTransforms = itemTransforms;
       this.base = base;
       this.fluidMask = fluidMask;

@@ -8,10 +8,10 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
@@ -113,23 +113,23 @@ public class ModifierIconManager implements IEarlySafeManagerReloadListener {
 
   /**
    * Renders a modifier icon at the given location
-   * @param graphics  GuiGraphics instance
+   * @param graphics  GuiGraphicsExtractor instance
    * @param modifier  Modifier to draw
    * @param x         X offset
    * @param y         Y offset
    * @param z         Render depth offset, typically 100 is good
    * @param size      Size to render, 16 is default
    */
-  public static void renderIcon(GuiGraphics graphics, Modifier modifier, int x, int y, int z, int size) {
+  public static void renderIcon(GuiGraphicsExtractor graphics, Modifier modifier, int x, int y, int z, int size) {
     TextureAtlas atlas = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS);
 
-    // PORT 1.21.4: GuiGraphics.blit(x,y,z,w,h,sprite) -> blitSprite(renderType, sprite, x, y, w, h); depth is handled by the pose stack now
+    // PORT 1.21.4: GuiGraphicsExtractor.blit(x,y,z,w,h,sprite) -> blitSprite(renderType, sprite, x, y, w, h); depth is handled by the pose stack now
     List<Identifier> icons = modifierIcons.getOrDefault(modifier.getId(), Collections.emptyList());
     if (!icons.isEmpty()) {
       for (Identifier icon : icons) {
         // 1.21.11: item textures (such as minecraft:item/...) left the blocks atlas, while gui/modifiers icons are only stitched into it,
         // so resolve icons like model textures: items atlas first, then blocks atlas
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ModelHelper.getSprite(new Material(ModelManager.BLOCK_OR_ITEM, icon)), x, y, size, size);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ModelHelper.getSprite(new SpriteId(ModelManager.BLOCK_OR_ITEM, icon)), x, y, size, size);
       }
     } else {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, atlas.getSprite(DEFAULT_PAGES), x, y, size, size);

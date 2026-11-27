@@ -8,26 +8,26 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockElement;
-import net.minecraft.client.renderer.block.model.BlockElementFace;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.block.model.SimpleModelWrapper;
-import net.minecraft.client.renderer.block.model.SingleVariant;
-import net.minecraft.client.renderer.block.model.TextureSlots;
-import net.minecraft.client.renderer.block.model.Variant;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.cuboid.CuboidModelElement;
+import net.minecraft.client.resources.model.cuboid.CuboidFace;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
+import net.minecraft.client.renderer.block.dispatch.SingleVariant;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
+import net.minecraft.client.renderer.block.dispatch.Variant;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.ModelRenderProperties;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BlockModelRotation;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.client.resources.model.QuadCollection;
+import net.minecraft.client.renderer.block.dispatch.ModelState;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -35,7 +35,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -200,20 +200,20 @@ public class MaterialBlockModel extends SimpleBlockModel {
     }
 
     /** Fetches textures from the materials for baking */
-    protected abstract void fetchMaterials(T materials, Function<Material, TextureAtlasSprite> spriteGetter, Map<String, Material> replacements, Map<String, TintedSprite> tints);
+    protected abstract void fetchMaterials(T materials, Function<SpriteId, TextureAtlasSprite> spriteGetter, Map<String, SpriteId> replacements, Map<String, TintedSprite> tints);
 
     /** Fetches a single material. For use in {@link #fetchMaterials(Object, Function, Map, Map)} */
-    protected void fetchMaterial(MaterialVariantId material, Set<String> retextured, Function<Material, TextureAtlasSprite> spriteGetter, Map<String, Material> replacements, Map<String, TintedSprite> tints) {
+    protected void fetchMaterial(MaterialVariantId material, Set<String> retextured, Function<SpriteId, TextureAtlasSprite> spriteGetter, Map<String, SpriteId> replacements, Map<String, TintedSprite> tints) {
       // fetch render info
       Optional<MaterialRenderInfo> optional = MaterialRenderInfoLoader.INSTANCE.getRenderInfo(material);
       if (optional.isPresent()) {
         MaterialRenderInfo info = optional.get();
 
         // may have multiple names going to the same texture
-        Map<Material, TintedSprite> seen = new HashMap<>();
+        Map<SpriteId, TintedSprite> seen = new HashMap<>();
         TextureSlots textures = data.textures();
         for (String name : retextured) {
-          Material texture = textures.getMaterial(name);
+          SpriteId texture = textures.getMaterial(name);
           if (texture == null) {
             continue;
           }
@@ -224,7 +224,7 @@ public class MaterialBlockModel extends SimpleBlockModel {
           }
           TextureAtlasSprite sprite = tinted.sprite();
           // bit annoying that we have to unwrap the sprite, but its needed to be fetched to check if its present
-          replacements.put(name, new Material(sprite.atlasLocation(), sprite.contents().name()));
+          replacements.put(name, new SpriteId(sprite.atlasLocation(), sprite.contents().name()));
           // if we have a transform, save that with the name too
           if (tinted.color() != -1 || tinted.emissivity() > 0) {
             tints.put('#' + name, tinted);
@@ -240,14 +240,14 @@ public class MaterialBlockModel extends SimpleBlockModel {
     @Nullable
     protected SimpleModelWrapper bakeWith(T materials) {
       // map of name to replacement texture
-      Map<String,Material> replacements = new HashMap<>();
+      Map<String,SpriteId> replacements = new HashMap<>();
       // map of name to transformation to apply, will likely be smaller than replacement textures
       Map<String,TintedSprite> tints = new HashMap<>();
 
       // delegate material fetching
-      // PORT 1.21.5: rebaked at runtime through the block atlas (Material#sprite); verify material blocks/anvils in the uitest phase
+      // PORT 1.21.5: rebaked at runtime through the block atlas (SpriteId#sprite); verify material blocks/anvils in the uitest phase
       // 1.21.11: model JSON textures use the block_or_item atlas, which AtlasManager#get rejects, so resolve them like the model bakery
-      Function<Material,TextureAtlasSprite> spriteGetter = ModelHelper::getSprite;
+      Function<SpriteId,TextureAtlasSprite> spriteGetter = ModelHelper::getSprite;
       fetchMaterials(materials, spriteGetter, replacements, tints);
 
       // quick exit in case we found nothing, should never happen
@@ -264,11 +264,11 @@ public class MaterialBlockModel extends SimpleBlockModel {
       Function<String,TextureAtlasSprite> sprites = data.runtimeSprites(replacements);
       ModelState state = data.state();
       QuadCollection.Builder builder = new QuadCollection.Builder();
-      for (BlockElement part : data.elements()) {
+      for (CuboidModelElement part : data.elements()) {
         // determine if any of the faces needs a tint
         // for simplicity, assume the whole part is tinted if so. Build your model to separate distinct material faces if needed
         TintedSprite tint = null;
-        for (BlockElementFace face : part.faces().values()) {
+        for (CuboidFace face : part.faces().values()) {
           TintedSprite faceTint = tints.get(face.texture());
           if (faceTint != null) {
             tint = faceTint;
@@ -351,7 +351,7 @@ public class MaterialBlockModel extends SimpleBlockModel {
     }
 
     @Override
-    protected void fetchMaterials(MaterialIdNBT materials, Function<Material, TextureAtlasSprite> spriteGetter, Map<String, Material> replacements, Map<String, TintedSprite> tints) {
+    protected void fetchMaterials(MaterialIdNBT materials, Function<SpriteId, TextureAtlasSprite> spriteGetter, Map<String, SpriteId> replacements, Map<String, TintedSprite> tints) {
       for (int i = 0; i < parts.size(); i++) {
         fetchMaterial(materials.getMaterial(i), parts.get(i), spriteGetter, replacements, tints);
       }
@@ -413,7 +413,7 @@ public class MaterialBlockModel extends SimpleBlockModel {
     }
 
     @Override
-    protected void fetchMaterials(MaterialVariantId materials, Function<Material, TextureAtlasSprite> spriteGetter, Map<String, Material> replacements, Map<String, TintedSprite> tints) {
+    protected void fetchMaterials(MaterialVariantId materials, Function<SpriteId, TextureAtlasSprite> spriteGetter, Map<String, SpriteId> replacements, Map<String, TintedSprite> tints) {
       fetchMaterial(materials, retexture, spriteGetter, replacements, tints);
     }
   }
@@ -466,8 +466,8 @@ public class MaterialBlockModel extends SimpleBlockModel {
 
     /** Rebakes the model with a specific block texture. See also {@link RetexturedModel} */
     private SimpleModelWrapper bakeWithBlock(Identifier texture) {
-      Material material = new Material(TextureAtlas.LOCATION_BLOCKS, texture);
-      Map<String,Material> replacements = new HashMap<>();
+      SpriteId material = new SpriteId(TextureAtlas.LOCATION_BLOCKS, texture);
+      Map<String,SpriteId> replacements = new HashMap<>();
       for (String name : retexture) {
         replacements.put(name, material);
       }
@@ -548,7 +548,7 @@ public class MaterialBlockModel extends SimpleBlockModel {
     public BlockStateModel bake(ModelBaker baker) {
       ResolvedModel resolved = baker.getModel(variant.modelLocation());
       ModelState state = variant.modelState().asModelState();
-      BlockModelPart base = SimpleModelWrapper.bake(baker, resolved, state);
+      BlockStateModelPart base = SimpleModelWrapper.bake(baker, resolved, state);
       AbstractBaked<?,?> dynamic = bakeDynamic(baker, resolved, state);
       if (dynamic == null) {
         TConstruct.LOG.warn("Block state model type tconstruct:material_block used with {}, which is not a material block model", resolved.debugName());
@@ -562,7 +562,7 @@ public class MaterialBlockModel extends SimpleBlockModel {
   public static class BlockModel extends DynamicBakedWrapper<SingleVariant> {
     private final AbstractBaked<?,?> dynamic;
 
-    protected BlockModel(BlockModelPart base, AbstractBaked<?,?> dynamic) {
+    protected BlockModel(BlockStateModelPart base, AbstractBaked<?,?> dynamic) {
       super(new SingleVariant(base));
       this.dynamic = dynamic;
     }
@@ -573,7 +573,7 @@ public class MaterialBlockModel extends SimpleBlockModel {
     }
 
     @Override
-    public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockModelPart> parts) {
+    public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockStateModelPart> parts) {
       SimpleModelWrapper model = dynamic.resolveForData(level.getModelData(pos));
       if (model != null) {
         parts.add(model);

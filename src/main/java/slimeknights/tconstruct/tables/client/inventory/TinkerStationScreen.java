@@ -3,7 +3,7 @@ package slimeknights.tconstruct.tables.client.inventory;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.input.KeyEvent;
@@ -278,7 +278,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   }
 
   @Override
-  public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+  public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     super.render(graphics, mouseX, mouseY, partialTicks); // base render + the info-overlay pass
     // COLLAPSED tier: the centered selector overlay draws above the slots (its docked draw in renderBg is gated off)
     if (this.overlayOpen == OverlayPanel.SELECTOR) {
@@ -391,11 +391,11 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   }
 
   @Override
-  protected void drawContainerName(GuiGraphics graphics) {
+  protected void drawContainerName(GuiGraphicsExtractor graphics) {
     graphics.drawString(this.font, this.getTitle(), 8, 8, 0xFF404040, false);
   }
 
-  public static void renderIcon(GuiGraphics graphics, LayoutIcon icon, int x, int y) {
+  public static void renderIcon(GuiGraphicsExtractor graphics, LayoutIcon icon, int x, int y) {
     Pattern pattern = icon.getValue(Pattern.class);
     if (pattern != null) {
       // draw pattern sprite
@@ -410,7 +410,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   }
 
   @Override
-  protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
     this.drawBackground(graphics, TINKER_TEXTURE);
 
     int x = 0;
@@ -645,7 +645,7 @@ public class TinkerStationScreen extends ToolTableScreen<TinkerStationBlockEntit
   }
 
   @Override
-  public void renderSlot(GuiGraphics graphics, Slot slotIn, int mouseX, int mouseY) {
+  public void renderSlot(GuiGraphicsExtractor graphics, Slot slotIn, int mouseX, int mouseY) {
     // don't draw dormant slots with no item
     if (slotIn instanceof TinkerStationSlot && ((TinkerStationSlot) slotIn).isDormant() && !slotIn.hasItem()) {
       return;

@@ -9,7 +9,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -17,7 +17,7 @@ import net.minecraft.client.renderer.item.ModelRenderProperties;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.Direction;
@@ -81,15 +81,15 @@ public class ToolModel {
     SMALL_TOOL_TYPES.set(type.ordinal());
   }
 
-  /** Builds a Material on the block atlas for the given texture location */
-  private static Material material(Identifier texture) {
-    return new Material(TextureAtlas.LOCATION_BLOCKS, texture);
+  /** Builds a SpriteId on the block atlas for the given texture location */
+  private static SpriteId material(Identifier texture) {
+    return new SpriteId(TextureAtlas.LOCATION_BLOCKS, texture);
   }
 
   /**
    * adds quads for relevant modifiers
    */
-  private static void addModifierQuads(Function<Material, TextureAtlasSprite> spriteGetter, ModifierModelMap modifierModels, List<FirstModifier> firstModifiers, boolean showTraits, IToolStackView tool, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels, Transformation transforms, boolean isLarge) {
+  private static void addModifierQuads(Function<SpriteId, TextureAtlasSprite> spriteGetter, ModifierModelMap modifierModels, List<FirstModifier> firstModifiers, boolean showTraits, IToolStackView tool, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels, Transformation transforms, boolean isLarge) {
     if (!modifierModels.isEmpty()) {
       int modelIndex = 0;
       List<ModifierEntry> modifiers = (showTraits ? tool.getModifiers() : tool.getUpgrades()).getModifiers();
@@ -156,11 +156,11 @@ public class ToolModel {
    * @param largeTransforms Transform for the large parts, or null to only build the small model
    * @param itemTransforms  Display transforms from the referenced transform model
    */
-  private static BakedToolModel bakeInternal(Function<String,Material> materialGetter, @Nullable Transformation largeTransforms,
+  private static BakedToolModel bakeInternal(Function<String,SpriteId> materialGetter, @Nullable Transformation largeTransforms,
                                              List<ToolPart> parts, ModifierModelMap modifierModels, List<FirstModifier> firstModifiers, boolean showTraits,
                                              List<MaterialVariantId> materials, @Nullable IToolStackView tool,
-                                             boolean useBlockLight, net.minecraft.client.renderer.block.model.ItemTransforms itemTransforms) {
-    Function<Material,TextureAtlasSprite> spriteGetter = Minecraft.getInstance().getAtlasManager()::get;
+                                             boolean useBlockLight, net.minecraft.client.resources.model.cuboid.ItemTransforms itemTransforms) {
+    Function<SpriteId,TextureAtlasSprite> spriteGetter = Minecraft.getInstance().getAtlasManager()::get;
     RenderTypeGroup renderTypes = ItemModelUtil.defaultRenderTypes();
     Transformation smallTransforms = Transformation.identity();
 
@@ -199,7 +199,7 @@ public class ToolModel {
       }
     }
     if (particle == null) {
-      particle = spriteGetter.apply(new Material(TextureAtlas.LOCATION_BLOCKS, MissingTextureAtlasSprite.getLocation()));
+      particle = spriteGetter.apply(new SpriteId(TextureAtlas.LOCATION_BLOCKS, MissingTextureAtlasSprite.getLocation()));
       TConstruct.LOG.error("Created tool model without a particle sprite, this means it somehow has no parts. This should not be possible");
     }
 
@@ -316,7 +316,7 @@ public class ToolModel {
       // large tools are stretched in X and Y by 200%, with a special offset
       Transformation largeTransforms = large ? new Transformation(new Vector3f((offset.x - 8) / 32, (-offset.y - 8) / 32, 0), null, new Vector3f(2, 2, 1), null) : null;
       List<ToolPart> toolParts = parts.isEmpty() ? ToolPart.DEFAULT_PARTS : parts;
-      Function<String,Material> materialGetter = name -> material(textures.getOrDefault(name, MissingTextureAtlasSprite.getLocation()));
+      Function<String,SpriteId> materialGetter = name -> material(textures.getOrDefault(name, MissingTextureAtlasSprite.getLocation()));
       return new Baked(materialGetter, toolParts, largeTransforms, modifierMap, firstModifiers, showTraits,
                        transforms.getTopGuiLight().lightLikeBlock(), transforms.getTopTransforms());
     }
@@ -327,7 +327,7 @@ public class ToolModel {
 
   /** Baked tool item model: resolves and caches the composited variants per stack */
   public static final class Baked implements ItemModel {
-    private final Function<String,Material> materialGetter;
+    private final Function<String,SpriteId> materialGetter;
     private final List<ToolPart> toolParts;
     @Nullable
     private final Transformation largeTransforms;
@@ -335,7 +335,7 @@ public class ToolModel {
     private final List<FirstModifier> firstModifiers;
     private final boolean showTraits;
     private final boolean useBlockLight;
-    private final net.minecraft.client.renderer.block.model.ItemTransforms itemTransforms;
+    private final net.minecraft.client.resources.model.cuboid.ItemTransforms itemTransforms;
     /**
      * Base (no material/modifier) variants.
      * PORT 1.21.4: baked lazily. {@link #bakeInternal} composites quads via {@code Minecraft.getInstance().getAtlasManager()::get} (the live block
@@ -349,9 +349,9 @@ public class ToolModel {
       .maximumSize(Math.max(64, slimeknights.tconstruct.library.client.materials.MaterialRenderInfoLoader.INSTANCE.getAllRenderInfos().size() * 3L / 2))
       .build();
 
-    Baked(Function<String,Material> materialGetter, List<ToolPart> toolParts, @Nullable Transformation largeTransforms, ModifierModelMap modifierModels,
+    Baked(Function<String,SpriteId> materialGetter, List<ToolPart> toolParts, @Nullable Transformation largeTransforms, ModifierModelMap modifierModels,
           List<FirstModifier> firstModifiers, boolean showTraits, boolean useBlockLight,
-          net.minecraft.client.renderer.block.model.ItemTransforms itemTransforms) {
+          net.minecraft.client.resources.model.cuboid.ItemTransforms itemTransforms) {
       this.materialGetter = materialGetter;
       this.toolParts = toolParts;
       this.largeTransforms = largeTransforms;

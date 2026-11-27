@@ -4,14 +4,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.FungusBlock;
+import net.minecraft.world.level.block.NetherFungusBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.world.TinkerWorld;
 
 /** Update of fungus that grows on slime soil instead */
-public class SlimeFungusBlock extends FungusBlock implements SlimePlant {
+public class SlimeFungusBlock extends NetherFungusBlock implements SlimePlant {
   public SlimeFungusBlock(Properties properties, ResourceKey<ConfiguredFeature<?,?>> fungusFeature) {
     super(fungusFeature, TinkerWorld.slimeDirt.get(DirtType.ICHOR), properties);
   }

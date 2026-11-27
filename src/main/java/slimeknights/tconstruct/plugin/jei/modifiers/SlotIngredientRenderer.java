@@ -6,11 +6,11 @@ import net.minecraft.data.AtlasIds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -88,7 +88,7 @@ public enum SlotIngredientRenderer implements IIngredientRenderer<SlotCount> {
     // (including those registered via NBTKeyModel.registerExtraTexture)
     ModelManager modelManager = Minecraft.getInstance().getModelManager();
     if (modelManager.getItemModel(TinkerModifiers.creativeSlotItem.getId()) instanceof NBTKeyModel.Baked nbtKey) {
-      Material texture = nbtKey.getTexture(slotType.getName());
+      SpriteId texture = nbtKey.getTexture(slotType.getName());
       if (texture != null) {
         return Minecraft.getInstance().getAtlasManager().get(texture);
       }
@@ -102,20 +102,20 @@ public enum SlotIngredientRenderer implements IIngredientRenderer<SlotCount> {
   }
 
   @Override
-  public void render(GuiGraphics graphics, @Nullable SlotCount slots, int x, int y, IIngredientRenderContext context) {
+  public void render(GuiGraphicsExtractor graphics, @Nullable SlotCount slots, int x, int y, IIngredientRenderContext context) {
     if (this != INGREDIENT && slots != null && slots.count() > 0) {
       String text = Integer.toString(slots.count());
       Font fontRenderer = Minecraft.getInstance().font;
       graphics.drawString(fontRenderer, text, x + 9 - fontRenderer.width(text), y + 5, Color.GRAY.getRGB(), false);
     }
-    // PORT 1.21.4: GuiGraphics.blit(x,y,z,w,h,sprite) was removed; sprites now render through blitSprite(renderType, sprite, ...)
+    // PORT 1.21.4: GuiGraphicsExtractor.blit(x,y,z,w,h,sprite) was removed; sprites now render through blitSprite(renderType, sprite, ...)
     graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITES.computeIfAbsent(SlotCount.type(slots), SLOT_LOOKUP), x + (this == INGREDIENT ? 0 : 8), y, 16, 16);
   }
 
   /** JEI 27 still declares this overload abstract, but only calls the positioned one above */
   @SuppressWarnings("removal")
   @Override
-  public void render(GuiGraphics graphics, @Nullable SlotCount slots) {
+  public void render(GuiGraphicsExtractor graphics, @Nullable SlotCount slots) {
     render(graphics, slots, 0, 0, IIngredientRenderContext.INGREDIENT);
   }
 

@@ -1,10 +1,10 @@
 package slimeknights.tconstruct.library.client.modifiers.model;
 
 import com.mojang.math.Transformation;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.material.Fluid;
@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /** Model for a fluid in a tool. */
-public record FluidModifierModel(Material small, @Nullable Material large, ToolTankHelper tankHelper) implements SimpleModifierModel {
+public record FluidModifierModel(SpriteId small, @Nullable SpriteId large, ToolTankHelper tankHelper) implements SimpleModifierModel {
   public static final RecordLoadable<FluidModifierModel> LOADER = RecordLoadable.create(
     ModifierModel.MATERIAL_LOADABLE.requiredField("mask", FluidModifierModel::small),
     ModifierModel.MATERIAL_LOADABLE.nullableField("mask_large", FluidModifierModel::large),
@@ -37,7 +37,7 @@ public record FluidModifierModel(Material small, @Nullable Material large, ToolT
   private static final Identifier BAKE_LOCATION = TConstruct.getResource("dynamic_fluid_model");
 
   /** Instance with default tank helper */
-  public FluidModifierModel(Material small, @Nullable Material large) {
+  public FluidModifierModel(SpriteId small, @Nullable SpriteId large) {
     this(small, large, ToolTankHelper.TANK_HELPER);
   }
 
@@ -60,9 +60,9 @@ public record FluidModifierModel(Material small, @Nullable Material large, ToolT
   }
 
   @Override
-  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<Material, TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
+  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<SpriteId, TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
     // ensure template exists
-    Material template = isLarge ? large() : small();
+    SpriteId template = isLarge ? large() : small();
     if (template != null) {
       // ensure we have fluid
       FluidStack fluid = tankHelper().getFluid(tool);
@@ -73,11 +73,11 @@ public record FluidModifierModel(Material small, @Nullable Material large, ToolT
   }
 
   /** Adds quads for the given fluid */
-  public static void addQuads(FluidStack fluid, Material template, Function<Material,TextureAtlasSprite> spriteGetter, Transformation transforms, Consumer<Collection<BakedQuad>> quadConsumer) {
+  public static void addQuads(FluidStack fluid, SpriteId template, Function<SpriteId,TextureAtlasSprite> spriteGetter, Transformation transforms, Consumer<Collection<BakedQuad>> quadConsumer) {
     // must have texture for the proper state
     // fluid properties
     IClientFluidTypeExtensions attributes = IClientFluidTypeExtensions.of(fluid.getFluid());
-    TextureAtlasSprite fluidSprite = spriteGetter.apply(new Material(TextureAtlas.LOCATION_BLOCKS, attributes.getStillTexture(fluid)));
+    TextureAtlasSprite fluidSprite = spriteGetter.apply(new SpriteId(TextureAtlas.LOCATION_BLOCKS, attributes.getStillTexture(fluid)));
     TextureAtlasSprite maskSprite = spriteGetter.apply(template);
 
     // PORT 1.21.4: UnbakedGeometryHelper was removed; build the fluid clipped to the template shape via the Mantle

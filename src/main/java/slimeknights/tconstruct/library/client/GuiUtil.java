@@ -3,10 +3,10 @@ package slimeknights.tconstruct.library.client;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.BlitRenderState;
+import net.minecraft.client.renderer.state.gui.BlitRenderState;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * GUI helpers for the deferred GUI rendering of 1.21.6+.
  * <p>
- * Deferred tooltip rule used across Tinkers screens: {@link GuiGraphics#setTooltipForNextFrame} keeps the <em>first</em> tooltip
+ * Deferred tooltip rule used across Tinkers screens: {@link GuiGraphicsExtractor#setTooltipForNextFrame} keeps the <em>first</em> tooltip
  * set in a frame, unless a later one is set with {@code focused = true}. Tooltips that up to 1.21.5 were drawn immediately
  * after (so on top of) the slot item tooltip, and whose area can overlap a slot, are set as focused to keep that priority
  * (e.g. the melting heat errors and the info panel tooltips); all others use the plain first-wins overloads.
@@ -42,7 +42,7 @@ public final class GuiUtil {
    * @param screen      Parent screen
    * @param background  Background location
    */
-  public static void drawBackground(GuiGraphics graphics, AbstractContainerScreen<?> screen, Identifier background) {
+  public static void drawBackground(GuiGraphicsExtractor graphics, AbstractContainerScreen<?> screen, Identifier background) {
     graphics.blit(RenderPipelines.GUI_TEXTURED, background, screen.leftPos, screen.topPos, 0.0F, 0.0F, screen.imageWidth, screen.imageHeight, 256, 256);
   }
 
@@ -93,7 +93,7 @@ public final class GuiUtil {
    * @param height    Tank height
    * @param depth     Unused since 1.21.8 (the GUI has no depth anymore), kept for source compatibility
    */
-  public static void renderFluidTank(GuiGraphics graphics, AbstractContainerScreen<?> screen, FluidStack stack, int capacity, int x, int y, int width, int height, int depth) {
+  public static void renderFluidTank(GuiGraphicsExtractor graphics, AbstractContainerScreen<?> screen, FluidStack stack, int capacity, int x, int y, int width, int height, int depth) {
     renderFluidTank(graphics, screen, stack, stack.getAmount(), capacity, x, y, width, height, depth);
   }
 
@@ -108,7 +108,7 @@ public final class GuiUtil {
    * @param height    Tank height
    * @param depth     Unused since 1.21.8 (the GUI has no depth anymore), kept for source compatibility
    */
-  public static void renderFluidTank(GuiGraphics graphics, AbstractContainerScreen<?> screen, FluidStack stack, int amount, int capacity, int x, int y, int width, int height, int depth) {
+  public static void renderFluidTank(GuiGraphicsExtractor graphics, AbstractContainerScreen<?> screen, FluidStack stack, int amount, int capacity, int x, int y, int width, int height, int depth) {
     if(!stack.isEmpty() && capacity > 0) {
       int maxY = y + height;
       int fluidHeight = Math.min(height * amount / capacity, height);
@@ -127,7 +127,7 @@ public final class GuiUtil {
    * @param height  Fluid height
    * @param depth   Unused since 1.21.8 (the GUI has no depth anymore), kept for source compatibility
    */
-  public static void renderTiledFluid(GuiGraphics graphics, AbstractContainerScreen<?> screen, FluidStack stack, int x, int y, int width, int height, int depth) {
+  public static void renderTiledFluid(GuiGraphicsExtractor graphics, AbstractContainerScreen<?> screen, FluidStack stack, int x, int y, int width, int height, int depth) {
     if (!stack.isEmpty()) {
       IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(stack.getFluid());
       TextureAtlasSprite fluidSprite = screen.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(clientFluid.getStillTexture(stack));
@@ -148,7 +148,7 @@ public final class GuiUtil {
    * @param depth       Unused since 1.21.8 (the GUI has no depth anymore), kept for source compatibility
    * @param upsideDown  If true, flips the sprite
    */
-  public static void renderTiledTextureAtlas(GuiGraphics graphics, AbstractContainerScreen<?> screen, TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown) {
+  public static void renderTiledTextureAtlas(GuiGraphicsExtractor graphics, AbstractContainerScreen<?> screen, TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown) {
     renderTiledTextureAtlas(graphics, screen, sprite, x, y, width, height, depth, upsideDown, -1);
   }
 
@@ -165,7 +165,7 @@ public final class GuiUtil {
    * @param upsideDown  If true, flips the sprite
    * @param color       ARGB tint color
    */
-  public static void renderTiledTextureAtlas(GuiGraphics graphics, AbstractContainerScreen<?> screen, TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown, int color) {
+  public static void renderTiledTextureAtlas(GuiGraphicsExtractor graphics, AbstractContainerScreen<?> screen, TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown, int color) {
     // nothing to draw: tiny tank amounts would otherwise submit a degenerate tile every frame, and negative sizes must not loop
     if (width <= 0 || height <= 0) {
       return;
@@ -173,7 +173,7 @@ public final class GuiUtil {
     // 1.21.8: GUI rendering is deferred, so each tile is submitted as a blit render state. The public blitSprite overloads
     // only draw a whole atlas sprite (or a sub-region of a GUI atlas sprite), so partial tiles are submitted directly with
     // their exact sub-UVs, same as the old immediate quads. Depth is ignored: later submissions draw above earlier ones.
-    // 1.21.11: samplers are separate from the texture view; use the atlas texture's own sampler like GuiGraphics#innerBlit
+    // 1.21.11: samplers are separate from the texture view; use the atlas texture's own sampler like GuiGraphicsExtractor#innerBlit
     AbstractTexture atlasTexture = screen.getMinecraft().getTextureManager().getTexture(sprite.atlasLocation());
     TextureSetup textureSetup = TextureSetup.singleTexture(atlasTexture.getTextureView(), atlasTexture.getSampler());
     Matrix3x2f pose = new Matrix3x2f(graphics.pose());
@@ -226,7 +226,7 @@ public final class GuiUtil {
    * @param v2       Texture V end
    * @param color    ARGB color
    */
-  private static void blitTile(GuiGraphics graphics, TextureSetup textureSetup, Matrix3x2f pose, @Nullable ScreenRectangle scissor, int x1, int x2, int y1, int y2, float u1, float u2, float v1, float v2, int color) {
+  private static void blitTile(GuiGraphicsExtractor graphics, TextureSetup textureSetup, Matrix3x2f pose, @Nullable ScreenRectangle scissor, int x1, int x2, int y1, int y2, float u1, float u2, float v1, float v2, int color) {
     graphics.submitGuiElementRenderState(new BlitRenderState(RenderPipelines.GUI_TEXTURED, textureSetup, pose, x1, y1, x2, y2, u1, u2, v1, v2, color, scissor));
   }
 
@@ -237,7 +237,7 @@ public final class GuiUtil {
    * @param y         Y position to start
    * @param progress  Progress between 0 and 1
    */
-  public static void drawProgressUp(GuiGraphics graphics, ElementScreen element, int x, int y, float progress) {
+  public static void drawProgressUp(GuiGraphicsExtractor graphics, ElementScreen element, int x, int y, float progress) {
     int height;
     if (progress > 1) {
       height = element.h;
@@ -260,7 +260,7 @@ public final class GuiUtil {
    * @param y         Y position
    * @param color     ARGB tint, typically {@link net.minecraft.util.ARGB#white(float)} for translucency
    */
-  public static void drawElement(GuiGraphics graphics, ElementScreen element, int x, int y, int color) {
+  public static void drawElement(GuiGraphicsExtractor graphics, ElementScreen element, int x, int y, int color) {
     graphics.blit(RenderPipelines.GUI_TEXTURED, element.texture, x, y, (float) element.x, (float) element.y, element.w, element.h, element.texW, element.texH, color);
   }
 
@@ -272,13 +272,13 @@ public final class GuiUtil {
    * @param width     Element width
    * @param height    Element height
    */
-  public static void renderHighlight(GuiGraphics graphics, int x, int y, int width, int height) {
+  public static void renderHighlight(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
     // 1.21.8: GUI draws are layered by submission order (no depth buffer), so a plain fill after the content draws over it
     graphics.fill(x, y, x + width, y + height, 0x80FFFFFF);
   }
 
   /** Renders a pattern at the given location */
-  public static void renderPattern(GuiGraphics graphics, Pattern pattern, int x, int y) {
+  public static void renderPattern(GuiGraphicsExtractor graphics, Pattern pattern, int x, int y) {
     TextureAtlasSprite sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(pattern.getTexture());
     graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, 16, 16);
   }

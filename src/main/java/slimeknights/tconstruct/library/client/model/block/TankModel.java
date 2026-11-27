@@ -5,25 +5,25 @@ import com.google.common.cache.CacheBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockElement;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.block.model.SimpleModelWrapper;
-import net.minecraft.client.renderer.block.model.SingleVariant;
-import net.minecraft.client.renderer.block.model.Variant;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.cuboid.CuboidModelElement;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
+import net.minecraft.client.renderer.block.dispatch.SingleVariant;
+import net.minecraft.client.renderer.block.dispatch.Variant;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.client.resources.model.QuadCollection;
+import net.minecraft.client.renderer.block.dispatch.ModelState;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.model.UnbakedModelLoader;
@@ -117,7 +117,7 @@ public class TankModel extends SimpleBlockModel {
     public BlockStateModel bake(ModelBaker baker) {
       ResolvedModel resolved = baker.getModel(variant.modelLocation());
       ModelState state = variant.modelState().asModelState();
-      BlockModelPart base = SimpleModelWrapper.bake(baker, resolved, state);
+      BlockStateModelPart base = SimpleModelWrapper.bake(baker, resolved, state);
       TankModel tank = find(resolved);
       if (tank == null) {
         TConstruct.LOG.warn("Block state model type tconstruct:tank used with {}, which is not a tank model", resolved.debugName());
@@ -156,7 +156,7 @@ public class TankModel extends SimpleBlockModel {
       .build();
 
     @SuppressWarnings("WeakerAccess")
-    protected Baked(BlockModelPart base, TankModel original, ElementModelData data) {
+    protected Baked(BlockStateModelPart base, TankModel original, ElementModelData data) {
       super(new SingleVariant(base));
       this.original = original;
       this.data = data;
@@ -170,8 +170,8 @@ public class TankModel extends SimpleBlockModel {
      * @param luminosity   Luminosity for the fluid part
      * @return  Baked model
      */
-    private SimpleModelWrapper bakeWithFluid(Map<String,Material> replacements, BlockElement fluid, int color, int luminosity) {
-      // PORT 1.21.5: rebaked at runtime through the block atlas (Material#sprite); verify tank fluids in the uitest phase
+    private SimpleModelWrapper bakeWithFluid(Map<String,SpriteId> replacements, CuboidModelElement fluid, int color, int luminosity) {
+      // PORT 1.21.5: rebaked at runtime through the block atlas (SpriteId#sprite); verify tank fluids in the uitest phase
       Function<String,TextureAtlasSprite> sprites = data.runtimeSprites(replacements);
       QuadCollection.Builder builder = new QuadCollection.Builder();
       // first, add all regular elements
@@ -194,12 +194,12 @@ public class TankModel extends SimpleBlockModel {
       FluidType type = stack.getFluid().getFluidType();
       int color = attributes.getTintColor(stack);
       int luminosity = type.getLightLevel(stack);
-      Map<String,Material> replacements = new HashMap<>();
-      replacements.put("fluid", new Material(TextureAtlas.LOCATION_BLOCKS, attributes.getStillTexture(stack)));
-      replacements.put("flowing_fluid", new Material(TextureAtlas.LOCATION_BLOCKS, attributes.getFlowingTexture(stack)));
+      Map<String,SpriteId> replacements = new HashMap<>();
+      replacements.put("fluid", new SpriteId(TextureAtlas.LOCATION_BLOCKS, attributes.getStillTexture(stack)));
+      replacements.put("flowing_fluid", new SpriteId(TextureAtlas.LOCATION_BLOCKS, attributes.getFlowingTexture(stack)));
 
       // add fluid part
-      BlockElement fluid = original.fluid.getPart(key.increments, type.isLighterThanAir());
+      CuboidModelElement fluid = original.fluid.getPart(key.increments, type.isLighterThanAir());
       // bake the model
       // 1.21.5: the GUI variant only matters for items, which render the static geometry, so it is not baked here
       return bakeWithFluid(replacements, fluid, color, luminosity);
@@ -234,7 +234,7 @@ public class TankModel extends SimpleBlockModel {
      * @return  Cached model, or null if it failed to bake
      */
     @Nullable
-    public BlockModelPart getCachedModel(FluidStack fluid, int capacity) {
+    public BlockStateModelPart getCachedModel(FluidStack fluid, int capacity) {
       return getCachedModel(getKey(fluid, capacity));
     }
 
@@ -253,7 +253,7 @@ public class TankModel extends SimpleBlockModel {
     }
 
     @Override
-    public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockModelPart> parts) {
+    public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockStateModelPart> parts) {
       CacheKey key = getKey(level, pos);
       if (key != null) {
         SimpleModelWrapper model = getCachedModel(key);

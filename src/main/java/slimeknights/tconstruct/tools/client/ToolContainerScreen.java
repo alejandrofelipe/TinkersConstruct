@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.tools.client;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -9,7 +9,7 @@ import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import slimeknights.mantle.client.screen.ElementScreen;
 import slimeknights.tconstruct.TConstruct;
@@ -99,23 +99,23 @@ public class ToolContainerScreen extends AbstractContainerScreen<ToolContainerMe
   }
 
   @Override
-  protected void slotClicked(Slot slot, int slotId, int index, ClickType type) {
+  protected void slotClicked(Slot slot, int slotId, int index, ContainerInput type) {
     // disallow swapping the tool slot
-    if (type == ClickType.SWAP && slot.container == menu.getPlayer().getInventory() && slot.getSlotIndex() == menu.getSlotIndex()) {
+    if (type == ContainerInput.SWAP && slot.container == menu.getPlayer().getInventory() && slot.getSlotIndex() == menu.getSlotIndex()) {
       return;
     }
     super.slotClicked(slot, slotId, index, type);
   }
 
   @Override
-  public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+  public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     // 1.21: super.render already runs renderBackground (which draws the container bg) — no explicit call
     super.render(graphics, mouseX, mouseY, partialTicks);
     this.renderTooltip(graphics, mouseX, mouseY);
   }
 
   @Override
-  protected void renderBg(GuiGraphics graphics, float partialTicks, int x, int y) {
+  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int x, int y) {
     int xStart = (this.width - this.imageWidth) / 2;
     int yStart = (this.height - this.imageHeight) / 2;
 
@@ -232,7 +232,7 @@ public class ToolContainerScreen extends AbstractContainerScreen<ToolContainerMe
   }
 
   @Override
-  protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+  protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     super.renderLabels(graphics, mouseX, mouseY);
     if (tank != null) {
       tank.highlightHoveredFluid(graphics, mouseX - this.leftPos, mouseY - this.topPos);
@@ -240,7 +240,7 @@ public class ToolContainerScreen extends AbstractContainerScreen<ToolContainerMe
   }
 
   @Override
-  protected void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+  protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     super.renderTooltip(graphics, mouseX, mouseY);
 
     if (tank != null) {

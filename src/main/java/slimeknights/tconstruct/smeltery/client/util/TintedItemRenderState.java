@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.smeltery.client.util;
 
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;

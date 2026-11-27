@@ -3,7 +3,7 @@ package slimeknights.tconstruct.tools.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.MapRenderState;
@@ -256,7 +256,7 @@ public class ModifierClientEvents {
       // 1.21.5: GUI blits always blend, the blend state moved into the render pipeline
       int scaledWidth = mc.getWindow().getGuiScaledWidth();
       int scaledHeight = mc.getWindow().getGuiScaledHeight();
-      GuiGraphics graphics = event.getGuiGraphics();
+      GuiGraphicsExtractor graphics = event.getGuiGraphics();
       DeltaTracker partialTicks = event.getPartialTick();
 
       // want just above the normal offhand item

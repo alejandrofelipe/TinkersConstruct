@@ -6,7 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -78,7 +78,7 @@ public class MenuSlotGameTests {
   /** Clicks the slot with the given carried stack, returns the carried stack after the click */
   private static ItemStack click(AbstractContainerMenu menu, Player player, int slot, int button, ItemStack carried) {
     menu.setCarried(carried);
-    menu.clicked(slot, button, ClickType.PICKUP, player);
+    menu.clicked(slot, button, ContainerInput.PICKUP, player);
     return menu.getCarried();
   }
 
@@ -662,10 +662,10 @@ public class MenuSlotGameTests {
     MovingSideInventory menu = spreadingMenu(helper, inventory);
     Player player = menu.player;
     menu.setCarried(new ItemStack(Items.APPLE, 10));
-    menu.clicked(-999, AbstractContainerMenu.getQuickcraftMask(0, 0), ClickType.QUICK_CRAFT, player);
-    menu.clicked(0, AbstractContainerMenu.getQuickcraftMask(1, 0), ClickType.QUICK_CRAFT, player);
-    menu.clicked(2, AbstractContainerMenu.getQuickcraftMask(1, 0), ClickType.QUICK_CRAFT, player);
-    menu.clicked(-999, AbstractContainerMenu.getQuickcraftMask(2, 0), ClickType.QUICK_CRAFT, player);
+    menu.clicked(-999, AbstractContainerMenu.getQuickcraftMask(0, 0), ContainerInput.QUICK_CRAFT, player);
+    menu.clicked(0, AbstractContainerMenu.getQuickcraftMask(1, 0), ContainerInput.QUICK_CRAFT, player);
+    menu.clicked(2, AbstractContainerMenu.getQuickcraftMask(1, 0), ContainerInput.QUICK_CRAFT, player);
+    menu.clicked(-999, AbstractContainerMenu.getQuickcraftMask(2, 0), ContainerInput.QUICK_CRAFT, player);
     assertStack(helper, inventory.copyToList().get(2), new ItemStack(Items.APPLE, 5), "regular slot after the drag");
     assertCount(helper, inventory, menu, Items.APPLE, 10, "after the drag");
     helper.succeed();
@@ -691,7 +691,7 @@ public class MenuSlotGameTests {
     MovingSideInventory menu = spreadingMenu(helper, inventory);
     Player player = menu.player;
     player.getInventory().setItem(0, new ItemStack(Items.APPLE, 6));
-    menu.clicked(0, 0, ClickType.SWAP, player);
+    menu.clicked(0, 0, ContainerInput.SWAP, player);
     assertCount(helper, inventory, menu, Items.APPLE, 6, "after the hotbar swap");
     helper.succeed();
   }
@@ -743,7 +743,7 @@ public class MenuSlotGameTests {
     MovingSideInventory menu = transactionalMenu(helper, inventory);
     inventory.set(0, ItemResource.of(Items.APPLE), 10);
     menu.player.getInventory().setItem(0, new ItemStack(Items.APPLE, 3));
-    menu.clicked(0, 0, ClickType.SWAP, menu.player);
+    menu.clicked(0, 0, ContainerInput.SWAP, menu.player);
     assertCount(helper, inventory, menu, Items.APPLE, 13, "after the same item hotbar swap");
     helper.succeed();
   }
@@ -824,7 +824,7 @@ public class MenuSlotGameTests {
       inventory[0] = inv;
       inv.set(0, ItemResource.of(Items.DIRT), 3);
       m.player.getInventory().setItem(0, new ItemStack(Items.APPLE, 6));
-      m.clicked(0, 0, ClickType.SWAP, m.player);
+      m.clicked(0, 0, ContainerInput.SWAP, m.player);
     });
     assertCount(helper, inventory[0], menu, Items.DIRT, 3, "after the hotbar swap");
     assertCount(helper, inventory[0], menu, Items.APPLE, 6, "after the hotbar swap");
@@ -862,7 +862,7 @@ public class MenuSlotGameTests {
     menu = withFailingFinalExtract(helper, false, (inv, m) -> {
       inventory[0] = inv;
       inv.set(0, ItemResource.of(Items.APPLE), 10);
-      m.clicked(0, 0, ClickType.SWAP, m.player);
+      m.clicked(0, 0, ContainerInput.SWAP, m.player);
     });
     assertCount(helper, inventory[0], menu, Items.APPLE, 10, "after swapping into an empty hotbar slot");
     helper.succeed();
@@ -895,7 +895,7 @@ public class MenuSlotGameTests {
     for (int i = 0; i < menu.slots.size(); i++) {
       Slot slot = menu.slots.get(i);
       if (slot.container == player.getInventory() && slot.getContainerSlot() == inventorySlot) {
-        menu.clicked(i, 0, ClickType.QUICK_MOVE, player);
+        menu.clicked(i, 0, ContainerInput.QUICK_MOVE, player);
         return;
       }
     }

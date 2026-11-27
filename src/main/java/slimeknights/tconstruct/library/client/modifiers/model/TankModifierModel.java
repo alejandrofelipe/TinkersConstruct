@@ -2,9 +2,9 @@ package slimeknights.tconstruct.library.client.modifiers.model;
 
 import com.mojang.math.Transformation;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -32,13 +32,13 @@ public class TankModifierModel implements ModifierModel {
     TankModifierModel::new);
 
   @Nullable
-  private final Material smallPartial;
+  private final SpriteId smallPartial;
   @Nullable
-  private final Material smallFull;
+  private final SpriteId smallFull;
   @Nullable
-  private final Material largePartial;
+  private final SpriteId largePartial;
   @Nullable
-  private final Material largeFull;
+  private final SpriteId largeFull;
   private final int tolerance;
 
   @Override
@@ -51,7 +51,7 @@ public class TankModifierModel implements ModifierModel {
   }
 
   @Override
-  public void validate(Function<Material, TextureAtlasSprite> spriteGetter) {
+  public void validate(Function<SpriteId, TextureAtlasSprite> spriteGetter) {
     if (smallPartial != null) spriteGetter.apply(smallPartial);
     if (largePartial != null) spriteGetter.apply(largePartial);
     if (smallFull != null) spriteGetter.apply(smallFull);
@@ -72,8 +72,8 @@ public class TankModifierModel implements ModifierModel {
   }
 
   @Override
-  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<Material, TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
-    Material partial, full;
+  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<SpriteId, TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
+    SpriteId partial, full;
     if (isLarge) {
       partial = largePartial;
       full = largeFull;
@@ -85,7 +85,7 @@ public class TankModifierModel implements ModifierModel {
       ToolTankHelper helper = tankHelper();
       FluidStack fluid = helper.getFluid(tool);
       if (!fluid.isEmpty()) {
-        Material mask = fluid.getAmount() + tolerance < helper.getCapacity(tool) ? partial : full;
+        SpriteId mask = fluid.getAmount() + tolerance < helper.getCapacity(tool) ? partial : full;
         if (mask != null) {
           FluidModifierModel.addQuads(fluid, mask, spriteGetter, transforms, quadConsumer);
         }

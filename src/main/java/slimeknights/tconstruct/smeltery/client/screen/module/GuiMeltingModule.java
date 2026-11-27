@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.smeltery.client.screen.module;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -46,7 +46,7 @@ public class GuiMeltingModule {
   /**
    * Draws the heat bars on each slot
    */
-  public void drawHeatBars(GuiGraphics graphics) {
+  public void drawHeatBars(GuiGraphicsExtractor graphics) {
     int temperature = this.temperature.getAsInt();
     AbstractContainerMenu menu = screen.getMenu();
     for (int i = 0; i < inventory.getSlots(); i++) {
@@ -87,7 +87,7 @@ public class GuiMeltingModule {
    * @param mouseX  Mouse X position
    * @param mouseY  Mouse Y position
    */
-  public void drawHeatTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
+  public void drawHeatTooltips(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     int checkX = mouseX - screen.leftPos;
     int checkY = mouseY - screen.topPos;
     int temperature = this.temperature.getAsInt();

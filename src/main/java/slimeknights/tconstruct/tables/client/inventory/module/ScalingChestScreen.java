@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.tables.client.inventory.module;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
@@ -70,5 +70,5 @@ public class ScalingChestScreen<T extends BlockEntity> extends DynamicContainerS
   }
 
   @Override
-  protected void renderLabels(GuiGraphics graphics, int x, int y) {}
+  protected void renderLabels(GuiGraphicsExtractor graphics, int x, int y) {}
 }

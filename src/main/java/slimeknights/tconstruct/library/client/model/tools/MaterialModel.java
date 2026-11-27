@@ -10,15 +10,15 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.TextureSlots;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.ModelRenderProperties;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BlockModelRotation;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.resources.Identifier;
@@ -74,7 +74,7 @@ public class MaterialModel {
   /**
    * Checks that all unique material textures for the given part exist, logs any that are missing via the sprite getter function.
    */
-  public static void validateMaterialTextures(Function<Material, TextureAtlasSprite> spriteGetter, Material texture, @Nullable MaterialVariantId material) {
+  public static void validateMaterialTextures(Function<SpriteId, TextureAtlasSprite> spriteGetter, SpriteId texture, @Nullable MaterialVariantId material) {
     // if no specific material is set, load all materials as dependencies. If just one material, use just that one
     if (material == null) {
       MaterialRenderInfoLoader.INSTANCE.getAllRenderInfos().forEach(info -> info.getSprite(texture, spriteGetter));
@@ -90,7 +90,7 @@ public class MaterialModel {
    * @param material      Material variant
    * @return  Tinted sprite or fallback
    */
-  public static TintedSprite getMaterialSprite(Function<Material, TextureAtlasSprite> spriteGetter, Material texture, MaterialVariantId material) {
+  public static TintedSprite getMaterialSprite(Function<SpriteId, TextureAtlasSprite> spriteGetter, SpriteId texture, MaterialVariantId material) {
     // if the base material is non-null, try to find the sprite for that material
     Optional<MaterialRenderInfo> optional = MaterialRenderInfoLoader.INSTANCE.getRenderInfo(material);
     if (optional.isPresent()) {
@@ -102,7 +102,7 @@ public class MaterialModel {
   /**
    * Gets quads for the given material variant of the texture
    */
-  public static List<BakedQuad> getQuadsForMaterial(Function<Material, TextureAtlasSprite> spriteGetter, Material texture, MaterialVariantId material, int tintIndex, Transformation transformation, slimeknights.mantle.util.@Nullable ItemLayerPixels pixels) {
+  public static List<BakedQuad> getQuadsForMaterial(Function<SpriteId, TextureAtlasSprite> spriteGetter, SpriteId texture, MaterialVariantId material, int tintIndex, Transformation transformation, slimeknights.mantle.util.@Nullable ItemLayerPixels pixels) {
     TintedSprite sprite = getMaterialSprite(spriteGetter, texture, material);
     return MantleItemLayerModel.getQuadsForSprite(sprite.color(), tintIndex, sprite.sprite(), transformation, sprite.emissivity(), pixels);
   }
@@ -183,7 +183,7 @@ public class MaterialModel {
     private BakedItem bakeDynamic(MaterialVariantId material) {
       // the base model's particle is the greyscale layer texture we recolor per material
       TextureAtlasSprite baseSprite = base.particle();
-      Material texture = new Material(baseSprite.atlasLocation(), baseSprite.contents().name());
+      SpriteId texture = new SpriteId(baseSprite.atlasLocation(), baseSprite.contents().name());
       TintedSprite sprite = getMaterialSprite(Minecraft.getInstance().getAtlasManager()::get, texture, material);
       // PORT 1.21.4: tint index -1 - material color is baked into the quads rather than resolved via ItemColors
       List<BakedQuad> quads = MantleItemLayerModel.getQuadsForSprite(sprite.color(), -1, sprite.sprite(), transform, sprite.emissivity());

@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.smeltery.client.screen.module;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
@@ -90,7 +90,7 @@ public class GuiFuelModule implements IScreenWithFluidTank, ClickableTankModule 
    * Draws the fuel at the correct location
    * @param graphics  Matrix stack instance
    */
-  public void draw(GuiGraphics graphics) {
+  public void draw(GuiGraphicsExtractor graphics) {
     // draw fire
     int fuel = fuelModule.getFuel();
     int fuelQuality = fuelModule.getFuelQuality();
@@ -110,11 +110,11 @@ public class GuiFuelModule implements IScreenWithFluidTank, ClickableTankModule 
 
   /**
    * Highlights the hovered fuel
-   * @param graphics  GuiGraphics instance
+   * @param graphics  GuiGraphicsExtractor instance
    * @param checkX    Top corner relative mouse X
    * @param checkY    Top corner relative mouse Y
    */
-  public void renderHighlight(GuiGraphics graphics, int checkX, int checkY) {
+  public void renderHighlight(GuiGraphicsExtractor graphics, int checkX, int checkY) {
     if (isHovered(checkX, checkY)) {
       // if there is a fuel slot, render highlight lower
       if (hasFuelSlot) {
@@ -130,11 +130,11 @@ public class GuiFuelModule implements IScreenWithFluidTank, ClickableTankModule 
 
   /**
    * Adds the tooltip for the fuel
-   * @param graphics  GuiGraphics instance
+   * @param graphics  GuiGraphicsExtractor instance
    * @param mouseX    Mouse X position
    * @param mouseY    Mouse Y position
    */
-  public void addTooltip(GuiGraphics graphics, int mouseX, int mouseY, boolean hasTank) {
+  public void addTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hasTank) {
     int checkX = mouseX - screen.leftPos;
     int checkY = mouseY - screen.topPos;
 

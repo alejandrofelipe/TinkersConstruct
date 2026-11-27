@@ -22,7 +22,7 @@ import mezz.jei.api.runtime.IRecipesGui;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.blay09.mods.craftingtweaks.client.GuiTweakButton;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -40,7 +40,7 @@ import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -1298,7 +1298,7 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void open(UiTestContext ctx) {
-      // resolve each stack like GuiGraphics#renderItem does, twice: the identity must be stable for the atlas to reuse it
+      // resolve each stack like GuiGraphicsExtractor#renderItem does, twice: the identity must be stable for the atlas to reuse it
       ItemModelResolver resolver = ctx.mc().getItemModelResolver();
       List<ItemStack> stacks = stacks();
       List<Object> identities = new ArrayList<>();
@@ -1787,7 +1787,7 @@ public class TinkerUiTestScenarios {
       }
       // the vanilla item textures used by those icons must resolve through the items atlas, not to the missing sprite
       for (String texture : List.of("item/echo_shard", "item/diamond", "item/emerald", "item/netherite_ingot", "item/slime_ball")) {
-        TextureAtlasSprite sprite = ModelHelper.getSprite(new Material(ModelManager.BLOCK_OR_ITEM, Identifier.withDefaultNamespace(texture)));
+        TextureAtlasSprite sprite = ModelHelper.getSprite(new SpriteId(ModelManager.BLOCK_OR_ITEM, Identifier.withDefaultNamespace(texture)));
         if (MissingTextureAtlasSprite.getLocation().equals(sprite.contents().name())) {
           throw new IllegalStateException("item_atlas_grid: modifier icon texture minecraft:" + texture + " resolves to the missing sprite");
         }
@@ -1885,7 +1885,7 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
       super.render(graphics, mouseX, mouseY, partialTick);
       int left = 20;
       graphics.pose().pushMatrix();
@@ -2265,7 +2265,7 @@ public class TinkerUiTestScenarios {
     }
 
     @Override
-    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {}
+    public void renderBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {}
   }
 
   /**

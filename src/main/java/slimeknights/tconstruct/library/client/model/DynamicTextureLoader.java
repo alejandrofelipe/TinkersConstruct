@@ -3,7 +3,7 @@ package slimeknights.tconstruct.library.client.model;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -55,7 +55,7 @@ public class DynamicTextureLoader extends ResourceValidator {
    * @param logMissingTextures  If true, log textures that were not found
    * @return  Texture consumer
    */
-  public static Predicate<Material> getTextureValidator(Function<Material,TextureAtlasSprite> spriteGetter, boolean logMissingTextures) {
+  public static Predicate<SpriteId> getTextureValidator(Function<SpriteId,TextureAtlasSprite> spriteGetter, boolean logMissingTextures) {
     if (logMissingTextures || INSTANCE.resources.isEmpty()) {
       // this logs due to the vanilla sprite getter logging
       return mat -> !MissingTextureAtlasSprite.getLocation().equals(spriteGetter.apply(mat).contents().name());

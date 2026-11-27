@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.tables.client.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -18,7 +18,7 @@ public class CraftingStationScreen extends BaseTabbedScreen<CraftingStationBlock
   }
 
   @Override
-  protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
     this.drawBackground(graphics, CRAFTING_TABLE_GUI_TEXTURES);
     super.renderBg(graphics, partialTicks, mouseX, mouseY);
   }

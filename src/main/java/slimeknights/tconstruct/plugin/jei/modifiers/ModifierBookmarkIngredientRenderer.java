@@ -3,7 +3,7 @@ package slimeknights.tconstruct.plugin.jei.modifiers;
 import mezz.jei.api.ingredients.IIngredientRenderer;
 import mezz.jei.api.ingredients.rendering.IIngredientRenderContext;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -22,7 +22,7 @@ public enum ModifierBookmarkIngredientRenderer implements IIngredientRenderer<Mo
   private static final String WRAPPER_KEY = "jei.tconstruct.modifier_ingredient";
 
   @Override
-  public void render(GuiGraphics graphics, @Nullable ModifierEntry entry, int x, int y, IIngredientRenderContext context) {
+  public void render(GuiGraphicsExtractor graphics, @Nullable ModifierEntry entry, int x, int y, IIngredientRenderContext context) {
     if (entry != null) {
       ModifierIconManager.renderIcon(graphics, entry.getModifier(), x, y, 100, 16);
     }
@@ -31,7 +31,7 @@ public enum ModifierBookmarkIngredientRenderer implements IIngredientRenderer<Mo
   /** JEI 27 still declares this overload abstract, but only calls the positioned one above */
   @SuppressWarnings("removal")
   @Override
-  public void render(GuiGraphics graphics, @Nullable ModifierEntry entry) {
+  public void render(GuiGraphicsExtractor graphics, @Nullable ModifierEntry entry) {
     render(graphics, entry, 0, 0, IIngredientRenderContext.INGREDIENT);
   }
 

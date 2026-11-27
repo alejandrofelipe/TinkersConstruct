@@ -1,7 +1,7 @@
 package slimeknights.tconstruct.tables.client.inventory;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.Rect2i;
@@ -202,7 +202,7 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
   }
 
   @Override
-  public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+  public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     super.render(graphics, mouseX, mouseY, partialTicks);
     // COLLAPSED tier: the open info panel is skipped in the under-slots module pass; draw it here, above the slots/widgets
     InfoPanelScreen<?,?> overlay = this.activeInfoOverlay();
@@ -227,7 +227,7 @@ public abstract class ToolTableScreen<T extends BlockEntity, C extends TabbedCon
    * Renders the armor stand
    * @param graphics  Graphics instance
    */
-  protected void renderArmorStand(GuiGraphics graphics) {
+  protected void renderArmorStand(GuiGraphicsExtractor graphics) {
     if (this.armorStandPreview != null) {
       // matches vanilla SmithingScreen.ARMOR_STAND_ANGLE (X 25 degrees plus the Z 180 flip renderEntityInInventory expects in the pose since 1.21), then animate around Y
       Quaternionf pose = new Quaternionf().rotationXYZ(0.43633232F, 0.0F, (float) Math.PI);

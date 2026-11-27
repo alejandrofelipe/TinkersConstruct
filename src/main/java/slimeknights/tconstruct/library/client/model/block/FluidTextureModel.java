@@ -4,26 +4,26 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockElement;
-import net.minecraft.client.renderer.block.model.BlockElementFace;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.block.model.SimpleModelWrapper;
-import net.minecraft.client.renderer.block.model.SingleVariant;
-import net.minecraft.client.renderer.block.model.Variant;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.cuboid.CuboidModelElement;
+import net.minecraft.client.resources.model.cuboid.CuboidFace;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
+import net.minecraft.client.renderer.block.dispatch.SingleVariant;
+import net.minecraft.client.renderer.block.dispatch.Variant;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.client.resources.model.QuadCollection;
+import net.minecraft.client.renderer.block.dispatch.ModelState;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -124,7 +124,7 @@ public class FluidTextureModel extends ColoredBlockModel {
     public BlockStateModel bake(ModelBaker baker) {
       ResolvedModel resolved = baker.getModel(variant.modelLocation());
       ModelState state = variant.modelState().asModelState();
-      BlockModelPart base = SimpleModelWrapper.bake(baker, resolved, state);
+      BlockStateModelPart base = SimpleModelWrapper.bake(baker, resolved, state);
       FluidTextureModel model = find(resolved);
       if (model == null) {
         TConstruct.LOG.warn("Block state model type tconstruct:fluid_texture used with {}, which is not a fluid texture model", resolved.debugName());
@@ -134,12 +134,12 @@ public class FluidTextureModel extends ColoredBlockModel {
 
       // determine which block parts are fluids
       Set<String> fluidTextures = model.fluids.isEmpty() ? Collections.emptySet() : RetexturedModel.getAllRetextured(resolved, model.fluids);
-      List<BlockElement> elements = data.elements();
+      List<CuboidModelElement> elements = data.elements();
       int size = elements.size();
       BitSet fluidParts = new BitSet(size);
       if (!fluidTextures.isEmpty()) {
         for (int i = 0; i < size; i++) {
-          Map<?,BlockElementFace> faces = elements.get(i).faces();
+          Map<?,CuboidFace> faces = elements.get(i).faces();
           long fluidFaces = faces.values().stream()
                                  .filter(face -> fluidTextures.contains(trimTextureName(face.texture())))
                                  .count();
@@ -182,7 +182,7 @@ public class FluidTextureModel extends ColoredBlockModel {
     private final BitSet fluidParts;
     private final Set<String> retextured;
 
-    protected Baked(BlockModelPart original, ElementModelData data, Set<String> fluids, BitSet fluidParts, Set<String> retextured) {
+    protected Baked(BlockStateModelPart original, ElementModelData data, Set<String> fluids, BitSet fluidParts, Set<String> retextured) {
       super(new SingleVariant(original));
       this.data = data;
       this.fluids = fluids;
@@ -193,9 +193,9 @@ public class FluidTextureModel extends ColoredBlockModel {
     /** Retextures a model for the given fluid */
     private SimpleModelWrapper getRetexturedModel(BakedCacheKey key) {
       // build the replacement texture map: retextured block textures + fluid still textures
-      Map<String,Material> replacements = new HashMap<>();
+      Map<String,SpriteId> replacements = new HashMap<>();
       if (key.texture != null) {
-        Material blockTexture = new Material(TextureAtlas.LOCATION_BLOCKS, key.texture);
+        SpriteId blockTexture = new SpriteId(TextureAtlas.LOCATION_BLOCKS, key.texture);
         for (String name : retextured) {
           replacements.put(name, blockTexture);
         }
@@ -206,22 +206,22 @@ public class FluidTextureModel extends ColoredBlockModel {
         IClientFluidTypeExtensions attributes = IClientFluidTypeExtensions.of(key.fluid.getFluid());
         fluidColor = attributes.getTintColor(key.fluid);
         luminosity = key.fluid.getFluid().getFluidType().getLightLevel(key.fluid);
-        Material stillTexture = new Material(TextureAtlas.LOCATION_BLOCKS, attributes.getStillTexture(key.fluid));
+        SpriteId stillTexture = new SpriteId(TextureAtlas.LOCATION_BLOCKS, attributes.getStillTexture(key.fluid));
         for (String name : fluids) {
           replacements.put(name, stillTexture);
         }
       }
 
       // start baking
-      // PORT 1.21.5: rebaked at runtime through the block atlas (Material#sprite); verify fluid textures in the uitest phase
+      // PORT 1.21.5: rebaked at runtime through the block atlas (SpriteId#sprite); verify fluid textures in the uitest phase
       Function<String,TextureAtlasSprite> sprites = data.runtimeSprites(replacements);
       ModelState state = data.state();
-      List<BlockElement> elements = data.elements();
+      List<CuboidModelElement> elements = data.elements();
       List<ColorData> colorData = data.colorData();
       QuadCollection.Builder builder = new QuadCollection.Builder();
       int size = elements.size();
       for (int i = 0; i < size; i++) {
-        BlockElement element = elements.get(i);
+        CuboidModelElement element = elements.get(i);
         ColorData colors = LogicHelper.getOrDefault(colorData, i, ColorData.DEFAULT);
         ModelState partState = colors.uvlock() == null ? state : ModelHelper.withUvLock(state, colors.uvlock());
         if (fluidParts.get(i)) {
@@ -242,7 +242,7 @@ public class FluidTextureModel extends ColoredBlockModel {
     }
 
     /** Gets the cached model for the given fluid and contained block (used by both block and item rendering) */
-    public BlockModelPart getCachedModel(FluidStack fluid, @Nullable Block block) {
+    public BlockStateModelPart getCachedModel(FluidStack fluid, @Nullable Block block) {
       return getCachedModel(new BakedCacheKey(fluid.copy(), block != null ? ModelHelper.getParticleTexture(block) : null));
     }
 
@@ -267,7 +267,7 @@ public class FluidTextureModel extends ColoredBlockModel {
     }
 
     @Override
-    public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockModelPart> parts) {
+    public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockStateModelPart> parts) {
       BakedCacheKey key = getKey(level, pos);
       if (key != null) {
         parts.add(getCachedModel(key));

@@ -1,6 +1,6 @@
 package slimeknights.tconstruct.tables.client.inventory.widget;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import slimeknights.mantle.client.screen.ElementScreen;
@@ -18,7 +18,7 @@ public class PanelTabButton extends Button {
   /** Draws the tab's icon at the given top-left corner (mirrors {@link SlotButtonItem}'s icon draw). */
   @FunctionalInterface
   public interface Icon {
-    void render(GuiGraphics graphics, int x, int y);
+    void render(GuiGraphicsExtractor graphics, int x, int y);
   }
 
   private final ElementScreen background;
@@ -33,7 +33,7 @@ public class PanelTabButton extends Button {
   }
 
   @Override
-  protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+  protected void renderContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
     (this.isHovered ? this.backgroundHover : this.background).draw(graphics, this.getX(), this.getY());
     this.icon.render(graphics, this.getX() + 1, this.getY() + 1);
   }

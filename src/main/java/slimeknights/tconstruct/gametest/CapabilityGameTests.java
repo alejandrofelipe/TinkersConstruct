@@ -14,7 +14,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -373,7 +373,7 @@ public class CapabilityGameTests {
     // inventory index 9 is menu slot 9
     player.getInventory().setItem(9, pickaxe(ModifierIds.tank));
     menu.setCarried(new ItemStack(Items.WATER_BUCKET));
-    menu.clicked(9, 1, ClickType.PICKUP, player);
+    menu.clicked(9, 1, ContainerInput.PICKUP, player);
     helper.assertTrue(menu.getCarried().is(Items.BUCKET), Component.literal("carried bucket was not emptied: " + menu.getCarried()));
     FluidStack inTool = ToolTankHelper.TANK_HELPER.getFluid(ToolStack.from(player.getInventory().getItem(9)));
     helper.assertTrue(FluidStack.matches(inTool, new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME)), Component.literal("tool in the slot holds " + inTool));
@@ -381,7 +381,7 @@ public class CapabilityGameTests {
     // empty tool held over a water bucket in a slot
     player.getInventory().setItem(10, new ItemStack(Items.WATER_BUCKET));
     menu.setCarried(pickaxe(ModifierIds.tank));
-    menu.clicked(10, 1, ClickType.PICKUP, player);
+    menu.clicked(10, 1, ContainerInput.PICKUP, player);
     helper.assertTrue(player.getInventory().getItem(10).is(Items.BUCKET), Component.literal("slot bucket was not emptied: " + player.getInventory().getItem(10)));
     FluidStack held = ToolTankHelper.TANK_HELPER.getFluid(ToolStack.from(menu.getCarried()));
     helper.assertTrue(FluidStack.matches(held, new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME)), Component.literal("held tool holds " + held));

@@ -3,7 +3,7 @@ package slimeknights.tconstruct.tables.client.inventory;
 import com.google.common.collect.Lists;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -98,7 +98,7 @@ public class PartBuilderScreen extends BaseTabbedScreen<PartBuilderBlockEntity,P
   }
 
   @Override
-  protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+  protected void renderBg(GuiGraphicsExtractor graphics, float partialTicks, int mouseX, int mouseY) {
     this.drawBackground(graphics, BACKGROUND);
 
     // draw scrollbar
@@ -140,7 +140,7 @@ public class PartBuilderScreen extends BaseTabbedScreen<PartBuilderBlockEntity,P
   }
 
   @Override
-  protected void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+  protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     super.renderTooltip(graphics, mouseX, mouseY);
 
     // determime which button we are hovering
@@ -156,7 +156,7 @@ public class PartBuilderScreen extends BaseTabbedScreen<PartBuilderBlockEntity,P
   }
 
   /** Draw backgrounds for all patterns */
-  private void drawRecipesBackground(GuiGraphics graphics, int mouseX, int mouseY, int left, int top) {
+  private void drawRecipesBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int left, int top) {
     if (tile == null) {
       return;
     }
@@ -176,7 +176,7 @@ public class PartBuilderScreen extends BaseTabbedScreen<PartBuilderBlockEntity,P
   }
 
   /** Draw slot icons for all patterns */
-  private void drawRecipesItems(GuiGraphics graphics, int left, int top) {
+  private void drawRecipesItems(GuiGraphicsExtractor graphics, int left, int top) {
     // use block texture list
     assert this.minecraft != null;
     assert this.tile != null;

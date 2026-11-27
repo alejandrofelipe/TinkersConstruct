@@ -4,9 +4,9 @@ import com.mojang.math.Transformation;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
 import slimeknights.mantle.client.model.util.MantleItemLayerModel;
@@ -36,8 +36,8 @@ public class DyedModifierModel implements SimpleModifierModel {
   /** @deprecated legacy system, use {@link #LOADER} */
   @Deprecated
   public static final IUnbakedModifierModel UNBAKED_INSTANCE = (smallGetter, largeGetter) -> {
-    Material smallTexture = smallGetter.apply("");
-    Material largeTexture = largeGetter.apply("");
+    SpriteId smallTexture = smallGetter.apply("");
+    SpriteId largeTexture = largeGetter.apply("");
     if (smallTexture != null || largeTexture != null) {
       return new DyedModifierModel(smallTexture, largeTexture);
     }
@@ -46,9 +46,9 @@ public class DyedModifierModel implements SimpleModifierModel {
 
   /** Textures to show */
   @Nullable
-  private final Material small;
+  private final SpriteId small;
   @Nullable
-  private final Material large;
+  private final SpriteId large;
 
   @Override
   public RecordLoadable<? extends DyedModifierModel> getLoader() {
@@ -68,8 +68,8 @@ public class DyedModifierModel implements SimpleModifierModel {
   }
 
   @Override
-  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<Material,TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
-    Material texture = isLarge ? large : small;
+  public void addQuads(IToolStackView tool, ModifierEntry modifier, Function<SpriteId,TextureAtlasSprite> spriteGetter, Transformation transforms, boolean isLarge, int startTintIndex, Consumer<Collection<BakedQuad>> quadConsumer, @Nullable ItemLayerPixels pixels) {
+    SpriteId texture = isLarge ? large : small;
     if (texture != null) {
       IModDataView data = tool.getPersistentData();
       Identifier key = modifier.getId().getLocation();

@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.client.renderer.texture.atlas.sources.LazyLoadedImage;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -59,7 +59,7 @@ public record ShieldBannerModifierSpriteSource(int cropX, int cropY, int cropWid
   @Override
   public void run(ResourceManager manager, Output output) {
     // TODO 1.21: will have to copy textures over using a folder search since these are datapack controlled
-    for (Entry<Identifier, Material> entry : Sheets.SHIELD_MATERIALS.entrySet()) {
+    for (Entry<Identifier, SpriteId> entry : Sheets.SHIELD_MATERIALS.entrySet()) {
       Identifier input = TEXTURE_ID_CONVERTER.idToFile(entry.getValue().texture());
       Optional<Resource> resource = manager.getResource(input);
       if (resource.isEmpty()) {
