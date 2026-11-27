@@ -21,6 +21,7 @@ import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.data.predicate.IJsonPredicate;
 import slimeknights.mantle.recipe.ingredient.SizedIngredient;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator;
 import slimeknights.tconstruct.library.json.predicate.modifier.ModifierPredicate;
 import slimeknights.tconstruct.library.modifiers.Modifier;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -264,14 +265,17 @@ public class EnchantmentConvertingRecipe extends AbstractWorktableRecipe {
   /* Helpers */
 
   /** Cached list of all enchantable tools, since its item instance controlled only needs to be computed once per load */
+  @Nullable
   private static List<ItemStack> ALL_ENCHANTABLE_TOOLS;
+  static {
+    // 26.1 binds the default components per load (/reload, joining a world) and the list holds stacks built from them (enchantability is a
+    // component), so drop it with the other recipe caches; a stack's getPrototype() is its holder's current components, so it can't tell staleness
+    RecipeCacheInvalidator.addReloadListener(client -> ALL_ENCHANTABLE_TOOLS = null);
+  }
 
-  /**
-   * Gets a list of all enchantable tools. This is expensive, so it is cached until the default components are bound again: 26.1 binds them per
-   * load ({@code /reload}, joining a world), and a stack keeps the components it was created with, so the list is rebuilt once its stacks are stale.
-   */
+  /** Gets a list of all enchantable tools. This is expensive, so it is cached until the next recipe reload. */
   public static List<ItemStack> getAllEnchantableTools() {
-    if (ALL_ENCHANTABLE_TOOLS == null || ALL_ENCHANTABLE_TOOLS.stream().anyMatch(stack -> stack.getPrototype() != stack.getItem().components())) {
+    if (ALL_ENCHANTABLE_TOOLS == null) {
       ALL_ENCHANTABLE_TOOLS = BuiltInRegistries.ITEM.stream().map(item -> {
         if (item != Items.BOOK) {
           ItemStack stack = new ItemStack(item);

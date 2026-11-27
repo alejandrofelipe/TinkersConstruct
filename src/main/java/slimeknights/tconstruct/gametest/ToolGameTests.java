@@ -64,6 +64,8 @@ import slimeknights.tconstruct.tools.data.ModifierIds;
 import slimeknights.tconstruct.tools.data.material.MaterialIds;
 import slimeknights.tconstruct.tools.logic.InteractionHandler;
 import slimeknights.tconstruct.tools.menu.ToolContainerMenu;
+import slimeknights.tconstruct.tools.recipe.EnchantmentConvertingRecipe;
+import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -609,14 +611,38 @@ public class ToolGameTests {
     NeoForge.EVENT_BUS.post(canceled);
     helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("click location left captured after a canceled interaction"));
 
-    // paths where the plain event never follows keep nothing: a canceled specific event, a spectator (interactOn returns before the plain event)
+    // paths where the plain event never follows keep nothing: a canceled specific event, a spectator (interactOn returns before the plain event).
+    // Each starts from a captured location, so the check fails if the path neither clears nor replaces it
+    CommonHooks.onInteractEntityAt(player, stand, location, InteractionHand.MAIN_HAND);
+    helper.assertTrue(InteractionHandler.hasCapturedClickLocation(), Component.literal("specific interaction did not capture the click location"));
     PlayerInteractEvent.EntityInteractSpecific canceledSpecific = new PlayerInteractEvent.EntityInteractSpecific(player, InteractionHand.MAIN_HAND, stand, location);
     canceledSpecific.setCanceled(true);
     NeoForge.EVENT_BUS.post(canceledSpecific);
-    helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("a canceled specific interaction captured the click location"));
+    helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("a canceled specific interaction kept a click location"));
+    CommonHooks.onInteractEntityAt(player, stand, location, InteractionHand.MAIN_HAND);
+    helper.assertTrue(InteractionHandler.hasCapturedClickLocation(), Component.literal("specific interaction did not capture the click location"));
     Player spectator = helper.makeMockPlayer(GameType.SPECTATOR);
     CommonHooks.onInteractEntityAt(spectator, stand, location, InteractionHand.MAIN_HAND);
-    helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("a spectator click captured the click location"));
+    helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("a spectator click kept a click location"));
+    helper.succeed();
+  }
+
+  /**
+   * The enchantable tool list of the enchantment converting recipe is cached, and the cache must drop with the recipe caches: 26.1 binds the
+   * default components per load, so a list surviving a reload keeps stacks built from the old ones. Calls the client side of
+   * {@link RecipeCacheInvalidator} (what the client runs on every recipe sync; all its listeners only drop lazy caches) instead of a real
+   * {@code /reload}, which would race the other tests.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 20)
+  public static void enchantable_tools_cache_drops_on_reload(GameTestHelper helper) {
+    List<ItemStack> first = EnchantmentConvertingRecipe.getAllEnchantableTools();
+    helper.assertFalse(first.isEmpty(), Component.literal("no enchantable tools found"));
+    helper.assertTrue(first.stream().anyMatch(stack -> stack.is(Items.DIAMOND_SWORD)), Component.literal("diamond sword missing from the enchantable tools"));
+    helper.assertTrue(EnchantmentConvertingRecipe.getAllEnchantableTools() == first, Component.literal("enchantable tools not cached between calls"));
+    RecipeCacheInvalidator.reload(true);
+    List<ItemStack> rebuilt = EnchantmentConvertingRecipe.getAllEnchantableTools();
+    helper.assertTrue(rebuilt != first, Component.literal("enchantable tools cache survived the recipe cache invalidation"));
+    helper.assertTrue(rebuilt.size() == first.size(), Component.literal("rebuilt list has " + rebuilt.size() + " tools, expected " + first.size()));
     helper.succeed();
   }
 
