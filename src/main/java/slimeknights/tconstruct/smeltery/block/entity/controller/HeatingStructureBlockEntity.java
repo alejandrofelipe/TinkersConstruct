@@ -293,9 +293,9 @@ public abstract class HeatingStructureBlockEntity extends NameableBlockEntity im
   protected void dropItem(ItemStack stack) {
     assert level != null;
     if (!level.isClientSide() && !stack.isEmpty()) {
-      double x = (double)(level.random.nextFloat() * 0.5F) + 0.25D;
-      double y = (double)(level.random.nextFloat() * 0.5F) + 0.25D;
-      double z = (double)(level.random.nextFloat() * 0.5F) + 0.25D;
+      double x = (double)(level.getRandom().nextFloat() * 0.5F) + 0.25D;
+      double y = (double)(level.getRandom().nextFloat() * 0.5F) + 0.25D;
+      double z = (double)(level.getRandom().nextFloat() * 0.5F) + 0.25D;
       BlockPos pos = this.worldPosition.relative(getBlockState().getValue(ControllerBlock.FACING));
       ItemEntity itementity = new ItemEntity(level, (double)pos.getX() + x, (double)pos.getY() + y, (double)pos.getZ() + z, stack);
       itementity.setDefaultPickUpDelay();

@@ -55,10 +55,8 @@ public enum EntityInteractFluidEffect implements FluidEffect<FluidEffectContext.
         // skipped: never spectator mode if we made it this far
         if (result == null) {
           // no forge override, so find first success from vanilla hooks
-          result = target.interactAt(player, hit, hand);
-          if (!result.consumesAction()) {
-            result = player.interactOn(context.getTarget(), hand);
-          }
+          // 26.1: Entity#interactAt merged into Entity#interact(player, hand, location), which interactOn calls
+          result = player.interactOn(context.getTarget(), hand, hit);
         }
         // long range arm swinging
         if (result != InteractionResult.PASS) {

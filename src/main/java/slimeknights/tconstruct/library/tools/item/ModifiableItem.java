@@ -22,6 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
@@ -478,8 +479,9 @@ public class ModifiableItem extends Item implements IModifiableDisplay {
   }
 
   @Override
-  public boolean canPerformAction(ItemStack stack, ItemAbility itemAbility) {
-    return stack.getCount() == 1 && ModifierUtil.canPerformAction(ToolStack.from(stack), itemAbility);
+  public boolean canPerformAction(ItemInstance instance, ItemAbility itemAbility) {
+    // 26.1: NeoForge passes an ItemInstance; tool data lives on stacks
+    return instance instanceof ItemStack stack && stack.getCount() == 1 && ModifierUtil.canPerformAction(ToolStack.from(stack), itemAbility);
   }
 
 

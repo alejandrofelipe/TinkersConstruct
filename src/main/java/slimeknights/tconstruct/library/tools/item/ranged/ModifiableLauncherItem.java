@@ -30,6 +30,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.common.ItemAbility;
@@ -259,8 +260,9 @@ public abstract class ModifiableLauncherItem extends ProjectileWeaponItem implem
   }
 
   @Override
-  public boolean canPerformAction(ItemStack stack, ItemAbility itemAbility) {
-    return ModifierUtil.canPerformAction(ToolStack.from(stack), itemAbility);
+  public boolean canPerformAction(ItemInstance instance, ItemAbility itemAbility) {
+    // 26.1: NeoForge passes an ItemInstance; tool data lives on stacks
+    return instance instanceof ItemStack stack && ModifierUtil.canPerformAction(ToolStack.from(stack), itemAbility);
   }
 
   @Override

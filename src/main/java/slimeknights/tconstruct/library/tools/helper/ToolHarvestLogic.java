@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.ItemAbilities;
-import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.network.TinkerNetwork;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -123,7 +123,7 @@ public class ToolHarvestLogic {
    * @param tool      Tool instance
    * @param stack     Stack instance for vanilla functions
    * @param context   Harvest context
-   * @param useLastXP If true, fetches the XP from {@link BlockSideHitListener} instead of firing the event. Prevents firing {@link net.neoforged.neoforge.event.level.BlockEvent.BreakEvent} twice.
+   * @param useLastXP If true, fetches the XP from {@link BlockSideHitListener} instead of firing the event. Prevents firing {@link BreakBlockEvent} twice.
    * @return  True if broken
    */
   protected static boolean breakBlock(IToolStackView tool, ItemStack stack, ToolHarvestContext context, boolean useLastXP) {
@@ -138,7 +138,7 @@ public class ToolHarvestLogic {
     } else {
       // NeoForge: ForgeHooks.onBlockBreakEvent -> CommonHooks.fireBlockBreak, which returns the event rather than an int
       BlockState brokenState = world.getBlockState(pos);
-      BlockEvent.BreakEvent breakEvent = CommonHooks.fireBlockBreak(world, type, player, pos, brokenState);
+      BreakBlockEvent breakEvent = CommonHooks.fireBlockBreak(world, type, player, pos, brokenState);
       if (breakEvent.isCanceled()) {
         return false;
       }

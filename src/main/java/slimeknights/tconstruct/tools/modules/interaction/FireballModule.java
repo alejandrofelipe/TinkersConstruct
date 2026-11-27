@@ -191,7 +191,7 @@ public record FireballModule(List<FireballType> options, DamageTypePair damageTy
           ToolDamageUtil.damageAnimated(tool, durability.compute(modifier), entity, slot, modifier.getId());
         }
       }
-      entity.playSound(sound, 2.0F, (level.random.nextFloat() - level.random.nextFloat()) * 0.2F + 1.0F);
+      entity.playSound(sound, 2.0F, (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.2F + 1.0F);
       return true;
     }
     return false;

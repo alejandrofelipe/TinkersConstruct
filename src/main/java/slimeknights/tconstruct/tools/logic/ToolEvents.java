@@ -163,9 +163,9 @@ public class ToolEvents {
         pos.getZ() + 0.5D + facing.getStepZ() * 0.65D,
         new ItemStack(Items.PUMPKIN_SEEDS, 4));
       itemEntity.setDeltaMovement(
-        0.05D * facing.getStepX() + world.random.nextDouble() * 0.02D,
+        0.05D * facing.getStepX() + world.getRandom().nextDouble() * 0.02D,
         0.05D,
-        0.05D * facing.getStepZ() + world.random.nextDouble() * 0.02D);
+        0.05D * facing.getStepZ() + world.getRandom().nextDouble() * 0.02D);
       world.addFreshEntity(itemEntity);
       event.setResult(Result.ALLOW);
     }
@@ -279,7 +279,7 @@ public class ToolEvents {
     Entity attacker = source.getEntity();
     if (attacker instanceof LivingEntity living) {
       // boost damage based on monster's melee weapon
-      if (Config.COMMON.allowMonsterMeleeModifiers.get() && source.is(TinkerTags.DamageTypes.MODIFIER_WHITELIST) && !living.getType().is(TinkerTags.EntityTypes.DAMAGE_MODIFIER_BLACKLIST)) {
+      if (Config.COMMON.allowMonsterMeleeModifiers.get() && source.is(TinkerTags.DamageTypes.MODIFIER_WHITELIST) && !living.is(TinkerTags.EntityTypes.DAMAGE_MODIFIER_BLACKLIST)) {
         ItemStack weapon = living.getMainHandItem();
         if (!weapon.isEmpty() && weapon.is(TinkerTags.Items.MELEE_WEAPON)) {
           IToolStackView tool = ToolStack.from(weapon);
@@ -345,10 +345,10 @@ public class ToolEvents {
       }
 
       // give slimes a 4x armor boost
-      if (entity.getType().is(TinkerTags.EntityTypes.SMALL_ARMOR)) {
+      if (entity.is(TinkerTags.EntityTypes.SMALL_ARMOR)) {
         modifierValue *= 4;
       }
-    } else if (DamageSourcePredicate.CAN_PROTECT.matches(source) && entity.getType().is(TinkerTags.EntityTypes.SMALL_ARMOR) && entity.level() instanceof ServerLevel serverLevel) {
+    } else if (DamageSourcePredicate.CAN_PROTECT.matches(source) && entity.is(TinkerTags.EntityTypes.SMALL_ARMOR) && entity.level() instanceof ServerLevel serverLevel) {
       vanillaModifier = EnchantmentHelper.getDamageProtection(serverLevel, entity, source);
       modifierValue = vanillaModifier * 4;
     }
@@ -418,7 +418,7 @@ public class ToolEvents {
     // apply post hit modifier effects. Done regardless of damage dealt - don't care if absorption took it all
     if (Config.COMMON.allowMonsterMeleeModifiers.get() && source.is(TinkerTags.DamageTypes.MODIFIER_WHITELIST)) {
       Entity attacker = event.getSource().getEntity();
-      if (attacker != null && !attacker.getType().is(TinkerTags.EntityTypes.DAMAGE_MODIFIER_BLACKLIST) && attacker instanceof LivingEntity living) {
+      if (attacker != null && !attacker.is(TinkerTags.EntityTypes.DAMAGE_MODIFIER_BLACKLIST) && attacker instanceof LivingEntity living) {
         ItemStack weapon = living.getMainHandItem();
         if (!weapon.isEmpty() && weapon.is(TinkerTags.Items.MELEE_WEAPON)) {
           // already know we are not a player
@@ -435,7 +435,7 @@ public class ToolEvents {
     if (amount > 0 && Config.COMMON.dropDragonScales.get() && entity.getType() == EntityType.ENDER_DRAGON && event.getNewDamage() > 0
         && source.is(DamageTypeTags.IS_EXPLOSION) && source.getEntity() != null && source.getEntity().getType() == EntityType.PLAYER) {
       // drops 1 - 8 scales
-      ModifierUtil.dropItem(entity, new ItemStack(TinkerModifiers.dragonScale, 1 + entity.level().random.nextInt(8)));
+      ModifierUtil.dropItem(entity, new ItemStack(TinkerModifiers.dragonScale, 1 + entity.level().getRandom().nextInt(8)));
     }
   }
 

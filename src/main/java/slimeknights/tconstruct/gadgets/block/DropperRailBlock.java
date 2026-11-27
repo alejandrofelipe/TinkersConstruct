@@ -2,6 +2,8 @@ package slimeknights.tconstruct.gadgets.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RailBlock;
@@ -21,9 +23,13 @@ public class DropperRailBlock extends RailBlock {
     super(properties);
   }
 
+  /**
+   * 26.1: NeoForge removed {@code IBaseRailBlockExtension#onMinecartPass}; like vanilla's detector rail, the rail now reacts to
+   * the minecarts inside its block space, server side.
+   */
   @Override
-  public void onMinecartPass(BlockState state, Level world, BlockPos pos, AbstractMinecart cart) {
-    if (!(cart instanceof Hopper)) {
+  protected void entityInside(BlockState state, Level world, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
+    if (world.isClientSide() || !(entity instanceof AbstractMinecart cart) || !(cart instanceof Hopper)) {
       return;
     }
     @Nullable ResourceHandler<ItemResource> itemHandlerCart = cart.getCapability(Capabilities.Item.ENTITY_AUTOMATION, Direction.UP);

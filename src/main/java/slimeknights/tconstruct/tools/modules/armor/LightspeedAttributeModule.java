@@ -101,7 +101,7 @@ public record LightspeedAttributeModule(String unique, UUID uuid, Attribute attr
       attribute.addTransientModifier(new AttributeModifier(id, scaledLight * amount * modifier.getEffectiveLevel(), operation));
 
       // damage boots
-      if (level.random.nextFloat() < (damageChance * scaledLight)) {
+      if (level.getRandom().nextFloat() < (damageChance * scaledLight)) {
         ToolDamageUtil.damageAnimated(tool, 1, living, EquipmentSlot.FEET, modifier.getId());
       }
     }

@@ -80,7 +80,7 @@ public enum PlaceFireModule implements ModifierModule, EntityInteractionModifier
   public InteractionResult afterEntityUse(IToolStackView tool, ModifierEntry modifier, Player player, LivingEntity target, InteractionHand hand, InteractionSource source) {
     if (tool.getHook(ToolHooks.INTERACTION).canInteract(tool, modifier.getId(), source) && target instanceof Creeper creeper) {
       Level level = player.level();
-      level.playSound(player, creeper.getX(), creeper.getY(), creeper.getZ(), SoundEvents.FLINTANDSTEEL_USE, creeper.getSoundSource(), 1.0F, level.random.nextFloat() * 0.4F + 0.8F);
+      level.playSound(player, creeper.getX(), creeper.getY(), creeper.getZ(), SoundEvents.FLINTANDSTEEL_USE, creeper.getSoundSource(), 1.0F, level.getRandom().nextFloat() * 0.4F + 0.8F);
       if (!level.isClientSide()) {
         creeper.ignite();
         ToolDamageUtil.damageAnimated(tool, 1, player, source.getSlot(hand), modifier.getId());
@@ -94,7 +94,7 @@ public enum PlaceFireModule implements ModifierModule, EntityInteractionModifier
   private static boolean ignite(Level world, BlockPos pos, BlockState state, Direction sideHit, Direction horizontalFacing, @Nullable Player player) {
     // campfires first
     if (CampfireBlock.canLight(state) || CandleBlock.canLight(state) || CandleCakeBlock.canLight(state)) {
-      world.playSound(player, pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, world.random.nextFloat() * 0.4F + 0.8F);
+      world.playSound(player, pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
       world.setBlock(pos, state.setValue(BlockStateProperties.LIT, true), 11);
       world.gameEvent(player, GameEvent.BLOCK_PLACE, pos);
       return true;
@@ -110,7 +110,7 @@ public enum PlaceFireModule implements ModifierModule, EntityInteractionModifier
     // fire starting
     BlockPos offset = pos.relative(sideHit);
     if (BaseFireBlock.canBePlacedAt(world, offset, horizontalFacing)) {
-      world.playSound(player, offset, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, world.random.nextFloat() * 0.4F + 0.8F);
+      world.playSound(player, offset, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
       world.setBlock(offset, BaseFireBlock.getState(world, offset), 11);
       return true;
     }

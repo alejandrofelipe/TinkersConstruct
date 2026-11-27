@@ -438,7 +438,7 @@ public class ToolStack implements IToolStackView {
       return;
     }
     setComponent(stack, DataComponents.WEAPON, ModifierUtil.canPerformAction(this, TinkerToolActions.SHIELD_DISABLE) ? ModifierUtil.SHIELD_DISABLING_WEAPON : null);
-    setComponent(stack, DataComponents.BLOCKS_ATTACKS, ModifierUtil.canPerformAction(this, TinkerToolActions.SHIELD_BLOCK) ? ModifierUtil.TOOL_BLOCKS_ATTACKS : null);
+    setComponent(stack, DataComponents.BLOCKS_ATTACKS, ModifierUtil.canPerformAction(this, TinkerToolActions.SHIELD_BLOCK) ? ModifierUtil.toolBlocksAttacks() : null);
   }
 
   /** Sets or removes a component on the stack, skipping the update if unchanged */

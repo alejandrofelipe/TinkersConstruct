@@ -23,6 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorMaterials;
 import net.minecraft.world.item.equipment.ArmorType;
@@ -169,8 +170,9 @@ public class ModifiableArmorItem extends Item implements IModifiableDisplay {
   }
 
   @Override
-  public boolean canPerformAction(ItemStack stack, ItemAbility itemAbility) {
-    return ModifierUtil.canPerformAction(ToolStack.from(stack), itemAbility);
+  public boolean canPerformAction(ItemInstance instance, ItemAbility itemAbility) {
+    // 26.1: NeoForge passes an ItemInstance; tool data lives on stacks
+    return instance instanceof ItemStack stack && ModifierUtil.canPerformAction(ToolStack.from(stack), itemAbility);
   }
 
   @Override

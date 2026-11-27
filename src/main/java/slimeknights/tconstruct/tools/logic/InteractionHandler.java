@@ -114,7 +114,12 @@ public class InteractionHandler {
         InteractionHand hand = event.getHand();
 
         // initial entity interaction
-        InteractionResult result = target.interact(player, hand);
+        // 26.1: Entity#interactAt merged into interact(player, hand, location), which now runs after this event; the event has
+        // no hit location, so recompute it from the player's view like the client does (relative to the entity position)
+        Vec3 eye = player.getEyePosition();
+        Vec3 reach = eye.add(player.getViewVector(1.0f).scale(player.entityInteractionRange() + target.getBbWidth()));
+        Vec3 location = target.getBoundingBox().clip(eye, reach).orElse(target.position()).subtract(target.position());
+        InteractionResult result = target.interact(player, hand, location);
         if (result.consumesAction()) {
           event.setCancellationResult(result);
           return;
@@ -505,7 +510,7 @@ public class InteractionHandler {
             if (ToolDamageUtil.damageAnimated(tool, 1 + Mth.floor(damage), entity, usingHand)) {
               EventHooks.onPlayerDestroyItem(player, activeStack, usingHand);
               entity.stopUsingItem();
-              entity.playSound(SoundEvents.SHIELD_BREAK.value(), 0.8F, 0.8F + entity.level().random.nextFloat() * 0.4F);
+              entity.playSound(SoundEvents.SHIELD_BREAK.value(), 0.8F, 0.8F + entity.level().getRandom().nextFloat() * 0.4F);
             }
           }
         }

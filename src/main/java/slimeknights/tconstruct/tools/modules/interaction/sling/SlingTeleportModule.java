@@ -95,7 +95,7 @@ public record SlingTeleportModule(LevelingValue forceMultiplier, float drawtimeM
 
               // particle effect from EnderPearlEntity
               for (int i = 0; i < 32; ++i) {
-                level.addParticle(ParticleTypes.PORTAL, player.getX(), player.getY() + level.random.nextDouble() * 2.0D, player.getZ(), level.random.nextGaussian(), 0.0D, level.random.nextGaussian());
+                level.addParticle(ParticleTypes.PORTAL, player.getX(), player.getY() + level.getRandom().nextDouble() * 2.0D, player.getZ(), level.getRandom().nextGaussian(), 0.0D, level.getRandom().nextGaussian());
               }
               level.playSound(null, player.getX(), player.getY(), player.getZ(), Sounds.SLIME_SLING_TELEPORT.getSound(), player.getSoundSource(), 1f, 1f);
               player.causeFoodExhaustion(0.2F);

@@ -98,7 +98,7 @@ public record ProjectileExplosionModule(LevelingValue radius, float eflnBonus, L
     float radius = this.radius.computeForLevel(level);
     // blacklist lets us skip things like thrown tools, which lack power context to deal the right damage and would bypass too many modifiers
     // also make sure we have not exploded yet, deals with reusable ammo
-    if (radius > 0.5f && !projectile.getType().is(TinkerTags.EntityTypes.REUSABLE_AMMO)) {
+    if (radius > 0.5f && !projectile.is(TinkerTags.EntityTypes.REUSABLE_AMMO)) {
       Level world = projectile.level();
       if (!world.isClientSide()) {
         float power = ProjectileWithPower.getDamage(projectile);

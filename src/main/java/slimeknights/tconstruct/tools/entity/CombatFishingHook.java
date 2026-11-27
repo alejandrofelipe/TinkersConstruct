@@ -200,7 +200,7 @@ public class CombatFishingHook extends FishingHook implements ProjectileWithKnoc
 
   @Override
   protected boolean canHitEntity(Entity target) {
-    return super.canHitEntity(target) || (target.isAlive() && isCollecting() && (target.getType().is(TinkerTags.EntityTypes.COLLECTABLES) || target instanceof AbstractArrow));
+    return super.canHitEntity(target) || (target.isAlive() && isCollecting() && (target.is(TinkerTags.EntityTypes.COLLECTABLES) || target instanceof AbstractArrow));
   }
 
   @Override
@@ -209,7 +209,7 @@ public class CombatFishingHook extends FishingHook implements ProjectileWithKnoc
     if (owner != null) {
       // if requested, collect the targeted item
       // include arrows directly for modded arrow compat
-      boolean collectable = target.getType().is(TinkerTags.EntityTypes.COLLECTABLES) || target instanceof ItemEntity || target instanceof AbstractArrow;
+      boolean collectable = target.is(TinkerTags.EntityTypes.COLLECTABLES) || target instanceof ItemEntity || target instanceof AbstractArrow;
       if (collectable && isCollecting()) {
         if (owner instanceof Player player) {
           target.playerTouch(player);
@@ -217,7 +217,7 @@ public class CombatFishingHook extends FishingHook implements ProjectileWithKnoc
           if (target.isRemoved()) {
             return;
             // if not removed but it's on the list to discard on failed pickup, discard and als be done
-          } else if (target.getType().is(TinkerTags.EntityTypes.DISCARDABLE_COLLECTABLES)) {
+          } else if (target.is(TinkerTags.EntityTypes.DISCARDABLE_COLLECTABLES)) {
             target.discard();
             return;
           }

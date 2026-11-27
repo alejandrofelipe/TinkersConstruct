@@ -13,7 +13,8 @@ import slimeknights.tconstruct.world.TinkerWorld;
 /** Update of fungus that grows on slime soil instead */
 public class SlimeFungusBlock extends NetherFungusBlock implements SlimePlant {
   public SlimeFungusBlock(Properties properties, ResourceKey<ConfiguredFeature<?,?>> fungusFeature) {
-    super(fungusFeature, TinkerWorld.slimeDirt.get(DirtType.ICHOR), properties);
+    // 26.1: the fungus takes its support tag; mayPlaceOn below checks the same tag
+    super(fungusFeature, TinkerWorld.slimeDirt.get(DirtType.ICHOR), TinkerTags.Blocks.SLIMY_SOIL, properties);
   }
 
   @Override

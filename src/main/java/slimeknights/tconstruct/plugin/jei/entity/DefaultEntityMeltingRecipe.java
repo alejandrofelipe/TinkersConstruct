@@ -29,8 +29,8 @@ public class DefaultEntityMeltingRecipe extends EntityMeltingRecipe {
     typeLoop:
     for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
       // use tag overrides for default recipe
-      if (type.is(TinkerTags.EntityTypes.MELTING_HIDE)) continue;
-      if (type.getCategory() == MobCategory.MISC && !type.is(TinkerTags.EntityTypes.MELTING_SHOW)) continue;
+      if (type.builtInRegistryHolder().is(TinkerTags.EntityTypes.MELTING_HIDE)) continue;
+      if (type.getCategory() == MobCategory.MISC && !type.builtInRegistryHolder().is(TinkerTags.EntityTypes.MELTING_SHOW)) continue;
       for (EntityMeltingRecipe recipe : recipes) {
         if (recipe.matches(type)) {
           continue typeLoop;

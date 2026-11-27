@@ -41,6 +41,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfigur
 import net.minecraft.world.level.levelgen.feature.configurations.GeodeConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration.TreeConfigurationBuilder;
+import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.featuresize.TwoLayersFeatureSize;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.RandomSpreadFoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
@@ -203,7 +204,9 @@ public class WorldgenProvider {
                                                                 .canGrowThroughTag(blocks, TinkerTags.Blocks.ENDERBARK_ROOTS_CAN_GROW_THROUGH)
                                                                 .slimyRoots(TinkerWorld.slimyEnderbarkRoots)
                                                                 .buildOptional(),
-                                          new TwoLayersFeatureSize(2, 0, 2))
+                                          new TwoLayersFeatureSize(2, 0, 2),
+                                          // 26.1: the root placer constructor takes the below-trunk provider (vanilla mangrove passes its default)
+                                          TreeConfiguration.PLACE_BELOW_OVERWORLD_TRUNKS)
                .decorators(List.of(new LeaveVineDecorator(TinkerWorld.enderSlimeVine.get(), 0.125F), new AttachedToLeavesDecorator(0.14F, 1, 0, new RandomizedIntStateProvider(BlockStateProvider.simple(TinkerWorld.slimeSapling.get(FoliageType.ENDER).defaultBlockState().setValue(BlockStateProperties.HANGING, true)), MangrovePropaguleBlock.AGE, UniformInt.of(0, 4)), 2, List.of(Direction.DOWN))))
                .ignoreVines()
                .build());
@@ -218,7 +221,9 @@ public class WorldgenProvider {
                                                                 .canGrowThroughTag(blocks, TinkerTags.Blocks.ENDERBARK_ROOTS_CAN_GROW_THROUGH)
                                                                 .slimyRoots(TinkerWorld.slimyEnderbarkRoots)
                                                                 .buildOptional(),
-                                          new TwoLayersFeatureSize(3, 0, 2))
+                                          new TwoLayersFeatureSize(3, 0, 2),
+                                          // 26.1: the root placer constructor takes the below-trunk provider (vanilla mangrove passes its default)
+                                          TreeConfiguration.PLACE_BELOW_OVERWORLD_TRUNKS)
                .decorators(List.of(new LeaveVineDecorator(TinkerWorld.enderSlimeVine.get(), 0.125F), new AttachedToLeavesDecorator(0.14F, 1, 0, new RandomizedIntStateProvider(BlockStateProvider.simple(TinkerWorld.slimeSapling.get(FoliageType.ENDER).defaultBlockState().setValue(BlockStateProperties.HANGING, true)), MangrovePropaguleBlock.AGE, UniformInt.of(0, 4)), 2, List.of(Direction.DOWN))))
                .ignoreVines()
                .build());

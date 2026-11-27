@@ -40,7 +40,7 @@ public class TastyModifier extends Modifier implements ProcessLootModifierHook {
 
     // must have an entity
     Entity entity = context.getOptionalParameter(LootContextParams.THIS_ENTITY);
-    if (entity != null && entity.getType().is(TinkerTags.EntityTypes.BACON_PRODUCER)) {
+    if (entity != null && entity.is(TinkerTags.EntityTypes.BACON_PRODUCER)) {
       // at tasty 1, 2, 3, and 4 its a 2%, 4.15%, 6.25%, 8% per level
       // PORT M3 (looting): LootContext#getLootingModifier was removed in 1.21; looting is now a data-driven enchantment
       // value effect with no direct accessor here (see ModifierLootingHandler). Treat looting as 0 until that system is

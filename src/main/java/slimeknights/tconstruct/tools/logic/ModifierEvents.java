@@ -429,13 +429,13 @@ public class ModifierEvents {
                 if (target.getType() == EntityType.PLAYER) {
                   TinkerNetwork.getInstance().sendVanillaPacket(new ClientboundSetEntityMotionPacket(projectile), target);
                 }
-                level.playSound(null, target.blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.PLAYERS, 1.0F, 1.5F + level.random.nextFloat() * 0.4F);
+                level.playSound(null, target.blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.PLAYERS, 1.0F, 1.5F + level.getRandom().nextFloat() * 0.4F);
                 // 1.21: ProjectileImpactEvent.ImpactResult was removed; cancelling skips the hit so the projectile passes through
                 event.setCanceled(true);
                 // damage the shield, and stop using it if needed
                 if (ToolDamageUtil.damageAnimated(tool, 3, target, target.getUsedItemHand())) {
                   target.stopUsingItem();
-                  entity.playSound(SoundEvents.SHIELD_BREAK.value(), 0.8F, 0.8F + entity.level().random.nextFloat() * 0.4F);
+                  entity.playSound(SoundEvents.SHIELD_BREAK.value(), 0.8F, 0.8F + entity.level().getRandom().nextFloat() * 0.4F);
                 }
               }
             }
@@ -448,7 +448,7 @@ public class ModifierEvents {
       // endermen are hardcoded to not take arrow damage, so disagree by reimplementing arrow damage right here
       // blacklist lets us not run on tridents or thrown tools. Former does not work with enderference, latter does so internally
       EntityType<?> projectileType = projectile.getType();
-      if (TinkerEffects.needsEnderferenceOverride(target) && !projectileType.is(TinkerTags.EntityTypes.ENDERFERENCE_ARROW_BLACKLIST) && projectile instanceof AbstractArrow arrow) {
+      if (TinkerEffects.needsEnderferenceOverride(target) && !projectileType.builtInRegistryHolder().is(TinkerTags.EntityTypes.ENDERFERENCE_ARROW_BLACKLIST) && projectile instanceof AbstractArrow arrow) {
         // first, give up if we reached pierce capacity, and ensure list are created
         if (arrow.getPierceLevel() > 0) {
           if (arrow.piercingIgnoreEntityIds == null) {

@@ -72,7 +72,7 @@ public class TeleportHelper {
     Level level = entity.level();
     if (level instanceof ServerLevel serverWorld) {
       for (int i = 0; i < 32; ++i) {
-        serverWorld.sendParticles(ParticleTypes.PORTAL, entity.getX(), entity.getY() + level.random.nextDouble() * 2.0D, entity.getZ(), 1, level.random.nextGaussian(), 0.0D, level.random.nextGaussian(), 0);
+        serverWorld.sendParticles(ParticleTypes.PORTAL, entity.getX(), entity.getY() + level.getRandom().nextDouble() * 2.0D, entity.getZ(), 1, level.getRandom().nextGaussian(), 0.0D, level.getRandom().nextGaussian(), 0);
       }
     }
   }

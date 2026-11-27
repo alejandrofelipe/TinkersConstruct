@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import slimeknights.tconstruct.common.Sounds;
 import slimeknights.tconstruct.gadgets.TinkerGadgets;
 import slimeknights.tconstruct.library.utils.Util;
@@ -51,7 +52,7 @@ public class FancyItemFrameEntity extends ItemFrame {
   }
 
   @Override
-  public InteractionResult interact(Player player, InteractionHand hand) {
+  public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
     if (!player.isShiftKeyDown() && getFrameId() == FrameType.CLEAR.getId() && !getItem().isEmpty()) {
       BlockPos behind = blockPosition().relative(getDirection().getOpposite());
       Level level = level();
@@ -63,7 +64,7 @@ public class FancyItemFrameEntity extends ItemFrame {
         }
       }
     }
-    return super.interact(player, hand);
+    return super.interact(player, hand, location);
   }
 
   @Override

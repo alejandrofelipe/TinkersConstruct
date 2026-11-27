@@ -147,7 +147,7 @@ public class CustomExplosion extends ServerExplosion {
             double targetX = this.x;
             double targetY = this.y;
             double targetZ = this.z;
-            for (float power = this.radius * (0.7f + level.random.nextFloat() * 0.6f); power > 0; power -= 0.225f) {
+            for (float power = this.radius * (0.7f + level.getRandom().nextFloat() * 0.6f); power > 0; power -= 0.225f) {
               BlockPos target = BlockPos.containing(targetX, targetY, targetZ);
               BlockState block = level.getBlockState(target);
               FluidState fluid = level.getFluidState(target);
@@ -256,7 +256,7 @@ public class CustomExplosion extends ServerExplosion {
     }
     if (fire) {
       for (BlockPos pos : toBlow) {
-        if (level.random.nextInt(3) == 0 && level.getBlockState(pos).isAir() && level.getBlockState(pos.below()).isSolidRender()) {
+        if (level.getRandom().nextInt(3) == 0 && level.getBlockState(pos).isAir() && level.getBlockState(pos.below()).isSolidRender()) {
           level.setBlockAndUpdate(pos, BaseFireBlock.getState(level, pos));
         }
       }

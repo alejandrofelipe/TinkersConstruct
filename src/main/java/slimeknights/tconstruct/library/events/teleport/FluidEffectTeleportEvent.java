@@ -1,5 +1,6 @@
 package slimeknights.tconstruct.library.events.teleport;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
 import slimeknights.tconstruct.library.utils.TeleportHelper.ITeleportEventFactory;
@@ -9,6 +10,7 @@ public class FluidEffectTeleportEvent extends EntityTeleportEvent {
   public static final ITeleportEventFactory TELEPORT_FACTORY = FluidEffectTeleportEvent::new;
 
   public FluidEffectTeleportEvent(Entity entity, double targetX, double targetY, double targetZ) {
-    super(entity, targetX, targetY, targetZ);
+    // 26.1: the event takes the target level; Tinkers teleports stay in the entity's level and only run on the server
+    super(entity, (ServerLevel) entity.level(), targetX, targetY, targetZ);
   }
 }

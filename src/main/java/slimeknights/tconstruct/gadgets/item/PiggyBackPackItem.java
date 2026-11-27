@@ -89,7 +89,7 @@ public class PiggyBackPackItem extends TooltipItem {
   }
 
   private static boolean pickupEntity(Player player, Entity target) {
-    if (player.level().isClientSide() || target.getType().is(TinkerTags.EntityTypes.PIGGYBACKPACK_BLACKLIST)) {
+    if (player.level().isClientSide() || target.is(TinkerTags.EntityTypes.PIGGYBACKPACK_BLACKLIST)) {
       return false;
     }
     // silly players, clicking on entities they're already carrying or riding

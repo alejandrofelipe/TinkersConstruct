@@ -31,7 +31,7 @@ public class FlexBurningLiquidBlock extends FlexLiquidBlock {
       effectApplier.runAfter(InsideBlockEffectType.LAVA_IGNITE, target -> {
         target.igniteForSeconds(burnTime);
         if (target.hurtOrSimulate(target.damageSources().lava(), damage)) {
-          target.playSound(SoundEvents.GENERIC_BURN, 0.4F, 2.0F + level.random.nextFloat() * 0.4F);
+          target.playSound(SoundEvents.GENERIC_BURN, 0.4F, 2.0F + level.getRandom().nextFloat() * 0.4F);
         }
       });
     }

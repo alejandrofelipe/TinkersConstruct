@@ -55,7 +55,7 @@ public class PunjiBlock extends Block {
   @Nullable
   @Override
   public PathType getBlockPathType(BlockState state, BlockGetter level, BlockPos pos, @Nullable Mob mob) {
-    return PathType.DAMAGE_OTHER;
+    return PathType.DAMAGING;
   }
 
   @SuppressWarnings("deprecation")
