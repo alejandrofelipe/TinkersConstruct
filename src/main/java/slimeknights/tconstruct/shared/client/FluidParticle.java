@@ -10,19 +10,13 @@ import slimeknights.mantle.client.render.FluidRenderInfo;
 import slimeknights.mantle.client.render.FluidRenderer;
 import slimeknights.tconstruct.shared.particle.FluidParticleData;
 
-import java.util.Objects;
-
 /** Particle type that renders a fluid still texture */
 public class FluidParticle extends SingleQuadParticle {
   private final FluidStack fluid;
   private final float uCoord;
   private final float vCoord;
-  protected FluidParticle(ClientLevel world, double x, double y, double z, double motionX, double motionY, double motionZ, FluidStack fluid) {
-    this(world, x, y, z, motionX, motionY, motionZ, fluid, Objects.requireNonNull(FluidRenderInfo.of(fluid), "Fluid particle needs a fluid"));
-  }
-
   /** 26.1: sprite and tint come from the fluid model */
-  private FluidParticle(ClientLevel world, double x, double y, double z, double motionX, double motionY, double motionZ, FluidStack fluid, FluidRenderInfo info) {
+  protected FluidParticle(ClientLevel world, double x, double y, double z, double motionX, double motionY, double motionZ, FluidStack fluid, FluidRenderInfo info) {
     super(world, x, y, z, motionX, motionY, motionZ, info.still());
     this.fluid = fluid;
     this.gravity = 1.0F;
@@ -72,7 +66,9 @@ public class FluidParticle extends SingleQuadParticle {
     @Override
     public Particle createParticle(FluidParticleData data, ClientLevel worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
       FluidStack fluid = data.getFluid();
-      return !fluid.isEmpty() ? new FluidParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, fluid) : null;
+      // 26.1: no fluid model (or an empty fluid) means no sprite: no particle (1.21.11 drew the missing sprite)
+      FluidRenderInfo info = fluid.isEmpty() ? null : FluidRenderInfo.of(fluid);
+      return info != null ? new FluidParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, fluid, info) : null;
     }
   }
 }
