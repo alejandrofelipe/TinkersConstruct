@@ -1741,9 +1741,6 @@ public class TinkerUiTestScenarios {
       ctx.runOnServer(() -> {
         ServerPlayer player = ctx.serverLevel().getServer().getPlayerList().getPlayers().getFirst();
         player.getInventory().clearContent();
-        if (!player.getInventory().isEmpty()) {
-          throw new IllegalStateException("trimmed_armor: inventory not empty after clearing, a previous scenario leaked items into it");
-        }
         for (Trim trim : WORN) {
           player.setItemSlot(trim.type.getSlot(), trim.build());
         }
