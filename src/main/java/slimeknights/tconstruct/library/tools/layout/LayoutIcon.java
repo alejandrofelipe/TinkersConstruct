@@ -11,11 +11,14 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.serialization.JsonOps;
 import io.netty.handler.codec.DecoderException;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import slimeknights.mantle.util.JsonHelper;
 import slimeknights.tconstruct.library.recipe.partbuilder.Pattern;
 
@@ -47,7 +50,12 @@ public abstract class LayoutIcon {
 
   /** Creates a stack icon */
   public static LayoutIcon ofItem(ItemStack stack) {
-    return new ItemStackIcon(stack);
+    return stack.isEmpty() ? EMPTY : new ItemStackIcon(ItemStackTemplate.fromNonEmptyStack(stack), stack);
+  }
+
+  /** Creates a stack icon from a template; the stack is created on first use */
+  public static LayoutIcon ofItem(ItemStackTemplate template) {
+    return new ItemStackIcon(template, null);
   }
 
   /** Creates an icon from a pattern */
@@ -65,9 +73,8 @@ public abstract class LayoutIcon {
     switch (type) {
       case EMPTY: return EMPTY;
       case ITEM: {
-        // 1.21: ItemStack network I/O goes through ItemStack.OPTIONAL_STREAM_CODEC on a RegistryFriendlyByteBuf
-        ItemStack stack = ItemStack.OPTIONAL_STREAM_CODEC.decode((RegistryFriendlyByteBuf) buffer);
-        return new ItemStackIcon(stack);
+        // 26.1: the icon holds a template (D-TPL), sent through ItemStackTemplate.STREAM_CODEC on a RegistryFriendlyByteBuf
+        return ofItem(ItemStackTemplate.STREAM_CODEC.decode((RegistryFriendlyByteBuf) buffer));
       }
       case PATTERN: {
         Pattern pattern = new Pattern(buffer.readIdentifier());
@@ -83,15 +90,23 @@ public abstract class LayoutIcon {
   /** Writes this object to json */
   public abstract JsonObject toJson();
 
-  /** Icon drawing an item stack */
-  @RequiredArgsConstructor @VisibleForTesting
+  /**
+   * Icon drawing an item stack. 26.1: holds an {@link ItemStackTemplate} and creates the stack on first use, as layouts load during
+   * the data reload, before the default components are bound (a stack codec fails there, D-TPL).
+   */
+  @AllArgsConstructor(access = AccessLevel.PRIVATE) @VisibleForTesting
   protected static class ItemStackIcon extends LayoutIcon {
-    private final ItemStack stack;
+    private final ItemStackTemplate template;
+    @Nullable
+    private ItemStack stack;
 
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getValue(Class<T> clazz) {
       if (clazz == ItemStack.class) {
+        if (stack == null) {
+          stack = template.create();
+        }
         return (T) stack;
       }
       return null;
@@ -100,13 +115,17 @@ public abstract class LayoutIcon {
     @Override
     public void write(FriendlyByteBuf buffer) {
       buffer.writeEnum(Type.ITEM);
-      ItemStack.OPTIONAL_STREAM_CODEC.encode((RegistryFriendlyByteBuf) buffer, stack);
+      ItemStackTemplate.STREAM_CODEC.encode((RegistryFriendlyByteBuf) buffer, template);
     }
 
     @Override
     public JsonObject toJson() {
-      // 1.21: stacks serialize via ItemStack.CODEC (id + count + components), replacing the old item/nbt pair
-      return ItemStack.CODEC.encodeStart(JsonOps.INSTANCE, stack).getOrThrow(JsonParseException::new).getAsJsonObject();
+      // same JSON as the 1.21.11 ItemStack.CODEC (id + count + components): the template codec omits a count of 1
+      JsonObject json = ItemStackTemplate.MAP_CODEC.codec().encodeStart(JsonOps.INSTANCE, template).getOrThrow(JsonParseException::new).getAsJsonObject();
+      if (!json.has("count")) {
+        json.addProperty("count", template.count());
+      }
+      return json;
     }
   }
 
@@ -155,9 +174,8 @@ public abstract class LayoutIcon {
         return new PatternIcon(pattern);
       }
       if (object.has("item") || object.has("id")) {
-        // 1.21: parse stacks via ItemStack.CODEC instead of the removed CraftingHelper.getItemStack
-        ItemStack stack = ItemStack.CODEC.parse(JsonOps.INSTANCE, object).getOrThrow(JsonSyntaxException::new);
-        return new ItemStackIcon(stack);
+        // 26.1: parse a template (same id/count/components JSON as ItemStack.CODEC); ItemStack.CODEC needs bound components
+        return ofItem(ItemStackTemplate.MAP_CODEC.codec().parse(JsonOps.INSTANCE, object).getOrThrow(JsonSyntaxException::new));
       }
       // not sure why this would be needed, but might as well
       if (object.entrySet().isEmpty()) {

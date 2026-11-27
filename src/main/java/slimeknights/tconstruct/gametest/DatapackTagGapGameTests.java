@@ -117,6 +117,12 @@ public class DatapackTagGapGameTests {
         missing.add("station layout " + layout);
       }
     }
+    // 26.1: item icons decode during the reload, before default components are bound (stack codecs fail there, D-TPL)
+    StationSlotLayout pickaxe = StationSlotLayoutLoader.getInstance().get(TConstruct.getResource("pickaxe"));
+    ItemStack pickaxeIcon = pickaxe.getIcon().getValue(ItemStack.class);
+    if (pickaxe == StationSlotLayout.EMPTY || pickaxeIcon == null || !pickaxeIcon.is(TinkerTools.pickaxe.get())) {
+      missing.add("station layout pickaxe with its item icon (got " + pickaxeIcon + ")");
+    }
     for (String modifier : List.of("stoneshield", "slimeball")) {
       if (!ModifierManager.INSTANCE.contains(new ModifierId(TConstruct.getResource(modifier)))) {
         missing.add("modifier " + modifier);
