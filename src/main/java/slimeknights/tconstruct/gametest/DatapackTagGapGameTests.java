@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.neoforged.neoforge.common.loot.LootModifierManager;
+import net.neoforged.neoforge.resource.NeoForgeReloadListeners;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.recipe.TinkerRecipeAccess;
@@ -16,11 +17,8 @@ import slimeknights.tconstruct.library.tools.layout.StationSlotLayout;
 import slimeknights.tconstruct.library.tools.layout.StationSlotLayoutLoader;
 import slimeknights.tconstruct.tools.TinkerTools;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Regression guard for datapack entries that 1.21.4 silently skipped at load because a referenced tag was missing:
@@ -77,23 +75,11 @@ public class DatapackTagGapGameTests {
 
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
   public static void ore_loot_modifiers_load(GameTestHelper helper) {
-    // NeoForge exposes no public accessor for the loaded modifiers by id, so read them reflectively
-    Map<Identifier, ?> loaded;
-    try {
-      Method getter = Class.forName("net.neoforged.neoforge.common.NeoForgeEventHandler").getDeclaredMethod("getLootModifierManager");
-      getter.setAccessible(true);
-      Field mods = LootModifierManager.class.getDeclaredField("registeredLootModifiers");
-      mods.setAccessible(true);
-      @SuppressWarnings("unchecked")
-      Map<Identifier, ?> map = (Map<Identifier, ?>) mods.get(getter.invoke(null));
-      loaded = map;
-    } catch (ReflectiveOperationException | RuntimeException e) {
-      helper.fail(Component.literal("could not read NeoForge's loaded loot modifiers: " + e));
-      return;
-    }
+    // 26.1: the loot modifier manager is a reload listener of the server resources, with a public lookup by id
+    LootModifierManager loaded = helper.getLevel().getServer().getServerResources().managers().getListener(NeoForgeReloadListeners.LOOT_MODIFIERS_KEY);
     List<String> missing = new ArrayList<>();
     for (String id : List.of("lustrous/cobalt", "chrysophilite_modifier")) {
-      if (!loaded.containsKey(TConstruct.getResource(id))) {
+      if (loaded.getModifier(TConstruct.getResource(id)) == null) {
         missing.add(TConstruct.getResource(id).toString());
       }
     }

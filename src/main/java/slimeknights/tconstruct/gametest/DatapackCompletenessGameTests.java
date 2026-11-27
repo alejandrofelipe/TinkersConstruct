@@ -16,15 +16,15 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.neoforged.neoforge.common.conditions.ConditionalOps;
 import net.neoforged.neoforge.common.conditions.ICondition;
+import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.neoforge.common.loot.LootModifierManager;
+import net.neoforged.neoforge.resource.NeoForgeReloadListeners;
 import slimeknights.mantle.Mantle;
 import org.jspecify.annotations.Nullable;
 import slimeknights.tconstruct.TConstruct;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,45 +73,16 @@ public class DatapackCompletenessGameTests {
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 200)
   public static void datapack_loot_modifiers_complete(GameTestHelper helper) {
     MinecraftServer server = helper.getLevel().getServer();
-    // NeoForge only loads the modifiers named in a neoforge:loot_modifiers/global_loot_modifiers.json; one that is not
-    // listed is dead data, so every shipped modifier must be listed
-    Set<Identifier> listed = new TreeSet<>();
-    Identifier listFile = Identifier.fromNamespaceAndPath("neoforge", "loot_modifiers/global_loot_modifiers.json");
-    for (Resource resource : server.getResourceManager().getResourceStack(listFile)) {
-      JsonElement json = read(helper, listFile, resource);
-      if (json == null) {
-        return;
+    // 26.1: NeoForge loads every JSON under loot_modifiers/ (ordered by priority); the global_loot_modifiers.json index is gone
+    LootModifierManager manager = server.getServerResources().managers().getListener(NeoForgeReloadListeners.LOOT_MODIFIERS_KEY);
+    Set<Identifier> loaded = new TreeSet<>();
+    for (IGlobalLootModifier modifier : manager.getSortedModifiers()) {
+      Identifier id = manager.getId(modifier);
+      if (id != null && NAMESPACES.contains(id.getNamespace())) {
+        loaded.add(id);
       }
-      json.getAsJsonObject().getAsJsonArray("entries").forEach(entry -> listed.add(Identifier.parse(entry.getAsString())));
     }
-    Set<Identifier> expected = expectedIds(helper, server, FileToIdConverter.json("loot_modifiers"));
-    if (expected == null) {
-      return;
-    }
-    Set<Identifier> unlisted = new TreeSet<>(expected);
-    unlisted.removeAll(listed);
-    if (!unlisted.isEmpty()) {
-      helper.fail(Component.literal(unlisted.size() + " loot modifier(s) missing from global_loot_modifiers.json: " + shown(unlisted)));
-      return;
-    }
-    // NeoForge exposes no public accessor for the loaded modifiers by id (see DatapackTagGapGameTests#ore_loot_modifiers_load)
-    Map<Identifier, ?> modifiers;
-    try {
-      Method getter = Class.forName("net.neoforged.neoforge.common.NeoForgeEventHandler").getDeclaredMethod("getLootModifierManager");
-      getter.setAccessible(true);
-      Field field = LootModifierManager.class.getDeclaredField("registeredLootModifiers");
-      field.setAccessible(true);
-      @SuppressWarnings("unchecked")
-      Map<Identifier, ?> map = (Map<Identifier, ?>) field.get(getter.invoke(null));
-      modifiers = map;
-    } catch (ReflectiveOperationException | RuntimeException e) {
-      helper.fail(Component.literal("could not read NeoForge's loaded loot modifiers: " + e));
-      return;
-    }
-    Set<Identifier> loaded = modifiers.keySet().stream()
-      .filter(id -> NAMESPACES.contains(id.getNamespace()))
-      .collect(Collectors.toCollection(TreeSet::new));
-    compare(helper, "loot modifier", expected, loaded);
+    compare(helper, "loot modifier", expectedIds(helper, server, FileToIdConverter.json("loot_modifiers")), loaded);
   }
 
   /**
