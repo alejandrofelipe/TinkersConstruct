@@ -15,9 +15,11 @@ import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.config.Config;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
+import java.util.stream.IntStream;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ConfigEnabledCondition implements ICondition, LootItemCondition {
@@ -107,6 +109,13 @@ public class ConfigEnabledCondition implements ICondition, LootItemCondition {
   public static final ConfigEnabledCondition FORCE_INTEGRATION_MATERIALS = add("force_integration_materials", Config.COMMON.forceIntegrationMaterials);
   public static final ConfigEnabledCondition SLIMY_LOOT_CHESTS = add("slimy_loot_chests", Config.COMMON.slimyLootChests);
   public static final ConfigEnabledCondition SYNC_KNOCKBACK_RESISTANCE = add("sync_knockback_resistance", Config.COMMON.syncKnockbackResistance);
-  /** 26.1: trades are data, so the old trade weight only switches the {@code tconstruct:ancient_tool} trade on (> 0) or off (0) */
-  public static final ConfigEnabledCondition WANDERER_ANCIENT_TOOL = add("wanderer_ancient_tool", () -> Config.COMMON.wandererAncientToolWeight.get() > 0);
+  /** Number of ancient tool trade copies in the uncommon wandering trader trades; the 1.21.11 default weight */
+  public static final int WANDERER_ANCIENT_TOOL_COPIES = 6;
+  /**
+   * 26.1: trades are data, so the old weight becomes copies: condition {@code k - 1} ({@code wanderer_ancient_tool_k}) enables the trade copy
+   * {@code tconstruct:ancient_tool_k} when the weight is at least {@code k}. Weights above {@link #WANDERER_ANCIENT_TOOL_COPIES} act like it.
+   */
+  public static final List<ConfigEnabledCondition> WANDERER_ANCIENT_TOOL = IntStream.rangeClosed(1, WANDERER_ANCIENT_TOOL_COPIES)
+    .mapToObj(copy -> add("wanderer_ancient_tool_" + copy, () -> Config.COMMON.wandererAncientToolWeight.get() >= copy))
+    .toList();
 }

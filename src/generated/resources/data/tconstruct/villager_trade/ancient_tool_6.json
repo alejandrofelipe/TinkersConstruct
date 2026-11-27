@@ -10,7 +10,7 @@
   "max_uses": 1.0,
   "merchant_predicate": {
     "condition": "tconstruct:config",
-    "prop": "wanderer_ancient_tool"
+    "prop": "wanderer_ancient_tool_6"
   },
   "reputation_discount": 1.0,
   "wants": {

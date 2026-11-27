@@ -171,7 +171,7 @@ public class Config {
         .comment("If true, ender dragons will drop scales when damaged by explosions")
         .define("drop_dragon_Scales", true);
       wandererAncientToolWeight = builder
-        .comment("Enables the ancient tool trade for the wandering trader: 0 disables it, any value above 0 enables it. Since MC 26.1 trades are data: the trade (tconstruct:ancient_tool) is one entry of the #minecraft:wandering_trader/uncommon villager trade tag, picked with the same chance as each vanilla entry, so the value is no longer a weight. Edit the tag with a datapack to change the chance.")
+        .comment("Chance of the ancient tool trade for the wandering trader: 0 disables it, 1 to 6 is the number of trade copies (tconstruct:ancient_tool_1 to _6) among the 15 vanilla entries of the #minecraft:wandering_trader/uncommon villager trade tag, values above 6 behave like 6. The default 6 gives the pre-26.1 chance (about 50% per trader).")
         .defineInRange("wanderer_ancient_tool_weight", 6, 0, 100);
 
       builder.pop();

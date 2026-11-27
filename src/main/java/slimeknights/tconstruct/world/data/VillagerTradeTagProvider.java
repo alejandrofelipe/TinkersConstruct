@@ -18,6 +18,9 @@ public class VillagerTradeTagProvider extends KeyTagProvider<VillagerTrade> {
 
   @Override
   protected void addTags(Provider provider) {
-    tag(VillagerTradeTags.WANDERING_TRADER_UNCOMMON).add(VillagerTradeProvider.ANCIENT_TOOL);
+    var uncommon = tag(VillagerTradeTags.WANDERING_TRADER_UNCOMMON);
+    for (var trade : VillagerTradeProvider.ANCIENT_TOOL) {
+      uncommon.add(trade);
+    }
   }
 }
