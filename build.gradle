@@ -174,7 +174,7 @@ tasks.matching { it.name == 'runClientUiTest' }.configureEach { dependsOn 'prepa
 
 // the uitest client always exits 0 (UiTestSuite stops it normally after writing the results), so the task reads
 // uitest-results.json itself: it fails when the file is missing or older than this run (the client died before the
-// suite finished) or when any result, mantle:suite_setup included, is not "ok"
+// suite finished) or when any result, mantle:suite_setup included, is neither "ok" nor a "warn: ..." note
 def uiTestResultsFile = file('run/clientUiTest/uitest-results.json')
 tasks.matching { it.name == 'runClientUiTest' }.configureEach {
     def startedAt = 0L
@@ -187,7 +187,10 @@ tasks.matching { it.name == 'runClientUiTest' }.configureEach {
             throw new GradleException("uitest: ${uiTestResultsFile} was not written by this run; the suite did not finish (see run/clientUiTest/logs/latest.log)")
         }
         Map<String, Object> results = new groovy.json.JsonSlurper().parse(uiTestResultsFile, 'UTF-8') as Map<String, Object>
-        Map<String, Object> failed = results.findAll { id, result -> result != 'ok' }
+        // "warn: ..." results (e.g. mantle:world_upgrade) are reported without failing the task
+        Map<String, Object> warned = results.findAll { id, result -> result instanceof String && result.startsWith('warn:') }
+        warned.each { id, result -> logger.warn("uitest: ${id}: ${result}") }
+        Map<String, Object> failed = results.findAll { id, result -> result != 'ok' && !warned.containsKey(id) }
         if (!results.containsKey('mantle:suite_setup')) {
             failed['mantle:suite_setup'] = 'missing'
         }
@@ -195,7 +198,7 @@ tasks.matching { it.name == 'runClientUiTest' }.configureEach {
             throw new GradleException("uitest: ${failed.size()} of ${results.size()} result(s) not ok (${uiTestResultsFile}):\n"
                 + failed.collect { id, result -> "  ${id}: ${result}" }.join('\n'))
         }
-        logger.lifecycle("uitest: all ${results.size()} result(s) ok")
+        logger.lifecycle("uitest: all ${results.size() - warned.size()} result(s) ok" + (warned.isEmpty() ? "" : ", ${warned.size()} warning(s)"))
     }
 }
 
