@@ -75,6 +75,7 @@ import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -1247,6 +1248,29 @@ public class TinkerUiTestScenarios {
       LocalPlayer player = Objects.requireNonNull(ctx.mc().player);
       player.getInventory().setSelectedSlot(0); // hotbar.0 -> the blaze head is held
       ctx.mc().setScreen(new InventoryScreen(player));
+      ctx.parkMouse();
+    }
+
+    /** Plain slot background: a head icon drawn outside its slot leaves the slot center this color */
+    private static final IntPredicate NOT_SLOT = color -> (color & 0xFFFFFF) != 0x8B8B8B;
+
+    /**
+     * Each hotbar head must draw over the center of its slot. 26.1 moved the skull flip and centering from the renderer into the item model's
+     * transformation; the heads without it drew upside down beside the slot (only an edge showed).
+     */
+    @Override
+    public void close(UiTestContext ctx) {
+      if (!(ctx.mc().screen instanceof InventoryScreen screen)) {
+        throw new IllegalStateException("head_items: the inventory closed before the capture, found " + ctx.mc().screen);
+      }
+      try (NativeImage image = RenderTargetCapture.capture(ctx.mc().getMainRenderTarget(), false)) {
+        double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
+        for (int i = 0; i < 9; i++) {
+          Slot slot = screen.getMenu().slots.get(InventoryMenu.USE_ROW_SLOT_START + i);
+          TrimmedArmorScenario.assertGuiRegion(image, scale, screen, new Rect2i(slot.x + 4, slot.y + 4, 8, 8), "head_items: head in hotbar slot " + i, NOT_SLOT);
+        }
+      }
+      ctx.mc().setScreen(null);
     }
 
     @Override

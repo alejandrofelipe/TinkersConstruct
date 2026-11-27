@@ -222,7 +222,7 @@ public class WorldClientEvents extends ClientEventBase {
 
   /** Textures for each Tinkers head, registered with the skull models in {@link #registerSkullModels} */
   private static final Map<TinkerHeadType, Identifier> HEAD_TEXTURES = Util.make(new EnumMap<>(TinkerHeadType.class), map -> {
-    map.put(TinkerHeadType.BLAZE, Identifier.parse("textures/entity/blaze.png"));
+    map.put(TinkerHeadType.BLAZE, Identifier.parse("textures/entity/blaze/blaze.png"));
     map.put(TinkerHeadType.ENDERMAN, TConstruct.getResource("textures/entity/skull/enderman.png"));
     map.put(TinkerHeadType.STRAY, TConstruct.getResource("textures/entity/skull/stray.png"));
     map.put(TinkerHeadType.HUSK, Identifier.parse("textures/entity/zombie/husk.png"));

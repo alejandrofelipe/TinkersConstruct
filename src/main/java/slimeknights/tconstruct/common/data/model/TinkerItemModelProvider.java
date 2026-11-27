@@ -1,6 +1,9 @@
 package slimeknights.tconstruct.common.data.model;
 
 import com.google.gson.JsonObject;
+import com.mojang.math.Transformation;
+import com.mojang.serialization.JsonOps;
+import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -266,6 +269,8 @@ public class TinkerItemModelProvider implements DataProvider {
   /**
    * Head item rendered by the {@code tconstruct:head} special model, mirroring vanilla's head items. A plain
    * {@code template_skull} model has no geometry, so the item was invisible.
+   * 26.1: the skull renderer no longer flips and centers the model itself, vanilla head items apply {@link BlockModelGenerators#SKULL_TRANSFORM}
+   * as the special model's transformation; without it the head draws upside down beside the slot.
    */
   private void head(Identifier item, TinkerHeadType type) {
     JsonObject special = new JsonObject();
@@ -275,6 +280,7 @@ public class TinkerItemModelProvider implements DataProvider {
     def.addProperty("type", "minecraft:special");
     def.addProperty("base", "minecraft:item/template_skull");
     def.add("model", special);
+    def.add("transformation", Transformation.EXTENDED_CODEC.encodeStart(JsonOps.INSTANCE, BlockModelGenerators.SKULL_TRANSFORM).getOrThrow());
     itemDefinition(item, def);
   }
 
