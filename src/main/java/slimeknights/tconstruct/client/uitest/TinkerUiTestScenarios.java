@@ -4,6 +4,7 @@ import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.IRecipeLayoutDrawable;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
+import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.ingredients.IIngredientRenderer;
 import mezz.jei.api.neoforge.NeoForgeTypes;
@@ -59,6 +60,7 @@ import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ARGB;
@@ -80,9 +82,15 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.CookingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
@@ -128,6 +136,11 @@ import slimeknights.mantle.client.uitest.UiTestScenario;
 import slimeknights.mantle.client.uitest.UiTestScenarios;
 import slimeknights.mantle.client.uitest.UiTestSuite;
 import slimeknights.mantle.plugin.jei.entity.EntityIngredientRenderer;
+import slimeknights.mantle.recipe.cooking.BlastingResultRecipe;
+import slimeknights.mantle.recipe.cooking.CampfireResultRecipe;
+import slimeknights.mantle.recipe.cooking.SmeltingResultRecipe;
+import slimeknights.mantle.recipe.cooking.SmokingResultRecipe;
+import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.mantle.recipe.ingredient.EntityIngredient;
 import slimeknights.mantle.registration.object.EnumObject;
 import slimeknights.mantle.util.RetexturedHelper;
@@ -258,6 +271,7 @@ public class TinkerUiTestScenarios {
     UiTestScenarios.register(new JeiCategoryScenario<>("melting", TConstructJEIConstants.MELTING));
     UiTestScenarios.register(new JeiItemListCleanupScenario());
     UiTestScenarios.register(new JeiCategoryTooltipsScenario());
+    UiTestScenarios.register(new JeiMantleCookingScenario());
     UiTestScenarios.register(new BookInteriorScenario());
     UiTestScenarios.register(new StationReflowScenario());
     UiTestScenarios.register(new StationCollapsedScenario());
@@ -666,6 +680,73 @@ public class TinkerUiTestScenarios {
       if (!lines.equals(expected)) {
         throw new IllegalStateException(type.getUid() + " tooltip at " + mouseX + ", " + mouseY + ": expected " + expected + " but got " + lines);
       }
+    }
+
+    @Override
+    public void close(UiTestContext ctx) { /* nothing open */ }
+  }
+
+  /**
+   * No GUI: Mantle's cooking result recipes ({@code mantle:smelting} and co.) give vanilla a barrier as their result template, as 26.1
+   * rejects an empty one, and show their {@link ItemOutput} through {@code assemble}/{@code display} instead. Lays out one recipe of each kind
+   * in JEI's vanilla cooking category and checks that no slot shows the barrier (JEI 29 reads {@code display()}, whose result slot stays
+   * empty as in 1.21.11) and that the input slot shows the ingredient. Control first: a plain vanilla smelting recipe with a barrier result
+   * must show it, so the check does see results.
+   */
+  private static class JeiMantleCookingScenario implements UiTestScenario {
+    private static final String NAME = "jei_mantle_cooking_no_barrier";
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) { /* nothing to build */ }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      IJeiRuntime runtime = JEIPlugin.runtime;
+      if (runtime == null) {
+        throw new IllegalStateException("JEI runtime not captured - onRuntimeAvailable never fired");
+      }
+      Ingredient input = Ingredient.of(Items.RAW_IRON);
+      ItemOutput result = ItemOutput.fromItem(Items.IRON_INGOT);
+      AbstractCookingRecipe.CookingBookInfo book = new AbstractCookingRecipe.CookingBookInfo(CookingBookCategory.MISC, "");
+      SmeltingRecipe control = new SmeltingRecipe(new Recipe.CommonInfo(true), book, input, new ItemStackTemplate(Items.BARRIER), 0.1f, 200);
+      if (shownItems(layOut(runtime, RecipeTypes.SMELTING, control), null).noneMatch(stack -> stack.is(Items.BARRIER))) {
+        throw new IllegalStateException(NAME + ": control failed, JEI does not show the barrier result of a plain smelting recipe");
+      }
+      check(runtime, RecipeTypes.SMELTING, new SmeltingResultRecipe("", CookingBookCategory.MISC, input, result, 0.1f, 200));
+      check(runtime, RecipeTypes.BLASTING, new BlastingResultRecipe("", CookingBookCategory.MISC, input, result, 0.1f, 100));
+      check(runtime, RecipeTypes.SMOKING, new SmokingResultRecipe("", CookingBookCategory.MISC, input, result, 0.1f, 100));
+      check(runtime, RecipeTypes.CAMPFIRE_COOKING, new CampfireResultRecipe("", CookingBookCategory.MISC, input, result, 0.1f, 600));
+    }
+
+    /** Lays out the recipe, then fails if any slot shows the barrier or the input slot misses the raw iron */
+    private static <R extends Recipe<?>> void check(IJeiRuntime runtime, IRecipeType<RecipeHolder<R>> type, R recipe) {
+      IRecipeSlotsView slots = layOut(runtime, type, recipe);
+      List<ItemStack> barriers = shownItems(slots, null).filter(stack -> stack.is(Items.BARRIER)).toList();
+      if (!barriers.isEmpty()) {
+        throw new IllegalStateException(NAME + ": JEI shows the placeholder barrier for a " + recipe.getClass().getSimpleName() + " in " + type.getUid());
+      }
+      if (shownItems(slots, RecipeIngredientRole.INPUT).noneMatch(stack -> stack.is(Items.RAW_IRON))) {
+        throw new IllegalStateException(NAME + ": JEI does not show the raw iron input of a " + recipe.getClass().getSimpleName() + " in " + type.getUid());
+      }
+    }
+
+    /** Lays the recipe out in the category of the type, as the recipes GUI would */
+    private static <R extends Recipe<?>> IRecipeSlotsView layOut(IJeiRuntime runtime, IRecipeType<RecipeHolder<R>> type, R recipe) {
+      IRecipeManager recipes = runtime.getRecipeManager();
+      RecipeHolder<R> holder = new RecipeHolder<>(ResourceKey.create(Registries.RECIPE, TConstruct.getResource("uitest/" + type.getUid().getPath())), recipe);
+      return recipes.createRecipeLayoutDrawable(recipes.getRecipeCategory(type), holder, runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup())
+        .map(IRecipeLayoutDrawable::getRecipeSlotsView)
+        .orElseThrow(() -> new IllegalStateException(NAME + ": JEI could not lay out a " + recipe.getClass().getSimpleName() + " in " + type.getUid()));
+    }
+
+    /** Every item stack of the slots with the role, or of all slots if null */
+    private static java.util.stream.Stream<ItemStack> shownItems(IRecipeSlotsView slots, @Nullable RecipeIngredientRole role) {
+      return (role == null ? slots.getSlotViews() : slots.getSlotViews(role)).stream().flatMap(IRecipeSlotView::getItemStacks);
     }
 
     @Override
@@ -2985,12 +3066,12 @@ public class TinkerUiTestScenarios {
           if (first == null || !first.getItem().is(Items.COBBLESTONE) || first.getItem().getCount() != COUNTS[0]) {
             return; // menu contents not synced yet
           }
-          click(screen, screen.getGuiLeft() + first.x + 8, screen.getGuiTop() + first.y + 8, false);
+          click(screen, screen.getLeftPos() + first.x + 8, screen.getTopPos() + first.y + 8, false);
           step = 1;
         }
         case 1 -> {
           Objects.requireNonNull(first);
-          click(screen, screen.getGuiLeft() + first.x + 8, screen.getGuiTop() + first.y + 8, true);
+          click(screen, screen.getLeftPos() + first.x + 8, screen.getTopPos() + first.y + 8, true);
           step = 2;
         }
         default -> {
@@ -3085,8 +3166,8 @@ public class TinkerUiTestScenarios {
 
     /** Point of the screen showing lava, or null if the gauge has not received the fuel yet */
     private static int @Nullable [] findLava(MelterScreen screen) {
-      for (int y = screen.getGuiTop(); y < screen.getGuiTop() + screen.getYSize(); y++) {
-        for (int x = screen.getGuiLeft(); x < screen.getGuiLeft() + screen.getXSize(); x++) {
+      for (int y = screen.getTopPos(); y < screen.getTopPos() + screen.getImageHeight(); y++) {
+        for (int x = screen.getLeftPos(); x < screen.getLeftPos() + screen.getImageWidth(); x++) {
           IScreenWithFluidTank.FluidLocation fluid = screen.getFluidUnderMouse(x, y);
           if (fluid != null && fluid.fluid().is(Fluids.LAVA)) {
             return new int[] { x, y };
@@ -3678,7 +3759,7 @@ public class TinkerUiTestScenarios {
 
   /**
    * JEI on a {@link MultiModuleScreen} with a side panel left of its main window, which moves {@code leftPos} away from where the main
-   * window and its slots are drawn ({@link MultiModuleScreen#cornerX}); JEI builds slot areas from {@code getGuiLeft()}, which used to
+   * window and its slots are drawn ({@link MultiModuleScreen#cornerX}); JEI builds slot areas from {@code getLeftPos()} (JEI 27: NeoForge's {@code getGuiLeft()}), which used to
    * return that {@code leftPos} (areas shifted left by the panel width). Once the screen shows the target, moves the mouse over it, checks
    * the clickable ingredient JEI's screen helper finds there (the expected ingredient, with an area containing the mouse in screen
    * coordinates, which JEI's mouse handling checks) and presses a JEI key over it; the capture is the JEI recipes GUI.
@@ -3767,9 +3848,9 @@ public class TinkerUiTestScenarios {
       }
       // wait for a render with the mouse there, which updates vanilla's hovered slot (what JEI reads for slots)
       assert target != null;
-      if (target.slot != null && screen.getSlotUnderMouse() != target.slot) {
+      if (target.slot != null && screen.getHoveredSlot() != target.slot) {
         if (ticks > HOVER_TIMEOUT) {
-          fail("vanilla hovers " + screen.getSlotUnderMouse() + " instead of slot " + target.slot.index + " with the mouse at " + target.x + "," + target.y);
+          fail("vanilla hovers " + screen.getHoveredSlot() + " instead of slot " + target.slot.index + " with the mouse at " + target.x + "," + target.y);
         }
         return;
       }
@@ -3787,7 +3868,7 @@ public class TinkerUiTestScenarios {
       Rect2i area = clickable.getArea();
       if (!area.contains(target.x, target.y)) {
         fail("JEI's clickable area (" + area.getX() + "," + area.getY() + " " + area.getWidth() + "x" + area.getHeight() + ") does not contain the mouse at "
-             + target.x + "," + target.y + " (gui left/top " + screen.getGuiLeft() + "," + screen.getGuiTop() + ", main window corner " + screen.cornerX + "," + screen.cornerY
+             + target.x + "," + target.y + " (gui left/top " + screen.getLeftPos() + "," + screen.getTopPos() + ", main window corner " + screen.cornerX + "," + screen.cornerY
              + ", modules " + describe(screen.getModuleAreas()) + ")");
         return;
       }
@@ -3986,8 +4067,8 @@ public class TinkerUiTestScenarios {
     @Override
     protected Target findTarget(MultiModuleScreen<?> screen) {
       if (screen instanceof HeatingStructureScreen smeltery) {
-        for (int y = screen.getGuiTop(); y < screen.getGuiTop() + screen.getYSize(); y++) {
-          for (int x = screen.getGuiLeft(); x < screen.getGuiLeft() + screen.getXSize(); x++) {
+        for (int y = screen.getTopPos(); y < screen.getTopPos() + screen.getImageHeight(); y++) {
+          for (int x = screen.getLeftPos(); x < screen.getLeftPos() + screen.getImageWidth(); x++) {
             IScreenWithFluidTank.FluidLocation fluid = smeltery.getFluidUnderMouse(x, y);
             if (fluid != null && fluid.fluid().is(TinkerFluids.moltenIron.get())) {
               return new Target(x, y, null);
