@@ -299,14 +299,19 @@ public final class TinkerFluids extends TinkerModule {
   @SubscribeEvent
   void commonSetup(final FMLCommonSetupEvent event) {
     event.enqueueWork(() -> {
-      // 26.1: the interaction maps are CauldronInteractions dispatchers, which can only be queried with a stack. Vanilla
-      // registers nothing for splash/lingering potions, so the fallback is what the old map returned for them: DEFAULT
+      // 26.1: the interaction maps are CauldronInteractions dispatchers. Chain to the handler registered so far for the item
+      // (another mod's, or DEFAULT), read from the item map through the AT: Dispatcher#get needs a stack, which cannot be
+      // created before the default components are bound (D-STATIC)
+      CauldronInteraction waterSplash = CauldronInteractions.WATER.items.getOrDefault(Items.SPLASH_POTION, CauldronInteraction.DEFAULT);
+      CauldronInteraction waterLingering = CauldronInteractions.WATER.items.getOrDefault(Items.LINGERING_POTION, CauldronInteraction.DEFAULT);
+      CauldronInteraction emptySplash = CauldronInteractions.EMPTY.items.getOrDefault(Items.SPLASH_POTION, CauldronInteraction.DEFAULT);
+      CauldronInteraction emptyLingering = CauldronInteractions.EMPTY.items.getOrDefault(Items.LINGERING_POTION, CauldronInteraction.DEFAULT);
       CauldronInteractions.WATER.put(splashBottle.get(), new FillBottle(Items.SPLASH_POTION));
       CauldronInteractions.WATER.put(lingeringBottle.get(), new FillBottle(Items.LINGERING_POTION));
-      CauldronInteractions.WATER.put(Items.SPLASH_POTION,    new EmptyBottleIntoWater(splashBottle,    CauldronInteraction.DEFAULT));
-      CauldronInteractions.WATER.put(Items.LINGERING_POTION, new EmptyBottleIntoWater(lingeringBottle, CauldronInteraction.DEFAULT));
-      CauldronInteractions.EMPTY.put(Items.SPLASH_POTION,    new EmptyBottleIntoEmpty(splashBottle,    CauldronInteraction.DEFAULT));
-      CauldronInteractions.EMPTY.put(Items.LINGERING_POTION, new EmptyBottleIntoEmpty(lingeringBottle, CauldronInteraction.DEFAULT));
+      CauldronInteractions.WATER.put(Items.SPLASH_POTION,    new EmptyBottleIntoWater(splashBottle,    waterSplash));
+      CauldronInteractions.WATER.put(Items.LINGERING_POTION, new EmptyBottleIntoWater(lingeringBottle, waterLingering));
+      CauldronInteractions.EMPTY.put(Items.SPLASH_POTION,    new EmptyBottleIntoEmpty(splashBottle,    emptySplash));
+      CauldronInteractions.EMPTY.put(Items.LINGERING_POTION, new EmptyBottleIntoEmpty(lingeringBottle, emptyLingering));
     });
 
     // dispense buckets
