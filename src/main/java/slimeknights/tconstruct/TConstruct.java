@@ -22,6 +22,7 @@ import net.neoforged.fml.loading.FMLEnvironment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import slimeknights.mantle.data.DatagenCacheKeeper;
+import slimeknights.mantle.data.DatagenComponents;
 import slimeknights.tconstruct.common.TinkerModule;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.common.config.Config;
@@ -231,6 +232,9 @@ public class TConstruct {
     VillagerTradeProvider.register(registrySetBuilder);
     DatapackBuiltinEntriesProvider datapackRegistryProvider = new DatapackBuiltinEntriesProvider(packOutput, lookupProvider, registrySetBuilder, Set.of(MOD_ID));
     event.addProvider(datapackRegistryProvider);
+    // 26.1 (D-DATAGEN): display stacks (tool render stacks, filled tanks) need bound default components; Tinkers items reference its own
+    // datapack entries (trim materials), so bind from the full registry provider. Every provider runs after this event.
+    DatagenComponents.bind(datapackRegistryProvider.getRegistryProvider());
 
     // tags
     BlockTagProvider blockTags = new BlockTagProvider(packOutput, lookupProvider);
