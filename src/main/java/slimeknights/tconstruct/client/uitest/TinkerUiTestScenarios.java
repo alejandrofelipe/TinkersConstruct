@@ -1403,7 +1403,7 @@ public class TinkerUiTestScenarios {
     public void prepare(UiTestContext ctx) {
       // survival: in creative the inventory screen is replaced by the creative tabs, without main inventory or player preview
       ctx.sendCommand("gamemode survival");
-      ctx.sendCommand("clear @s");
+      ctx.clearInventory();
       TinkerHeadType[] types = TinkerHeadType.values();
       for (int i = 0; i < types.length; i++) {
         String slot = i < 9 ? "hotbar." + i : "inventory." + (i - 9);
@@ -1464,7 +1464,7 @@ public class TinkerUiTestScenarios {
     public void cleanup(UiTestContext ctx) {
       // here rather than in close() so a failed assert in open() doesn't leave the rest of the suite in survival
       ctx.mc().setScreen(null);
-      ctx.sendCommand("clear @s");
+      ctx.clearInventory();
       ctx.sendCommand("gamemode creative");
     }
   }
@@ -1573,7 +1573,7 @@ public class TinkerUiTestScenarios {
     public void cleanup(UiTestContext ctx) {
       // here rather than in close() so a failed assert in open() doesn't leave the rest of the suite in survival
       ctx.mc().setScreen(null);
-      ctx.sendCommand("clear @s");
+      ctx.clearInventory();
       ctx.sendCommand("gamemode creative");
     }
   }
@@ -1655,7 +1655,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void cleanup(UiTestContext ctx) {
       ctx.mc().setScreen(null);
-      ctx.sendCommand("clear @s");
+      ctx.clearInventory();
       // look ahead again: the following screen captures show the world behind them
       ctx.sendCommand("tp @s ~ ~ ~ 0 0");
     }
@@ -1867,7 +1867,7 @@ public class TinkerUiTestScenarios {
     public void cleanup(UiTestContext ctx) {
       // here rather than in close() so a failed assert in open() doesn't leave the rest of the suite in survival
       ctx.mc().setScreen(null);
-      ctx.sendCommand("clear @s");
+      ctx.clearInventory();
       ctx.sendCommand("gamemode creative");
     }
   }
@@ -3186,7 +3186,7 @@ public class TinkerUiTestScenarios {
       NeoForge.EVENT_BUS.unregister(miner);
       ctx.mc().setScreen(null);
       ctx.mc().options.highContrastBlockOutline().set(previousHighContrast);
-      ctx.sendCommand("clear @s");
+      ctx.clearInventory();
       ctx.sendCommand("gamemode creative");
     }
   }
@@ -3325,7 +3325,7 @@ public class TinkerUiTestScenarios {
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(clicker);
       ctx.mc().setScreen(null);
-      ctx.sendCommand("clear @s");
+      ctx.clearInventory();
     }
   }
 
@@ -3489,7 +3489,7 @@ public class TinkerUiTestScenarios {
       transferred = false;
       transfer = null;
       failure = null;
-      ctx.sendCommand("clear @s");
+      ctx.clearInventory();
       ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + pos.getY() + " " + pos.getZ());
       ctx.runOnServer(() -> {
         ServerLevel level = ctx.serverLevel();
@@ -3633,7 +3633,7 @@ public class TinkerUiTestScenarios {
       if (parts.size() != 3) {
         throw new IllegalStateException(NAME + ": expected the pickaxe recipe to show 3 parts, found " + parts);
       }
-      ctx.sendCommand("clear @s");
+      ctx.clearInventory();
       ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + pos.getY() + " " + pos.getZ());
       List<ItemStack> toGive = parts.stream().map(ItemStack::copy).toList();
       ctx.runOnServer(() -> {
@@ -3722,7 +3722,7 @@ public class TinkerUiTestScenarios {
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
       ctx.mc().setScreen(null);
-      ctx.sendCommand("clear @s");
+      ctx.clearInventory();
     }
   }
 
@@ -4149,7 +4149,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void prepare(UiTestContext ctx) {
       reset();
-      ctx.sendCommand("clear @s");
+      ctx.clearInventory();
       ctx.sendCommand("tp @s " + (pos.getX() - 2) + " " + pos.getY() + " " + pos.getZ());
       ctx.runOnServer(() -> {
         ServerLevel level = ctx.serverLevel();
