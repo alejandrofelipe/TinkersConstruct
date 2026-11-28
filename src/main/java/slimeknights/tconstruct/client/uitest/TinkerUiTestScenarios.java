@@ -562,8 +562,8 @@ public class TinkerUiTestScenarios {
       if (result == InteractionResult.PASS) {
         throw new IllegalStateException("book item use() passed - book screen did not open");
       }
-      if (!(ctx.mc().screen instanceof BookScreen book)) {
-        throw new IllegalStateException("expected BookScreen after use(), found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof BookScreen book)) {
+        throw new IllegalStateException("expected BookScreen after use(), found " + ctx.screen());
       }
       // advance cover -> index -> first full spread; same logic the next-page arrow button runs
       book.nextPage();
@@ -946,15 +946,15 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      if (!(ctx.mc().screen instanceof IRecipesGui)) {
-        throw new IllegalStateException(id().getPath() + " expected the JEI recipes GUI at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof IRecipesGui)) {
+        throw new IllegalStateException(id().getPath() + " expected the JEI recipes GUI at capture, found " + ctx.screen());
       }
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(mouseParker);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 
@@ -993,8 +993,8 @@ public class TinkerUiTestScenarios {
       if (result == InteractionResult.PASS) {
         throw new IllegalStateException("book item use() passed - book screen did not open");
       }
-      if (!(ctx.mc().screen instanceof BookScreen book)) {
-        throw new IllegalStateException("expected BookScreen after use(), found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof BookScreen book)) {
+        throw new IllegalStateException("expected BookScreen after use(), found " + ctx.screen());
       }
       int page = book.book.findPageNumber(PAGE, book.advancementCache);
       if (page < 0) {
@@ -1068,7 +1068,7 @@ public class TinkerUiTestScenarios {
 
     /** Presses rotate on the first tick the menu is open with the grid synced, then self-removes. */
     private void rotateWhenReady(ClientTickEvent.Post event) {
-      if (rotated || !(Minecraft.getInstance().screen instanceof AbstractContainerScreen<?> screen)
+      if (rotated || !(UiTestContext.current().screen() instanceof AbstractContainerScreen<?> screen)
           || !(screen.getMenu() instanceof CraftingStationContainerMenu menu) || !menu.getSlot(0).getItem().is(Items.STICK)) {
         return;
       }
@@ -1094,8 +1094,8 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      if (!(ctx.mc().screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)) {
-        throw new IllegalStateException("crafting_tweaks_rotate expected the crafting station menu at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)) {
+        throw new IllegalStateException("crafting_tweaks_rotate expected the crafting station menu at capture, found " + ctx.screen());
       }
       if (!rotated) {
         throw new IllegalStateException("crafting_tweaks_rotate found no Crafting Tweaks rotate button on the crafting station");
@@ -1115,7 +1115,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller); // still registered if the menu never opened
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 
@@ -1169,14 +1169,14 @@ public class TinkerUiTestScenarios {
     public void close(UiTestContext ctx) {
       // the menu opens through a server round-trip, so assert here (post-settle) rather than in open():
       // fail loudly if the station screen never resolved instead of silently shipping a world screenshot
-      if (!(ctx.mc().screen instanceof TinkerStationScreen)) {
-        throw new IllegalStateException("station_reflow expected TinkerStationScreen at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof TinkerStationScreen)) {
+        throw new IllegalStateException("station_reflow expected TinkerStationScreen at capture, found " + ctx.screen());
       }
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
     }
   }
@@ -1225,14 +1225,14 @@ public class TinkerUiTestScenarios {
     public void close(UiTestContext ctx) {
       // same post-settle assert as station_reflow: the menu opens through a server round-trip, so fail loudly
       // here rather than in open() if the station screen never resolved
-      if (!(ctx.mc().screen instanceof TinkerStationScreen)) {
-        throw new IllegalStateException("station_collapsed expected TinkerStationScreen at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof TinkerStationScreen)) {
+        throw new IllegalStateException("station_collapsed expected TinkerStationScreen at capture, found " + ctx.screen());
       }
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
     }
   }
@@ -1288,7 +1288,7 @@ public class TinkerUiTestScenarios {
       if (this.overlayOpened) {
         return;
       }
-      if (Minecraft.getInstance().screen instanceof TinkerStationScreen station) {
+      if (UiTestContext.current().screen() instanceof TinkerStationScreen station) {
         station.openOverlay(ToolTableScreen.OverlayPanel.TOOL_INFO);
         this.overlayOpened = true;
         NeoForge.EVENT_BUS.unregister(this.overlayPoller);
@@ -1302,8 +1302,8 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      if (!(ctx.mc().screen instanceof TinkerStationScreen station)) {
-        throw new IllegalStateException("station_collapsed_overlay expected TinkerStationScreen at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof TinkerStationScreen station)) {
+        throw new IllegalStateException("station_collapsed_overlay expected TinkerStationScreen at capture, found " + ctx.screen());
       }
       // fail loudly if the overlay never opened - otherwise a collapsed-but-no-overlay PNG would still pass the run
       if (station.getOpenOverlay() != ToolTableScreen.OverlayPanel.TOOL_INFO) {
@@ -1314,7 +1314,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(this.overlayPoller); // still registered if the screen never resolved and it never fired
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
     }
   }
@@ -1434,7 +1434,7 @@ public class TinkerUiTestScenarios {
       }
       LocalPlayer player = Objects.requireNonNull(ctx.mc().player);
       player.getInventory().setSelectedSlot(0); // hotbar.0 -> the blaze head is held
-      ctx.mc().setScreen(new InventoryScreen(player));
+      ctx.setScreen(new InventoryScreen(player));
       ctx.parkMouse();
     }
 
@@ -1447,8 +1447,8 @@ public class TinkerUiTestScenarios {
      */
     @Override
     public void close(UiTestContext ctx) {
-      if (!(ctx.mc().screen instanceof InventoryScreen screen)) {
-        throw new IllegalStateException("head_items: the inventory closed before the capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof InventoryScreen screen)) {
+        throw new IllegalStateException("head_items: the inventory closed before the capture, found " + ctx.screen());
       }
       try (NativeImage image = ctx.captureFrame()) {
         double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
@@ -1457,13 +1457,13 @@ public class TinkerUiTestScenarios {
           TrimmedArmorScenario.assertGuiRegion(image, scale, screen, new Rect2i(slot.x + 4, slot.y + 4, 8, 8), "head_items: head in hotbar slot " + i, NOT_SLOT);
         }
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       // here rather than in close() so a failed assert in open() doesn't leave the rest of the suite in survival
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.clearInventory();
       ctx.sendCommand("gamemode creative");
     }
@@ -1566,13 +1566,13 @@ public class TinkerUiTestScenarios {
         identities.add(identity);
       }
       LocalPlayer player = Objects.requireNonNull(ctx.mc().player);
-      ctx.mc().setScreen(new InventoryScreen(player));
+      ctx.setScreen(new InventoryScreen(player));
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       // here rather than in close() so a failed assert in open() doesn't leave the rest of the suite in survival
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.clearInventory();
       ctx.sendCommand("gamemode creative");
     }
@@ -1642,19 +1642,19 @@ public class TinkerUiTestScenarios {
     @Override
     public void close(UiTestContext ctx) {
       // the menu opens through the server, so assert after the settle: fail loudly instead of shipping a world screenshot
-      if (!(ctx.mc().screen instanceof ToolContainerScreen screen)) {
-        throw new IllegalStateException("tool_inventory expected ToolContainerScreen at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof ToolContainerScreen screen)) {
+        throw new IllegalStateException("tool_inventory expected ToolContainerScreen at capture, found " + ctx.screen());
       }
       int slots = screen.getMenu().getItemHandler().size();
       if (slots != 3) {
         throw new IllegalStateException("tool_inventory expected 3 pocket slots, found " + slots);
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       // close the menu on the server too: the client screen alone leaves the ToolContainerMenu open, which keeps the tool in the hotbar
       ctx.runOnServer(() -> {
         ServerPlayer player = ctx.serverLevel().getServer().getPlayerList().getPlayers().getFirst();
@@ -1798,7 +1798,7 @@ public class TinkerUiTestScenarios {
         assertNoSprite(blocks, icon);
       }
       InventoryScreen screen = new InventoryScreen(player);
-      ctx.mc().setScreen(screen);
+      ctx.setScreen(screen);
       // mouse on the center of the player preview, so the player faces the camera
       ctx.moveMouse(screen.leftPos + 50.5, screen.topPos + 43);
     }
@@ -1847,7 +1847,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void close(UiTestContext ctx) {
       // the frame just captured is still in the main target
-      if (ctx.mc().screen instanceof InventoryScreen screen) {
+      if (ctx.screen() instanceof InventoryScreen screen) {
         try (NativeImage image = ctx.captureFrame()) {
           double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
           // the copper plating beside a neutral stripe: grey (vanilla iron) armor fails the first, skin or hair fails at least one of them
@@ -1856,9 +1856,9 @@ public class TinkerUiTestScenarios {
           assertGuiRegion(image, scale, screen, LEGGINGS_REGION, "trimmed_armor: worn gold leggings", GOLD);
         }
       } else {
-        throw new IllegalStateException("trimmed_armor: the inventory closed before the capture, found " + ctx.mc().screen);
+        throw new IllegalStateException("trimmed_armor: the inventory closed before the capture, found " + ctx.screen());
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     /** Asserts a region of the screen given in GUI pixels relative to the inventory corner, see {@link #assertRegion} */
@@ -1872,7 +1872,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void cleanup(UiTestContext ctx) {
       // here rather than in close() so a failed assert in open() doesn't leave the rest of the suite in survival
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.clearInventory();
       ctx.sendCommand("gamemode creative");
     }
@@ -2058,7 +2058,7 @@ public class TinkerUiTestScenarios {
           throw new IllegalStateException("item_atlas_grid: modifier icon texture minecraft:" + texture + " resolves to the missing sprite");
         }
       }
-      ctx.mc().setScreen(new GridScreen(stacks(), modifiers));
+      ctx.setScreen(new GridScreen(stacks(), modifiers));
       ctx.parkMouse();
     }
   }
@@ -2252,7 +2252,7 @@ public class TinkerUiTestScenarios {
       stacks.add(TankItem.setTank(new ItemStack(TinkerSmeltery.searedLantern), new FluidStack(TinkerFluids.honey.get(), TinkerSmeltery.searedLantern.get().getCapacity())));
       stacks.add(TankItem.setTank(new ItemStack(TinkerSmeltery.searedTank.get(TankType.INGOT_GAUGE)), new FluidStack(TinkerFluids.earthSlime.get(), TankType.INGOT_GAUGE.getCapacity())));
       stacks.add(new ItemStack(TinkerWorld.slimeLeaves.get(FoliageType.EARTH)));
-      ctx.mc().setScreen(new BandedGridScreen(stacks));
+      ctx.setScreen(new BandedGridScreen(stacks));
       ctx.parkMouse();
     }
   }
@@ -2404,19 +2404,19 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      if (!(ctx.mc().screen instanceof MelterScreen screen)) {
-        throw new IllegalStateException(NAME + ": expected the melter screen, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof MelterScreen screen)) {
+        throw new IllegalStateException(NAME + ": expected the melter screen, found " + ctx.screen());
       }
       try (NativeImage image = ctx.captureFrame()) {
         double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
         TrimmedArmorScenario.assertGuiRegion(image, scale, screen, TANK_REGION, NAME + ": molten ender in the GUI tank", ENDER);
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 
@@ -2452,7 +2452,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void open(UiTestContext ctx) {
       ItemStack kit = TinkerToolParts.repairKit.get().withMaterial(MaterialIds.ice);
-      ctx.mc().setScreen(new TwoBandScreen(List.of(kit, new ItemStack(Items.STONE))));
+      ctx.setScreen(new TwoBandScreen(List.of(kit, new ItemStack(Items.STONE))));
       ctx.parkMouse();
     }
 
@@ -2473,7 +2473,7 @@ public class TinkerUiTestScenarios {
           throw new IllegalStateException(NAME + ": opaque stone blends with the band in " + stone[1] + " of " + stone[0] + " pixels");
         }
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     /** Returns {drawn pixels, pixels differing between the red and the blue copy} of the item at the index */
@@ -2498,7 +2498,7 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void cleanup(UiTestContext ctx) {
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 
@@ -3143,7 +3143,7 @@ public class TinkerUiTestScenarios {
       ctx.player().getInventory().setSelectedSlot(0);
       ctx.lookAt(center);
       if (breaking) {
-        ctx.mc().setScreen(new PassThroughScreen());
+        ctx.setScreen(new PassThroughScreen());
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, miner);
       }
     }
@@ -3152,7 +3152,7 @@ public class TinkerUiTestScenarios {
     private void mineTick(ClientTickEvent.Post event) {
       Minecraft mc = Minecraft.getInstance();
       MultiPlayerGameMode gameMode = mc.gameMode;
-      if (gameMode == null || !(mc.screen instanceof PassThroughScreen)) {
+      if (gameMode == null || !(UiTestContext.current().screen() instanceof PassThroughScreen)) {
         return;
       }
       if (!started) {
@@ -3184,13 +3184,13 @@ public class TinkerUiTestScenarios {
           throw new IllegalStateException(name + " expected the center block partially mined, found stage " + gameMode.getDestroyStage());
         }
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(miner);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.mc().options.highContrastBlockOutline().set(previousHighContrast);
       ctx.clearInventory();
       ctx.sendCommand("gamemode creative");
@@ -3269,7 +3269,7 @@ public class TinkerUiTestScenarios {
 
     /** One click per tick once the menu is synced, so each click's slot change is applied before the next */
     private void clickTick(ClientTickEvent.Post event) {
-      if (!(Minecraft.getInstance().screen instanceof TinkerStationScreen screen)) {
+      if (!(UiTestContext.current().screen() instanceof TinkerStationScreen screen)) {
         return;
       }
       Slot first = playerSlot(screen.getMenu(), FIRST_SLOT);
@@ -3304,8 +3304,8 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      if (!(ctx.mc().screen instanceof TinkerStationScreen screen)) {
-        throw new IllegalStateException(NAME + " expected TinkerStationScreen at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof TinkerStationScreen screen)) {
+        throw new IllegalStateException(NAME + " expected TinkerStationScreen at capture, found " + ctx.screen());
       }
       if (step != 3) {
         throw new IllegalStateException(NAME + " stopped at click step " + step);
@@ -3324,13 +3324,13 @@ public class TinkerUiTestScenarios {
       if (!dropped.isEmpty()) {
         throw new IllegalStateException(NAME + ": the tab click dropped " + dropped.getFirst().getItem());
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(clicker);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.clearInventory();
     }
   }
@@ -3397,7 +3397,7 @@ public class TinkerUiTestScenarios {
     /** Once the gauge shows lava: checks JEI's clickable ingredient there, then presses the show uses key over it */
     private void pressWhenReady(ClientTickEvent.Post event) {
       Minecraft mc = Minecraft.getInstance();
-      if (pressed || !(mc.screen instanceof MelterScreen screen)) {
+      if (pressed || !(UiTestContext.current().screen() instanceof MelterScreen screen)) {
         return;
       }
       int[] point = findLava(screen);
@@ -3444,19 +3444,19 @@ public class TinkerUiTestScenarios {
         throw new IllegalStateException(NAME + ": " + failure);
       }
       if (!pressed) {
-        throw new IllegalStateException(NAME + ": the melter fuel gauge never showed lava, found screen " + ctx.mc().screen);
+        throw new IllegalStateException(NAME + ": the melter fuel gauge never showed lava, found screen " + ctx.screen());
       }
-      if (!(ctx.mc().screen instanceof IRecipesGui)) {
-        throw new IllegalStateException(NAME + ": the show uses key over the lava gauge did not open the JEI recipes GUI, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof IRecipesGui)) {
+        throw new IllegalStateException(NAME + ": the show uses key over the lava gauge did not open the JEI recipes GUI, found " + ctx.screen());
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
       ctx.parkMouse();
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 
@@ -3541,7 +3541,7 @@ public class TinkerUiTestScenarios {
     /** Runs JEI's transfer of the stick recipe once the menu shows the planks in the side inventory */
     private void transferWhenReady(ClientTickEvent.Post event) {
       Minecraft mc = Minecraft.getInstance();
-      if (transferred || !(mc.screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)
+      if (transferred || !(UiTestContext.current().screen() instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)
           || planksOutsideGrid(menu) != 2 || mc.player == null) {
         return;
       }
@@ -3567,8 +3567,8 @@ public class TinkerUiTestScenarios {
       if (failure != null) {
         throw new IllegalStateException(NAME + ": " + failure);
       }
-      if (!(ctx.mc().screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)) {
-        throw new IllegalStateException(NAME + " expected the crafting station menu at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)) {
+        throw new IllegalStateException(NAME + " expected the crafting station menu at capture, found " + ctx.screen());
       }
       if (!transferred) {
         throw new IllegalStateException(NAME + ": the side inventory never showed the 2 planks of the adjacent chest");
@@ -3584,13 +3584,13 @@ public class TinkerUiTestScenarios {
         throw new IllegalStateException(NAME + " expected both planks moved into the grid, found " + inGrid + " in the grid and " + planksOutsideGrid(menu) + " outside");
       }
       requireTransferSuccess(NAME, transfer);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 
@@ -3683,8 +3683,7 @@ public class TinkerUiTestScenarios {
 
     /** Runs JEI's transfer of the pickaxe recipe once the menu shows the parts in the player inventory */
     private void transferWhenReady(ClientTickEvent.Post event) {
-      Minecraft mc = Minecraft.getInstance();
-      if (transferred || recipe == null || !(mc.screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof TinkerStationContainerMenu menu)
+      if (transferred || recipe == null || !(UiTestContext.current().screen() instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof TinkerStationContainerMenu menu)
           || countParts(menu, false) != parts.size()) {
         return;
       }
@@ -3709,8 +3708,8 @@ public class TinkerUiTestScenarios {
       if (failure != null) {
         throw new IllegalStateException(NAME + ": " + failure);
       }
-      if (!(ctx.mc().screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof TinkerStationContainerMenu menu)) {
-        throw new IllegalStateException(NAME + " expected the tinker station menu at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof TinkerStationContainerMenu menu)) {
+        throw new IllegalStateException(NAME + " expected the tinker station menu at capture, found " + ctx.screen());
       }
       if (!transferred) {
         throw new IllegalStateException(NAME + ": the player inventory never showed the 3 pickaxe parts");
@@ -3721,13 +3720,13 @@ public class TinkerUiTestScenarios {
         throw new IllegalStateException(NAME + " expected the 3 parts moved into the station inputs, found " + inInputs + " in the inputs and " + outside + " outside");
       }
       requireTransferSuccess(NAME, transfer);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.clearInventory();
     }
   }
@@ -3804,8 +3803,7 @@ public class TinkerUiTestScenarios {
 
     /** Runs JEI's transfer of the stick recipe once the tool menu shows the planks */
     private void transferWhenReady(ClientTickEvent.Post event) {
-      Minecraft mc = Minecraft.getInstance();
-      if (transferred || !(mc.screen instanceof ToolContainerScreen screen) || planks(screen.getMenu(), false) != 2) {
+      if (transferred || !(UiTestContext.current().screen() instanceof ToolContainerScreen screen) || planks(screen.getMenu(), false) != 2) {
         return;
       }
       transferred = true;
@@ -3828,8 +3826,8 @@ public class TinkerUiTestScenarios {
       if (failure != null) {
         throw new IllegalStateException(NAME + ": " + failure);
       }
-      if (!(ctx.mc().screen instanceof ToolContainerScreen screen)) {
-        throw new IllegalStateException(NAME + " expected ToolContainerScreen at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof ToolContainerScreen screen)) {
+        throw new IllegalStateException(NAME + " expected ToolContainerScreen at capture, found " + ctx.screen());
       }
       ToolContainerMenu menu = screen.getMenu();
       int gridSize = menu.getToolInventoryStart() - 1;
@@ -3845,13 +3843,13 @@ public class TinkerUiTestScenarios {
         throw new IllegalStateException(NAME + " expected both planks moved into the grid, found " + inGrid + " in the grid and " + outside + " outside");
       }
       requireTransferSuccess(NAME, transfer);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       // close the menu on the server before clearing: closing hands the crafting grid back to the inventory, which may land after a plain clear
       ctx.runOnServer(() -> {
         ServerPlayer player = ctx.serverLevel().getServer().getPlayerList().getPlayers().getFirst();
@@ -4059,7 +4057,7 @@ public class TinkerUiTestScenarios {
 
     private void tick(ClientTickEvent.Post event) {
       Minecraft mc = Minecraft.getInstance();
-      if (stage == 2 || !(mc.screen instanceof MultiModuleScreen<?> screen)) {
+      if (stage == 2 || !(UiTestContext.current().screen() instanceof MultiModuleScreen<?> screen)) {
         return;
       }
       ticks++;
@@ -4120,19 +4118,19 @@ public class TinkerUiTestScenarios {
         throw new IllegalStateException(name + ": " + failure);
       }
       if (stage != 2) {
-        throw new IllegalStateException(name + ": the screen never showed the target (stage " + stage + "), found screen " + ctx.mc().screen);
+        throw new IllegalStateException(name + ": the screen never showed the target (stage " + stage + "), found screen " + ctx.screen());
       }
-      if (!(ctx.mc().screen instanceof IRecipesGui)) {
-        throw new IllegalStateException(name + ": the JEI key over the target did not open the JEI recipes GUI, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof IRecipesGui)) {
+        throw new IllegalStateException(name + ": the JEI key over the target did not open the JEI recipes GUI, found " + ctx.screen());
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
       ctx.parkMouse();
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 
