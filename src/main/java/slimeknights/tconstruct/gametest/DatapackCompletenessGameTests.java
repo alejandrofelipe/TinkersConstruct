@@ -31,6 +31,15 @@ import slimeknights.mantle.Mantle;
 import org.jspecify.annotations.Nullable;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.fluids.TinkerFluids;
+import slimeknights.tconstruct.library.materials.IMaterialRegistry;
+import slimeknights.tconstruct.library.materials.MaterialRegistry;
+import slimeknights.tconstruct.library.materials.definition.IMaterial;
+import slimeknights.tconstruct.library.materials.definition.MaterialId;
+import slimeknights.tconstruct.library.materials.definition.MaterialManager;
+import slimeknights.tconstruct.library.modifiers.ModifierId;
+import slimeknights.tconstruct.library.modifiers.ModifierManager;
+import slimeknights.tconstruct.library.tools.definition.ToolDefinition;
+import slimeknights.tconstruct.library.tools.definition.ToolDefinitionLoader;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock.TankType;
 import slimeknights.tconstruct.smeltery.item.TankItem;
@@ -162,6 +171,94 @@ public class DatapackCompletenessGameTests {
     helper.assertTrue(cases.get("full blazing blood"), Component.literal("a full blazing blood tank does not match: " + cases));
     helper.assertTrue(cases.entrySet().stream().filter(Map.Entry::getValue).count() == 1, Component.literal("only the full blazing blood tank may match: " + cases));
     helper.succeed();
+  }
+
+  /* Tinkers' own JSON registries (M8 plan R1 guard S3): they embed vanilla and Mantle predicates and codecs, and skip a file that fails to decode */
+
+  /** Every modifier JSON (redirects included) whose {@code condition} passes is in the modifier manager */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 200)
+  public static void datapack_modifiers_complete(GameTestHelper helper) {
+    MinecraftServer server = helper.getLevel().getServer();
+    Set<Identifier> expected = expectedTinkerIds(helper, server, FileToIdConverter.json(ModifierManager.FOLDER));
+    if (expected == null) {
+      return;
+    }
+    Set<Identifier> loaded = expected.stream().filter(id -> ModifierManager.INSTANCE.contains(new ModifierId(id))).collect(Collectors.toCollection(TreeSet::new));
+    ModifierManager.INSTANCE.getAllLocations().filter(id -> NAMESPACES.contains(id.getNamespace()) && !ModifierManager.INSTANCE.containsStatic(new ModifierId(id))).forEach(loaded::add);
+    compare(helper, "modifier", expected, loaded);
+  }
+
+  /** Every material definition JSON (redirects included) whose {@code condition} passes resolves to a material */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 200)
+  public static void datapack_materials_complete(GameTestHelper helper) {
+    MinecraftServer server = helper.getLevel().getServer();
+    Set<Identifier> expected = expectedTinkerIds(helper, server, FileToIdConverter.json(MaterialManager.FOLDER));
+    if (expected == null) {
+      return;
+    }
+    IMaterialRegistry registry = MaterialRegistry.getInstance();
+    Set<Identifier> loaded = expected.stream().filter(id -> registry.getMaterial(new MaterialId(id)) != IMaterial.UNKNOWN || !registry.resolve(new MaterialId(id)).equals(new MaterialId(id))).collect(Collectors.toCollection(TreeSet::new));
+    registry.getAllMaterials().stream().map(material -> material.getIdentifier().getLocation()).filter(id -> NAMESPACES.contains(id.getNamespace())).forEach(loaded::add);
+    compare(helper, "material", expected, loaded);
+  }
+
+  /** Every tool definition JSON whose {@code condition} passes belongs to a registered tool whose data loaded */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 200)
+  public static void datapack_tool_definitions_complete(GameTestHelper helper) {
+    MinecraftServer server = helper.getLevel().getServer();
+    Set<Identifier> expected = expectedTinkerIds(helper, server, FileToIdConverter.json(ToolDefinitionLoader.FOLDER));
+    if (expected == null) {
+      return;
+    }
+    Set<Identifier> loaded = ToolDefinitionLoader.getInstance().getRegisteredToolDefinitions().stream()
+      .filter(definition -> definition.isDataLoaded() && NAMESPACES.contains(definition.getId().getNamespace()) && expected.contains(definition.getId()))
+      .map(ToolDefinition::getId)
+      .collect(Collectors.toCollection(TreeSet::new));
+    compare(helper, "tool definition", expected, loaded);
+  }
+
+  /** Like {@link #expectedIds}, for Tinkers' loaders: their files gate on a top level {@code condition} (a NeoForge condition), not {@code neoforge:conditions} */
+  @Nullable
+  private static Set<Identifier> expectedTinkerIds(GameTestHelper helper, MinecraftServer server, FileToIdConverter converter) {
+    RegistryAccess access = server.registryAccess();
+    ICondition.IContext context = conditionContext(server);
+    Set<Identifier> expected = new TreeSet<>();
+    for (Map.Entry<Identifier, Resource> entry : converter.listMatchingResources(server.getResourceManager()).entrySet()) {
+      Identifier file = entry.getKey();
+      if (!NAMESPACES.contains(file.getNamespace())) {
+        continue;
+      }
+      JsonElement json = read(helper, file, entry.getValue());
+      if (json == null) {
+        return null;
+      }
+      JsonElement condition = json.isJsonObject() ? json.getAsJsonObject().get("condition") : null;
+      if (condition == null || ICondition.CODEC.parse(access.createSerializationContext(JsonOps.INSTANCE), condition).getOrThrow().test(context)) {
+        expected.add(converter.fileToId(file));
+      }
+    }
+    return expected;
+  }
+
+  /** Condition context over the loaded registries and tags */
+  private static ICondition.IContext conditionContext(MinecraftServer server) {
+    RegistryAccess access = server.registryAccess();
+    return new ICondition.IContext() {
+      @Override
+      public <T> boolean isTagLoaded(TagKey<T> key) {
+        return access.lookup(key.registry()).flatMap(registry -> registry.get(key)).isPresent();
+      }
+
+      @Override
+      public RegistryAccess registryAccess() {
+        return access;
+      }
+
+      @Override
+      public FeatureFlagSet enabledFeatures() {
+        return server.getWorldData().enabledFeatures();
+      }
+    };
   }
 
   /**

@@ -35,7 +35,13 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
+import net.minecraft.world.entity.animal.pig.Pig;
 import slimeknights.tconstruct.TConstruct;
+import slimeknights.tconstruct.gadgets.TinkerGadgets;
+import slimeknights.tconstruct.library.fluid.FluidAction;
+import slimeknights.tconstruct.library.modifiers.fluid.EffectLevel;
+import slimeknights.tconstruct.library.modifiers.fluid.FluidEffectContext;
+import slimeknights.tconstruct.library.modifiers.fluid.entity.EntityInteractFluidEffect;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
@@ -624,6 +630,97 @@ public class ToolGameTests {
     Player spectator = helper.makeMockPlayer(GameType.SPECTATOR);
     CommonHooks.onInteractEntityAt(spectator, stand, location, InteractionHand.MAIN_HAND);
     helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("a spectator click kept a click location"));
+    helper.succeed();
+  }
+
+  /** Clicks the target as the server's interaction packet handler does: the location specific hook first, then {@code Player#interactOn} */
+  private static InteractionResult interactAt(Player player, net.minecraft.world.entity.Entity target, Vec3 location) {
+    InteractionResult result = CommonHooks.onInteractEntityAt(player, target, location, InteractionHand.MAIN_HAND);
+    return result != null ? result : player.interactOn(target, InteractionHand.MAIN_HAND, location);
+  }
+
+  /**
+   * M8 plan R1 guard S10: the vanilla armor stand slot interaction, with nothing Tinkers in hand or worn, picks the slot from the click location
+   * (26.2 merges {@code EntityInteractSpecific} into the plain event, the location must still reach {@code ArmorStand#interact}). An empty hand
+   * clicking the head takes the helmet, clicking the feet takes the boots.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 20)
+  public static void armor_stand_slot_interaction_uses_click_location(GameTestHelper helper) {
+    ArmorStand stand = helper.spawn(EntityType.ARMOR_STAND, new BlockPos(2, 1, 2));
+    stand.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
+    stand.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.IRON_BOOTS));
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    player.setPos(stand.position().add(-2, 0, 0));
+    InteractionResult head = interactAt(player, stand, new Vec3(0, 1.8, 0));
+    helper.assertTrue(head.consumesAction(), Component.literal("clicking the head did not consume the action: " + head));
+    helper.assertTrue(player.getMainHandItem().is(Items.IRON_HELMET), Component.literal("expected the helmet in hand after clicking the head, got " + player.getMainHandItem()));
+    helper.assertTrue(stand.getItemBySlot(EquipmentSlot.FEET).is(Items.IRON_BOOTS), Component.literal("clicking the head took the boots"));
+    Player second = helper.makeMockPlayer(GameType.SURVIVAL);
+    second.setPos(stand.position().add(-2, 0, 0));
+    InteractionResult feet = interactAt(second, stand, new Vec3(0, 0.1, 0));
+    helper.assertTrue(feet.consumesAction(), Component.literal("clicking the feet did not consume the action: " + feet));
+    helper.assertTrue(second.getMainHandItem().is(Items.IRON_BOOTS), Component.literal("expected the boots in hand after clicking the feet, got " + second.getMainHandItem()));
+    helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("click location left captured after the interaction"));
+    helper.succeed();
+  }
+
+  /**
+   * M8 plan R1 guard S10: {@code EntityInteractFluidEffect} (the interacting fluid on a spilling tool or a fluid projectile) clicks the target with
+   * both hands through the location specific hook and {@code Player#interactOn}, with the hit location relative to the target. A hit at head height on
+   * an armor stand moves the helmet to the player's empty hand, the boots stay. (Projectile hits land at the entity's position, which on an armor stand
+   * is below every slot and does nothing.)
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 20)
+  public static void entity_interact_fluid_effect_clicks_the_target(GameTestHelper helper) {
+    ArmorStand stand = helper.spawn(EntityType.ARMOR_STAND, new BlockPos(2, 1, 2));
+    stand.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
+    stand.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.IRON_BOOTS));
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    player.setPos(stand.position().add(-2, 0, 0));
+    FluidEffectContext.Entity context = FluidEffectContext.builder(helper.getLevel()).user(player).location(stand.position().add(0, 1.8, 0)).target(stand);
+    FluidStack water = new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME);
+    float simulated = EntityInteractFluidEffect.INSTANCE.apply(water, new EffectLevel(1, 1), context, FluidAction.SIMULATE);
+    helper.assertTrue(simulated == 1 && stand.getItemBySlot(EquipmentSlot.HEAD).is(Items.IRON_HELMET), Component.literal("simulating the effect consumed " + simulated + " or changed the stand"));
+    float used = EntityInteractFluidEffect.INSTANCE.apply(water, new EffectLevel(1, 1), context, FluidAction.EXECUTE);
+    helper.assertTrue(used == 1, Component.literal("the interact effect used " + used + ", expected 1"));
+    helper.assertTrue(player.getMainHandItem().is(Items.IRON_HELMET), Component.literal("expected the helmet in hand, got " + player.getMainHandItem()));
+    helper.assertTrue(stand.getItemBySlot(EquipmentSlot.FEET).is(Items.IRON_BOOTS), Component.literal("the boots were taken instead"));
+    helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("click location left captured after the fluid interaction"));
+    helper.succeed();
+  }
+
+  /**
+   * M8 plan R1 guard S10: clicking a mob with the piggyback pack reaches {@code PiggyBackPackItem#interactLivingEntity} through the entity interaction
+   * (a pig clicked with any other item passes), and the pickup is all or nothing: either the pig rides the player and one pack moved from the hand to
+   * the chest slot, or nothing changed. Known issue on 26.1.2: the pickup is always refused, as {@code Entity#startRiding} refuses a vehicle whose
+   * type does not save ({@code EntityType.PLAYER} is {@code noSave()}), so the pack consumes the click and keeps everything.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 20)
+  public static void piggybackpack_picks_up_the_clicked_mob(GameTestHelper helper) {
+    Pig pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(2, 1, 2));
+    Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+    player.setPos(pig.position().add(-1.5, 0, 0));
+    player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(TinkerGadgets.piggyBackpack.get(), 2));
+    InteractionResult result = interactAt(player, pig, new Vec3(0, 0.5, 0));
+    try {
+      helper.assertTrue(result.consumesAction(), Component.literal("the pack did not reach its entity interaction: " + result));
+      ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+      if (pig.getVehicle() == player) {
+        helper.assertTrue(chest.is(TinkerGadgets.piggyBackpack.get()) && chest.getCount() == 1, Component.literal("the pig rides the player, but the chest slot holds " + chest));
+        helper.assertTrue(player.getMainHandItem().getCount() == 1, Component.literal("the pig rides the player, but the hand holds " + player.getMainHandItem()));
+      } else {
+        helper.assertTrue(pig.getVehicle() == null, Component.literal("the pig rides " + pig.getVehicle()));
+        helper.assertTrue(chest.isEmpty() && player.getMainHandItem().getCount() == 2, Component.literal("the pickup was refused, but the packs moved: chest " + chest + ", hand " + player.getMainHandItem()));
+      }
+      Player stick = helper.makeMockPlayer(GameType.SURVIVAL);
+      stick.setPos(pig.position().add(-1.5, 0, 0));
+      stick.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STICK));
+      InteractionResult control = interactAt(stick, pig, new Vec3(0, 0.5, 0));
+      helper.assertFalse(control.consumesAction(), Component.literal("control: a pig clicked with a stick consumed the action (" + control + "), so the pack check proves nothing"));
+      helper.assertFalse(InteractionHandler.hasCapturedClickLocation(), Component.literal("click location left captured after the pickup"));
+    } finally {
+      pig.stopRiding();
+    }
     helper.succeed();
   }
 

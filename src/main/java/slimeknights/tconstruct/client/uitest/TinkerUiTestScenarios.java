@@ -101,6 +101,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignText;
+import net.minecraft.world.level.block.CeilingHangingSignBlock;
+import net.minecraft.world.level.block.StandingSignBlock;
+import net.minecraft.world.level.block.WallHangingSignBlock;
+import net.minecraft.world.level.block.WallSignBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluid;
@@ -143,6 +149,7 @@ import slimeknights.mantle.recipe.cooking.SmokingResultRecipe;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 import slimeknights.mantle.recipe.ingredient.EntityIngredient;
 import slimeknights.mantle.registration.object.EnumObject;
+import slimeknights.mantle.registration.object.WoodBlockObject;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -341,6 +348,7 @@ public class TinkerUiTestScenarios {
     register.accept(new ForceTranslucentBakeScenario());
     register.accept(new BookExportScenario());
     register.accept(new FluidDepthTestScenario());
+    register.accept(new WoodSignsScenario());
     if (craftingTweaks) {
       register.accept(new CraftingTweaksRotateScenario());
     }
@@ -562,8 +570,8 @@ public class TinkerUiTestScenarios {
       if (result == InteractionResult.PASS) {
         throw new IllegalStateException("book item use() passed - book screen did not open");
       }
-      if (!(ctx.mc().screen instanceof BookScreen book)) {
-        throw new IllegalStateException("expected BookScreen after use(), found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof BookScreen book)) {
+        throw new IllegalStateException("expected BookScreen after use(), found " + ctx.screen());
       }
       // advance cover -> index -> first full spread; same logic the next-page arrow button runs
       book.nextPage();
@@ -946,15 +954,15 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      if (!(ctx.mc().screen instanceof IRecipesGui)) {
-        throw new IllegalStateException(id().getPath() + " expected the JEI recipes GUI at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof IRecipesGui)) {
+        throw new IllegalStateException(id().getPath() + " expected the JEI recipes GUI at capture, found " + ctx.screen());
       }
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(mouseParker);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 
@@ -993,8 +1001,8 @@ public class TinkerUiTestScenarios {
       if (result == InteractionResult.PASS) {
         throw new IllegalStateException("book item use() passed - book screen did not open");
       }
-      if (!(ctx.mc().screen instanceof BookScreen book)) {
-        throw new IllegalStateException("expected BookScreen after use(), found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof BookScreen book)) {
+        throw new IllegalStateException("expected BookScreen after use(), found " + ctx.screen());
       }
       int page = book.book.findPageNumber(PAGE, book.advancementCache);
       if (page < 0) {
@@ -1012,6 +1020,34 @@ public class TinkerUiTestScenarios {
     @Override
     public int settleTicks() {
       return 40; // book textures/pages lazy-load
+    }
+
+    /** Body of the smeltery preview, as fractions of the frame: seared bricks, dark grey where the book page is near white */
+    private static final float[] BODY_REGION = {300 / 1280f, 330 / 720f, 440 / 1280f, 440 / 720f};
+    private static final IntPredicate SEARED = color -> {
+      int max = Math.max(ARGB.red(color), Math.max(ARGB.green(color), ARGB.blue(color)));
+      int min = Math.min(ARGB.red(color), Math.min(ARGB.green(color), ARGB.blue(color)));
+      return max < 170 && max - min < 40;
+    };
+    /** The copper drains and faucet on the front face (left side of the preview): only visible when the front faces draw over the back ones */
+    private static final float[] FRONT_REGION = {195 / 1280f, 370 / 720f, 275 / 1280f, 440 / 720f};
+    private static final IntPredicate COPPER = hued(5, 35, 0.4f, 120);
+
+    /**
+     * M8 plan R1 guard S1 (reverse-Z in 26.2): the preview is drawn into its own picture-in-picture texture with a depth buffer. A depth clear or test
+     * that does not match the projection makes the structure vanish (no seared bricks in the body region) or the back faces draw over the front ones
+     * (the copper drains on the front face disappear).
+     */
+    @Override
+    public void close(UiTestContext ctx) {
+      try (NativeImage image = ctx.captureFrame()) {
+        WornArmorScenario.assertFrameRegion(image, BODY_REGION, "book_structure: smeltery preview body", SEARED);
+        int copper = countFrameRegion(image, FRONT_REGION, "book_structure: copper parts on the front face", COPPER);
+        if (copper < 150) {
+          throw new IllegalStateException("book_structure: only " + copper + " copper pixels on the front face of the preview, the back faces draw over the front ones");
+        }
+      }
+      ctx.setScreen(null);
     }
   }
 
@@ -1068,7 +1104,7 @@ public class TinkerUiTestScenarios {
 
     /** Presses rotate on the first tick the menu is open with the grid synced, then self-removes. */
     private void rotateWhenReady(ClientTickEvent.Post event) {
-      if (rotated || !(Minecraft.getInstance().screen instanceof AbstractContainerScreen<?> screen)
+      if (rotated || !(UiTestContext.current().screen() instanceof AbstractContainerScreen<?> screen)
           || !(screen.getMenu() instanceof CraftingStationContainerMenu menu) || !menu.getSlot(0).getItem().is(Items.STICK)) {
         return;
       }
@@ -1094,8 +1130,8 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      if (!(ctx.mc().screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)) {
-        throw new IllegalStateException("crafting_tweaks_rotate expected the crafting station menu at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)) {
+        throw new IllegalStateException("crafting_tweaks_rotate expected the crafting station menu at capture, found " + ctx.screen());
       }
       if (!rotated) {
         throw new IllegalStateException("crafting_tweaks_rotate found no Crafting Tweaks rotate button on the crafting station");
@@ -1115,7 +1151,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller); // still registered if the menu never opened
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 
@@ -1169,14 +1205,14 @@ public class TinkerUiTestScenarios {
     public void close(UiTestContext ctx) {
       // the menu opens through a server round-trip, so assert here (post-settle) rather than in open():
       // fail loudly if the station screen never resolved instead of silently shipping a world screenshot
-      if (!(ctx.mc().screen instanceof TinkerStationScreen)) {
-        throw new IllegalStateException("station_reflow expected TinkerStationScreen at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof TinkerStationScreen)) {
+        throw new IllegalStateException("station_reflow expected TinkerStationScreen at capture, found " + ctx.screen());
       }
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
     }
   }
@@ -1225,14 +1261,14 @@ public class TinkerUiTestScenarios {
     public void close(UiTestContext ctx) {
       // same post-settle assert as station_reflow: the menu opens through a server round-trip, so fail loudly
       // here rather than in open() if the station screen never resolved
-      if (!(ctx.mc().screen instanceof TinkerStationScreen)) {
-        throw new IllegalStateException("station_collapsed expected TinkerStationScreen at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof TinkerStationScreen)) {
+        throw new IllegalStateException("station_collapsed expected TinkerStationScreen at capture, found " + ctx.screen());
       }
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
     }
   }
@@ -1288,7 +1324,7 @@ public class TinkerUiTestScenarios {
       if (this.overlayOpened) {
         return;
       }
-      if (Minecraft.getInstance().screen instanceof TinkerStationScreen station) {
+      if (UiTestContext.current().screen() instanceof TinkerStationScreen station) {
         station.openOverlay(ToolTableScreen.OverlayPanel.TOOL_INFO);
         this.overlayOpened = true;
         NeoForge.EVENT_BUS.unregister(this.overlayPoller);
@@ -1302,8 +1338,8 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      if (!(ctx.mc().screen instanceof TinkerStationScreen station)) {
-        throw new IllegalStateException("station_collapsed_overlay expected TinkerStationScreen at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof TinkerStationScreen station)) {
+        throw new IllegalStateException("station_collapsed_overlay expected TinkerStationScreen at capture, found " + ctx.screen());
       }
       // fail loudly if the overlay never opened - otherwise a collapsed-but-no-overlay PNG would still pass the run
       if (station.getOpenOverlay() != ToolTableScreen.OverlayPanel.TOOL_INFO) {
@@ -1314,7 +1350,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(this.overlayPoller); // still registered if the screen never resolved and it never fired
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.mc().execute(() -> ctx.mc().getWindow().setWindowed(restoreW, restoreH));
     }
   }
@@ -1434,7 +1470,7 @@ public class TinkerUiTestScenarios {
       }
       LocalPlayer player = Objects.requireNonNull(ctx.mc().player);
       player.getInventory().setSelectedSlot(0); // hotbar.0 -> the blaze head is held
-      ctx.mc().setScreen(new InventoryScreen(player));
+      ctx.setScreen(new InventoryScreen(player));
       ctx.parkMouse();
     }
 
@@ -1447,8 +1483,8 @@ public class TinkerUiTestScenarios {
      */
     @Override
     public void close(UiTestContext ctx) {
-      if (!(ctx.mc().screen instanceof InventoryScreen screen)) {
-        throw new IllegalStateException("head_items: the inventory closed before the capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof InventoryScreen screen)) {
+        throw new IllegalStateException("head_items: the inventory closed before the capture, found " + ctx.screen());
       }
       try (NativeImage image = ctx.captureFrame()) {
         double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
@@ -1457,13 +1493,13 @@ public class TinkerUiTestScenarios {
           TrimmedArmorScenario.assertGuiRegion(image, scale, screen, new Rect2i(slot.x + 4, slot.y + 4, 8, 8), "head_items: head in hotbar slot " + i, NOT_SLOT);
         }
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       // here rather than in close() so a failed assert in open() doesn't leave the rest of the suite in survival
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.clearInventory();
       ctx.sendCommand("gamemode creative");
     }
@@ -1566,13 +1602,13 @@ public class TinkerUiTestScenarios {
         identities.add(identity);
       }
       LocalPlayer player = Objects.requireNonNull(ctx.mc().player);
-      ctx.mc().setScreen(new InventoryScreen(player));
+      ctx.setScreen(new InventoryScreen(player));
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       // here rather than in close() so a failed assert in open() doesn't leave the rest of the suite in survival
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.clearInventory();
       ctx.sendCommand("gamemode creative");
     }
@@ -1642,19 +1678,19 @@ public class TinkerUiTestScenarios {
     @Override
     public void close(UiTestContext ctx) {
       // the menu opens through the server, so assert after the settle: fail loudly instead of shipping a world screenshot
-      if (!(ctx.mc().screen instanceof ToolContainerScreen screen)) {
-        throw new IllegalStateException("tool_inventory expected ToolContainerScreen at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof ToolContainerScreen screen)) {
+        throw new IllegalStateException("tool_inventory expected ToolContainerScreen at capture, found " + ctx.screen());
       }
       int slots = screen.getMenu().getItemHandler().size();
       if (slots != 3) {
         throw new IllegalStateException("tool_inventory expected 3 pocket slots, found " + slots);
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       // close the menu on the server too: the client screen alone leaves the ToolContainerMenu open, which keeps the tool in the hotbar
       ctx.runOnServer(() -> {
         ServerPlayer player = ctx.serverLevel().getServer().getPlayerList().getPlayers().getFirst();
@@ -1798,7 +1834,7 @@ public class TinkerUiTestScenarios {
         assertNoSprite(blocks, icon);
       }
       InventoryScreen screen = new InventoryScreen(player);
-      ctx.mc().setScreen(screen);
+      ctx.setScreen(screen);
       // mouse on the center of the player preview, so the player faces the camera
       ctx.moveMouse(screen.leftPos + 50.5, screen.topPos + 43);
     }
@@ -1847,7 +1883,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void close(UiTestContext ctx) {
       // the frame just captured is still in the main target
-      if (ctx.mc().screen instanceof InventoryScreen screen) {
+      if (ctx.screen() instanceof InventoryScreen screen) {
         try (NativeImage image = ctx.captureFrame()) {
           double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
           // the copper plating beside a neutral stripe: grey (vanilla iron) armor fails the first, skin or hair fails at least one of them
@@ -1856,9 +1892,9 @@ public class TinkerUiTestScenarios {
           assertGuiRegion(image, scale, screen, LEGGINGS_REGION, "trimmed_armor: worn gold leggings", GOLD);
         }
       } else {
-        throw new IllegalStateException("trimmed_armor: the inventory closed before the capture, found " + ctx.mc().screen);
+        throw new IllegalStateException("trimmed_armor: the inventory closed before the capture, found " + ctx.screen());
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     /** Asserts a region of the screen given in GUI pixels relative to the inventory corner, see {@link #assertRegion} */
@@ -1872,7 +1908,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void cleanup(UiTestContext ctx) {
       // here rather than in close() so a failed assert in open() doesn't leave the rest of the suite in survival
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.clearInventory();
       ctx.sendCommand("gamemode creative");
     }
@@ -2021,7 +2057,12 @@ public class TinkerUiTestScenarios {
         new ItemStack(TinkerToolParts.plating.get(ArmorType.HELMET)),
         new ItemStack(TinkerFluids.moltenIron.getBucket()),
         new ItemStack(TinkerFluids.moltenCobalt.getBucket()),
-        new ItemStack(TinkerModifiers.modifierCrystal.get()));
+        new ItemStack(TinkerModifiers.modifierCrystal.get()),
+        // M8 plan R1 guard S4: 26.2 turns signs into block models; the sign items keep item models, but share the textures
+        new ItemStack(TinkerWorld.greenheart.getSign().asItem()), new ItemStack(TinkerWorld.skyroot.getSign().asItem()),
+        new ItemStack(TinkerWorld.bloodshroom.getSign().asItem()), new ItemStack(TinkerWorld.enderbark.getSign().asItem()),
+        new ItemStack(TinkerWorld.greenheart.getHangingSign().asItem()), new ItemStack(TinkerWorld.skyroot.getHangingSign().asItem()),
+        new ItemStack(TinkerWorld.bloodshroom.getHangingSign().asItem()), new ItemStack(TinkerWorld.enderbark.getHangingSign().asItem()));
     }
 
     @Override
@@ -2058,7 +2099,7 @@ public class TinkerUiTestScenarios {
           throw new IllegalStateException("item_atlas_grid: modifier icon texture minecraft:" + texture + " resolves to the missing sprite");
         }
       }
-      ctx.mc().setScreen(new GridScreen(stacks(), modifiers));
+      ctx.setScreen(new GridScreen(stacks(), modifiers));
       ctx.parkMouse();
     }
   }
@@ -2138,6 +2179,35 @@ public class TinkerUiTestScenarios {
       throw new IllegalStateException(description + " has the wrong color: " + stats);
     }
   }
+
+  /**
+   * Counts the pixels of a region given in fractions of the frame that pass the test, logging the count and the average color to recalibrate.
+   * For features smaller than the region, where {@link #assertRegion}'s 3/4 share does not fit.
+   */
+  private static int countFrameRegion(NativeImage image, float[] region, String description, IntPredicate test) {
+    int x0 = Math.round(region[0] * image.getWidth()), y0 = Math.round(region[1] * image.getHeight());
+    int x1 = Math.round(region[2] * image.getWidth()), y1 = Math.round(region[3] * image.getHeight());
+    int matching = 0;
+    long red = 0, green = 0, blue = 0;
+    for (int y = y0; y < y1; y++) {
+      for (int x = x0; x < x1; x++) {
+        int color = image.getPixel(x, y);
+        red += ARGB.red(color);
+        green += ARGB.green(color);
+        blue += ARGB.blue(color);
+        if (test.test(color)) {
+          matching++;
+        }
+      }
+    }
+    int total = Math.max(1, (x1 - x0) * (y1 - y0));
+    TConstruct.LOG.info("{}: {} of {} pixels match in [{},{}..{},{}], average #{}", description, matching, total, x0, y0, x1, y1,
+                        String.format("%02X%02X%02X", red / total, green / total, blue / total));
+    return matching;
+  }
+
+  /** Missing texture magenta (the purple and black checker of a missing model or sprite) */
+  private static final IntPredicate MISSING_MAGENTA = color -> ARGB.red(color) > 200 && ARGB.blue(color) > 200 && ARGB.green(color) < 60;
 
   /**
    * M7 visual review (no menu, no assert): 26.1 dropped {@code render_type} from block models, so the quads of models that declared {@code cutout}
@@ -2252,7 +2322,7 @@ public class TinkerUiTestScenarios {
       stacks.add(TankItem.setTank(new ItemStack(TinkerSmeltery.searedLantern), new FluidStack(TinkerFluids.honey.get(), TinkerSmeltery.searedLantern.get().getCapacity())));
       stacks.add(TankItem.setTank(new ItemStack(TinkerSmeltery.searedTank.get(TankType.INGOT_GAUGE)), new FluidStack(TinkerFluids.earthSlime.get(), TankType.INGOT_GAUGE.getCapacity())));
       stacks.add(new ItemStack(TinkerWorld.slimeLeaves.get(FoliageType.EARTH)));
-      ctx.mc().setScreen(new BandedGridScreen(stacks));
+      ctx.setScreen(new BandedGridScreen(stacks));
       ctx.parkMouse();
     }
   }
@@ -2404,19 +2474,19 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      if (!(ctx.mc().screen instanceof MelterScreen screen)) {
-        throw new IllegalStateException(NAME + ": expected the melter screen, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof MelterScreen screen)) {
+        throw new IllegalStateException(NAME + ": expected the melter screen, found " + ctx.screen());
       }
       try (NativeImage image = ctx.captureFrame()) {
         double scale = (double) image.getWidth() / ctx.mc().getWindow().getGuiScaledWidth();
         TrimmedArmorScenario.assertGuiRegion(image, scale, screen, TANK_REGION, NAME + ": molten ender in the GUI tank", ENDER);
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 
@@ -2452,7 +2522,7 @@ public class TinkerUiTestScenarios {
     @Override
     public void open(UiTestContext ctx) {
       ItemStack kit = TinkerToolParts.repairKit.get().withMaterial(MaterialIds.ice);
-      ctx.mc().setScreen(new TwoBandScreen(List.of(kit, new ItemStack(Items.STONE))));
+      ctx.setScreen(new TwoBandScreen(List.of(kit, new ItemStack(Items.STONE))));
       ctx.parkMouse();
     }
 
@@ -2473,7 +2543,7 @@ public class TinkerUiTestScenarios {
           throw new IllegalStateException(NAME + ": opaque stone blends with the band in " + stone[1] + " of " + stone[0] + " pixels");
         }
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     /** Returns {drawn pixels, pixels differing between the red and the blue copy} of the item at the index */
@@ -2498,7 +2568,7 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void cleanup(UiTestContext ctx) {
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 
@@ -2660,6 +2730,32 @@ public class TinkerUiTestScenarios {
       if (bestDark < 200) {
         throw new IllegalStateException(NAME + ": no exported page of " + BOOK + " shows book content with text (best: " + best + ", " + bestDark + " dark pixels)");
       }
+      checkCover(ctx);
+    }
+
+    /** The blue gadgetry cover at a plain spot left of the drawing, and the area around the cover that the export keeps transparent */
+    private static final IntPredicate COVER_BLUE = hued(195, 225, 0.4f, 120);
+
+    /**
+     * M8 plan R1 guard S1 (reverse-Z in 26.2): known pixels of the exported cover. The export clears its own depth buffer ({@code BookCommand}); a
+     * clear value that does not match the depth test drops every GUI element of the page, which leaves a transparent or empty image.
+     */
+    private static void checkCover(UiTestContext ctx) {
+      File cover = new File(exportDir(ctx.mc()), "cover.png");
+      try (NativeImage image = NativeImage.read(Files.newInputStream(cover.toPath()))) {
+        int width = image.getWidth(), height = image.getHeight();
+        int corner = image.getPixel(0, 0);
+        int plain = image.getPixel(width / 10, height / 2);
+        TConstruct.LOG.info("{}: cover {}x{}, corner #{}, plain cover #{}", NAME, width, height, Integer.toHexString(corner), Integer.toHexString(plain));
+        if (ARGB.alpha(corner) != 0) {
+          throw new IllegalStateException(NAME + ": the corner of the exported cover is #" + Integer.toHexString(corner) + ", expected transparent");
+        }
+        if (ARGB.alpha(plain) != 255 || !COVER_BLUE.test(plain)) {
+          throw new IllegalStateException(NAME + ": the exported cover at " + width / 10 + ", " + height / 2 + " is #" + Integer.toHexString(plain) + ", expected the opaque blue cover");
+        }
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
     }
   }
 
@@ -2680,12 +2776,13 @@ public class TinkerUiTestScenarios {
       int left = 20;
       graphics.pose().pushMatrix();
       graphics.pose().scale(2, 2);
+      // rows of 10 items
       for (int i = 0; i < stacks.size(); i++) {
-        graphics.item(stacks.get(i), left / 2 + i * 20, 20);
+        graphics.item(stacks.get(i), left / 2 + (i % 10) * 20, 20 + (i / 10) * 20);
       }
       graphics.pose().popMatrix();
       for (int i = 0; i < modifiers.size(); i++) {
-        ModifierIconManager.renderIcon(graphics, modifiers.get(i), left + i * 40, 110, 100, 32);
+        ModifierIconManager.renderIcon(graphics, modifiers.get(i), left + i * 40, 125, 100, 32);
       }
     }
   }
@@ -2710,6 +2807,9 @@ public class TinkerUiTestScenarios {
       // 40 max HP -> a full extra heart row, so the custom multi-color rows render; heal to full so all show filled
       ctx.sendCommand("effect give @s minecraft:health_boost 600 4 true");
       ctx.sendCommand("effect give @s minecraft:instant_health 1 20 true");
+      // survival, so the vanilla armor row draws (the uitest player is in creative, where only Mantle's hearts draw), with armor to show
+      ctx.sendCommand("gamemode survival");
+      ctx.sendCommand("item replace entity @s armor.chest with minecraft:iron_chestplate");
     }
 
     @Override
@@ -2720,10 +2820,180 @@ public class TinkerUiTestScenarios {
     @Override
     public void open(UiTestContext ctx) {
       // no screen — the in-world HUD health bar is the capture target
+      if (ctx.player().getArmorValue() <= 0 || !Objects.requireNonNull(ctx.mc().gameMode).canHurtPlayer()) {
+        throw new IllegalStateException("extra_hearts: the player wears no armor or is not in survival (" + ctx.mc().gameMode.getPlayerMode() + "), so the armor row check proves nothing");
+      }
+    }
+
+    /**
+     * M8 plan R1 guard S7 (26.2 moves the HUD cursor {@code leftHeight} from {@code Gui} to {@code Hud}): the custom hearts take two rows (40 max
+     * health, the container overflow row) and advance the cursor, so the vanilla armor row draws above them. A cursor left behind draws the armor
+     * over the hearts. Checks in GUI coordinates: orange extra hearts in the health row, grey armor icons one row above the two heart rows.
+     */
+    @Override
+    public void close(UiTestContext ctx) {
+      int guiWidth = ctx.mc().getWindow().getGuiScaledWidth(), guiHeight = ctx.mc().getWindow().getGuiScaledHeight();
+      int left = guiWidth / 2 - 91;
+      try (NativeImage image = ctx.captureFrame()) {
+        float[] hearts = guiRegion(left, guiHeight - 39, left + 80, guiHeight - 30, guiWidth, guiHeight);
+        float[] armor = guiRegion(left, guiHeight - 59, left + 24, guiHeight - 50, guiWidth, guiHeight);
+        int orange = countFrameRegion(image, hearts, "extra_hearts: orange hearts in the health row", hued(10, 45, 0.5f, 150));
+        int grey = countFrameRegion(image, armor, "extra_hearts: armor icons above the heart rows", NEUTRAL);
+        if (orange < 150) {
+          throw new IllegalStateException("extra_hearts: only " + orange + " orange heart pixels in the health row");
+        }
+        if (grey < 30) {
+          throw new IllegalStateException("extra_hearts: only " + grey + " armor pixels above the two heart rows, the armor row did not move up (HUD cursor not advanced)");
+        }
+      }
+    }
+
+    /** A GUI rectangle as fractions of the frame */
+    private static float[] guiRegion(int x0, int y0, int x1, int y1, int guiWidth, int guiHeight) {
+      return new float[] {x0 / (float) guiWidth, y0 / (float) guiHeight, x1 / (float) guiWidth, y1 / (float) guiHeight};
     }
 
     @Override
-    public void close(UiTestContext ctx) { /* nothing open */ }
+    public void cleanup(UiTestContext ctx) {
+      ctx.clearInventory();
+      ctx.sendCommand("gamemode creative");
+    }
+  }
+
+  /**
+   * M8 plan R1 guard S4 (26.2 turns signs into block models): every Tinkers wood type's standing, wall, wall hanging and ceiling hanging sign, with
+   * text, in front of a white concrete wall, the HUD hidden. One column per wood type (west to east: greenheart, skyroot, bloodshroom, enderbark), one
+   * row per sign kind (bottom to top: standing, wall, wall hanging, ceiling hanging). Asserts each sign shows its wood color in its cell and no
+   * missing texture magenta anywhere in the frame (a missing model draws the purple and black cube, a missing texture the checker).
+   */
+  private static class WoodSignsScenario implements UiTestScenario {
+    private static final String NAME = "wood_signs";
+    private final BlockPos origin = SITE.offset(320, 0, 0);
+    private static final List<String> WOODS = List.of("greenheart", "skyroot", "bloodshroom", "enderbark");
+    private static final List<String> KINDS = List.of("standing", "wall", "wall_hanging", "ceiling_hanging");
+
+    private static List<WoodBlockObject> woods() {
+      return List.of(TinkerWorld.greenheart, TinkerWorld.skyroot, TinkerWorld.bloodshroom, TinkerWorld.enderbark);
+    }
+
+    @Override
+    public Identifier id() {
+      return TConstruct.getResource(NAME);
+    }
+
+    @Override
+    public Set<String> tags() {
+      return Set.of(WORLD, RENDER);
+    }
+
+    @Override
+    public void prepare(UiTestContext ctx) {
+      ctx.sendCommand("tp @s " + (origin.getX() + 7.5) + " " + (origin.getY() + 1) + " " + (origin.getZ() + 8.5));
+      ctx.runOnServer(() -> {
+        ServerLevel level = ctx.serverLevel();
+        BlockState air = Blocks.AIR.defaultBlockState();
+        BlockState concrete = Blocks.WHITE_CONCRETE.defaultBlockState();
+        // the saved world persists across runs: clear the site, then the floor and the back wall
+        for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-3, 0, -1), origin.offset(15, 7, 9))) {
+          level.setBlockAndUpdate(pos, air);
+        }
+        for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-3, 0, -1), origin.offset(15, 0, 9))) {
+          level.setBlockAndUpdate(pos, concrete);
+        }
+        for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-3, 1, 0), origin.offset(15, 7, 0))) {
+          level.setBlockAndUpdate(pos, concrete);
+        }
+        List<WoodBlockObject> woods = woods();
+        for (int i = 0; i < woods.size(); i++) {
+          WoodBlockObject wood = woods.get(i);
+          int x = 1 + 4 * i;
+          // supports first, so no sign breaks on a neighbour update
+          level.setBlockAndUpdate(origin.offset(x - 1, 3, 1), concrete);
+          level.setBlockAndUpdate(origin.offset(x, 5, 1), concrete);
+          List<BlockPos> signs = List.of(origin.offset(x, 1, 1), origin.offset(x, 2, 1), origin.offset(x, 3, 1), origin.offset(x, 4, 1));
+          level.setBlockAndUpdate(signs.get(0), wood.getSign().defaultBlockState().setValue(StandingSignBlock.ROTATION, 0));
+          level.setBlockAndUpdate(signs.get(1), wood.getWallSign().defaultBlockState().setValue(WallSignBlock.FACING, Direction.SOUTH));
+          level.setBlockAndUpdate(signs.get(2), wood.getWallHangingSign().defaultBlockState().setValue(WallHangingSignBlock.FACING, Direction.SOUTH));
+          level.setBlockAndUpdate(signs.get(3), wood.getHangingSign().defaultBlockState().setValue(CeilingHangingSignBlock.ROTATION, 0));
+          for (int kind = 0; kind < signs.size(); kind++) {
+            if (!(level.getBlockEntity(signs.get(kind)) instanceof SignBlockEntity sign)) {
+              throw new IllegalStateException(NAME + ": no sign block entity for the " + WOODS.get(i) + " " + KINDS.get(kind) + " sign at " + signs.get(kind));
+            }
+            sign.setText(new SignText().setMessage(1, Component.literal(WOODS.get(i))).setMessage(2, Component.literal(KINDS.get(kind))), true);
+            level.sendBlockUpdated(signs.get(kind), sign.getBlockState(), sign.getBlockState(), 3);
+          }
+        }
+      });
+    }
+
+    @Override
+    public int prepareSettleTicks() {
+      return 40; // chunk rebuild and sign text sync
+    }
+
+    @Override
+    public void open(UiTestContext ctx) {
+      // every sign block must still stand (a missing support breaks it into an item)
+      ClientLevel level = Objects.requireNonNull(ctx.mc().level);
+      for (int i = 0; i < WOODS.size(); i++) {
+        for (int kind = 0; kind < KINDS.size(); kind++) {
+          BlockPos pos = origin.offset(1 + 4 * i, 1 + kind, 1);
+          if (!(level.getBlockEntity(pos) instanceof SignBlockEntity)) {
+            throw new IllegalStateException(NAME + ": the " + WOODS.get(i) + " " + KINDS.get(kind) + " sign is not on the client at " + pos + ", found " + level.getBlockState(pos));
+          }
+        }
+      }
+      ctx.mc().options.hideGui = true;
+      ctx.player().lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, new net.minecraft.world.phys.Vec3(origin.getX() + 7.5, origin.getY() + 3, origin.getZ() + 1.5));
+    }
+
+    @Override
+    public int settleTicks() {
+      return 20;
+    }
+
+    /** Centers of the sign boards in frame pixels as captured at 1280x720, by wood (west to east) then kind (bottom to top) */
+    private static final float[][] CENTERS = {
+      {196, 224, 200, 203}, {492, 501, 493, 494}, {788, 779, 787, 787}, {1084, 1056, 1095, 1077}};
+    /** Row centers of the sign cells in frame pixels, bottom (standing) to top (ceiling hanging) */
+    private static final float[] ROWS = {446, 394, 337, 262};
+    /** Half size of a cell in frame pixels, inside the smallest board (the wall sign) */
+    private static final float HALF_WIDTH = 18, HALF_HEIGHT = 8;
+    /** Wood colors as captured, by wood type */
+    private static final List<IntPredicate> WOOD_COLORS = List.of(
+      hued(85, 150, 0.35f, 80), hued(170, 200, 0.4f, 80), hued(0, 15, 0.5f, 80).or(hued(345, 360, 0.5f, 80)),
+      // enderbark is near black, the wall behind is white concrete
+      color -> Math.max(ARGB.red(color), Math.max(ARGB.green(color), ARGB.blue(color))) < 90);
+
+    @Override
+    public void close(UiTestContext ctx) {
+      List<String> problems = new ArrayList<>();
+      try (NativeImage image = ctx.captureFrame()) {
+        int magenta = countFrameRegion(image, new float[] {0, 0, 1, 1}, NAME + ": missing texture magenta", MISSING_MAGENTA);
+        if (magenta > 0) {
+          problems.add(magenta + " missing texture pixels in the frame");
+        }
+        for (int i = 0; i < WOODS.size(); i++) {
+          for (int kind = 0; kind < KINDS.size(); kind++) {
+            float x = CENTERS[i][kind], y = ROWS[kind];
+            float[] cell = {(x - HALF_WIDTH) / 1280f, (y - HALF_HEIGHT) / 720f, (x + HALF_WIDTH) / 1280f, (y + HALF_HEIGHT) / 720f};
+            int wood = countFrameRegion(image, cell, NAME + ": " + WOODS.get(i) + " " + KINDS.get(kind), WOOD_COLORS.get(i));
+            int total = Math.round((cell[2] - cell[0]) * image.getWidth()) * Math.round((cell[3] - cell[1]) * image.getHeight());
+            if (wood * 4 < total) {
+              problems.add(WOODS.get(i) + " " + KINDS.get(kind) + " sign shows its wood in only " + wood + " of " + total + " pixels");
+            }
+          }
+        }
+      }
+      if (!problems.isEmpty()) {
+        throw new IllegalStateException(NAME + ": " + String.join("; ", problems));
+      }
+    }
+
+    @Override
+    public void cleanup(UiTestContext ctx) {
+      ctx.mc().options.hideGui = false;
+    }
   }
 
   /** Fills the fluid handler of the block at the position through its capability in one committed transaction, failing unless all of it fits. */
@@ -3143,7 +3413,7 @@ public class TinkerUiTestScenarios {
       ctx.player().getInventory().setSelectedSlot(0);
       ctx.lookAt(center);
       if (breaking) {
-        ctx.mc().setScreen(new PassThroughScreen());
+        ctx.setScreen(new PassThroughScreen());
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, miner);
       }
     }
@@ -3152,7 +3422,7 @@ public class TinkerUiTestScenarios {
     private void mineTick(ClientTickEvent.Post event) {
       Minecraft mc = Minecraft.getInstance();
       MultiPlayerGameMode gameMode = mc.gameMode;
-      if (gameMode == null || !(mc.screen instanceof PassThroughScreen)) {
+      if (gameMode == null || !(UiTestContext.current().screen() instanceof PassThroughScreen)) {
         return;
       }
       if (!started) {
@@ -3184,13 +3454,13 @@ public class TinkerUiTestScenarios {
           throw new IllegalStateException(name + " expected the center block partially mined, found stage " + gameMode.getDestroyStage());
         }
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(miner);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.mc().options.highContrastBlockOutline().set(previousHighContrast);
       ctx.clearInventory();
       ctx.sendCommand("gamemode creative");
@@ -3269,7 +3539,7 @@ public class TinkerUiTestScenarios {
 
     /** One click per tick once the menu is synced, so each click's slot change is applied before the next */
     private void clickTick(ClientTickEvent.Post event) {
-      if (!(Minecraft.getInstance().screen instanceof TinkerStationScreen screen)) {
+      if (!(UiTestContext.current().screen() instanceof TinkerStationScreen screen)) {
         return;
       }
       Slot first = playerSlot(screen.getMenu(), FIRST_SLOT);
@@ -3304,8 +3574,8 @@ public class TinkerUiTestScenarios {
 
     @Override
     public void close(UiTestContext ctx) {
-      if (!(ctx.mc().screen instanceof TinkerStationScreen screen)) {
-        throw new IllegalStateException(NAME + " expected TinkerStationScreen at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof TinkerStationScreen screen)) {
+        throw new IllegalStateException(NAME + " expected TinkerStationScreen at capture, found " + ctx.screen());
       }
       if (step != 3) {
         throw new IllegalStateException(NAME + " stopped at click step " + step);
@@ -3324,13 +3594,13 @@ public class TinkerUiTestScenarios {
       if (!dropped.isEmpty()) {
         throw new IllegalStateException(NAME + ": the tab click dropped " + dropped.getFirst().getItem());
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(clicker);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.clearInventory();
     }
   }
@@ -3397,7 +3667,7 @@ public class TinkerUiTestScenarios {
     /** Once the gauge shows lava: checks JEI's clickable ingredient there, then presses the show uses key over it */
     private void pressWhenReady(ClientTickEvent.Post event) {
       Minecraft mc = Minecraft.getInstance();
-      if (pressed || !(mc.screen instanceof MelterScreen screen)) {
+      if (pressed || !(UiTestContext.current().screen() instanceof MelterScreen screen)) {
         return;
       }
       int[] point = findLava(screen);
@@ -3444,19 +3714,19 @@ public class TinkerUiTestScenarios {
         throw new IllegalStateException(NAME + ": " + failure);
       }
       if (!pressed) {
-        throw new IllegalStateException(NAME + ": the melter fuel gauge never showed lava, found screen " + ctx.mc().screen);
+        throw new IllegalStateException(NAME + ": the melter fuel gauge never showed lava, found screen " + ctx.screen());
       }
-      if (!(ctx.mc().screen instanceof IRecipesGui)) {
-        throw new IllegalStateException(NAME + ": the show uses key over the lava gauge did not open the JEI recipes GUI, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof IRecipesGui)) {
+        throw new IllegalStateException(NAME + ": the show uses key over the lava gauge did not open the JEI recipes GUI, found " + ctx.screen());
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
       ctx.parkMouse();
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 
@@ -3541,7 +3811,7 @@ public class TinkerUiTestScenarios {
     /** Runs JEI's transfer of the stick recipe once the menu shows the planks in the side inventory */
     private void transferWhenReady(ClientTickEvent.Post event) {
       Minecraft mc = Minecraft.getInstance();
-      if (transferred || !(mc.screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)
+      if (transferred || !(UiTestContext.current().screen() instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)
           || planksOutsideGrid(menu) != 2 || mc.player == null) {
         return;
       }
@@ -3567,8 +3837,8 @@ public class TinkerUiTestScenarios {
       if (failure != null) {
         throw new IllegalStateException(NAME + ": " + failure);
       }
-      if (!(ctx.mc().screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)) {
-        throw new IllegalStateException(NAME + " expected the crafting station menu at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof CraftingStationContainerMenu menu)) {
+        throw new IllegalStateException(NAME + " expected the crafting station menu at capture, found " + ctx.screen());
       }
       if (!transferred) {
         throw new IllegalStateException(NAME + ": the side inventory never showed the 2 planks of the adjacent chest");
@@ -3584,13 +3854,13 @@ public class TinkerUiTestScenarios {
         throw new IllegalStateException(NAME + " expected both planks moved into the grid, found " + inGrid + " in the grid and " + planksOutsideGrid(menu) + " outside");
       }
       requireTransferSuccess(NAME, transfer);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 
@@ -3683,8 +3953,7 @@ public class TinkerUiTestScenarios {
 
     /** Runs JEI's transfer of the pickaxe recipe once the menu shows the parts in the player inventory */
     private void transferWhenReady(ClientTickEvent.Post event) {
-      Minecraft mc = Minecraft.getInstance();
-      if (transferred || recipe == null || !(mc.screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof TinkerStationContainerMenu menu)
+      if (transferred || recipe == null || !(UiTestContext.current().screen() instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof TinkerStationContainerMenu menu)
           || countParts(menu, false) != parts.size()) {
         return;
       }
@@ -3709,8 +3978,8 @@ public class TinkerUiTestScenarios {
       if (failure != null) {
         throw new IllegalStateException(NAME + ": " + failure);
       }
-      if (!(ctx.mc().screen instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof TinkerStationContainerMenu menu)) {
-        throw new IllegalStateException(NAME + " expected the tinker station menu at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof AbstractContainerScreen<?> screen) || !(screen.getMenu() instanceof TinkerStationContainerMenu menu)) {
+        throw new IllegalStateException(NAME + " expected the tinker station menu at capture, found " + ctx.screen());
       }
       if (!transferred) {
         throw new IllegalStateException(NAME + ": the player inventory never showed the 3 pickaxe parts");
@@ -3721,13 +3990,13 @@ public class TinkerUiTestScenarios {
         throw new IllegalStateException(NAME + " expected the 3 parts moved into the station inputs, found " + inInputs + " in the inputs and " + outside + " outside");
       }
       requireTransferSuccess(NAME, transfer);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       ctx.clearInventory();
     }
   }
@@ -3804,8 +4073,7 @@ public class TinkerUiTestScenarios {
 
     /** Runs JEI's transfer of the stick recipe once the tool menu shows the planks */
     private void transferWhenReady(ClientTickEvent.Post event) {
-      Minecraft mc = Minecraft.getInstance();
-      if (transferred || !(mc.screen instanceof ToolContainerScreen screen) || planks(screen.getMenu(), false) != 2) {
+      if (transferred || !(UiTestContext.current().screen() instanceof ToolContainerScreen screen) || planks(screen.getMenu(), false) != 2) {
         return;
       }
       transferred = true;
@@ -3828,8 +4096,8 @@ public class TinkerUiTestScenarios {
       if (failure != null) {
         throw new IllegalStateException(NAME + ": " + failure);
       }
-      if (!(ctx.mc().screen instanceof ToolContainerScreen screen)) {
-        throw new IllegalStateException(NAME + " expected ToolContainerScreen at capture, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof ToolContainerScreen screen)) {
+        throw new IllegalStateException(NAME + " expected ToolContainerScreen at capture, found " + ctx.screen());
       }
       ToolContainerMenu menu = screen.getMenu();
       int gridSize = menu.getToolInventoryStart() - 1;
@@ -3845,13 +4113,13 @@ public class TinkerUiTestScenarios {
         throw new IllegalStateException(NAME + " expected both planks moved into the grid, found " + inGrid + " in the grid and " + outside + " outside");
       }
       requireTransferSuccess(NAME, transfer);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
       // close the menu on the server before clearing: closing hands the crafting grid back to the inventory, which may land after a plain clear
       ctx.runOnServer(() -> {
         ServerPlayer player = ctx.serverLevel().getServer().getPlayerList().getPlayers().getFirst();
@@ -4059,7 +4327,7 @@ public class TinkerUiTestScenarios {
 
     private void tick(ClientTickEvent.Post event) {
       Minecraft mc = Minecraft.getInstance();
-      if (stage == 2 || !(mc.screen instanceof MultiModuleScreen<?> screen)) {
+      if (stage == 2 || !(UiTestContext.current().screen() instanceof MultiModuleScreen<?> screen)) {
         return;
       }
       ticks++;
@@ -4120,19 +4388,19 @@ public class TinkerUiTestScenarios {
         throw new IllegalStateException(name + ": " + failure);
       }
       if (stage != 2) {
-        throw new IllegalStateException(name + ": the screen never showed the target (stage " + stage + "), found screen " + ctx.mc().screen);
+        throw new IllegalStateException(name + ": the screen never showed the target (stage " + stage + "), found screen " + ctx.screen());
       }
-      if (!(ctx.mc().screen instanceof IRecipesGui)) {
-        throw new IllegalStateException(name + ": the JEI key over the target did not open the JEI recipes GUI, found " + ctx.mc().screen);
+      if (!(ctx.screen() instanceof IRecipesGui)) {
+        throw new IllegalStateException(name + ": the JEI key over the target did not open the JEI recipes GUI, found " + ctx.screen());
       }
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
 
     @Override
     public void cleanup(UiTestContext ctx) {
       NeoForge.EVENT_BUS.unregister(poller);
       ctx.parkMouse();
-      ctx.mc().setScreen(null);
+      ctx.setScreen(null);
     }
   }
 

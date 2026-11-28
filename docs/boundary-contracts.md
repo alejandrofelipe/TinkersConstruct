@@ -67,6 +67,16 @@ failed `item_handlers_every_item` plus four existing behaviour tests.
 | uitest gate | The client exits 0 even when scenarios fail or the suite dies early | `runClientUiTest` task check in `tinkers/build.gradle` (fails on any result that is neither `"ok"` nor a `"warn: ..."` note — warnings such as `mantle:world_upgrade` are logged without failing since M7 —, a missing `mantle:suite_setup`, or a missing/stale `uitest-results.json`) | v1.21.10-3.15.0 |
 | uitest startup screens (26.1 mod loading warnings screen and world backup prompt before quick play) | The suite stalls until its timeout, or confirms a downgrade/experimental world, or hides a loading warning from our own mods | Mantle `UiTestSuite` (`mantle:mod_loading`, `mantle:world_upgrade`, `mantle:suite_setup`); **new** unit `UiTestSuiteTest` (plain-upgrade prompt keys from vanilla `LevelSummary.BackupStatus`, own-mod warning filter) | new (M7 Phases 4–5) |
 | Gametest world isolation | Structures/chunks from a previous run leak into the next | `cleanGameTestWorld` task (dependency of `runGameTestServer`) | v1.21.4-3.12.1 |
+| Picture-in-picture depth (S1; 26.2 reverse-Z: depth clear 0, `GREATER_THAN_OR_EQUAL`) | The book structure preview vanishes or its back faces draw over the front ones | **new** pixel asserts in uitest `book_structure` (seared bricks in the body region; copper drains on the front face, red with the preview's z flipped) | new (M8 Phase 0.5c) |
+| `/mantle book` export image (S1) | An empty, opaque or transparent export | uitest `book_export` + **new** cover pixels (transparent corner, opaque blue cover; red with an opaque clear color). The export's own depth clear value is inert on 26.1.2 (no export draw depth-tests): fix it to `DEFAULT_DEPTH_CLEAR_VALUE` on 26.2 by reading, not by this test | new (M8 Phase 0.5c) |
+| uitest capture path (S2; 26.2 rewrites `RenderTargetCapture` on `GpuBuffer#map`/`GpuFormat`) | Flipped rows, swapped red/blue or an older frame in every PNG and pixel assert while results say ok | **new** Mantle self-check `mantle:capture_orientation` (four quadrant colors exact in each corner + frame counter marker, on the captured frame and the written PNG; red with rows unflipped, channels swapped, a stale frame) | new (M8 Phase 0.5c) |
+| Entity predicates in shipped data (S3; 26.2 map-shaped `EntityPredicate` JSON) | A criterion or loot condition decodes and never matches | **new** `EntityPredicateGameTests` (island location criteria inside/outside a registered island start, piggyback pack criterion pig only, sky/ender slime and terracube loot by size, metal core and frog kill); **new** `DatapackCompletenessGameTests#datapack_modifiers_complete`, `#datapack_materials_complete`, `#datapack_tool_definitions_complete` | new (M8 Phase 0.5c) |
+| Signs (S4; 26.2 block models instead of a block entity renderer and `Sheets#addWoodType`) | A Tinkers sign renders as the missing cube or not at all | **new** uitest `wood_signs` (4 woods × standing/wall/wall hanging/ceiling hanging with text: wood color per cell, no missing-texture magenta; red without `Sheets#addWoodType`); sign items in `item_atlas_grid` | new (M8 Phase 0.5c) |
+| Bounce physics (S5; 26.2 restitution on block properties, applied by `Entity`) | Congealed slime, slimesteel or the antigravity ceiling bounce differently or not at all | **new** `BounceGameTests#slime_bounce_heights_player`/`_item`/`_mob` (rebound apex vs 26.1.2 reference, ±0.1), `#antigravity_ceiling_bounce` (damage and rebound) | new (M8 Phase 0.5c) |
+| HUD cursor (S7; 26.2 `Gui#leftHeight` → `Hud`) | Vanilla armor row drawn over Mantle's extra hearts | uitest `extra_hearts` + **new** pixel assert (survival, iron chestplate: armor icons one row above the two heart rows; red without the cursor advance) | new (M8 Phase 0.5c) |
+| Knockback call sites (S8; 26.2 `knockback(power, x, z, source, damage[, fromEffect])`, resistance `[-2, 1]`) | A wrong argument changes how far targets fly | **new** `KnockbackGameTests` (peak knockback speed vs 26.1.2 reference, ±0.02 blocks/tick: tool attack ± knockback modifier, sweep, circle, shuriken, springy counter, bonking) | new (M8 Phase 0.5c) |
+| Cube mobs (S9; 26.2 `AbstractCubeMob` base) | A Tinkers slime override (split, size, contact damage, spawn rules) silently stops being called | **new** `SlimeEntityGameTests` (size scaling, split on death with helmet and metal core, contact damage vs reference, spawn predicates accept/reject) | new (M8 Phase 0.5c) |
+| Entity interaction (S10; 26.2 drops `EntityInteractSpecific` / `onInteractEntityAt`) | The click location is lost, or an item's entity interaction is never reached | `ToolGameTests#chestplate_entity_interaction_uses_click_location` + **new** `#armor_stand_slot_interaction_uses_click_location`, `#entity_interact_fluid_effect_clicks_the_target`, `#piggybackpack_picks_up_the_clicked_mob` (all-or-nothing pickup; see known issue below) | new (M8 Phase 0.5c) |
 
 ## Gaps / candidates
 
@@ -90,8 +100,14 @@ Integration points noticed without a dedicated guard (not implemented here):
 - **Natural worldgen** — biome tags and structure-set spacing on real terrain (the flat gametest world cannot cover them).
 - **Dispenser behaviours, menu/screen registration, model loaders, keybinds** — only exercised indirectly by uitest
   smoke scenarios or not at all.
-- **Advancements and criteria** — every advancement loads (`datapack_advancements_complete`, M7) and the tank fluid criterion
-  matches, but no trigger test covers the other criteria of the 42 advancements.
+- **Advancements and criteria** — every advancement loads (`datapack_advancements_complete`, M7), the tank fluid criterion
+  and the six `world/*` entity predicate criteria match (M8 0.5c), but the item-only criteria of the other advancements have
+  no trigger test.
+- **Known issues found by the M8 0.5c guards (26.1.2, not fixed: guards only)** — the piggyback pack never picks up a mob
+  (`Entity#startRiding` refuses a vehicle whose type does not save, and `EntityType.PLAYER` is `noSave()`); Tinkers slimes are
+  sized `2.04 × size` (vanilla slime `0.52 × size`, the 1.21 scale change was not followed); the antigravity ceiling hit never
+  rebounds off slime (the effect sets the upwards speed, the bounce hooks only reverse a downwards one); Mantle's extra hearts
+  draw in creative mode, where vanilla draws no health row.
 - **Fluid models** — only the client log names a fluid without a `FluidModel` (`tconstruct:potion` is a known issue); no
   test fails on a new one.
 - **Compat runtime linkage** — Crafting Tweaks/Balm/kuma were link-checked by a scratchpad tool in M7 Phase 5 (not in the
