@@ -691,9 +691,10 @@ public class ToolGameTests {
 
   /**
    * M8 plan R1 guard S10: clicking a mob with the piggyback pack reaches {@code PiggyBackPackItem#interactLivingEntity} through the entity interaction
-   * (a pig clicked with any other item passes), and the pickup is all or nothing: either the pig rides the player and one pack moved from the hand to
-   * the chest slot, or nothing changed. Known issue on 26.1.2: the pickup is always refused, as {@code Entity#startRiding} refuses a vehicle whose
-   * type does not save ({@code EntityType.PLAYER} is {@code noSave()}), so the pack consumes the click and keeps everything.
+   * (a pig clicked with any other item passes). Pins the CURRENT behaviour, a known issue since 1.21.4: the pickup is always refused, as
+   * {@code Entity#startRiding} refuses a vehicle whose type does not save ({@code EntityType.PLAYER} is {@code noSave()}), so the pack consumes the
+   * click and nothing changes (pig not riding, both packs still in hand, chest slot empty). A fix must flip these assertions deliberately: the pig
+   * rides the player and exactly one pack moves from the hand to the chest slot.
    */
   @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 20)
   public static void piggybackpack_picks_up_the_clicked_mob(GameTestHelper helper) {
@@ -705,13 +706,12 @@ public class ToolGameTests {
     try {
       helper.assertTrue(result.consumesAction(), Component.literal("the pack did not reach its entity interaction: " + result));
       ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-      if (pig.getVehicle() == player) {
-        helper.assertTrue(chest.is(TinkerGadgets.piggyBackpack.get()) && chest.getCount() == 1, Component.literal("the pig rides the player, but the chest slot holds " + chest));
-        helper.assertTrue(player.getMainHandItem().getCount() == 1, Component.literal("the pig rides the player, but the hand holds " + player.getMainHandItem()));
-      } else {
-        helper.assertTrue(pig.getVehicle() == null, Component.literal("the pig rides " + pig.getVehicle()));
-        helper.assertTrue(chest.isEmpty() && player.getMainHandItem().getCount() == 2, Component.literal("the pickup was refused, but the packs moved: chest " + chest + ", hand " + player.getMainHandItem()));
-      }
+      String knownIssue = "known issue since 1.21.4 (Entity#startRiding refuses the noSave() player as a vehicle, so the pickup is always refused); "
+                          + "if the pickup now works, the bug was fixed: flip this test to assert the pig rides the player and one pack moved to the chest. Got: ";
+      helper.assertTrue(pig.getVehicle() == null, Component.literal(knownIssue + "the pig rides " + pig.getVehicle()));
+      helper.assertTrue(chest.isEmpty(), Component.literal(knownIssue + "chest slot holds " + chest));
+      helper.assertTrue(player.getMainHandItem().is(TinkerGadgets.piggyBackpack.get()) && player.getMainHandItem().getCount() == 2,
+                        Component.literal(knownIssue + "hand holds " + player.getMainHandItem()));
       Player stick = helper.makeMockPlayer(GameType.SURVIVAL);
       stick.setPos(pig.position().add(-1.5, 0, 0));
       stick.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STICK));
