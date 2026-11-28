@@ -58,6 +58,16 @@ public class SlimeEntityGameTests {
     return slime;
   }
 
+  /**
+   * Absolute bounding box width of a size 1 and a size 4 slime by Tinkers type, measured on 26.1.2. Known issue since the 1.21.1 port: the types are
+   * registered {@code sized(2.04F, 2.04F)} and {@code Slime#getDefaultDimensions} scales that by the size again, so a size 1 Tinkers slime is
+   * 2.04 wide (a vanilla slime is {@code 0.52 × size}: 0.52 and 2.08). Fixing {@code sized} is a deliberate change of these references.
+   */
+  private static final Map<String, float[]> KNOWN_WIDTH = Map.of(
+    "sky_slime", new float[] {2.04f, 8.16f},
+    "ender_slime", new float[] {2.04f, 8.16f},
+    "terracube", new float[] {2.04f, 8.16f});
+
   /** Size sets the bounding box, health and attack damage of every Tinkers slime */
   @TinkerGameTest(template = "gametest/empty_9x9x9", timeoutTicks = 20)
   public static void tinker_slimes_size(GameTestHelper helper) {
@@ -74,6 +84,14 @@ public class SlimeEntityGameTests {
         }
         if (Math.abs(slime.getBbWidth() - type.getWidth() * size) > 1.0E-4) {
           problems.add(String.format(Locale.ROOT, "%s size %d is %.3f wide, expected %.3f", entry.getKey(), size, slime.getBbWidth(), type.getWidth() * size));
+        }
+        if (size == 1 || size == 4) {
+          float known = KNOWN_WIDTH.get(entry.getKey())[size == 1 ? 0 : 1];
+          if (Math.abs(slime.getBbWidth() - known) > 1.0E-4) {
+            problems.add(String.format(Locale.ROOT, "%s size %d is %.3f wide, the 26.1.2 reference is %.3f (known issue since the 1.21.1 port: sized(2.04) "
+                                                    + "instead of vanilla's 0.52 x size; if the size was fixed, update KNOWN_WIDTH deliberately)",
+                                       entry.getKey(), size, slime.getBbWidth(), known));
+          }
         }
         if (slime.getMaxHealth() != size * size) {
           problems.add(entry.getKey() + " size " + size + " has " + slime.getMaxHealth() + " max health, expected " + size * size);
