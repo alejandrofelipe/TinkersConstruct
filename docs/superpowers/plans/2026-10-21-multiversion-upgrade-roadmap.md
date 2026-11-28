@@ -127,6 +127,18 @@ releases piggyback onto the next checkpoint), gating each with the full test bat
   **→ Released 2026-11-27:** Mantle `1.18` / Tinkers `3.17.0`, tags `v26.1.2-1.18` / `v26.1.2-3.17.0` pushed (messages
   on the new template `repo/docs/RELEASE-TAGS.md`), GitHub default branch `26.1.2` in both forks; not deployed (a JEI 29
   instance also needs `mezz_config`).
+- **M8 starts 2026-11-27 on 26.2 / NF 26.2.0.95** (nothing folded). Pins re-verified against Maven metadata, all as
+  predicted: JEI `30.48.0.244` (line frozen since 2026-10-28 and behind 29.54: no `IIngredientRenderContext`), Crafting
+  Tweaks `26.2.0.4` + Balm `26.2.0.9` + kuma `26.2.0.5`, JSON Things `0.19.0`, NeoForm `26.2-2`; toolchain unchanged
+  (NeoGradle 7.1.39 / Gradle 9.2.1 / Java 25, official MDK). Mantle baseline: **114 compile errors / 25 files** → 83 by
+  the class map → 79 by the applier; Tinkers estimate ≈ 750–950 before the tools. The roadmap row named the wrong wall
+  again: `MultiBufferSource` is in 3 Mantle + 2 Tinkers files (R3 and M5 already moved rendering to the collector, whose
+  `submitCustomGeometry` is unchanged). The walls are the **`Gui`/`Hud` split, bind group layouts + typed vertex formats +
+  reverse-Z + a Vulkan backend, tag datagen without intrinsic appenders, the `EntityPredicate` data shape, signs as block
+  models, bounce physics on entities, cube mobs**. 26.3 stays NeoForge-stable (newest `26.3.0.118`) with an active JEI but
+  no JSON Things; 26.4 is not released (`26.4-pre-2`). Decisions pending with the user: D-TARGET (recommended: release
+  26.2, then M9 = 26.3), D-PUSH, D-REL (Mantle `1.19` / Tinkers `3.18.0`), D-R3 (no new seam), D-VK, D-TAGS, D-BOUNCE,
+  D-TOOL, D-GUARD. Branch `26.2`. Detailed plan: [`2026-11-27-m8-26.2-port.md`](2026-11-27-m8-26.2-port.md).
 
 ## Global constraints (apply to every milestone)
 
