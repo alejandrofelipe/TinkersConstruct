@@ -181,11 +181,18 @@ tasks.matching { it.name == 'runClientUiTest' }.configureEach { dependsOn 'prepa
 // uitest-results.json itself: it fails when the file is missing or older than this run (the client died before the
 // suite finished) or when any result, mantle:suite_setup included, is neither "ok" nor a "warn: ..." note
 def uiTestResultsFile = file('run/clientUiTest/uitest-results.json')
+// the previous run's results are kept next to its PNGs (uitest-screenshots-previous, rotated by UiTestSuite) for comparison
+def uiTestPreviousResultsFile = file('run/clientUiTest/uitest-results-previous.json')
 tasks.matching { it.name == 'runClientUiTest' }.configureEach {
     def startedAt = 0L
     doFirst {
         startedAt = System.currentTimeMillis()
-        delete uiTestResultsFile
+        if (uiTestResultsFile.isFile()) {
+            delete uiTestPreviousResultsFile
+            if (!uiTestResultsFile.renameTo(uiTestPreviousResultsFile)) {
+                delete uiTestResultsFile
+            }
+        }
     }
     doLast {
         if (!uiTestResultsFile.isFile() || uiTestResultsFile.lastModified() < startedAt) {

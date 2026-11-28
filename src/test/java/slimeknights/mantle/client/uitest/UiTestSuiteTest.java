@@ -6,8 +6,13 @@ import net.neoforged.fml.ModLoadingIssue;
 import net.neoforged.neoforgespi.language.IModInfo;
 import net.neoforged.neoforgespi.locating.IModFile;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Proxy;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +21,37 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /** The startup screens the uitest suite gets past on its own: which world backup prompts it confirms, which mod loading warnings fail it */
 class UiTestSuiteTest {
+  /** The last two runs' PNGs are kept: the current folder becomes the previous one, replacing the older copy */
+  @Test
+  void rotateScreenshotsKeepsTheLastRun(@TempDir Path dir) throws IOException {
+    File current = dir.resolve(UiTestSuite.SCREENSHOT_DIR).toFile();
+    File previous = dir.resolve(UiTestSuite.PREVIOUS_SCREENSHOT_DIR).toFile();
+    Files.createDirectories(previous.toPath());
+    Files.writeString(previous.toPath().resolve("older_run.png"), "older");
+    Files.createDirectories(current.toPath());
+    Files.writeString(current.toPath().resolve("last_run.png"), "last");
+
+    UiTestSuite.rotateScreenshots(current, previous);
+
+    assertThat(current).doesNotExist();
+    assertThat(previous.toPath().resolve("last_run.png")).hasContent("last");
+    assertThat(previous.toPath().resolve("older_run.png")).doesNotExist();
+  }
+
+  /** The first run ever (no current folder) leaves an existing previous folder alone */
+  @Test
+  void rotateScreenshotsWithoutAPreviousRunKeepsPrevious(@TempDir Path dir) throws IOException {
+    File current = dir.resolve(UiTestSuite.SCREENSHOT_DIR).toFile();
+    File previous = dir.resolve(UiTestSuite.PREVIOUS_SCREENSHOT_DIR).toFile();
+    Files.createDirectories(previous.toPath());
+    Files.writeString(previous.toPath().resolve("older_run.png"), "older");
+
+    UiTestSuite.rotateScreenshots(current, previous);
+
+    assertThat(current).doesNotExist();
+    assertThat(previous.toPath().resolve("older_run.png")).hasContent("older");
+  }
+
   /** Vanilla titles the backup prompt {@code selectWorld.backupQuestion.<status>} ({@code WorldOpenFlows#openWorldCheckVersionCompatibility}) */
   @Test
   void confirmsOnlyNonSevereUpgradePrompts() {
