@@ -17,6 +17,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -360,4 +361,32 @@ public class WorldgenGameTests {
       helper.fail(Component.literal(String.join("; ", failures)));
     }
   }
-}
+
+  /**
+   * Every Tinkers potted plant is reachable from the vanilla empty pot: the lookup {@code FlowerPotBlock#useItemOn} uses.
+   * MC 26.2 / NeoForge made {@code FlowerPotBlock#addPlant} a no-op; full pots built with an empty-pot supplier are added
+   * to the table automatically, so Mantle's {@code registerPotted} no longer calls it.
+   */
+  @TinkerGameTest(template = "gametest/empty_5x5x5", timeoutTicks = 100)
+  public static void flower_pot_accepts_tinkers_plants(GameTestHelper helper) {
+    FlowerPotBlock pot = (FlowerPotBlock) Blocks.FLOWER_POT;
+    List<String> failures = new ArrayList<>();
+    int[] checked = {0};
+    for (var potted : List.of(Map.entry(TinkerWorld.slimeSapling, TinkerWorld.pottedSlimeSapling), Map.entry(TinkerWorld.slimeFern, TinkerWorld.pottedSlimeFern))) {
+      potted.getValue().forEach((type, full) -> {
+        checked[0]++;
+        Block plant = potted.getKey().get(type);
+        Block found = pot.getFullPot(plant);
+        if (found != full) {
+          failures.add(plant + " -> " + found + " (expected " + full + ")");
+        }
+      });
+    }
+    if (checked[0] == 0) {
+      failures.add("no potted plants registered");
+    }
+    if (!failures.isEmpty()) {
+      helper.fail(Component.literal(String.join("; ", failures)));
+    }
+    helper.succeed();
+  }}
