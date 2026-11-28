@@ -153,7 +153,13 @@ public class BounceGameTests {
     }
   }
 
-  /** A player, ticked by the test as the mock player is not in the level, falls onto each pad */
+  /**
+   * A player, ticked by the test as the mock player is not in the level, falls onto each pad.
+   * <p>
+   * Limitation: this is a server side mock player ticked by hand. A real player's movement, and so its bounce, runs on the client
+   * ({@code LocalPlayer}), which this test does not cover. If 26.2's restitution hook behaves differently between the sides, Phase 4 must check the
+   * client side bounce in a uitest (see {@code docs/boundary-contracts.md}, S5 row).
+   */
   @TinkerGameTest(template = "gametest/empty_9x9x9", timeoutTicks = 200)
   public static void slime_bounce_heights_player(GameTestHelper helper) {
     dropOnPads(helper, "player", pos -> {
